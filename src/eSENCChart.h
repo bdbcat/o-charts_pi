@@ -390,6 +390,7 @@ DECLARE_DYNAMIC_CLASS(oeSENCChart)
       virtual ~oeSENCChart();
       
       wxString GetFileSearchMask(void);
+      int Init( const wxString& name, int init_flags );
 
 };
 
@@ -408,6 +409,8 @@ DECLARE_DYNAMIC_CLASS(oeEVCChart)
       virtual ~oeEVCChart();
       
       wxString GetFileSearchMask(void);
+      int Init( const wxString& name, int init_flags );
+
 
 };
 

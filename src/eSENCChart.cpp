@@ -173,6 +173,31 @@ extern void processUserKeyHint(const wxString &oesenc_file);
 
 ViewPort CreateCompatibleViewport( const PlugIn_ViewPort &pivp);
 
+wxString std2wx(std::string s){
+ wxString wx;
+ const char* my_string=s.c_str();
+ wxMBConvUTF8 *wxconv= new wxMBConvUTF8();
+ wx=wxString(wxconv->cMB2WC(my_string),wxConvUTF8);
+ delete wxconv;
+ // test if conversion works of not. In case it fails convert from Ascii
+ if(wx.length()==0)
+ wx=wxString(wxString::FromAscii(s.c_str()));
+ return wx;
+}
+
+std::string wx2std(wxString s){
+  std::string s2;
+  if(s.wxString::IsAscii()) {
+    s2=s.wxString::ToAscii();
+  } else {
+    const wxWX2MBbuf tmp_buf = wxConvCurrent->cWX2MB(s);
+    const char *tmp_str = (const char*) tmp_buf;
+    s2=std::string(tmp_str, strlen(tmp_str));
+  }
+  return s2;
+}
+
+
 #if defined( __UNIX__ ) && !defined(__WXOSX__)  // high resolution stopwatch for profiling
 class OCPNStopWatch
 {
@@ -521,6 +546,76 @@ wxString oeSENCChart::GetFileSearchMask(void)
       return _T("*.oesenc");
 }
 
+int oeSENCChart::Init( const wxString& name, int init_flags )
+{
+    std::string sname = wx2std(name);
+    if(chartFailCount.find(sname) == chartFailCount.end()){
+        chartFailCount[sname] = 0;
+    }
+
+    if(chartFailCount[sname] > 2){
+        return PI_INIT_FAIL_REMOVE;
+    }
+            
+    //  Basic existence check...
+    if( !wxFileName::FileExists( name ) )
+        return PI_INIT_FAIL_REMOVE;
+
+    if(!processChartinfo( name )){
+        return PI_INIT_FAIL_REMOVE;
+    }
+    
+    //    Use a static semaphore flag to prevent recursion
+    if( s_PI_bInS57 ) {
+        return PI_INIT_FAIL_NOERROR;
+    }
+    s_PI_bInS57++;
+    
+    PI_InitReturn ret_val = PI_INIT_FAIL_NOERROR;
+    
+    m_FullPath = name;
+    m_Description = m_FullPath;
+
+    m_ChartType = PI_CHART_TYPE_PLUGIN;
+    m_ChartFamily = PI_CHART_FAMILY_VECTOR;
+    m_projection = PI_PROJECTION_MERCATOR;
+
+    
+    if(!g_bUserKeyHintTaken)
+        processUserKeyHint(name);
+    
+    validate_SENC_server();
+       
+    if( PI_HEADER_ONLY == init_flags ){
+       
+        m_SENCFileName = name;
+        if( !CreateHeaderDataFromeSENC() )
+            ret_val = PI_INIT_FAIL_REMOVE;
+        else
+            ret_val = PI_INIT_OK;
+    }
+        
+    else if( PI_FULL_INIT == init_flags ){
+
+        showChartinfoDialog();
+        
+        m_SENCFileName = name;
+        ret_val = PostInit( init_flags, global_color_scheme );
+    }
+    
+    // On any error, allow a new reload of UserKey from ChartInfo files
+    // presumably coming from another directory.
+    if(ret_val != PI_INIT_OK){
+        g_bUserKeyHintTaken = false;
+        chartFailCount[sname] ++;
+    }
+    else
+        chartFailCount[sname] = 0;
+
+    s_PI_bInS57--;
+    return ret_val;
+}
+
 
 // ----------------------------------------------------------------------------
 // oeEVCChart Implementation
@@ -540,6 +635,78 @@ wxString oeEVCChart::GetFileSearchMask(void)
 {
       return _T("*.oeevc");
 }
+
+
+int oeEVCChart::Init( const wxString& name, int init_flags )
+{
+    std::string sname = wx2std(name);
+    if(chartFailCount.find(sname) == chartFailCount.end()){
+        chartFailCount[sname] = 0;
+    }
+
+    if(chartFailCount[sname] > 2){
+        return PI_INIT_FAIL_REMOVE;
+    }
+            
+    //  Basic existence check...
+    if( !wxFileName::FileExists( name ) )
+        return PI_INIT_FAIL_REMOVE;
+
+    if(!processChartinfo( name )){
+        return PI_INIT_FAIL_REMOVE;
+    }
+    
+    //    Use a static semaphore flag to prevent recursion
+    if( s_PI_bInS57 ) {
+        return PI_INIT_FAIL_NOERROR;
+    }
+    s_PI_bInS57++;
+    
+    PI_InitReturn ret_val = PI_INIT_FAIL_NOERROR;
+    
+    m_FullPath = name;
+    m_Description = m_FullPath;
+
+    m_ChartType = PI_CHART_TYPE_PLUGIN;
+    m_ChartFamily = PI_CHART_FAMILY_VECTOR;
+    m_projection = PI_PROJECTION_MERCATOR;
+
+    
+    if(!g_bUserKeyHintTaken)
+        processUserKeyHint(name);
+    
+    validate_SENC_server();
+       
+    if( PI_HEADER_ONLY == init_flags ){
+       
+        m_SENCFileName = name;
+        if( !CreateHeaderDataFromeSENC() )
+            ret_val = PI_INIT_FAIL_REMOVE;
+        else
+            ret_val = PI_INIT_OK;
+    }
+        
+    else if( PI_FULL_INIT == init_flags ){
+
+        showChartinfoDialog();
+        
+        m_SENCFileName = name;
+        ret_val = PostInit( init_flags, global_color_scheme );
+    }
+    
+    // On any error, allow a new reload of UserKey from ChartInfo files
+    // presumably coming from another directory.
+    if(ret_val != PI_INIT_OK){
+        g_bUserKeyHintTaken = false;
+        chartFailCount[sname] ++;
+    }
+    else
+        chartFailCount[sname] = 0;
+
+    s_PI_bInS57--;
+    return ret_val;
+}
+
 
 
 // ----------------------------------------------------------------------------
@@ -602,37 +769,6 @@ eSENCChart::eSENCChart()
     m_last_vp.pix_height = m_last_vp.pix_width = 0;
     m_last_vp.m_projection_type = PROJECTION_MERCATOR;
     
-#if 0
-      m_depth_unit_id = PI_DEPTH_UNIT_UNKNOWN;
-
-      m_global_color_scheme = PI_GLOBAL_COLOR_SCHEME_RGB;
-
-      m_bReadyToRender = false;
-
-      m_Chart_Error_Factor = 0.;
-
-      m_Chart_Scale = 10000;              // a benign value
-
-      m_nCOVREntries = 0;
-      m_pCOVRTable = NULL;
-      m_pCOVRTablePoints = NULL;
-
-      m_EdDate.Set(1, wxDateTime::Jan, 2000);
-
-      m_lon_datum_adjust = 0.;
-      m_lat_datum_adjust = 0.;
-
-      m_projection = PI_PROJECTION_MERCATOR;             // default
-
-      m_ChartType = PI_CHART_TYPE_PLUGIN;
-      m_ChartFamily = PI_CHART_FAMILY_VECTOR;
-
-      m_ppartial_bytes = NULL;
-
-      m_pBMPThumb = NULL;
-
-      m_ecr_length = 0;
-#endif
 }
 
 eSENCChart::~eSENCChart()
@@ -932,34 +1068,13 @@ wxString eSENCChart::Build_eHDR( const wxString& name000 )
 
 int nInit;
 
-wxString std2wx(std::string s){
- wxString wx;
- const char* my_string=s.c_str();
- wxMBConvUTF8 *wxconv= new wxMBConvUTF8();
- wx=wxString(wxconv->cMB2WC(my_string),wxConvUTF8);
- delete wxconv;
- // test if conversion works of not. In case it fails convert from Ascii
- if(wx.length()==0)
- wx=wxString(wxString::FromAscii(s.c_str()));
- return wx;
-}
-
-std::string wx2std(wxString s){
-  std::string s2;
-  if(s.wxString::IsAscii()) {
-    s2=s.wxString::ToAscii();
-  } else {
-    const wxWX2MBbuf tmp_buf = wxConvCurrent->cWX2MB(s);
-    const char *tmp_str = (const char*) tmp_buf;
-    s2=std::string(tmp_str, strlen(tmp_str));
-  }
-  return s2;
-}
-
 
 
 int eSENCChart::Init( const wxString& name, int init_flags )
 {
+    return PI_INIT_FAIL_NOERROR;                // always implemented by derived chart classes
+    
+#if 0
     std::string sname = wx2std(name);
     if(chartFailCount.find(sname) == chartFailCount.end()){
         chartFailCount[sname] = 0;
@@ -1026,6 +1141,7 @@ int eSENCChart::Init( const wxString& name, int init_flags )
 
     s_PI_bInS57--;
     return ret_val;
+#endif    
 }
 
 
