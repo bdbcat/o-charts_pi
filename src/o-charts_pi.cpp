@@ -1331,18 +1331,8 @@ bool o_charts_pi::LoadConfig( void )
         g_chart_zoom_modifier_vector = wxMax(g_chart_zoom_modifier_vector,-5);
         
 
-        pConf->SetPath( _T("/PlugIns/oesenc") );
+        pConf->SetPath( _T("/PlugIns/ocharts/oesenc") );
 
-        //      Defaults
-        g_installpermit = _T("Y");
-        g_userpermit = _T("X");
-
-        pConf->Read( _T("Userpermit"), &g_userpermit );
-        pConf->Read( _T("Installpermit"), &g_installpermit );
-        pConf->Read( _T("LastENCROOT"), &m_last_enc_root_dir);
-        pConf->Read( _T("S63CommonDataDir"), &g_CommonDataDir);
-        pConf->Read( _T("ShowScreenLog"), &g_buser_enable_screenlog);
-        pConf->Read( _T("NoShowSSE25"), &g_bnoShow_sse25);
         pConf->Read( _T("LastFPRFile"), &g_fpr_file);
         pConf->Read( _T("DEBUG_SERVER"), &g_serverDebug);
         pConf->Read( _T("DEBUG_LEVEL"), &g_debugLevel);
@@ -1364,7 +1354,7 @@ bool o_charts_pi::LoadConfig( void )
         pConf->Read( _T("UserKey"), &g_UserKey );
 
         //  Load the persistent Chartinfo strings
-        pConf->SetPath ( _T ( "/PlugIns/oesenc/ChartinfoList" ) );
+        pConf->SetPath ( _T ( "/PlugIns/ocharts/oesenc/ChartinfoList" ) );
         
         wxString strk;
         wxString kval;
@@ -1429,7 +1419,7 @@ bool o_charts_pi::SaveConfig( void )
     wxFileConfig *pConf = (wxFileConfig *) g_pconfig;
 
     if( pConf ) {
-        pConf->SetPath( _T("/PlugIns/oesenc") );
+        pConf->SetPath( _T("/PlugIns/ocharts/oesenc") );
 
         pConf->Write( _T("UserKey"), g_UserKey );
         pConf->Write( _T("LastFPRFile"), g_fpr_file);
@@ -1441,8 +1431,8 @@ bool o_charts_pi::SaveConfig( void )
 #endif        
         
         //  Save the persistent Chartinfo strings
-        pConf->DeleteGroup(_T ( "/PlugIns/oesenc/ChartinfoList"));
-        pConf->SetPath ( _T ( "/PlugIns/oesenc/ChartinfoList" ) );
+        pConf->DeleteGroup(_T ( "/PlugIns/ocharts/oesenc/ChartinfoList"));
+        pConf->SetPath ( _T ( "/PlugIns/ocharts/oesenc/ChartinfoList" ) );
         std::map<std::string, ChartInfoItem *>::iterator iter;
         for( iter = info_hash.begin(); iter != info_hash.end(); ++iter )
         {
@@ -1454,8 +1444,8 @@ bool o_charts_pi::SaveConfig( void )
         }
 
         //  Save the persistent EULA
-        pConf->DeleteGroup(_T ( "/PlugIns/oesenc/EULA"));
-        pConf->SetPath ( _T ( "/PlugIns/oesenc/EULA" ) );
+        pConf->DeleteGroup(_T ( "/PlugIns/ocharts/oesenc/EULA"));
+        pConf->SetPath ( _T ( "/PlugIns/ocharts/oesenc/EULA" ) );
         
         for(unsigned int i=0 ; i < g_EULAArray.GetCount() ; i++){
             ChartSetEULA *cse = g_EULAArray.Item(i);
