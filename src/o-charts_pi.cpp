@@ -237,6 +237,12 @@ bool shutdown_SENC_server( void );
 bool ShowAlwaysEULAs();
 extern OE_ChartSymbols          *g_oeChartSymbols;
 
+OKeyHash keyMapDongle;
+OKeyHash keyMapSystem;
+
+OKeyHash *pPrimaryKey;
+OKeyHash *pAlternateKey;
+
 #ifdef __OCPN__ANDROID__
 extern JavaVM *java_vm;         // found in androidUtil.cpp, accidentally exported....
 
@@ -661,15 +667,13 @@ int o_charts_pi::Init(void)
       //    Build an arraystring of dynamically loadable chart class names
     m_class_name_array.Add(_T("oeSENCChart"));
     m_class_name_array.Add(_T("oeEVCChart"));
+    m_class_name_array.Add(_T("oesuChart"));
 
      
     // Specify the location of the xxserverd helper.
 #ifdef __WXMSW__
       g_sencutil_bin = GetPluginDataDir("o_charts_pi") + _T("\\oexserverd.exe");
 
-//#else      
-      //wxFileName fn_exe(GetOCPN_ExePath());
-      //g_sencutil_bin = fn_exe.GetPath( wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) + _T("oeserverd");
 #endif
       
       // Search for helper in the $PATH.
@@ -773,6 +777,10 @@ int o_charts_pi::Init(void)
 
     flags |= INSTALLS_TOOLBOX_PAGE;             // for o-charts shop interface
     flags |= WANTS_PREFERENCES;             
+
+    // Set up the initial key hash table pointers
+    pPrimaryKey = &keyMapDongle;
+    pAlternateKey = &keyMapSystem;
 
     init_S52Library();
 

@@ -71,6 +71,7 @@
 #endif
 #endif    
 
+WX_DECLARE_STRING_HASH_MAP( wxString, OKeyHash );
 
 enum {
     ID_BUTTONCELLIMPORT,

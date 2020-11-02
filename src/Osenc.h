@@ -62,6 +62,12 @@ WX_DECLARE_HASH_MAP( int, int, wxIntegerHash, wxIntegerEqual, VectorHelperHash )
 
 WX_DEFINE_ARRAY_PTR(float *, SENCFloatPtrArray);
 
+enum
+{
+    CTYPE_OESENC,
+    CTYPE_OESU
+};
+
 //      Various error return enums
 #define         SENC_NO_ERROR                           0
 #define         ERROR_SENCFILE_NOT_FOUND                1
@@ -469,6 +475,7 @@ public:
     void setRegistrarMgr( s57RegistrarMgr *mgr ){ m_pRegistrarMan = mgr; }
     void setRefLocn( double lat, double lon){ m_ref_lat = lat; m_ref_lon = lon; }
     void setKey( wxString& key){ m_key = key; }
+    void setCtype( int type );
     
     int getReadVersion(){ return m_senc_file_read_version; }
     wxString getUpdateDate(){ return m_LastUpdateDate; }
@@ -594,6 +601,9 @@ private:
     wxString              m_SoundingDatum;
     
     wxStringHashMap       m_TXTDSC_fileMap;
+    unsigned char         m_read_esenc_cmd;
+    unsigned char         m_read_esencHdr_cmd;
+ 
 };
 
 struct fifo_msg {
@@ -624,6 +634,9 @@ struct fifo_msg {
 #define CMD_GET_HK              6
 #define CMD_OPEN_RNC            4
 #define CMD_OPEN_RNC_FULL       5
+
+#define CMD_READ_OESU           8
+#define CMD_READ_OESU_HDR       9
 
 //--------------------------------------------------------------------------
 //      Osenc_instream definition

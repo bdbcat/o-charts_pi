@@ -71,6 +71,13 @@ enum
 //     double y;
 // } MyPoint;
 
+typedef enum InitReturn
+{
+      INIT_OK = 0,
+      INIT_FAIL_RETRY,        // Init failed, retry suggested
+      INIT_FAIL_REMOVE,       // Init failed, suggest remove from further use
+      INIT_FAIL_NOERROR       // Init failed, request no explicit error message
+}_InitReturn;
 
 //extern "C" int G_PtInPolygon(MyPoint *, int, float, float) ;
 
@@ -132,6 +139,8 @@ class  eSENCChart : public PlugInChartBaseExtended
 //      void ChartBaseBSBCTOR(void);
 //      void ChartBaseBSBDTOR(void);
       wxString GetFileSearchMask(void);
+
+      bool ProcessHeader(Osenc &senc);
 
       //    Accessors
 
@@ -236,7 +245,7 @@ protected:
       bool              InitFrom_ehdr( wxString &efn );
       PI_InitReturn     FindOrCreateSenc( const wxString& name );
       int               BuildSENCFile( const wxString& FullPath_os63, const wxString& SENCFileName );
-      int               BuildRAZFromSENCFile( const wxString& FullPath, wxString &userKey );
+      int               BuildRAZFromSENCFile( const wxString& FullPath, wxString &Key, int ctype );
 //      int               _insertRules(S57Obj *obj);
       int               _insertRules( S57Obj *obj, LUPrec *LUP, eSENCChart *pOwner );
       
@@ -410,6 +419,32 @@ DECLARE_DYNAMIC_CLASS(oeEVCChart)
       
       wxString GetFileSearchMask(void);
       int Init( const wxString& name, int init_flags );
+
+
+};
+
+
+// ----------------------------------------------------------------------------
+// oesuChart Definition
+// ----------------------------------------------------------------------------
+class  oesuChart : public eSENCChart
+{
+DECLARE_DYNAMIC_CLASS(oesuChart)
+
+    public:
+      //    Public methods
+
+      oesuChart();
+      virtual ~oesuChart();
+      
+      wxString  GetFileSearchMask(void);
+      int       Init( const wxString& name, int init_flags );
+      bool      CreateHeaderDataFromeSENC(void);
+      PI_InitReturn PostInit( int flags, int cs );
+
+    private:
+        
+      wxString  m_rKey;
 
 
 };

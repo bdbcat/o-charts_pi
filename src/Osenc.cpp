@@ -895,7 +895,23 @@ void Osenc::init( void )
     m_senc_file_read_version = 0;
     s_ProgDialog = NULL;
     InitializePersistentBuffer();
+    setCtype( CTYPE_OESENC );           // legacy default
     
+}
+
+void Osenc::setCtype( int type )
+{
+    switch(type){
+        case CTYPE_OESU:
+            m_read_esenc_cmd = CMD_READ_OESU;
+            m_read_esencHdr_cmd = CMD_READ_OESU_HDR;
+            break;
+        case CTYPE_OESENC:
+        default:
+            m_read_esenc_cmd = CMD_READ_ESENC;
+            m_read_esencHdr_cmd = CMD_READ_ESENC_HDR;
+            break;
+    }
 }
 
 int Osenc::verifySENC(Osenc_instream &fpx, const wxString &senc_file_name)
@@ -953,7 +969,7 @@ int Osenc::verifySENC(Osenc_instream &fpx, const wxString &senc_file_name)
         
         fpx.Close();
         //  Try  with empty key, in case the SENC is unencrypted
-        if( !fpx.Open(CMD_READ_ESENC, senc_file_name, _T("")) ){    
+        if( !fpx.Open(m_read_esenc_cmd, senc_file_name, _T("")) ){    
             if(g_debugLevel) wxLogMessage(_T("ingestHeader Open failed "));
             return ERROR_SENC_CORRUPT;        
         }
@@ -1034,10 +1050,10 @@ int Osenc::ingestHeader(const wxString &senc_file_name)
  */   
     Osenc_instream fpx;
     
-    if( !fpx.Open(CMD_READ_ESENC_HDR, senc_file_name, m_key) ){
+    if( !fpx.Open(m_read_esencHdr_cmd, senc_file_name, m_key) ){
         if(g_debugLevel) wxLogMessage(_T("ingestHeader Open failed first"));
         wxMilliSleep(100);
-        if( !fpx.Open(CMD_READ_ESENC_HDR, senc_file_name, m_key) ){
+        if( !fpx.Open(m_read_esencHdr_cmd, senc_file_name, m_key) ){
             if(g_debugLevel) wxLogMessage(_T("ingestHeader Open failed second"));
             return ERROR_SENCFILE_NOT_FOUND;
         }
@@ -1290,14 +1306,14 @@ int Osenc::ingest200(const wxString &senc_file_name,
     Osenc_instream fpx;
     
     
-    if( !fpx.Open(CMD_READ_ESENC, senc_file_name, m_key) ){
+    if( !fpx.Open(m_read_esenc_cmd, senc_file_name, m_key) ){
         if(g_debugLevel) wxLogMessage(_T("ingest200 Open failed first"));
         wxMilliSleep(100);
-        if( !fpx.Open(CMD_READ_ESENC, senc_file_name, m_key) ){
+        if( !fpx.Open(m_read_esenc_cmd, senc_file_name, m_key) ){
             if(g_debugLevel) wxLogMessage(_T("ingest200 Open failed second"));
 
             //  Try  with empty key, in case the SENC is unencrypted
-            if( !fpx.Open(CMD_READ_ESENC, senc_file_name, _T("")) ){    
+            if( !fpx.Open(m_read_esenc_cmd, senc_file_name, _T("")) ){    
                 if(g_debugLevel) wxLogMessage(_T("ingest200 Open failed third"));
                 return ERROR_SENCFILE_NOT_FOUND;
             }

@@ -49,6 +49,7 @@
 #include "s52plib.h"
 #include "viewport.h"
 #include "s52utils.h"
+#include "uKey.h"
 
 #ifdef __WXOSX__
 #include "GL/gl.h"
@@ -708,6 +709,234 @@ int oeEVCChart::Init( const wxString& name, int init_flags )
 }
 
 
+// ----------------------------------------------------------------------------
+// oesuChart Implementation
+// ----------------------------------------------------------------------------
+IMPLEMENT_DYNAMIC_CLASS(oesuChart, eSENCChart)
+
+
+oesuChart::oesuChart() : eSENCChart()
+{
+    int yyp = 4;
+}
+
+oesuChart::~oesuChart()
+{
+}
+
+wxString oesuChart::GetFileSearchMask(void)
+{
+      return _T("*.oesu");
+}
+
+
+int oesuChart::Init( const wxString& name, int init_flags )
+{
+    std::string sname = wx2std(name);
+    if(chartFailCount.find(sname) == chartFailCount.end()){
+        chartFailCount[sname] = 0;
+    }
+
+    if(chartFailCount[sname] > 2){
+        return PI_INIT_FAIL_REMOVE;
+    }
+            
+    //  Basic existence check...
+    if( !wxFileName::FileExists( name ) )
+        return PI_INIT_FAIL_REMOVE;
+
+    //    Use a static semaphore flag to prevent recursion
+    if( s_PI_bInS57 ) {
+        return PI_INIT_FAIL_NOERROR;
+    }
+    s_PI_bInS57++;
+
+    
+    PI_InitReturn ret_val = PI_INIT_FAIL_NOERROR;
+    
+    m_FullPath = name;
+    m_Description = m_FullPath;
+
+    m_ChartType = PI_CHART_TYPE_PLUGIN;
+    m_ChartFamily = PI_CHART_FAMILY_VECTOR;
+    m_projection = PI_PROJECTION_MERCATOR;
+
+    wxString key = wxString(getPrimaryKey(name));
+    if(!key.Len()){
+          key = wxString(getAlternateKey(name));
+          if(!key.Len()){
+            wxString msg(_T("   OERNC_PI: chart RInstallKey not found: "));
+            msg.Append(m_FullPath);
+            wxLogMessage(msg);
+          
+            return INIT_FAIL_REMOVE;
+          }
+          SwapKeyHashes();          // interchanges hashes, so next time will be faster
+    }
+
+    m_rKey = key;
+    
+    validate_SENC_server();
+       
+    if( PI_HEADER_ONLY == init_flags ){
+       
+        m_SENCFileName = name;
+        if( !CreateHeaderDataFromeSENC() )
+            ret_val = PI_INIT_FAIL_REMOVE;
+        else
+            ret_val = PI_INIT_OK;
+    }
+        
+    else if( PI_FULL_INIT == init_flags ){
+
+//        showChartinfoDialog();
+        
+        m_SENCFileName = name;
+        ret_val = PostInit( init_flags, global_color_scheme );
+    }
+ 
+//       bool bHeaderOnly = false;
+//       if(init_flags == HEADER_ONLY)
+//           bHeaderOnly = true;
+// 
+//       ifs_hdr = new oernc_inStream(name, key, bHeaderOnly);          // open the file server
+
+/*    
+    if(!g_bUserKeyHintTaken)
+        processUserKeyHint(name);
+    
+    validate_SENC_server();
+       
+    if( PI_HEADER_ONLY == init_flags ){
+       
+        m_SENCFileName = name;
+        if( !CreateHeaderDataFromeSENC() )
+            ret_val = PI_INIT_FAIL_REMOVE;
+        else
+            ret_val = PI_INIT_OK;
+    }
+        
+    else if( PI_FULL_INIT == init_flags ){
+
+        showChartinfoDialog();
+        
+        m_SENCFileName = name;
+        ret_val = PostInit( init_flags, global_color_scheme );
+    }
+    
+    // On any error, allow a new reload of UserKey from ChartInfo files
+    // presumably coming from another directory.
+    if(ret_val != PI_INIT_OK){
+        g_bUserKeyHintTaken = false;
+        chartFailCount[sname] ++;
+    }
+    else
+        chartFailCount[sname] = 0;
+*/
+
+    s_PI_bInS57--;
+    return ret_val;
+}
+
+bool oesuChart::CreateHeaderDataFromeSENC()
+{
+    bool ret_val = true;
+
+    // Configure Osenc for unified senc read, with the proper rKey
+    Osenc senc;
+    senc.setCtype( CTYPE_OESU );
+    senc.setKey(m_rKey);
+
+    int retCode = senc.ingestHeader( m_SENCFileName.GetFullPath() );
+        
+    if(retCode != SENC_NO_ERROR){
+            
+          wxString msg( _T("   Cannot load SENC file ") );
+          msg.Append( m_SENCFileName.GetFullPath() );
+          wxLogMessage( msg );
+ 
+          wxLogMessage(_T("Retry..."));
+          
+          validate_SENC_server();               // reset the server...
+          
+          retCode = senc.ingestHeader( m_SENCFileName.GetFullPath() );
+          if(retCode != SENC_NO_ERROR){
+              wxString msg( _T("   Again, cannot load SENC file ") );
+              msg.Append( m_SENCFileName.GetFullPath() );
+              wxLogMessage( msg );
+              return false;
+          }
+         
+    }
+    
+    ProcessHeader( senc );
+    
+    return ret_val;
+}
+
+PI_InitReturn oesuChart::PostInit( int flags, int cs )
+{
+    //    Build the RAZ structure
+    int retCode = BuildRAZFromSENCFile( m_SENCFileName.GetFullPath(), m_rKey, CTYPE_OESU );
+    
+    if(retCode != SENC_NO_ERROR){
+    
+        //
+//         if(( ERROR_SIGNATURE_FAILURE == retCode )  || ( ERROR_SENC_CORRUPT == retCode ) ){
+//             wxString permit = GetUserKey( LEGEND_FIRST, false );
+//             return PI_INIT_FAIL_RETRY;
+//         }
+//        else
+        {
+            wxString msg( _T("   Cannot load SENC file ") );
+            msg.Append( m_SENCFileName.GetFullPath() );
+            wxLogMessage( msg );
+        
+            return PI_INIT_FAIL_RETRY;
+        }
+    }
+    
+    //      Check for and if necessary rebuild Thumbnail
+    //      Going to be in the global (user) SENC file directory
+    
+    #if 0
+    wxString SENCdir = m_senc_dir;
+    if( SENCdir.Last() != m_SENCFileName.GetPathSeparator() )
+        SENCdir.Append( m_SENCFileName.GetPathSeparator() );
+    
+    wxFileName ThumbFileName( SENCdir, m_SENCFileName.GetName(), _T("BMP") );
+    
+    if( !ThumbFileName.FileExists() || m_bneed_new_thumbnail ) BuildThumbnail(
+        ThumbFileName.GetFullPath() );
+    #endif
+    
+    //  Update the member thumbdata structure
+    #if 0
+    if( ThumbFileName.FileExists() ) {
+        wxBitmap *pBMP_NEW;
+        #ifdef ocpnUSE_ocpnBitmap
+        pBMP_NEW = new ocpnBitmap;
+        #else
+        pBMP_NEW = new wxBitmap;
+        #endif
+        if( pBMP_NEW->LoadFile( ThumbFileName.GetFullPath(), wxBITMAP_TYPE_BMP ) ) {
+            delete pThumbData;
+            pThumbData = new ThumbData;
+            m_pDIBThumbDay = pBMP_NEW;
+            //                    pThumbData->pDIBThumb = pBMP_NEW;
+}
+}
+#endif
+
+    //    Set the color scheme
+    SetColorScheme( cs, false );
+
+//    Build array of contour values for later use by conditional symbology
+    BuildDepthContourArray();
+    m_bReadyToRender = true;
+
+    return PI_INIT_OK;
+}
 
 // ----------------------------------------------------------------------------
 // eSENCChart Implementation
@@ -1451,6 +1680,94 @@ bool eSENCChart::CreateHeaderDataFromeSENC( void )
     return ret_val;
 }
 
+bool eSENCChart::ProcessHeader(Osenc &senc)
+{
+         // Get Chartbase member elements from the already loaded oSENC file records in the header
+        
+        // Scale
+        m_Chart_Scale = senc.getSENCReadScale();
+        
+        // Nice Name
+        m_Name = senc.getReadName();
+        
+        // ID
+        m_ID = senc.getReadID();
+        
+        // Extents
+        Extent &ext = senc.getReadExtent();
+        
+        m_FullExtent.ELON = ext.ELON;
+        m_FullExtent.WLON = ext.WLON;
+        m_FullExtent.NLAT = ext.NLAT;
+        m_FullExtent.SLAT = ext.SLAT;
+        m_bExtentSet = true;
+        
+        
+        //Coverage areas
+        SENCFloatPtrArray &AuxPtrArray = senc.getSENCReadAuxPointArray();
+        wxArrayInt &AuxCntArray = senc.getSENCReadAuxPointCountArray();
+        
+        m_nCOVREntries = AuxCntArray.GetCount();
+        
+        m_pCOVRTablePoints = (int *) malloc( m_nCOVREntries * sizeof(int) );
+        m_pCOVRTable = (float **) malloc( m_nCOVREntries * sizeof(float *) );
+        
+        for( unsigned int j = 0; j < (unsigned int) m_nCOVREntries; j++ ) {
+            m_pCOVRTablePoints[j] = AuxCntArray.Item( j );
+            m_pCOVRTable[j] = (float *) malloc( AuxCntArray.Item( j ) * 2 * sizeof(float) );
+            memcpy( m_pCOVRTable[j], AuxPtrArray.Item( j ),
+                    AuxCntArray.Item( j ) * 2 * sizeof(float) );
+        }
+        
+        // NoCoverage areas
+        SENCFloatPtrArray &NoCovrPtrArray = senc.getSENCReadNOCOVRPointArray();
+        wxArrayInt &NoCovrCntArray = senc.getSENCReadNOCOVRPointCountArray();
+
+        m_nNoCOVREntries = NoCovrCntArray.GetCount();
+        
+        if( m_nNoCOVREntries ) {
+            //    Create new NoCOVR entries
+            m_pNoCOVRTablePoints = (int *) malloc( m_nNoCOVREntries * sizeof(int) );
+            m_pNoCOVRTable = (float **) malloc( m_nNoCOVREntries * sizeof(float *) );
+            
+            for( unsigned int j = 0; j < (unsigned int) m_nNoCOVREntries; j++ ) {
+                int npoints = NoCovrCntArray.Item( j );
+                m_pNoCOVRTablePoints[j] = npoints;
+                m_pNoCOVRTable[j] = (float *) malloc( npoints * 2 * sizeof(float) );
+                memcpy( m_pNoCOVRTable[j], NoCovrPtrArray.Item( j ),
+                        npoints * 2 * sizeof(float) );
+            }
+        }
+        
+        
+        //  Misc
+        m_SE = m_edtn000;
+        m_datum_str = _T("WGS84");
+        m_SoundingsDatum = senc.getSoundingsDatumString();
+        m_DepthUnits = _T("Meters"); //senc.getSoundingsDatumString();
+        
+        // TODO ?? int senc_file_version = senc.getSencReadVersion();
+        
+        // TODO ?? int last_update = senc.getSENCReadLastUpdate();
+        
+        wxString str = senc.getSENCFileCreateDate();
+        wxDateTime SENCCreateDate;
+        SENCCreateDate.ParseFormat( str, _T("%Y%m%d"));
+        
+        if( SENCCreateDate.IsValid() )
+            SENCCreateDate.ResetTime();                   // to midnight
+            
+         wxString senc_base_edtn = senc.getSENCReadBaseEdition();
+        
+        wxDateTime updt;
+        updt.ParseFormat( senc.getUpdateDate(), _T("%Y%m%d") );
+        if( !updt.IsValid() )
+            updt.ParseFormat( _T("20000101"), _T("%Y%m%d") );
+
+        m_EdDate = updt;
+
+        return true;
+}
 
 wxBitmap &eSENCChart::RenderRegionViewOnDCNoText(const PlugIn_ViewPort& VPoint, const wxRegion &Region)
 {
@@ -3707,7 +4024,7 @@ void eSENCChart::UpdateLUPsOnStateChange( void )
 }
 
 
-int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& userKey )
+int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, int ctype )
 {
     
     int ret_val = 0;                    // default is OK
@@ -3723,7 +4040,8 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& userKe
     
    
     sencfile->setRegistrarMgr( pi_poRegistrarMgr );
-    sencfile->setKey(userKey);
+    sencfile->setKey(Key);
+    sencfile->setCtype( ctype );
     
     int srv = sencfile->ingest200(FullPath, &Objects, &VEs, &VCs);
     
@@ -4631,7 +4949,7 @@ PI_InitReturn eSENCChart::PostInit( int flags, int cs )
     
     
     //    SENC file is ready, so build the RAZ structure
-    int retCode = BuildRAZFromSENCFile( m_SENCFileName.GetFullPath(), g_UserKey );
+    int retCode = BuildRAZFromSENCFile( m_SENCFileName.GetFullPath(), g_UserKey, CTYPE_OESENC );
     
     if(retCode != SENC_NO_ERROR){
     

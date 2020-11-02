@@ -316,6 +316,7 @@ SET(SRC_OCHARTS
             src/tinyxmlparser.cpp
             src/razdsparser.cpp
             src/pi_DepthFont.cpp
+            src/uKey.cpp
      )
 
 SET(SRC_CPL
