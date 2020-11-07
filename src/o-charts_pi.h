@@ -169,6 +169,8 @@ public:
     
     void ProcessChartManageResult(wxString result);
     shopPanel           *m_shoppanel;
+
+    wxScrolledWindow    *m_pOptionsPage;
     
 private:
 //    wxString GetPermitDir();
@@ -204,7 +206,6 @@ private:
     bool                m_bSSE26_shown;
     TexFont             m_TexFontMessage;
     
-    wxScrolledWindow    *m_pOptionsPage;
     oesencPanel         *m_oesencpanel;
     
 

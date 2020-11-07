@@ -58,10 +58,9 @@
 #include "dsa_utils.h"
 #include "sha1.h"
 #include "InstallDirs.h"
+#include "fpr.h"
 
-//#ifndef __OCPN__ANDROID__
 #include "ochartShop.h"
-//#endif
 
 #include "version.h"
 
@@ -180,7 +179,8 @@ wxString                        g_PrivateDataDir;
 
 int                             g_admin;
 wxString                        g_debugShop;
-wxString g_versionString;
+wxString                        g_versionString;
+wxString                        g_lastEULAFile;
 
 std::map<std::string, ChartInfoItem *> info_hash;
 
@@ -672,7 +672,7 @@ int o_charts_pi::Init(void)
      
     // Specify the location of the xxserverd helper.
 #ifdef __WXMSW__
-      g_sencutil_bin = GetPluginDataDir("o_charts_pi") + _T("\\oexserverd.exe");
+      g_sencutil_bin = GetPluginDataDir("o-charts_pi") + _T("\\oexserverd.exe");
 
 #endif
       
@@ -3678,6 +3678,7 @@ void androidGetDeviceName()
 }
 #endif
 
+#if 0
 bool IsDongleAvailable()
 {
 #ifndef __OCPN__ANDROID__    
@@ -4003,7 +4004,7 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock)
 #endif        
         
 }
-
+#endif
 
 
 // An Event handler class to catch events from UI dialog
@@ -4769,7 +4770,7 @@ void o_charts_pi_about::CreateControls( void )
     wxBoxSizer* mainSizer = new wxBoxSizer( wxVERTICAL );
     SetSizer( mainSizer );
     wxStaticText *pST1 = new wxStaticText( this, -1,
-        _("oeSENC PlugIn for OpenCPN"), wxDefaultPosition,
+        _("o-charts PlugIn for OpenCPN"), wxDefaultPosition,
         wxSize( -1, 50 /* 500, 30 */ ), wxALIGN_CENTRE /* | wxALIGN_CENTER_VERTICAL */ );
 
     wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
@@ -5351,7 +5352,7 @@ void androidHideBusyIcon()
 void o_charts_pi::OnSetupOptions( void )
 {
 #ifdef x__OCPN__ANDROID__
-    m_pOptionsPage = AddOptionsPage( PI_OPTIONS_PARENT_CHARTS, _("oeSENC Charts") );
+    m_pOptionsPage = AddOptionsPage( PI_OPTIONS_PARENT_CHARTS, _("o-charts") );
     if( ! m_pOptionsPage )
     {
         wxLogMessage( _T("Error: o_charts_pi::OnSetupOptions AddOptionsPage failed!") );
@@ -5366,7 +5367,7 @@ void o_charts_pi::OnSetupOptions( void )
     sizer->Add( m_oesencpanel, 1, wxALL | wxEXPAND );
     m_oesencpanel->FitInside();
 #else
-    m_pOptionsPage = AddOptionsPage( PI_OPTIONS_PARENT_CHARTS, _("oeSENC Charts") );
+    m_pOptionsPage = AddOptionsPage( PI_OPTIONS_PARENT_CHARTS, _("o-charts") );
     if( ! m_pOptionsPage )
     {
         wxLogMessage( _T("Error: o_charts_pi::OnSetupOptions AddOptionsPage failed!") );
