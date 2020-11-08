@@ -317,6 +317,10 @@ SET(SRC_OCHARTS
             src/razdsparser.cpp
             src/pi_DepthFont.cpp
             src/uKey.cpp
+            src/validator.cpp
+            src/fpr.cpp
+            src/piScreenLog.cpp
+            src/sha256.c
      )
 
 SET(SRC_CPL

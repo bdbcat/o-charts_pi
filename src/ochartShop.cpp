@@ -2324,8 +2324,8 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
          wxString p = wxString(body.c_str(), wxConvUTF8);
          //  wxMSW does not like trying to format this string containing "%" characters
 #ifdef __WXGTK__         
-//         wxLogMessage(_T("ProcessResponse results:"));
-//         wxLogMessage(p);
+         wxLogMessage(_T("ProcessResponse results:"));
+         wxLogMessage(p);
 #endif
         
             TiXmlElement * root = doc->RootElement();
@@ -2450,18 +2450,26 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
                         const char *chartVal =  childChart->Value();
   
                         /*
-                                    b.0. order: order reference.
-                                    b.1. purchase: purchase date YYYY-MM-DD.
-                                    b.2. expiration: expiration date YYYY-MM-DD.
-                                    b.3. expired: 0 > not expired, 1 > expired.
-                                    b.4. thumbLink: link to thumbimage in shop.
-                                    b.5. edition: current chart edition on shop. Format: N-N > edition-update.
-                                    b.6. editionDate: publication date of current edition YYYY-MM-DD.
-                                    b.7. chartName: Name of chartset in user language.
-                                    b.8. maxSlots: maximum slots allowed for this chart.
+                                b.0. order: order reference.
+                                b.1. purchase: purchase date YYYY-MM-DD.
+                                b.2. expiration: expiration date YYYY-MM-DD.
+                                b.3. expired: 0 > not expired, 1 > expired.
+                                b.4. thumbLink: link to thumbimage in shop.
+                                b.5. edition: current chart edition on shop. Format: year/edition-update (2020/1-2).
+                                b.6. editionDate: publication date of current edition YYYY-MM-DD.
+                                b.7. chartName: Name of chartset in user language.
+                                b.8. maxSlots: maximum slots allowed for this chart.
                                 b.9. baseChartList (list): list of links to all base ChartList.xml files of the current edition.
-                                b.10. updateChartList (list): list of links to all update ChartList.xml files of the current edition.
-                                    b.11. chartid: unique chart id on shop.
+                                b.10. updateChartList (list): list of links to all update ChartList.xml files of the current edition. This field is not sent if the current edition has not updates.
+                                b.11. chartid: unique chart id on shop.
+                                
+                                b.12. quantity (list): list of charts for the same country in the same order.
+                                        b.12.0. quantityId: integer
+                                        b.12.1. slot (list): list of allowed slots.
+                                                b.12.1.0. slotUuid: unique ID. Format: UUID AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA.
+                                                b.12.1.1. assignedSystemName: assigned system name for that slot.
+                                b.13. chartType: oeSENC/oeRNC
+
                         */
                         if(!strcmp(chartVal, "order")){
                             TiXmlNode *childVal = childChart->FirstChild();
@@ -2607,7 +2615,7 @@ int getChartList( bool bShowErrorDialogs = true){
     if(g_admin)
         url = adminURL;
     
-    url +=_T("?fc=module&module=occharts&controller=apioernc");
+    url +=_T("?fc=module&module=occharts&controller=apioesu");
     
     wxString loginParms;
     loginParms += _T("taskId=getlist");
@@ -2707,7 +2715,7 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
     if(g_admin)
         url = adminURL;
     
-    url +=_T("?fc=module&module=occharts&controller=apioernc");
+    url +=_T("?fc=module&module=occharts&controller=apioesu");
     
     wxString loginParms;
     loginParms += _T("taskId=assign");
@@ -2808,7 +2816,7 @@ int doUploadXFPR(bool bDongle)
             if(g_admin)
                 url = adminURL;
             
-            url +=_T("?fc=module&module=occharts&controller=apioernc");
+            url +=_T("?fc=module&module=occharts&controller=apioesu");
             
             wxFileName fnxpr(fpr_file);
             wxString fprName = fnxpr.GetFullName();
@@ -2904,7 +2912,7 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
     if(g_admin)
         url = adminURL;
     
-    url +=_T("?fc=module&module=occharts&controller=apioernc");
+    url +=_T("?fc=module&module=occharts&controller=apioesu");
     
    
     itemChart *chart = chartPrepare->GetSelectedChart();
@@ -4048,11 +4056,19 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     
     // User reset system name, and removed dongle
     if(!g_systemName.Len() && !g_dongleName.Len())
-        bNeedSystemName = true;
+         bNeedSystemName = true;
     
     
     if(bNeedSystemName ){
-        GetNewSystemName();
+        // Check shop to see if systemName is already known for this system
+        GetShopNameFromFPR();
+        
+        // If the shop does not know about this system yet, then select an existing or new name by user GUI
+        if(!g_systemName.Len() && !g_dongleName.Len()){
+            GetNewSystemName();
+        }
+        else
+            bNeedSystemName = false;
     }
     
     // If a new systemName was selected, verify on the server
@@ -4080,6 +4096,164 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     UpdateChartList();
     
     saveShopConfig();
+}
+
+int shopPanel::GetShopNameFromFPR()
+{
+    // Get a fresh fpr file
+    bool bDongle = false;
+    wxString stringFPR;
+    wxString err;
+    
+    bool b_copyOK = false;
+    
+    wxString fpr_file = getFPR( false, b_copyOK, bDongle);              // No copy needed
+    
+    fpr_file = fpr_file.Trim(false);            // Trim leading spaces...
+    
+    wxFileName fnxpr(fpr_file);
+    wxString fprName = fnxpr.GetFullName();
+
+    if(fpr_file.Len()){
+        
+        //Read the file, convert to ASCII hex, and build a string
+        if(::wxFileExists(fpr_file)){
+            wxFileInputStream stream(fpr_file);
+            while(stream.IsOk() && !stream.Eof() ){
+                unsigned char c = stream.GetC();
+                if(!stream.Eof()){
+                    wxString sc;
+                    sc.Printf(_T("%02X"), c);
+                    stringFPR += sc;
+                }
+            }
+        }
+        else if(fpr_file.IsSameAs(_T("DONGLE_NOT_PRESENT")))
+            err = _("  {USB Dongle not found.}");
+            
+        else
+            err = _("  {fpr file not found.}");
+    }
+    else{
+        err = _("  {fpr file not created.}");
+    }
+    
+    if(err.Len()){
+        wxString msg = _("ERROR Creating Fingerprint file") + _T("\n");
+        msg += _("Check OpenCPN log file.") + _T("\n"); 
+        msg += err;
+        OERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
+        return 1;
+    }
+        
+    wxString url = userURL;
+    if(g_admin)
+        url = adminURL;
+    
+    url +=_T("?fc=module&module=occharts&controller=apioesu");
+
+    wxString loginParms;
+    loginParms += _T("taskId=identifySystem");
+    loginParms += _T("&username=") + g_loginUser;
+    loginParms += _T("&key=") + g_loginKey;
+    loginParms += _T("&xfpr=") + stringFPR;
+    loginParms += _T("&xfprName=") + fprName;
+    if(g_debugShop.Len())
+        loginParms += _T("&debug=") + g_debugShop;
+    loginParms += _T("&version=") + g_systemOS + g_versionString;
+    
+    int iResponseCode =0;
+    TiXmlDocument *doc = 0;
+    size_t res = 0;
+
+#ifdef __OCPN_USE_CURL__    
+    wxCurlHTTPNoZIP post;
+    post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
+    res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
+    
+    // get the response code of the server
+    post.GetInfo(CURLINFO_RESPONSE_CODE, &iResponseCode);
+    if(iResponseCode == 200){
+        doc = new TiXmlDocument();
+        doc->Parse( post.GetResponseBody().c_str());
+    }
+
+#else
+
+    qDebug() << url.mb_str();
+    qDebug() << loginParms.mb_str();
+    
+    wxString postresult;
+    _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, 5 );
+
+    qDebug() << "doLogin Post Stat: " << stat;
+    
+    if(stat != OCPN_DL_FAILED){
+        wxCharBuffer buf = postresult.ToUTF8();
+        std::string response(buf.data());
+        
+        qDebug() << response.c_str();
+        doc = new TiXmlDocument();
+        doc->Parse( response.c_str());
+        iResponseCode = 200;
+        res = 1;
+    }
+
+#endif
+    
+    if(iResponseCode == 200){
+//        const char *rr = doc->Parse( post.GetResponseBody().c_str());
+//         wxString p = wxString(post.GetResponseBody().c_str(), wxConvUTF8);
+//         wxLogMessage(_T("doLogin results:"));
+//         wxLogMessage(p);
+        
+        wxString queryResult;
+        wxString tsystemName;
+        
+        if( res )
+        {
+            TiXmlElement * root = doc->RootElement();
+            if(!root){
+                wxString r = _T("50");
+                checkResult(r);                              // undetermined error??
+                return false;
+            }
+            
+            wxString rootName = wxString::FromUTF8( root->Value() );
+            TiXmlNode *child;
+            for ( child = root->FirstChild(); child != 0; child = child->NextSibling()){
+                wxString s = wxString::FromUTF8(child->Value());
+                
+                if(!strcmp(child->Value(), "result")){
+                    TiXmlNode *childResult = child->FirstChild();
+                    queryResult =  wxString::FromUTF8(childResult->Value());
+                }
+                else if(!strcmp(child->Value(), "systemName")){
+                    TiXmlNode *childResult = child->FirstChild();
+                    tsystemName =  wxString::FromUTF8(childResult->Value());
+                }
+            }
+        }
+        
+        if(queryResult == _T("1")){
+            g_systemName = tsystemName;
+        }
+        else{
+            checkResult(queryResult, true);
+        }
+        
+        long dresult;
+        if(queryResult.ToLong(&dresult)){
+            return dresult;
+        }
+        else{
+            return 53;
+        }
+    }
+    else
+        return checkResponseCode(iResponseCode);
+    
+
 }
 
 bool shopPanel::GetNewSystemName()
