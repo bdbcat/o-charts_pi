@@ -165,7 +165,7 @@ wxString GetServerVersionString()
     return ver;
 }
 
-wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock)
+wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extra_info)
 {
 #ifndef __OCPN__ANDROID__    
             
@@ -186,6 +186,13 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock)
                 fpr_dir += wxFileName::GetPathSeparator();
             
             wxString cmd = g_sencutil_bin;
+            if(extra_info.Length()){
+                cmd += " -y ";
+                cmd += "\'";
+                cmd += extra_info;
+                cmd += "\'";
+            }
+            
             if(bSGLock)
                 cmd += _T(" -k ");                  // Make SGLock fingerprint
             else

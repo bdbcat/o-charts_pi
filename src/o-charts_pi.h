@@ -233,6 +233,7 @@ public:
     wxButton *m_buttonShowFPR;
     wxButton *m_buttonClearSystemName;
     wxButton *m_buttonClearCreds;
+    wxButton *m_buttonSendStatus;
     wxStaticText *m_fpr_text;
     wxStaticText *m_nameTextBox;
     wxButton *m_buttonShowEULA;
@@ -260,6 +261,7 @@ public:
     void OnClearSystemName( wxCommandEvent &event );
     void OnShowEULA( wxCommandEvent &event );
     void OnClearCredentials( wxCommandEvent &event );
+    void OnSendStatus( wxCommandEvent &event );
     
 private:
     void processArbResult( wxString result );

@@ -60,6 +60,8 @@
 
 wxString ProcessResponse(std::string, bool bsubAmpersand = false);
 int GetEditionInt(std::string edition);
+int ShowOERNCMessageDialog(wxWindow *parent, const wxString& message,  const wxString& caption, long style = wxOK);
+int doLogin( wxWindow *parent );
 
 class shopPanel;
 class InProgressIndicator;

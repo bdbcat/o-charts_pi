@@ -30,7 +30,7 @@
 
 bool IsDongleAvailable();
 unsigned int GetDongleSN();
-extern wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock);
+extern wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString xtra_info = "");
 extern wxString GetServerVersionString();
 wxString callActivityMethod_vs(const char *method);
 

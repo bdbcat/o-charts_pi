@@ -3614,6 +3614,13 @@ oesencPrefsDialog::oesencPrefsDialog( wxWindow* parent, wxWindowID id, const wxS
         
         m_buttonClearCreds->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(o_charts_pi_event_handler::OnClearCredentials), NULL, g_event_handler );
         
+
+        m_buttonSendStatus = new wxButton( content, wxID_ANY, _("Transmit o-charts plugin status"), wxDefaultPosition, wxDefaultSize, 0 );
+        
+        bSizer2->AddSpacer( 10 );
+        bSizer2->Add( m_buttonSendStatus, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
+        
+        m_buttonSendStatus->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(o_charts_pi_event_handler::OnSendStatus), NULL, g_event_handler );
         
         m_sdbSizer1 = new wxStdDialogButtonSizer();
         m_sdbSizer1OK = new wxButton( content, wxID_OK );
@@ -4126,6 +4133,78 @@ void o_charts_pi_event_handler::OnClearCredentials( wxCommandEvent &event )
     saveShopConfig();
     
     OCPNMessageBox_PlugIn(NULL, _("Credential Reset Successful"), _("o_charts_pi Message"), wxOK);
+}
+
+void o_charts_pi_event_handler::OnSendStatus( wxCommandEvent &event )
+{
+/*
+    wxString msg = _("Message goes here.....");
+    msg += _("\n  Proceed?");
+    int ret = ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxYES_NO);
+    
+    if(ret != wxID_YES){
+        return;
+    }
+    
+    // Execute a normal login, to validate the user creds
+    int lognRet = doLogin( NULL );
+    if( lognRet != 1 )
+        return;
+*/    
+    // Prepare the extra info for the composite xfpr
+    
+    wxString xinfo;
+    
+    // Dongle info
+    wxString dongleName = "0";
+    bool hasDongle = IsDongleAvailable();
+    if( hasDongle ){
+        unsigned int dongle_sn = GetDongleSN();
+        char sName[20];
+        snprintf(sName, 19, "sgl%08X", dongle_sn);
+
+        dongleName = wxString(sName);
+    }
+    xinfo += "<DONGLENAME  DN1=\"" + dongleName + "\"/>\n";
+//    <UUID  I1="cea5ba14-da8b-4db7-aa95-183012b8d855"/>
+    
+    
+    
+    // systemName
+    wxString sname = g_systemName;
+    if(sname.IsEmpty())
+        sname ="EMPTY";
+    xinfo += "<SYSTEMNAME  SN1=\"" + sname + "\"/>\n";
+    
+
+    // Get the composite xfpr
+    bool b_copyOK = false;
+    bool bDongle = hasDongle;
+    
+    wxString fpr_file = getFPR( false, b_copyOK, bDongle, xinfo);              // No copy needed
+    
+    fpr_file = fpr_file.Trim(false);            // Trim leading spaces...
+    
+    if(fpr_file.Len()){
+        
+        wxString stringFPR;
+        
+        //Read the file, convert to ASCII hex, and build a string
+        if(::wxFileExists(fpr_file)){
+            wxString stringFPR;
+            wxFileInputStream stream(fpr_file);
+            while(stream.IsOk() && !stream.Eof() ){
+                unsigned char c = stream.GetC();
+                if(!stream.Eof()){
+                    wxString sc;
+                    sc.Printf(_T("%02X"), c);
+                    stringFPR += sc;
+                }
+            }
+        }
+    }
+
+
 }
 
 void o_charts_pi_event_handler::OnNewDFPRClick( wxCommandEvent &event )

@@ -287,7 +287,7 @@ void OERNCMessageDialog::OnClose( wxCloseEvent& event )
 }
 
 
-int ShowOERNCMessageDialog(wxWindow *parent, const wxString& message,  const wxString& caption, long style = wxOK)
+int ShowOERNCMessageDialog(wxWindow *parent, const wxString& message,  const wxString& caption, long style)
 {
 #ifdef __OCPN__ANDROID__
     OERNCMessageDialog dlg( parent, message, caption, style);
@@ -2149,12 +2149,12 @@ int checkResponseCode(int iResponseCode)
         
 }
 
-int doLogin()
+int doLogin( wxWindow *parent )
 {
-    oeUniLogin login(g_shopPanel);
+    oeUniLogin login(parent);
     login.ShowModal();
     if(!(login.GetReturnCode() == 0)){
-        g_shopPanel->setStatusText( _("Invalid Login."));
+        //g_shopPanel->setStatusText( _("Invalid Login."));
         wxYield();
         return 55;
     }
@@ -3193,7 +3193,7 @@ int doShop(){
 
     //  Do we need an initial login to get the persistent key?
     if(g_loginKey.Len() == 0){
-        doLogin();
+        doLogin( g_shopPanel );
         saveShopConfig();
     }
     
@@ -3999,7 +3999,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     
     //  Do we need an initial login to get the persistent key?
     if(g_loginKey.Len() == 0){
-        if(doLogin() != 1)
+        if(doLogin( g_shopPanel ) != 1)
             return;
         saveShopConfig();
     }
@@ -4018,7 +4018,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
         setStatusText( _("Status: Login error."));
         g_ipGauge->Stop();
         wxYield();
-        if(doLogin() != 1)      // if the second login attempt fails, return to GUI
+        if(doLogin(g_shopPanel) != 1)      // if the second login attempt fails, return to GUI
             return;
         saveShopConfig();
         
