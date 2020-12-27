@@ -1,12 +1,12 @@
 /******************************************************************************
  * Project:  OpenCPN
- * Purpose:  S63 Plugin Chart
+ * Purpose:  
  * Author:   David Register
  *******************************************************************************/
 
 
-#ifndef _OESENCCH_H_
-#define _OESENCCH_H_
+#ifndef _OEUSENCCH_H_
+#define _OEUSENCCH_H_
 
 #include "wx/wxprec.h"
 #include <wx/wfstream.h>
@@ -128,7 +128,6 @@ public:
 
 class  eSENCChart : public PlugInChartBaseExtended
 {
-      DECLARE_DYNAMIC_CLASS(ChartS63)
 
     public:
       //    Public methods
@@ -386,17 +385,17 @@ protected:
 };
 
 // ----------------------------------------------------------------------------
-// oeSENCChart Definition
+// oeuSENCChart Definition
 // ----------------------------------------------------------------------------
-class  oeSENCChart : public eSENCChart
+class  oeuSENCChart : public eSENCChart
 {
-DECLARE_DYNAMIC_CLASS(oeSENCChart)
+DECLARE_DYNAMIC_CLASS(oeuSENCChart)
 
     public:
       //    Public methods
 
-      oeSENCChart();
-      virtual ~oeSENCChart();
+      oeuSENCChart();
+      virtual ~oeuSENCChart();
       
       wxString GetFileSearchMask(void);
       int Init( const wxString& name, int init_flags );
@@ -407,15 +406,15 @@ DECLARE_DYNAMIC_CLASS(oeSENCChart)
 // ----------------------------------------------------------------------------
 // oeEVCChart Definition
 // ----------------------------------------------------------------------------
-class  oeEVCChart : public eSENCChart
+class  oeuEVCChart : public eSENCChart
 {
-DECLARE_DYNAMIC_CLASS(oeEVCChart)
+DECLARE_DYNAMIC_CLASS(oeuEVCChart)
 
     public:
       //    Public methods
 
-      oeEVCChart();
-      virtual ~oeEVCChart();
+      oeuEVCChart();
+      virtual ~oeuEVCChart();
       
       wxString GetFileSearchMask(void);
       int Init( const wxString& name, int init_flags );

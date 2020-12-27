@@ -2087,7 +2087,7 @@ int checkResult(wxString &result, bool bShowLoginErrorDialog = true)
                         break;
   
                 }
-                OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_pi Message"), wxOK);
+                OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxOK);
 
            }
                 
@@ -2115,13 +2115,13 @@ int checkResult(wxString &result, bool bShowLoginErrorDialog = true)
                 }
                 
                 if(!bSkipErrorDialog)
-                    OCPNMessageBox_PlugIn(NULL, msg, _("oeRNC_pi Message"), wxOK);
+                    OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxOK);
             }
             return dresult;
         }
     }
     else{
-        OCPNMessageBox_PlugIn(NULL, _("o-Charts shop interface error") + _T("\n") + result + _T("\n") + _("Operation cancelled"), _("oeRNC_pi Message"), wxOK);
+        OCPNMessageBox_PlugIn(NULL, _("o-Charts shop interface error") + _T("\n") + result + _T("\n") + _("Operation cancelled"), _("o-charts_pi Message"), wxOK);
     }
      
     return 98;
@@ -2297,7 +2297,7 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
 
         const char *rr = doc->Parse( body.c_str());
     
-        //doc->Print();
+        doc->Print();
         
         itemChart *pChart = NULL;
 
@@ -2512,6 +2512,15 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
                                     pChart->bExpired =false;
                             }
                         }
+                        else if(!strcmp(chartVal, "chartType")){
+                            TiXmlNode *childVal = childChart->FirstChild();
+                            if(childVal){
+                                if(!strcmp(childVal->Value(), "oeSENC"))
+                                    pChart->chartType = (int)CHART_TYPE_OESENC;
+                                else
+                                    pChart->chartType = (int)CHART_TYPE_OERNC;
+                            }
+                        }
                         else if(!strcmp(chartVal, "maxSlots")){
                             TiXmlNode *childVal = childChart->FirstChild();
                             if(childVal){
@@ -2644,7 +2653,7 @@ int getChartList( bool bShowErrorDialogs = true){
     std::string c = post.GetResponseBody();
     
     responseBody = post.GetResponseBody();
-    //printf("%s", post.GetResponseBody().c_str());
+    printf("%s", post.GetResponseBody().c_str());
     
     //wxString tt(post.GetResponseBody().data(), wxConvUTF8);
     //wxLogMessage(tt);
@@ -2704,7 +2713,7 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
     msg += _T("\n\n");
     msg += _("Proceed?");
     
-    int ret = ShowOERNCMessageDialog(NULL, msg, _("oeRNC_PI Message"), wxYES_NO);
+    int ret = ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxYES_NO);
     
     if(ret != wxID_YES){
         return 1;
@@ -2897,7 +2906,7 @@ int doUploadXFPR(bool bDongle)
         wxString msg = _("ERROR Creating Fingerprint file") + _T("\n");
         msg += _("Check OpenCPN log file.") + _T("\n"); 
         msg += err;
-        OERNCMessageDialog(NULL, msg, _("oeRNC_pi Message"), wxOK);
+        OERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
         return 1;
     }
         
@@ -2939,8 +2948,8 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
     loginParms += _T("&assignedSystemName=") + wxString(slot->assignedSystemName.c_str());
     loginParms += _T("&slotUuid=") + wxString(slot->slotUuid.c_str());
     loginParms += _T("&requestedFile=") + chart->taskRequestedFile;
-    loginParms += _T("&requestedEdition=") + chart->taskRequestedEdition;
-    loginParms += _T("&currentEdition=") + chart->taskCurrentEdition;
+    loginParms += _T("&requestedVersion=") + chart->taskRequestedEdition;
+    loginParms += _T("&currentVersion=") + chart->taskCurrentEdition;
     loginParms += _T("&version=") + g_systemOS + g_versionString;
     
     wxLogMessage(loginParms);
@@ -2997,6 +3006,10 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
 {
     //  Create the download queue for all files necessary.
 
+    wxString Prefix = _T("oeRNC");
+    if(targetChart->GetChartType() == CHART_TYPE_OESENC)
+        Prefix = _T("oeSENC");
+    
     targetSlot->dlQueue.clear();
     
     for(unsigned int i=0 ; i < targetSlot->taskFileList.size() ; i++){
@@ -3006,7 +3019,7 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
         wxString downloadURL = wxString(targetSlot->taskFileList[i]->linkKeys.c_str());
         
         //  /oeRNC-IMR-CRBeast-1-0-base-hp64linux.XML
-        wxString fileTarget = _T("oeRNC-") + wxString(targetChart->chartID.c_str()) + _T("-") + wxString(targetChart->serverChartEdition.c_str());
+        wxString fileTarget = Prefix +_T("-") + wxString(targetChart->chartID.c_str()) + _T("-") + wxString(targetChart->serverChartEdition.c_str());
         fileTarget += _T("-base-");
         if(g_dongleName.Length())
             fileTarget +=  g_dongleName + _T(".XML");
@@ -3025,7 +3038,7 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
         downloadURL = wxString(targetSlot->taskFileList[i]->link.c_str());
 
         //  /oeRNC-IMR-GR-2-0-base.zip
-        fileTarget = _T("oeRNC-") + wxString(targetChart->chartID.c_str()) + _T("-") + wxString(targetChart->serverChartEdition.c_str());
+        fileTarget = Prefix + _T("-") + wxString(targetChart->chartID.c_str()) + _T("-") + wxString(targetChart->serverChartEdition.c_str());
         fileTarget += _T("-base.zip");
 
         task2.url = downloadURL;
@@ -3127,7 +3140,7 @@ bool ExtractZipFiles( const wxString& aZipFile, const wxString& aTargetDir, bool
                 wxFileName fn(name);
                 if( !fn.DirExists() )
                 {
-                    if( !wxFileName::Mkdir(fn.GetPath()) )
+                    if( !wxFileName::Mkdir(fn.GetPath(), 0755, wxPATH_MKDIR_FULL) )
                     {
                         wxLogError(_T("Can not create directory '") + fn.GetPath() + _T("'."));
                         ret = false;
@@ -4270,13 +4283,13 @@ bool shopPanel::GetNewSystemName()
             
             if(!g_systemName.Len()){
                 wxString msg = _("Invalid System Name");
-                OERNCMessageDialog(NULL, msg, _("oeRNC_pi Message"), wxOK);
+                OERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
                 itry++;
             }
             
             else if(g_systemNameDisabledArray.Index(g_systemName) != wxNOT_FOUND){
                 wxString msg = _("This System Name has been disabled\nPlease choose another SystemName");
-                OERNCMessageDialog(NULL, msg, _("oeRNC_pi Message"), wxOK);
+                OERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
                 itry++;
             }
             else{
@@ -4352,29 +4365,37 @@ int shopPanel::ComputeUpdates(itemChart *chart, itemSlot *slot)
 std::string GetNormalizedChartsetName( std::string rawName)
 {
     //Get the basic chartset names
-    
-    wxFileName fn1(rawName);            // /home/xxx/.opencpn/oernc_pi/DownloadCache/oeRNC-IMR-GR-2-0-base.zip
-    wxString tlDir = fn1.GetName();     // oeRNC-IMR-GR-2-0-base
-    int nl = tlDir.Find( _T("-base"));
-    if(nl == wxNOT_FOUND)
-        nl = tlDir.Find( _T("-update"));
-        
-    if(nl != wxNOT_FOUND){
-        nl--;
-        int ndash_found = 0;
-        while(nl){
-            wxString ttt = tlDir.Mid(0, nl);
-            if(tlDir[nl] == '-'){
-                ndash_found++;
-                if(ndash_found == 2)
-                    break;
-            }
-            nl--;
-        }
-        return  std::string(tlDir.Mid(0, nl).mb_str());   // like "oeRNC-XXXXX"
+    if(rawName.find("SENC") != std::string::npos){
+        wxFileName fn1(rawName);            // /home/dsr/.opencpn/o_charts_pi/DownloadCache/oeSENC-PL-2020/44-2-base.zip
+        wxFileName fn2(fn1.GetPath());
+        wxString rv = fn2.GetName();
+        std::string rvs(rv.mb_str());
+        return rvs;                         // oeSENC-PL-2020
     }
-    else
-        return std::string();
+    else{
+        wxFileName fn1(rawName);            // /home/xxx/.opencpn/oernc_pi/DownloadCache/oeRNC-IMR-GR-2-0-base.zip
+        wxString tlDir = fn1.GetName();     // oeRNC-IMR-GR-2-0-base
+        int nl = tlDir.Find( _T("-base"));
+        if(nl == wxNOT_FOUND)
+            nl = tlDir.Find( _T("-update"));
+            
+        if(nl != wxNOT_FOUND){
+            nl--;
+            int ndash_found = 0;
+            while(nl){
+                wxString ttt = tlDir.Mid(0, nl);
+                if(tlDir[nl] == '-'){
+                    ndash_found++;
+                    if(ndash_found == 2)
+                        break;
+                }
+                nl--;
+            }
+            return  std::string(tlDir.Mid(0, nl).mb_str());   // like "oeRNC-XXXXX"
+        }
+        else
+            return std::string();
+    }
 }
  
 
@@ -4525,13 +4546,13 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
 
         // Check the SHA256 of both files in the task
         if(!validateSHA256(task->cacheLinkLocn, task->sha256)){
-            wxLogError(_T("oernc_pi: Sha256 error on: ") + task->cacheLinkLocn );
-            OERNCMessageDialog(NULL, _("Validation error on zip file"), _("oeRNC_pi Message"), wxOK);
+            wxLogError(_T("o-charts_pi: Sha256 error on: ") + task->cacheLinkLocn );
+            OERNCMessageDialog(NULL, _("Validation error on zip file"), _("o-charts_pi Message"), wxOK);
             return 8;
         }
         if(!validateSHA256(task->cacheKeysLocn, task->sha256Keys)){
-            wxLogError(_T("oernc_pi: Sha256 error on: ") + task->cacheKeysLocn );
-            OERNCMessageDialog(NULL, _("Validation error on key file"), _("oeRNC_pi Message"), wxOK);
+            wxLogError(_T("o-charts_pi: Sha256 error on: ") + task->cacheKeysLocn );
+            OERNCMessageDialog(NULL, _("Validation error on key file"), _("o-charts_pi Message"), wxOK);
             return 9;
         }
 
@@ -4596,7 +4617,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         // Check and make this (parent) directory if necessary
         wxFileName fnp(tmp_dir);
         if( !fnp.DirExists() ){
-            if( !wxFileName::Mkdir(fnp.GetPath()) ){
+            if( !wxFileName::Mkdir(fnp.GetPath(), 0755, wxPATH_MKDIR_FULL) ){
                 wxLogError(_T("Can not create tmp parent directory on TASK_UPDATE '") + fnp.GetPath() + _T("'."));
                 return 10;
             }
@@ -4612,7 +4633,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         
         wxFileName fn(tmp_dir);
         if( !fn.DirExists() ){
-            if( !wxFileName::Mkdir(fn.GetPath()) ){
+            if( !wxFileName::Mkdir(fn.GetPath(), 0755, wxPATH_MKDIR_FULL) ){
                 wxLogError(_T("Can not create tmp directory on TASK_UPDATE '") + fn.GetPath() + _T("'."));
                 return 10;
             }
@@ -4740,7 +4761,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         for(unsigned int i = 0 ; i < actionWithdrawn.size() ; i++){
             // Delete the oernc file
             wxFileName fn(actionWithdrawn[i].c_str());
-            std::string chartFileToDelete = slot->installLocation +  ps + task->chartsetNameNormalized + ps + std::string(fn.GetName().c_str()) + ".oernc";
+            std::string chartFileToDelete = slot->installLocation +  ps + task->chartsetNameNormalized + ps + std::string(fn.GetName().c_str()) + ".oesu";
             if(::wxFileExists(wxString(chartFileToDelete.c_str()))){
                 ::wxRemoveFile(wxString(chartFileToDelete.c_str()));
             }
@@ -4755,16 +4776,24 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         
         wxDir unzipDir(tmp_dir);
         wxString chartTopLevelZip;
-        if(!unzipDir.GetFirst( &chartTopLevelZip, _T("oeRNC*"), wxDIR_DIRS)){
-            wxLogError(_T("Can not find oeRNC directory in zip file ") + task->cacheLinkLocn);
-            return 11;
+        if(chart->GetChartType() == (int)CHART_TYPE_OERNC){
+            if(!unzipDir.GetFirst( &chartTopLevelZip, _T("oeRNC*"), wxDIR_DIRS)){
+                wxLogError(_T("Can not find oeRNC directory in zip file ") + task->cacheLinkLocn);
+                return 11;
+            }
+        }
+        else{
+            if(!unzipDir.GetFirst( &chartTopLevelZip, _T("*oeSENC*"), wxDIR_DIRS)){
+                wxLogError(_T("Can not find oeSENC directory in zip file ") + task->cacheLinkLocn);
+                return 11;
+            }
         }
  
  
         wxString destinationDir = wxString(slot->installLocation.c_str()) + wxFileName::GetPathSeparator() + task->chartsetNameNormalized + wxFileName::GetPathSeparator();
         wxFileName fndd(destinationDir);
         if( !fndd.DirExists() ){
-            if( !wxFileName::Mkdir(fndd.GetPath()) ){
+            if( !wxFileName::Mkdir(fndd.GetPath(), 0755, wxPATH_MKDIR_FULL) ){
                 wxLogError(_T("Can not create chart target directory on TASK_UPDATE '") + fndd.GetPath() );
                 return 12;
             }
@@ -4773,11 +4802,11 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         // Process added/modified charts
         for(unsigned int i = 0 ; i < actionAddUpdate.size() ; i++){
             
-            wxString fileTarget = wxString( (actionAddUpdate[i]->ID).c_str()) + _T(".oernc");
+            wxString fileTarget = wxString( (actionAddUpdate[i]->ID).c_str()) + _T(".oesu");
             // Copy the oernc chart from the temp unzip location to the target location
             wxString source = tmp_dir + wxFileName::GetPathSeparator() + chartTopLevelZip + wxFileName::GetPathSeparator() + fileTarget;
             if(!wxFileExists(source)){
-                wxLogError(_T("Can not find .oernc file referenced in ChartList: ") + source);
+                wxLogError(_T("Can not find file referenced in ChartList: ") + source);
                 continue;
             }
             
@@ -4797,7 +4826,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
 #endif
 
             if(!bret){
-                wxLogError(_T("Can not copy .oernc file referenced in ChartList...Source: ") + source + _T("   Destination: ") + destination);
+                wxLogError(_T("Can not copy file referenced in ChartList...Source: ") + source + _T("   Destination: ") + destination);
             }
             
             // Revocer the temporary space used.
@@ -4973,7 +5002,7 @@ void shopPanel::ValidateChartset( wxCommandEvent& event )
         
     }
     else{
-        OERNCMessageDialog(NULL, _("No chartset selected."), _("oeRNC_PI Message"), wxOK);
+        OERNCMessageDialog(NULL, _("No chartset selected."), _("o-charts_pi Message"), wxOK);
     }
 
 
@@ -4986,7 +5015,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
 
     if(m_bAbortingDownload){
         m_bAbortingDownload = false;
-        OERNCMessageDialog(NULL, _("Chart download cancelled."), _("oeRNC_PI Message"), wxOK);
+        OERNCMessageDialog(NULL, _("Chart download cancelled."), _("o-charts_pi Message"), wxOK);
         UpdateActionControls();
         return;
     }
@@ -5013,8 +5042,9 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
         // Prepare to start the next download
         //Make the temp download directory if needed
         wxFileName fn(gtargetSlot->dlQueue[gtargetSlot->idlQueue].localFile);
+        wxString dir = fn.GetPath();
         if( !wxFileName::DirExists(fn.GetPath()) ){
-            if( !wxFileName::Mkdir(fn.GetPath()) ){
+            if( !wxFileName::Mkdir(fn.GetPath(), 0755, wxPATH_MKDIR_FULL) ){
                 wxLogError(_T("Can not create directory '") + fn.GetPath() + _T("'."));
                 return;
             }
@@ -5125,7 +5155,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
 
                     g_statusOverride.Clear();
                     setStatusText( _("Status: Ready"));
-                    OERNCMessageDialog(NULL, _("Chart installation ERROR."), _("oeRNC_PI Message"), wxOK);
+                    OERNCMessageDialog(NULL, _("Chart installation ERROR."), _("o-charts_pi Message"), wxOK);
                     UpdateChartList();
                     UpdateActionControls();
                     return;
@@ -5171,7 +5201,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
         g_statusOverride.Clear();
         setStatusText( _("Status: Ready"));
                 
-        OERNCMessageDialog(NULL, _("Chart installation complete."), _("oeRNC_PI Message"), wxOK);
+        OERNCMessageDialog(NULL, _("Chart installation complete."), _("o-charts_pi Message"), wxOK);
 
         // Show any EULA here
         wxArrayString fileArrayEULA;

@@ -1339,8 +1339,13 @@ bool o_charts_pi::LoadConfig( void )
         g_chart_zoom_modifier_vector = wxMax(g_chart_zoom_modifier_vector,-5);
         
 
-        pConf->SetPath( _T("/PlugIns/ocharts/oesenc") );
+        pConf->SetPath( _T("/PlugIns/ocharts") );
+        pConf->Read( _T("loginUser"), &g_loginUser);
+        pConf->Read( _T("loginKey"), &g_loginKey);
+        pConf->Read( _T("ADMIN"), &g_admin);
+        pConf->Read( _T("DEBUG_SHOP"), &g_debugShop);
 
+        pConf->SetPath( _T("/PlugIns/ocharts/oesenc") );
         pConf->Read( _T("LastFPRFile"), &g_fpr_file);
         pConf->Read( _T("DEBUG_SERVER"), &g_serverDebug);
         pConf->Read( _T("DEBUG_LEVEL"), &g_debugLevel);
@@ -1351,10 +1356,6 @@ bool o_charts_pi::LoadConfig( void )
         if(snTest.Length() && g_systemName.IsEmpty())
             g_systemName = snTest;
         
-        pConf->Read( _T("loginUser"), &g_loginUser);
-        pConf->Read( _T("loginKey"), &g_loginKey);
-        pConf->Read( _T("ADMIN"), &g_admin);
-        pConf->Read( _T("DEBUG_SHOP"), &g_debugShop);
         
         if( !wxFileExists(g_fpr_file) )
             g_fpr_file = wxEmptyString;
@@ -2083,7 +2084,7 @@ void S63ScreenLog::OnSocketEvent(wxSocketEvent& event)
 }
 
 
-
+#if 0
 /*!
  * SENCGetUserKeyDialog type definition
  */
@@ -2286,6 +2287,7 @@ Your oeSENC UserKey may be obtained from your chart provider.\n\n"),
          EndModal(0);
      }
  }
+#endif
 
  wxString GetUserKey( int legendID, bool bforceNew)
  {
@@ -2293,8 +2295,12 @@ Your oeSENC UserKey may be obtained from your chart provider.\n\n"),
          return g_UserKey;
      else
      {
+         return _T("Invalid");
+     }
+#if 0     
+
          g_old_UserKey = g_UserKey;
-         SENCGetUserKeyDialog dlg( legendID, GetOCPNCanvasWindow());
+         //SENCGetUserKeyDialog dlg( legendID, GetOCPNCanvasWindow());
          
          wxSize dialogSize(500, -1);
          
@@ -2317,6 +2323,7 @@ Your oeSENC UserKey may be obtained from your chart provider.\n\n"),
          else
              return _T("Invalid");
      }
+#endif     
  }
  
 void ShowGenericErrorMessage(wxString s_file)

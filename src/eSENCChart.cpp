@@ -529,25 +529,25 @@ render_canvas_parms::~render_canvas_parms( void )
 }
 
 // ----------------------------------------------------------------------------
-// oeSENCChart Implementation
+// oeuSENCChart Implementation
 // ----------------------------------------------------------------------------
-IMPLEMENT_DYNAMIC_CLASS(oeSENCChart, eSENCChart)
+IMPLEMENT_DYNAMIC_CLASS(oeuSENCChart, eSENCChart)
 
 
-oeSENCChart::oeSENCChart() : eSENCChart()
+oeuSENCChart::oeuSENCChart() : eSENCChart()
 {
 }
 
-oeSENCChart::~oeSENCChart()
+oeuSENCChart::~oeuSENCChart()
 {
 }
 
-wxString oeSENCChart::GetFileSearchMask(void)
+wxString oeuSENCChart::GetFileSearchMask(void)
 {
       return _T("*.oesenc");
 }
 
-int oeSENCChart::Init( const wxString& name, int init_flags )
+int oeuSENCChart::Init( const wxString& name, int init_flags )
 {
     std::string sname = wx2std(name);
     if(chartFailCount.find(sname) == chartFailCount.end()){
@@ -621,24 +621,24 @@ int oeSENCChart::Init( const wxString& name, int init_flags )
 // ----------------------------------------------------------------------------
 // oeEVCChart Implementation
 // ----------------------------------------------------------------------------
-IMPLEMENT_DYNAMIC_CLASS(oeEVCChart, eSENCChart)
+IMPLEMENT_DYNAMIC_CLASS(oeuEVCChart, eSENCChart)
 
 
-oeEVCChart::oeEVCChart() : eSENCChart()
+oeuEVCChart::oeuEVCChart() : eSENCChart()
 {
 }
 
-oeEVCChart::~oeEVCChart()
+oeuEVCChart::~oeuEVCChart()
 {
 }
 
-wxString oeEVCChart::GetFileSearchMask(void)
+wxString oeuEVCChart::GetFileSearchMask(void)
 {
       return _T("*.oeevc");
 }
 
 
-int oeEVCChart::Init( const wxString& name, int init_flags )
+int oeuEVCChart::Init( const wxString& name, int init_flags )
 {
     std::string sname = wx2std(name);
     if(chartFailCount.find(sname) == chartFailCount.end()){
@@ -769,6 +769,7 @@ int oesuChart::Init( const wxString& name, int init_flags )
             msg.Append(m_FullPath);
             wxLogMessage(msg);
           
+            s_PI_bInS57--;
             return INIT_FAIL_REMOVE;
           }
           SwapKeyHashes();          // interchanges hashes, so next time will be faster
@@ -941,7 +942,7 @@ PI_InitReturn oesuChart::PostInit( int flags, int cs )
 // ----------------------------------------------------------------------------
 // eSENCChart Implementation
 // ----------------------------------------------------------------------------
-IMPLEMENT_DYNAMIC_CLASS(eSENCChart, PlugInChartBase)
+//IMPLEMENT_DYNAMIC_CLASS(eSENCChart, PlugInChartBase)
 
 
 eSENCChart::eSENCChart()

@@ -314,12 +314,20 @@ private:
 };
 
 
+#define LEGEND_NONE             0
+#define LEGEND_FIRST            1
+#define LEGEND_SECOND           2
+#define LEGEND_THIRD            3
+#define LEGEND_FOURTH           4
+
+
 
 
 /*!
  * Control identifiers
  */
 
+#if 0
 ////@begin control identifiers
 #define ID_GETIP 8200
 #define SYMBOL_GETIP_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
@@ -331,12 +339,6 @@ private:
 #define ID_GETIP_OK 8202
 #define ID_GETIP_IP 8203
 #define ID_GETIP_TEST 8204
-
-#define LEGEND_NONE             0
-#define LEGEND_FIRST            1
-#define LEGEND_SECOND           2
-#define LEGEND_THIRD            3
-#define LEGEND_FOURTH           4
 
 
 ////@end control identifiers
@@ -382,7 +384,7 @@ public:
     
 };
 
-
+#endif
 
 class InfoWin: public wxWindow
 {

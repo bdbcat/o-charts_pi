@@ -90,6 +90,11 @@ enum{
         TASK_UPDATE
 };
 
+enum{
+        CHART_TYPE_OESENC = 0,
+        CHART_TYPE_OERNC
+};
+
 class itemChartDataKeys
 {
 public:
@@ -257,7 +262,7 @@ public:
     wxBitmap& GetChartThumbnail(int size, bool bDL_If_Needed = false);
     wxString getKeytypeString( std::string slotUUID );
     int GetServerEditionInt();
-
+    int GetChartType(){ return chartType; }
     
     std::string orderRef;
     std::string purchaseDate;
@@ -268,6 +273,7 @@ public:
     std::string editionDate;
     std::string thumbLink;
     std::string overrideChartEdition;
+    int chartType;
     
     unsigned int maxSlots;
     bool bExpired;
