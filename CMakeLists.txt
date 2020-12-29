@@ -375,7 +375,7 @@ SET(SRC_OSHOP
         )
 
 if( QT_ANDROID)
-SET(SRC_OCHARTS ${SRC_OCHARTS} androidSupport.cpp)
+SET(SRC_OCHARTS ${SRC_OCHARTS} src/androidSupport.cpp)
 endif( QT_ANDROID)
 
 if( QT_ANDROID)
