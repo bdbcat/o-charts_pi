@@ -44,7 +44,7 @@
 #include "ocpn_plugin.h"
 
 #ifdef __OCPN__ANDROID__
-//#include "androidSupport.h"
+#include "androidSupport.h"
 #endif
 
 extern wxString g_sencutil_bin;
@@ -420,7 +420,7 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
         size_t nf = wxDir::GetAllFiles(dataDir, &files, _T("*.fpr"), wxDIR_FILES);
         if(nf){
             for(size_t i = 0 ; i < files.GetCount() ; i++){
-                qDebug() << "looking at FPR file: " << files[i].mb_str();
+                //qDebug() << "looking at FPR file: " << files[i].mb_str();
                 time_t t = ::wxFileModificationTime(files[i]);
                 if(t > tmax){
                     tmax = t;
@@ -429,7 +429,7 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
             }
         }
 
-        qDebug() << "Selected FPR file: " << lastFile.mb_str();
+        //qDebug() << "Selected FPR file: " << lastFile.mb_str();
 
         if(::wxFileExists(lastFile))
             return lastFile;

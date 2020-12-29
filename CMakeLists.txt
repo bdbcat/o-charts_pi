@@ -375,6 +375,10 @@ SET(SRC_OSHOP
         )
 
 if( QT_ANDROID)
+SET(SRC_OCHARTS ${SRC_OCHARTS} androidSupport.cpp)
+endif( QT_ANDROID)
+
+if( QT_ANDROID)
     set(OCPN_USE_CURL OFF)
 else()
     OPTION(OCPN_USE_CURL "Use Curl libraries" ON)
