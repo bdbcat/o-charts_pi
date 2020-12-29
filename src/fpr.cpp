@@ -44,7 +44,7 @@
 #include "ocpn_plugin.h"
 
 #ifdef __OCPN__ANDROID__
-#include "androidSupport.h"
+//#include "androidSupport.h"
 #endif
 
 extern wxString g_sencutil_bin;

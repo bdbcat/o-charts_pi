@@ -61,7 +61,7 @@ WX_DEFINE_OBJARRAY(ArrayOfChartPanels);
 
 #ifdef __OCPN__ANDROID__
 #include "qdebug.h"
-#include "androidSupport.h"
+//#include "androidSupport.h"
 #endif
 
 //  Static variables
