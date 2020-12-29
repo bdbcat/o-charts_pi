@@ -504,7 +504,7 @@ ELSE (ARCH MATCHES "amd64" OR ARCH MATCHES "x86_64")
     IF (ARCH MATCHES "arm*" )
 
         IF (ARCH MATCHES "armhf" )
-            INSTALL(FILES "buildlinuxarm/oexserverd/oeserverd"
+            INSTALL(FILES "buildlinuxarm/oeserverd/oexserverd"
                 PERMISSIONS OWNER_READ OWNER_EXECUTE OWNER_WRITE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                 DESTINATION ${PREFIX_PARENTBIN})
             INSTALL(FILES "buildlinuxarm/oeserverd/libsglarmhf32-2.30.0.0.so"
