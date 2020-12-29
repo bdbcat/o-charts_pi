@@ -601,7 +601,6 @@ configure_file(${PROJECT_SOURCE_DIR}/src/rrc_eula_ChartSetsForOpenCPN.txt
 
 ENDIF(APPLE)
 
-
 IF(NOT WIN32)
 SET(CPACK_SET_DESTDIR ON)
 ENDIF(NOT WIN32)
