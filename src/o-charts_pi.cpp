@@ -103,6 +103,7 @@ wxString callActivityMethod_s6s(const char *method, wxString parm1, wxString par
 wxString callActivityMethod_s2s(const char *method, wxString parm1, wxString parm2);
 void androidShowBusyIcon();
 void androidHideBusyIcon();
+void androidGetDeviceName()
 #endif
 
 bool testSENCServer();
@@ -3173,7 +3174,7 @@ bool shutdown_SENC_server( void )
     }
 }
 
-#ifdef __OCPN__ANDROID__
+#ifdef XXX__OCPN__ANDROID__
 bool CheckPendingJNIException()
 {
     JNIEnv* jenv;
@@ -3670,27 +3671,6 @@ void oesencPrefsDialog::OnPrefsOkClick(wxCommandEvent& event)
  
 }
 
-#ifdef __OCPN__ANDROID__
-void androidGetDeviceName()
-{
-    if(!g_deviceInfo.Length())
-        g_deviceInfo = callActivityMethod_vs("getDeviceInfo");
-    
-    wxStringTokenizer tkz(g_deviceInfo, _T("\n"));
-    while( tkz.HasMoreTokens() )
-    {
-        wxString s1 = tkz.GetNextToken();
-        if(wxNOT_FOUND != s1.Find(_T("Device"))){
-            int a = s1.Find(_T(":"));
-            if(wxNOT_FOUND != a){
-                wxString b = s1.Mid(a+1).Trim(true).Trim(false);
-                g_systemName = b;
-            }
-        }
-    }
-    
-}
-#endif
 
 #if 0
 bool IsDongleAvailable()
