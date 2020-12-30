@@ -1,4 +1,4 @@
-PLUGIN = org.opencpn.OpenCPN.Plugin.oesenc
+PLUGIN = org.opencpn.OpenCPN.Plugin.o-charts
 
 all: build
 

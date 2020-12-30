@@ -1,4 +1,4 @@
-id: org.opencpn.OpenCPN.Plugin.oesenc
+id: org.opencpn.OpenCPN.Plugin.o-charts
 runtime: org.opencpn.OpenCPN
 runtime-version: master
 sdk: org.freedesktop.Sdk//18.08
@@ -6,21 +6,21 @@ build-extension: true
 separate-locales: false
 appstream-compose: false
 modules:
-    - name: oesenc
+    - name: o-charts
       no-autogen: true
       cmake: true
       build-options:
           cflags: -fPIC
           cxxflags: -fPIC -DFLATPAK
       config-opts:
-          - -DPREFIX:PATH=/app/extensions/oesenc
+          - -DPREFIX:PATH=/app/extensions/o-charts
       post-install:
           - >
-            mv /app/extensions/oesenc/bin/oeserverd
-            /app/extensions/oesenc/bin/oeserverd.prog
-          - install -t /app/extensions/oesenc/bin/ -m 755 oeserverd
+            mv /app/extensions/o-charts/bin/oexserverd
+            /app/extensions/o-charts/bin/oexserverd.prog
+          - install -t /app/extensions/o-charts/bin/ -m 755 oexserverd
           - >
-            install -t /app/extensions/oesenc/lib -m 755
+            install -t /app/extensions/o-charts/lib -m 755
             buildlinux64/oeserverd/libsgllnx64-2.29.02.so
             libusb-0.1.so.4
       sources:
@@ -28,7 +28,7 @@ modules:
             url: ..
             branch: master
           - type: file
-            path: oeserverd
+            path: oexserverd
           - type: file
             # originally libusb-0.1.so.4.1.1, built from  libusb-0.1.6
             path: libusb-0.1.so.4
