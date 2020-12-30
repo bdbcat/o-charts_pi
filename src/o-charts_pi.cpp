@@ -103,7 +103,7 @@ wxString callActivityMethod_s6s(const char *method, wxString parm1, wxString par
 wxString callActivityMethod_s2s(const char *method, wxString parm1, wxString parm2);
 void androidShowBusyIcon();
 void androidHideBusyIcon();
-void androidGetDeviceName()
+void androidGetDeviceName();
 #endif
 
 bool testSENCServer();
