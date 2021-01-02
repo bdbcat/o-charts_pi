@@ -110,6 +110,7 @@ GLint S52circle_filled_shader_program;
 GLint S52ring_shader_program;
 GLint S52Dash_shader_program;
 GLint S52AP_shader_program;
+bool loadS52Shaders();
 
 #endif
 
@@ -435,7 +436,6 @@ s52plib::s52plib( const wxString& PLib, bool b_forceLegacy )
     HPGL = new RenderFromHPGL( this );
     
 #ifdef USE_ANDROID_GLES2
-    bool loadS52Shaders();
     loadS52Shaders();
 #endif
     workBuf = NULL;;
