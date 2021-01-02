@@ -109,7 +109,7 @@ void Osenc_instream::Init()
     m_uncrypt_stream = 0;
     publicSocket = -1;
     
-    strcpy(publicsocket_name,"com.whoever.xfer");
+    strcpy(publicsocket_name,"com.opencpn.ocharts_pi");
     
     if (makeAddr(publicsocket_name, &sockAddr, &sockLen) < 0){
         wxLogMessage(_T("oesenc_pi: Could not makeAddr for PUBLIC socket"));
@@ -120,7 +120,7 @@ void Osenc_instream::Init()
         wxLogMessage(_T("oesenc_pi: Could not make PUBLIC socket"));
     }
     //else
-    //    qDebug() << "Init() create Socket" << publicSocket;
+      //  qDebug() << "Init() create Socket" << publicSocket;
     
     
 }
@@ -135,7 +135,7 @@ void Osenc_instream::ReInit()
     m_uncrypt_stream = 0;
     publicSocket = -1;
     
-    strcpy(publicsocket_name,"com.whoever.xfer");
+    strcpy(publicsocket_name,"com.opencpn.ocharts_pi");
     
     if (makeAddr(publicsocket_name, &sockAddr, &sockLen) < 0){
         wxLogMessage(_T("oesenc_pi: Could not makeAddr for PUBLIC socket"));
@@ -234,7 +234,6 @@ bool Osenc_instream::Open( unsigned char cmd, wxString senc_file_name, wxString 
 {
     if(crypto_key.Length()){
         fifo_msg msg;
-        
         
         
         if (connect(publicSocket, (const struct sockaddr*) &sockAddr, sockLen) < 0) {
@@ -929,16 +928,14 @@ int Osenc::verifySENC(Osenc_instream &fpx, const wxString &senc_file_name)
     
     //  Bad read?
     if(!fpx.IsOk()){
-        if(g_debugLevel)printf("verifySENC E2\n");
-        wxLogMessage(_T("verifySENC E2"));
+        if(g_debugLevel) wxLogMessage(_T("verifySENC E2"));
         
         // Server may be slow, so try the read again
         wxMilliSleep(100);
         fpx.Read(&first_record, sizeof(OSENC_Record_Base));
         
         if(!fpx.IsOk()){
-            if(g_debugLevel)printf("verifySENC E2.5\n");
-            wxLogMessage(_T("verifySENC E2.5"));
+            if(g_debugLevel) wxLogMessage(_T("verifySENC E2.5"));
             return ERROR_SENC_CORRUPT;
         }
     }
@@ -970,7 +967,7 @@ int Osenc::verifySENC(Osenc_instream &fpx, const wxString &senc_file_name)
         fpx.Close();
         //  Try  with empty key, in case the SENC is unencrypted
         if( !fpx.Open(m_read_esenc_cmd, senc_file_name, _T("")) ){    
-            if(g_debugLevel) wxLogMessage(_T("ingestHeader Open failed "));
+            if(g_debugLevel) wxLogMessage(_T("ingestHeader Backup Open failed "));
             return ERROR_SENC_CORRUPT;        
         }
         
@@ -1031,7 +1028,7 @@ int Osenc::ingestHeader(const wxString &senc_file_name)
 {
     //  Read oSENC header records, stopping at the first Feature_ID record
     //  Then check to see if everything is defined as required.
-    
+ 
     if(g_debugLevel) wxLogMessage(_T("ingestHeader"));
     
     int ret_val = SENC_NO_ERROR;                    // default is OK
@@ -1305,7 +1302,6 @@ int Osenc::ingest200(const wxString &senc_file_name,
 
     Osenc_instream fpx;
     
-    
     if( !fpx.Open(m_read_esenc_cmd, senc_file_name, m_key) ){
         if(g_debugLevel) wxLogMessage(_T("ingest200 Open failed first"));
         wxMilliSleep(100);
@@ -1319,7 +1315,6 @@ int Osenc::ingest200(const wxString &senc_file_name,
             }
         }
     }
-    
     
     int verify_val = verifySENC(fpx, senc_file_name);
 

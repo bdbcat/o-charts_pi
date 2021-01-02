@@ -777,6 +777,7 @@ int oesuChart::Init( const wxString& name, int init_flags )
 
     m_rKey = key;
     
+    
     validate_SENC_server();
        
     if( PI_HEADER_ONLY == init_flags ){

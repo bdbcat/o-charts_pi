@@ -705,7 +705,7 @@ int o_charts_pi::Init(void)
 #ifdef __OCPN__ANDROID__
     wxString piLocn = GetPlugInPath(this); //*GetpSharedDataLocation();
     wxFileName fnl(piLocn);
-    g_sencutil_bin = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("oeserverda");
+    g_sencutil_bin = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("oexserverda");
     g_serverProc = 0;
 #endif
 
@@ -727,7 +727,7 @@ int o_charts_pi::Init(void)
     wxLogMessage(_T("OSX LIB DYLD_LIBRARY_PATH: ") + libDir);
 #endif
 
-    wxLogMessage(_T("Path to oeserverd is: ") + g_sencutil_bin);
+    wxLogMessage(_T("Path to oexserverd is: ") + g_sencutil_bin);
 
     if(IsDongleAvailable())
         wxLogMessage(_T("Dongle detected"));
@@ -2298,34 +2298,8 @@ Your oeSENC UserKey may be obtained from your chart provider.\n\n"),
      {
          return _T("Invalid");
      }
-#if 0     
-
-         g_old_UserKey = g_UserKey;
-         //SENCGetUserKeyDialog dlg( legendID, GetOCPNCanvasWindow());
-         
-         wxSize dialogSize(500, -1);
-         
-#ifdef __OCPN__ANDROID__
-         wxSize ss = ::wxGetDisplaySize();
-         dialogSize.x = ss.x * 8 / 10;
-#endif         
-         dlg.SetSize(dialogSize);
-         dlg.Centre();
-         
-         if(pinfoDlg)
-             pinfoDlg->Hide();
-
-#ifdef __OCPN__ANDROID__
-         androidHideBusyIcon();
-#endif             
-         int ret = dlg.ShowModal();
-         if(ret == 0)
-             return g_UserKey;
-         else
-             return _T("Invalid");
-     }
-#endif     
- }
+     
+}
  
 void ShowGenericErrorMessage(wxString s_file)
 {
@@ -2978,7 +2952,7 @@ bool validate_SENC_server(void)
     // Check to see if the server is already running, and available
         //qDebug() << "Check running server Proc";
         Osenc_instream testAvail;
-        if(testAvail.isAvailable(g_UserKey)){
+        if(testAvail.isAvailable(_T("?"))){
             return true;
         }
 
@@ -2990,7 +2964,7 @@ bool validate_SENC_server(void)
             wxLogMessage(_T("Available FALSE, retry...") + tmsg);
             wxMilliSleep(50);
             Osenc_instream testAvailRetry;
-            if(testAvailRetry.isAvailable(g_UserKey)){
+            if(testAvailRetry.isAvailable(_T("?"))){
                 wxLogMessage(_T("Available TRUE"));
                 return true;
             }
@@ -3138,8 +3112,8 @@ bool validate_SENC_server(void)
             nc.Printf(_T("LoopCount: %d"), nLoop);
             
             //  Get the decrypt type into the logfile
-            Osenc_instream testAvail_type;
-            testAvail_type.isAvailable( g_UserKey );
+//             Osenc_instream testAvail_type;
+//             testAvail_type.isAvailable( _T("?") );
             
             wxLogMessage(_T("o_charts_pi: oeserverd Check OK...") + nc);
         }
