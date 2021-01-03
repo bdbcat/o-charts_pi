@@ -165,7 +165,7 @@ SET(CPACK_PACKAGE_FILE_NAME "${PKG_NVR}_${PKG_TARGET}-${PKG_TARGET_VERSION}")
 INCLUDE(CPack)
 
 
-IF(APPLE)
+IF(APPLE_PKG)
 
  #  Copy a few generic files so the Packages installer builder can find them relative to ${CMAKE_CURRENT_BINARY_DIR}
  #  This avoids absolute paths in the chartdldr_pi.pkgproj file
