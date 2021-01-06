@@ -45,7 +45,7 @@
 extern wxString         g_systemName;
 extern wxString         g_dongleName;
 extern unsigned int     g_dongleSN;
-extern wxString         g_server_bin;
+extern wxString         g_sencutil_bin;
 extern InProgressIndicator *g_ipGauge;
 
 
@@ -262,7 +262,6 @@ void ocValidator::LogMessage( wxString msg)
 
 void ocValidator::startValidation()
 {
-#if 0    
     installedChartListData.clear();
     installedKeyFileData.clear();
     
@@ -274,12 +273,12 @@ void ocValidator::startValidation()
     LogMessage(_("Starting chartset validation.\n"));
 
     LogMessage(_("  Checking server installation."));
-    if(!g_server_bin.Length()){
+    if(!g_sencutil_bin.Length()){
         LogMessage(_("  Server not installed."));
         return;
     }
         
-    LogMessage(_("  Server execute command: ") + g_server_bin);
+    LogMessage(_("  Server execute command: ") + g_sencutil_bin);
     
     wxString serverVersion = GetServerVersionString();
     if(!serverVersion.Length()){
@@ -509,7 +508,8 @@ void ocValidator::startValidation()
     for( unsigned int i=0 ; i < fileList.GetCount() ; i++){
         wxString chartFile = fileList.Item(i);
         //LogMessage(_("  Checking chart: ") + chartFile );
-        
+
+#if 0        
         Chart_oeRNC *ptestChart = new Chart_oeRNC;
         int rv = ptestChart->Init( chartFile, HEADER_ONLY );
         if(rv){
@@ -522,7 +522,7 @@ void ocValidator::startValidation()
         if(g_ipGauge)
             g_ipGauge->Pulse();
         wxYield();
-
+#endif
     }
 
     LogMessage(_("  Chart test load OK.") );
@@ -533,7 +533,6 @@ void ocValidator::startValidation()
     
     g_ipGauge->Stop();
 
-#endif    
 }
 
 

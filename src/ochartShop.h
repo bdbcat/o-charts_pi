@@ -91,7 +91,7 @@ enum{
 };
 
 enum{
-        CHART_TYPE_OESENC = 0,
+        CHART_TYPE_OEUSENC = 0,
         CHART_TYPE_OERNC
 };
 

@@ -2515,8 +2515,8 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
                         else if(!strcmp(chartVal, "chartType")){
                             TiXmlNode *childVal = childChart->FirstChild();
                             if(childVal){
-                                if(!strcmp(childVal->Value(), "oeSENC"))
-                                    pChart->chartType = (int)CHART_TYPE_OESENC;
+                                if(!strcmp(childVal->Value(), "oeuSENC"))
+                                    pChart->chartType = (int)CHART_TYPE_OEUSENC;
                                 else
                                     pChart->chartType = (int)CHART_TYPE_OERNC;
                             }
@@ -3007,8 +3007,8 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
     //  Create the download queue for all files necessary.
 
     wxString Prefix = _T("oeRNC");
-    if(targetChart->GetChartType() == CHART_TYPE_OESENC)
-        Prefix = _T("oeSENC");
+    if(targetChart->GetChartType() == CHART_TYPE_OEUSENC)
+        Prefix = _T("oeuSENC");
     
     targetSlot->dlQueue.clear();
     
@@ -4783,7 +4783,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             }
         }
         else{
-            if(!unzipDir.GetFirst( &chartTopLevelZip, _T("*oeSENC*"), wxDIR_DIRS)){
+            if(!unzipDir.GetFirst( &chartTopLevelZip, _T("oeuSENC*"), wxDIR_DIRS)){
                 wxLogError(_T("Can not find oeSENC directory in zip file ") + task->cacheLinkLocn);
                 return 11;
             }
