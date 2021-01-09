@@ -616,6 +616,12 @@ bool ChartSetData::WriteFile( std::string fileName)
     root->SetAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
     root->SetAttribute("xmlns:opencpn", "http://www.opencpn.org");
 
+    //Write the editionTag
+    TiXmlElement *itemEdition = new TiXmlElement( "Edition" );  
+    itemEdition->LinkEndChild( new TiXmlText( editionTag.c_str()) );  
+    root->LinkEndChild( itemEdition );  
+    
+    
     for(size_t i=0 ; i < chartList.size() ;i++){
         TiXmlElement * chart = new TiXmlElement( "Chart" );  
         root->LinkEndChild( chart );  
@@ -1879,6 +1885,105 @@ void loadShopConfig()
 //        g_systemName = _T("");
 //        g_loginKey = _T("");
         
+#if 1        
+        // Get the list of charts
+        wxArrayString chartIDArray;
+        
+        pConf->SetPath ( _T ( "/PlugIns/ocharts/oeus/charts" ) );
+        wxString strk;
+        wxString kval;
+        long dummyval;
+        bool bContk = pConf->GetFirstEntry( strk, dummyval );
+        while( bContk ) {
+            pConf->Read( strk, &kval );
+            chartIDArray.Add(kval);
+            bContk = pConf->GetNextEntry( strk, dummyval );
+
+        }
+            
+        for(unsigned int i=0 ; i < chartIDArray.GetCount() ; i++){
+            wxString chartConfigIdent = chartIDArray[i];
+            pConf->SetPath ( _T ( "/PlugIns/ocharts/oeus/charts/" ) + chartConfigIdent );
+            
+            wxString orderRef, chartName, overrideChartEdition, chartID;
+            pConf->Read( _T("chartID"), &chartID);
+            pConf->Read( _T("orderRef"), &orderRef);
+            pConf->Read( _T("chartName"), &chartName);
+            pConf->Read( _T("overrideChartEdition"), &overrideChartEdition);
+
+
+            // Add a chart if necessary
+            int index = findOrderRefChartId((const char *)orderRef.mb_str(), (const char *)chartID.mb_str());
+            itemChart *chart;
+            if(index < 0){
+                chart = new itemChart;
+                chart->orderRef = orderRef.mb_str();
+                chart->chartID = chartID.mb_str();
+                chart->chartName = chartName.mb_str();
+                //chart->installedChartEdition = installedChartEdition.mb_str();
+                chart->overrideChartEdition = overrideChartEdition.mb_str();
+                ChartVector.push_back(chart);
+            }
+            else
+                chart = ChartVector[index];
+            
+            // Process Slots
+            
+            pConf->SetPath ( _T ( "/PlugIns/ocharts/oeus/charts/" ) + chartConfigIdent + _T("/Slots" ));
+
+            bContk = pConf->GetFirstEntry( strk, dummyval );
+            while( bContk ) {
+                pConf->Read( strk, &kval );
+                if(strk.StartsWith("Slot")){
+                    wxStringTokenizer tkz( kval, _T(";") );
+                    while(tkz.HasMoreTokens()){
+                        wxString sqid = tkz.GetNextToken(); 
+                        wxString slotUUID = tkz.GetNextToken();
+                        wxString assignedSystemName = tkz.GetNextToken();
+                        wxString installLocation = tkz.GetNextToken();
+                        wxString installedEdition = tkz.GetNextToken();
+                        
+                        // Make a new "quantity" clause if necessary
+                        long nqid = -1;
+                        
+                        if(sqid.ToLong(&nqid)){
+                            int qtyIndex = chart->FindQuantityIndex(nqid);
+                            if(qtyIndex < 0){
+                                itemQuantity new_qty;
+                                new_qty.quantityId = nqid;
+                                itemSlot *slot = new itemSlot;
+                                slot->installLocation = std::string(installLocation.mb_str());
+                                slot->assignedSystemName = std::string(assignedSystemName.mb_str());
+                                slot->slotUuid = std::string(slotUUID.mb_str());
+                                slot->installedEdition = std::string(installedEdition.mb_str());
+                                
+                                new_qty.slotList.push_back(slot);
+
+                                chart->quantityList.push_back(new_qty);
+                            }
+                            else{
+                                itemQuantity *exist_qty = &(chart->quantityList[qtyIndex]);
+                                itemSlot *slot = chart->GetSlotPtr( slotUUID );
+                                if(!slot)
+                                    slot = new itemSlot;
+                                
+                                slot->installLocation = std::string(installLocation.mb_str());
+                                slot->assignedSystemName = std::string(assignedSystemName.mb_str());
+                                slot->slotUuid = std::string(slotUUID.mb_str());
+                                slot->installedEdition = std::string(installedEdition.mb_str());
+
+                                exist_qty->slotList.push_back(slot);
+                            }
+                        }
+                    }
+
+                }
+                bContk = pConf->GetNextEntry( strk, dummyval );
+
+            }
+        }
+#endif            
+
 #if 0        
         // Get the list of charts
         wxArrayString chartIDArray;
@@ -1977,7 +2082,7 @@ void loadShopConfig()
             }
         }
 #endif            
-            
+
     }
 }
 
@@ -1993,6 +2098,66 @@ void saveShopConfig()
       pConf->Write( _T("loginKey"), g_loginKey);
       pConf->Write( _T("lastInstllDir"), g_lastInstallDir);
       pConf->Write( _T("LastEULAFile"), g_lastEULAFile);
+
+#if 1      
+      pConf->DeleteGroup( _T("/PlugIns/ocharts/oeus/charts") );
+      pConf->SetPath( _T("/PlugIns/ocharts/oeus/charts") );
+
+     for(unsigned int i = 0 ; i < ChartVector.size() ; i++){
+          itemChart *chart = ChartVector[i];
+          if(chart->chartType != CHART_TYPE_OEUSENC)
+              continue;
+          wxString keyChart;
+          keyChart.Printf(_T("Chart%d"), i);
+          pConf->Write(keyChart, wxString(chart->chartID + "-" + chart->orderRef));
+     }
+      
+     for(unsigned int i = 0 ; i < ChartVector.size() ; i++){
+          itemChart *chart = ChartVector[i];
+          if(chart->chartType != CHART_TYPE_OEUSENC)
+              continue;
+          wxString chartConfigIdent = _T("/PlugIns/ocharts/oeus/charts/") + wxString(chart->chartID + "-" + chart->orderRef);
+          pConf->DeleteGroup( chartConfigIdent );
+          pConf->SetPath( chartConfigIdent );
+           
+          pConf->Write( _T("chartID"), wxString(chart->chartID) );
+          pConf->Write( _T("chartName"), wxString(chart->chartName) );
+          pConf->Write( _T("orderRef"), wxString(chart->orderRef) );
+          //pConf->Write( _T("installedChartEdition"), wxString(chart->installedChartEdition) );
+          if(chart->overrideChartEdition.size())
+            pConf->Write( _T("overrideChartEdition"), wxString(chart->overrideChartEdition) );
+
+          wxString slotsPath = chartConfigIdent + _T("/Slots");
+          pConf->DeleteGroup( slotsPath );
+          pConf->SetPath( slotsPath );
+         
+          for( unsigned int j = 0 ; j < chart->quantityList.size() ; j++){
+              int qID = chart->quantityList[j].quantityId;
+              if(qID < 0)
+                  continue;
+              wxString sqid;
+              sqid.Printf(_T("%d"), qID);
+              
+              wxString key = _T("Slot");
+              key += sqid;
+              itemSlot *slot;
+              wxString val;
+
+              for( unsigned int k = 0 ; k < chart->quantityList[j].slotList.size() ; k++){
+                  slot = chart->quantityList[j].slotList[k];
+                  if( slot->assignedSystemName.size()){
+                    val += sqid + _T(";");
+                    val += slot->slotUuid + _T(";");
+                    val += slot->assignedSystemName + _T(";");
+                    val += slot->installLocation + _T(";");
+                    val += slot->installedEdition + _T(";");
+                  }
+              }
+              if(val.Length())
+                  pConf->Write( key, val );
+          }
+      }
+#endif
       
 #if 0      
       pConf->DeleteGroup( _T("/PlugIns/oernc/charts") );
@@ -4369,8 +4534,12 @@ std::string GetNormalizedChartsetName( std::string rawName)
         wxFileName fn1(rawName);            // /home/dsr/.opencpn/o_charts_pi/DownloadCache/oeSENC-PL-2020/44-2-base.zip
         wxFileName fn2(fn1.GetPath());
         wxString rv = fn2.GetName();
+        int nl = rv.Find('-', true);        // first from END
+        if(nl != wxNOT_FOUND)
+            rv=rv.Mid(0, nl);
+            
         std::string rvs(rv.mb_str());
-        return rvs;                         // oeSENC-PL-2020
+        return rvs;                         // oeuSENC-PL
     }
     else{
         wxFileName fn1(rawName);            // /home/xxx/.opencpn/oernc_pi/DownloadCache/oeRNC-IMR-GR-2-0-base.zip
@@ -4404,7 +4573,9 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
     //Get the basic chartset name, and store in the task for later reference
     task->chartsetNameNormalized = GetNormalizedChartsetName( task->cacheLinkLocn);
     
-
+// TODO HACK
+    chart->editionTag = "2021/1-0";
+    
 #if 0    
     if(chart->taskAction == TASK_REPLACE){
         
@@ -4698,6 +4869,11 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
                                         actionWithdrawn.push_back(std::string(chartNameKAP));
                                     }
                                 }
+                                else if(!strcmp(child->Value(), "Edition")){            //  <Edition>2021/1-0</Edition>
+                                    TiXmlNode *childKey = child->FirstChild();
+                                        chart->editionTag = childKey->Value();
+                                }
+                                    
                                 else if(!strcmp(child->Value(), "Chart")){
                                     TiXmlNode *childChart = child->FirstChild();
                                     itemChartData *cdata = new itemChartData;
@@ -4843,6 +5019,9 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         }
                 
        
+        // Arrange to add the tag <Edition> (from the downloaded zip file) to the newly create ChartList.XML file
+        csdata_target.setEditionTag(chart->editionTag);
+        
         // Write out the modified Target ChartList.XML file as the new result ChartList.XML
         wxString destinationCLXML = destinationDir + _T("ChartList.XML");
         if(! csdata_target.WriteFile( std::string(destinationCLXML.mb_str()) )){

@@ -148,8 +148,10 @@ public:
     bool RemoveChart( std::string fileNameKap );
     bool AddChart(itemChartData *cdata);
     bool WriteFile( std::string fileName);
+    void setEditionTag( std::string tag ){ editionTag = tag; }
 
     std::vector < itemChartData *> chartList;
+    std::string editionTag;
     
 };
 
@@ -270,6 +272,7 @@ public:
     std::string chartName;
     std::string chartID;
     std::string serverChartEdition;
+    std::string editionTag;
     std::string editionDate;
     std::string thumbLink;
     std::string overrideChartEdition;

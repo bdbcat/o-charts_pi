@@ -359,7 +359,7 @@ void ocValidator::startValidation()
     wxString installDirectory = wxString(installLocation.c_str());
     LogMessage(_("  Installation directory: ") + installDirectory );
 
-    wxString chartsetBaseDirectory = installDirectory + wxFileName::GetPathSeparator() +_T("oeRNC-") + wxString(m_chart->chartID.c_str()) + wxFileName::GetPathSeparator();
+    wxString chartsetBaseDirectory = installDirectory + wxFileName::GetPathSeparator() +_T("oeuSENC-") + wxString(m_chart->chartID.c_str()) + wxFileName::GetPathSeparator();
             
     LogMessage(_("  ProcessingChartList.XML") );
 
@@ -390,9 +390,9 @@ void ocValidator::startValidation()
     for(unsigned int i = 0 ; i < installedChartListData.size() ; i++){
         itemChartData *cData = installedChartListData[i];
         
-        wxString targetRNCFILE = chartsetBaseDirectory + wxString(cData->ID.c_str()) + _T(".oernc");
-        if(!::wxFileExists(targetRNCFILE) ){
-            LogMessage(_("    Referenced chart is not present: ") + targetRNCFILE );
+        wxString targetChartFILE = chartsetBaseDirectory + wxString(cData->ID.c_str()) + _T(".oesu");
+        if(!::wxFileExists(targetChartFILE) ){
+            LogMessage(_("    Referenced chart is not present: ") + targetChartFILE );
             return;
         }
         
@@ -407,7 +407,7 @@ void ocValidator::startValidation()
     LogMessage(_("    Checking all charts for reference in ChartList") );
 
     wxArrayString fileList;
-    wxDir::GetAllFiles(chartsetBaseDirectory, &fileList, _T("*.oernc") );
+    wxDir::GetAllFiles(chartsetBaseDirectory, &fileList, _T("*.oesu") );
     for( unsigned int i=0 ; i < fileList.GetCount() ; i++){
         wxFileName fn(fileList.Item(i));
         wxString fileBaseName = fn.GetName();
