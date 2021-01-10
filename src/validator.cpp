@@ -40,7 +40,7 @@
 #include "validator.h"
 #include <tinyxml.h>
 #include "ocpn_plugin.h"
-//#include "chart.h"
+#include "eSENCChart.h"
 
 extern wxString         g_systemName;
 extern wxString         g_dongleName;
@@ -509,20 +509,18 @@ void ocValidator::startValidation()
         wxString chartFile = fileList.Item(i);
         //LogMessage(_("  Checking chart: ") + chartFile );
 
-#if 0        
-        Chart_oeRNC *ptestChart = new Chart_oeRNC;
-        int rv = ptestChart->Init( chartFile, HEADER_ONLY );
+        oesuChart *ptestChart = new oesuChart;
+        int rv = ptestChart->Init( chartFile, PI_HEADER_ONLY );
         if(rv){
             wxString errMsg;
             errMsg.Printf(_T(" %d"), rv);
-            LogMessage(_("  Chart load error: ") + errMsg );
+            LogMessage(_("  Chart load error ") + "( " + chartFile + " ) : " + errMsg );
             //return;
         }
         
         if(g_ipGauge)
             g_ipGauge->Pulse();
         wxYield();
-#endif
     }
 
     LogMessage(_("  Chart test load OK.") );

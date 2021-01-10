@@ -1920,6 +1920,7 @@ void loadShopConfig()
                 chart->orderRef = orderRef.mb_str();
                 chart->chartID = chartID.mb_str();
                 chart->chartName = chartName.mb_str();
+                chart->chartType = CHART_TYPE_OEUSENC;
                 //chart->installedChartEdition = installedChartEdition.mb_str();
                 chart->overrideChartEdition = overrideChartEdition.mb_str();
                 ChartVector.push_back(chart);
@@ -4573,8 +4574,6 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
     //Get the basic chartset name, and store in the task for later reference
     task->chartsetNameNormalized = GetNormalizedChartsetName( task->cacheLinkLocn);
     
-// TODO HACK
-    chart->editionTag = "2021/1-0";
     
 #if 0    
     if(chart->taskAction == TASK_REPLACE){
