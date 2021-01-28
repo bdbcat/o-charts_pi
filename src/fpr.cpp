@@ -76,7 +76,8 @@ void androidGetDeviceName()
 bool IsDongleAvailable()
 {
 #ifndef __OCPN__ANDROID__    
-///    
+///
+#if 0    
     wxString cmdls = _T("ls -la /Applications/OpenCPN.app/Contents/PlugIns/oernc_pi");
 
     wxArrayString lsret_array, lserr_array;      
@@ -87,7 +88,7 @@ bool IsDongleAvailable()
         wxString line = lsret_array[i];
         wxLogMessage(line);
     }
- 
+#endif 
 /// 
     wxString cmd = g_sencutil_bin;
     cmd += _T(" -s ");                  // Available?
@@ -163,6 +164,32 @@ wxString GetServerVersionString()
     ver = _T("1.0");
 #endif    
     return ver;
+}
+
+wxString getExpDate( wxString rkey)
+{
+    wxString ret;
+#ifndef __OCPN__ANDROID__    
+    
+    wxString cmd = g_sencutil_bin;
+    cmd += _T(" -v ");                  // Expiry days
+    cmd += rkey;
+
+    wxArrayString ret_array;      
+    wxExecute(cmd, ret_array, ret_array );
+            
+    for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
+        wxString line = ret_array[i];
+        if(line.Length() > 2){
+            ret = line;
+            break;
+        }
+    }
+#else
+    ret = _T("9999 60");
+#endif    
+    return ret;
+
 }
 
 wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extra_info)
