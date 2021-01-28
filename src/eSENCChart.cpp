@@ -777,7 +777,14 @@ int oesuChart::Init( const wxString& name, int init_flags )
 
     m_rKey = key;
     
-    
+    wxString getExpDate( wxString rkey);
+    wxString ddate = getExpDate( m_rKey);
+    wxString msg(_T("   o-charts_pi: "));
+    msg.Append(m_FullPath);
+    msg.Append(_T(" Expiry dates: "));
+    msg.Append(ddate);
+    wxLogMessage(msg);
+   
     validate_SENC_server();
        
     if( PI_HEADER_ONLY == init_flags ){
