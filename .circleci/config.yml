@@ -151,6 +151,35 @@ jobs:
             command: ci/circleci-build-raspbian-armhf.sh
             no_output_timeout: 30m
         - run: ci/circleci-upload_arm.sh
+   build-armhf-buster:
+      machine: true
+      environment:
+        - OCPN_TARGET=buster-armhf
+        - DOCKER_IMAGE=jongough/raspbian-buster:plugin_build_tooling_current
+        - BUILD_FLAGS=-j3
+        - BUILD_ENV=raspbian
+      steps:
+        - checkout
+        - run: chmod a+x ./ci/*.sh
+        - run:
+            command: ci/circleci-build-raspbian-armhf.sh
+            no_output_timeout: 30m
+        - run: ci/circleci-upload_arm.sh
+   build-armhf-bionic-64:
+      machine: true
+      environment:
+        - OCPN_TARGET=bionic-arm64
+        - OCPN_BRANCH=master
+        - DOCKER_IMAGE=arm64v8/ubuntu:18.04
+        - BUILD_FLAGS=-j3
+        - BUILD_ENV=ubuntu
+      steps:
+        - checkout
+        - run: chmod a+x ./ci/*.sh
+        - run:
+            command: ci/circleci-build-raspbian-armhf.sh
+            no_output_timeout: 30m
+        - run: ci/circleci-upload_arm.sh
 workflows:
   version: 2
   build_all:
@@ -200,6 +229,14 @@ workflows:
             branches:
               only: master
       - build-armhf-stretch:
+          filters:
+            branches:
+              only: master
+      - build-armhf-buster:
+          filters:
+            branches:
+              only: master
+      - build-armhf-bionic-64:
           filters:
             branches:
               only: master
