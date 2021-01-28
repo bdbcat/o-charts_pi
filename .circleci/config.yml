@@ -137,6 +137,20 @@ jobs:
        - checkout
        - run: ci/circleci-build-android-armhf.sh
        - run: ci/circleci-upload.sh
+    build-armhf-stretch:
+        machine: true
+      environment:
+        - OCPN_TARGET=stretch-armhf
+        - DOCKER_IMAGE=jongough/raspbian-stretch:latest
+        - BUILD_FLAGS=-j3
+        - BUILD_ENV=raspbian
+      steps:
+        - checkout
+        - run: chmod a+x ./ci/*.sh
+        - run:
+            command: ci/circleci-build-raspbian-armhf.sh
+            no_output_timeout: 30m
+        - run: ci/cloudsmith-upload.sh
 
        
 workflows:
@@ -184,6 +198,10 @@ workflows:
             branches:
               only: master
       - build-android-armhf:
+          filters:
+            branches:
+              only: master
+      - build-armhf-stretch:
           filters:
             branches:
               only: master
