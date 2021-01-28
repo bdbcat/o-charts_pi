@@ -150,7 +150,7 @@ jobs:
         - run:
             command: ci/circleci-build-raspbian-armhf.sh
             no_output_timeout: 30m
-        - run: ci/circleci-upload.sh
+        - run: ci/circleci-upload_arm.sh
 workflows:
   version: 2
   build_all:
