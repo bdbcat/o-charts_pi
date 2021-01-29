@@ -84,7 +84,7 @@ set -xe
 #    sudo -H python3 -m ensurepip
 #    sudo -H python3 -m pip install -q setuptools
 #    sudo -H python3 -m pip install -q cloudsmith-cli
-fi
+#fi
 
 #python -m ensurepip
 #python3 -m pip install -q setuptools
