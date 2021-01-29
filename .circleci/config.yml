@@ -89,7 +89,7 @@ jobs:
        - OCPN_TARGET:  buster
      steps:
        - checkout
-       - run: ci/circleci-build-debian.sh
+       - run: ci/circleci-build-debian-gtk3.sh
        - run: ci/circleci-upload.sh
    build-flatpak:
      machine:
