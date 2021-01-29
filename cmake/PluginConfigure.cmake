@@ -161,8 +161,17 @@ ENDIF(NOT QT_ANDROID)
 
 IF (NOT QT_ANDROID )
     if(WXWIDGETS_FORCE_VERSION)
-        set (wxWidgets_CONFIG_OPTIONS --version=${WXWIDGETS_FORCE_VERSION})
-    endif()
+        set (wxWidgets_CONFIG_OPTIONS ${wxWidgets_CONFIG_OPTIONS} --version=${WXWIDGETS_FORCE_VERSION})
+    endif(WXWIDGETS_FORCE_VERSION)
+
+    if(OCPN_WXWIDGETS_FORCE_TOOLKIT)
+        set (wxWidgets_CONFIG_OPTIONS ${wxWidgets_CONFIG_OPTIONS} --toolkit=${OCPN_WXWIDGETS_FORCE_TOOLKIT})
+    endif(OCPN_WXWIDGETS_FORCE_TOOLKIT)
+
+    if(wxWidgets_CONFIG_OPTIONS)
+        MESSAGE (STATUS "wx-config options: ${wxWidgets_CONFIG_OPTIONS}" )
+    endif(wxWidgets_CONFIG_OPTIONS)
+    
     find_package(wxWidgets COMPONENTS ${wxWidgets_USE_LIBS})
     INCLUDE(${wxWidgets_USE_FILE})
 ENDIF (NOT QT_ANDROID )

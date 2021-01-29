@@ -47,7 +47,17 @@ SET(OCPN_USE_API_16 ON)
 SET(OCPN_MIN_VERSION "ov50")
 #OPTION(OCPN_USE_API_16 "Use plugin api 16 (default: api 13)." OFF)
 OPTION(OCPN_FLATPAK "Build flatpak plugin" OFF)
- 
+
+set(
+  OCPN_WXWIDGETS_FORCE_VERSION
+  CACHE STRING "Force usage of a specific wxWidgets version."
+)
+
+set(
+  OCPN_WXWIDGETS_FORCE_TOOLKIT
+  CACHE STRING "Force usage of a specific wxWidgets toolkit."
+)
+
 set(PLUGIN_NAME ${PKG_NVR}_${PKG_TARGET}-${PKG_TARGET_VERSION})
 
 IF( NOT CMAKE_BUILD_TYPE )
