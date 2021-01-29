@@ -70,25 +70,25 @@ echo "Using \$CLOUDSMITH_API_KEY: ${CLOUDSMITH_API_KEY:0:4}..."
 
 set -xe
 
-if pyenv versions 2>&1 >/dev/null; then
-    pyenv global 3.5.2
-    python -m pip install cloudsmith-cli
-    pyenv rehash
-elif dnf --version 2>&1 >/dev/null; then
-    sudo dnf install python3-pip python3-setuptools
-    sudo python3 -m pip install -q cloudsmith-cli
-elif apt-get --version 2>&1 >/dev/null; then
-    sudo apt-get install python3-pip python3-setuptools
-    sudo python3 -m pip install -q cloudsmith-cli
-else
-    sudo -H python3 -m ensurepip
-    sudo -H python3 -m pip install -q setuptools
-    sudo -H python3 -m pip install -q cloudsmith-cli
+#if pyenv versions 2>&1 >/dev/null; then
+#    pyenv global 3.5.2
+#    python -m pip install cloudsmith-cli
+#    pyenv rehash
+#elif dnf --version 2>&1 >/dev/null; then
+#    sudo dnf install python3-pip python3-setuptools
+#    sudo python3 -m pip install -q cloudsmith-cli
+#elif apt-get --version 2>&1 >/dev/null; then
+#    sudo apt-get install python3-pip python3-setuptools
+#    sudo python3 -m pip install -q cloudsmith-cli
+#else
+#    sudo -H python3 -m ensurepip
+#    sudo -H python3 -m pip install -q setuptools
+#    sudo -H python3 -m pip install -q cloudsmith-cli
 fi
 
 #python -m ensurepip
 #python3 -m pip install -q setuptools
-#python3 -m pip install -q cloudsmith-cli
+sudo python3 -m pip install -q cloudsmith-cli
 
 BUILD_ID=${APPVEYOR_BUILD_NUMBER:-1}
 commit=$(git rev-parse --short=7 HEAD) || commit="unknown"
