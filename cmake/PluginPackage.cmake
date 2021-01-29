@@ -208,4 +208,4 @@ configure_file(${PROJECT_SOURCE_DIR}/buildosx/InstallOSX/pkg_background.jpg ${CM
 
  SET(CPACK_GENERATOR "TGZ")
 
-ENDIF(APPLE)
+ENDIF(APPLE_PKG)
