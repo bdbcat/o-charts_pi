@@ -15,12 +15,12 @@ sudo service docker restart
 sleep 5;
 
 if [ "$BUILD_ENV" = "raspbian" ]; then
-    docker run --rm --privileged multiarch/qemu-user-static:register --reset
+    sudo docker run --rm --privileged multiarch/qemu-user-static:register --reset
 else
-    docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 fi
 
-docker run --privileged -d -ti -e "container=docker"  -v $(pwd):/ci-source:rw $DOCKER_IMAGE /bin/bash
+sudo docker run --privileged -d -ti -e "container=docker"  -v $(pwd):/ci-source:rw $DOCKER_IMAGE /bin/bash
 DOCKER_CONTAINER_ID=$(docker ps | grep $BUILD_ENV | awk '{print $1}')
 
 docker exec -ti $DOCKER_CONTAINER_ID apt-get update
