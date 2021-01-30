@@ -14,11 +14,11 @@ echo "DOCKER_OPTS=\"-H tcp://127.0.0.1:2375 -H $DOCKER_SOCK -s devicemapper\"" |
 sudo service docker restart
 sleep 5;
 
-if [ "$BUILD_ENV" = "raspbian" ]; then
+#if [ "$BUILD_ENV" = "raspbian" ]; then
     sudo docker run --rm --privileged multiarch/qemu-user-static:register --reset
-else
-    sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-fi
+#else
+#    sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+#fi
 
 sudo docker run --privileged -d -ti -e "container=docker"  -v $(pwd):/ci-source:rw $DOCKER_IMAGE /bin/bash
 DOCKER_CONTAINER_ID=$(docker ps | grep $BUILD_ENV | awk '{print $1}')
