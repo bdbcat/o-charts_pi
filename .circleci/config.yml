@@ -80,7 +80,7 @@ jobs:
            echo "deb-src http://us.archive.ubuntu.com/ubuntu/ bionic-updates main"
            | sudo tee -a /etc/apt/sources.list
        - run: cat /etc/apt/sources.list
-       - run: ci/circleci-build-debian.sh
+       - run: ci/circleci-build-debian-gtk3.sh
        - run: ci/circleci-upload.sh
    build-buster:
      docker:
