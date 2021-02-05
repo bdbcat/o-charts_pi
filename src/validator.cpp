@@ -188,10 +188,15 @@ bool LoadKeyFile( wxString fileName )
                                             if(childVal)
                                                 cdata->ID = childVal->Value();
                                         }
-                                         else if(!strcmp(chartVal, "RInstallKey")){
+                                        else if(!strcmp(chartVal, "RInstallKey")){
                                             TiXmlNode *childVal = childChart->FirstChild();
                                             if(childVal)
                                                 cdata->RIK = childVal->Value();
+                                        }
+                                        else if(!strcmp(chartVal, "FileName")){
+                                            TiXmlNode *childVal = childChart->FirstChild();
+                                            if(childVal)
+                                                cdata->fileName = childVal->Value();
                                         }
                                     }
                                 }
@@ -468,7 +473,7 @@ void ocValidator::startValidation()
         
             for(unsigned int k = 0 ; k < installedKeyFileData.size() ; k++){
                 itemChartDataKeys *kData = installedKeyFileData[k];
-                wxString keyListFileName = wxString(kData->ID.c_str());
+                wxString keyListFileName = wxString(kData->fileName.c_str());
                 if( keyListFileName.IsSameAs(fileBaseName)){
                     bFoundInList = true;
                     break;
