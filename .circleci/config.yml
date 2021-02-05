@@ -166,7 +166,8 @@ jobs:
             no_output_timeout: 30m
         - run: ci/circleci-upload_arm.sh
    build-armhf-bionic-64:
-      machine: true
+      machine:
+       image: ubuntu-1604:202010-01
       environment:
         - OCPN_TARGET=bionic-arm64
         - OCPN_BRANCH=master
