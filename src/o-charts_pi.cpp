@@ -665,8 +665,8 @@ int o_charts_pi::Init(void)
 
     AddLocaleCatalog( _T("opencpn-o_charts_pi") );
 
-      //    Build an arraystring of dynamically loadable chart class names
-    m_class_name_array.Add(_T("oeSENCChart"));
+    //    Build an arraystring of dynamically loadable chart class names managed by this plugin
+    m_class_name_array.Add(_T("oeuSENCChart"));         // This is legacy oeSENC chart (*.oesenc)
     m_class_name_array.Add(_T("oeEVCChart"));
     m_class_name_array.Add(_T("oesuChart"));
 
