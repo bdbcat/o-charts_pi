@@ -769,6 +769,12 @@ int o_charts_pi::Init(void)
     
 #endif
     
+    if( Is_oeSENC_pi_loaded() ){
+        wxString msg = _("The o-charts plugin replaces the oeSENC plugin chart display functions.\n");
+        msg += _("It is recommended that you disable/remove any existing oeSENC plugin, and restart OpenCPN.\n");
+        int ret = OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxOK);
+    }
+ 
     //testSENCServer();
     
     int flags =  INSTALLS_PLUGIN_CHART_GL |
@@ -824,6 +830,15 @@ bool o_charts_pi::DeInit(void)
     shutdown_SENC_server();
     
     return true;
+
+}
+
+bool o_charts_pi::Is_oeSENC_pi_loaded()
+{
+    //    Instantiate a blank chart, if possible
+     wxClassInfo *pclass = wxClassInfo::FindClass(_T("oeSENCChart"));
+     return pclass != NULL;
+ 
 }
 
 int o_charts_pi::GetAPIVersionMajor()
