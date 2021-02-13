@@ -176,6 +176,7 @@ private:
 //    wxString GetPermitDir();
     bool ScrubChartinfoList( void );
     bool Is_oeSENC_pi_loaded();
+    bool Is_oeRNC_pi_loaded();
 
     int ProcessCellPermit( wxString &permit, bool b_confirm_existing );
 

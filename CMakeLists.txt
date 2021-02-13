@@ -261,11 +261,11 @@ else ()
 endif ()
 
 IF(NOT WIN32)
- ADD_DEFINITIONS( "-Wall -g -fexceptions -O0 -Wno-unused -fno-strict-aliasing -Wno-overloaded-virtual")
+ ADD_DEFINITIONS( "-Wall -g -fexceptions -O2 -Wno-unused -fno-strict-aliasing -Wno-overloaded-virtual")
 
- #IF(CMAKE_BUILD_TYPE MATCHES "Debug")
+ IF(CMAKE_BUILD_TYPE MATCHES "Debug")
     ADD_DEFINITIONS( " -O0")
- #ENDIF(CMAKE_BUILD_TYPE MATCHES "Debug")
+ ENDIF(CMAKE_BUILD_TYPE MATCHES "Debug")
 
  IF(NOT APPLE)
   SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,-Bsymbolic ")
@@ -331,6 +331,8 @@ SET(SRC_OCHARTS
             src/fpr.cpp
             src/piScreenLog.cpp
             src/sha256.c
+            src/oernc_inStream.cpp
+            src/chart.cpp
      )
 
 SET(SRC_CPL

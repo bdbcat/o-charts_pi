@@ -669,7 +669,7 @@ int o_charts_pi::Init(void)
     m_class_name_array.Add(_T("oeuSENCChart"));         // This is legacy oeSENC chart (*.oesenc)
     m_class_name_array.Add(_T("oeEVCChart"));
     m_class_name_array.Add(_T("oesuChart"));
-
+    m_class_name_array.Add(_T("Chart_oeuRNC"));
      
     // Specify the location of the xxserverd helper.
 #ifdef __WXMSW__
@@ -774,7 +774,13 @@ int o_charts_pi::Init(void)
         msg += _("It is recommended that you disable/remove any existing oeSENC plugin, and restart OpenCPN.\n");
         int ret = OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxOK);
     }
- 
+
+    if( Is_oeRNC_pi_loaded() ){
+        wxString msg = _("The o-charts plugin replaces the oeRNC plugin chart display functions.\n");
+        msg += _("It is recommended that you disable/remove any existing oeRNC plugin, and restart OpenCPN.\n");
+        int ret = OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxOK);
+    }
+
     //testSENCServer();
     
     int flags =  INSTALLS_PLUGIN_CHART_GL |
@@ -837,6 +843,14 @@ bool o_charts_pi::Is_oeSENC_pi_loaded()
 {
     //    Instantiate a blank chart, if possible
      wxClassInfo *pclass = wxClassInfo::FindClass(_T("oeSENCChart"));
+     return pclass != NULL;
+ 
+}
+
+bool o_charts_pi::Is_oeRNC_pi_loaded()
+{
+    //    Instantiate a blank chart, if possible
+     wxClassInfo *pclass = wxClassInfo::FindClass(_T("Chart_oeRNC"));
      return pclass != NULL;
  
 }
