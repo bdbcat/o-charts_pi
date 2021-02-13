@@ -167,7 +167,7 @@ jobs:
         - run: ci/circleci-upload_arm.sh
    build-armhf-bionic-64:
       machine:
-       image: ubuntu-1804:202010-01
+       image: ubuntu-2004:202010-01
       environment:
         - OCPN_TARGET=bionic-arm64
         - OCPN_BRANCH=master
