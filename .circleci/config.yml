@@ -217,10 +217,6 @@ workflows:
           filters:
             branches:
               only: master
-      - build-mingw:
-          filters:
-            branches:
-              only: master
       - build-android-arm64:
           filters:
             branches:
