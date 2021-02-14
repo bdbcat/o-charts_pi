@@ -32,10 +32,23 @@ fi
 #    sudo python3 -m pip install -q cloudsmith-cli
 #else
     #sudo -H python3 -m ensurepip
-    sudo -H python3 -m pip install -q setuptools
-    sudo -H python3 -m pip install -q cloudsmith-cli
+#    sudo -H python3 -m pip install -q setuptools
+#    sudo -H python3 -m pip install -q cloudsmith-cli
 #fi
 
+        if pyenv versions 2>&1 >/dev/null; then
+            pyenv versions
+            if ! pyenv global 3.8.6 2>&1 >/dev/null; then
+                if ! pyenv global 3.7.1 2>&1 >/dev/null; then
+                    if ! pyenv global 3.7.0 2>&1>/dev/null; then
+                        pyenv global 3.5.2
+                    fi
+                fi
+            fi
+            python3 -m pip install cloudsmith-cli
+            pyenv rehash
+        fi
+        
 BUILD_ID=${CIRCLE_BUILD_NUM:-1}
 commit=$(git rev-parse --short=7 HEAD) || commit="unknown"
 tag=$(git tag --contains HEAD)
