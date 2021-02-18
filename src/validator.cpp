@@ -41,6 +41,7 @@
 #include <tinyxml.h>
 #include "ocpn_plugin.h"
 #include "eSENCChart.h"
+#include "chart.h"
 
 extern wxString         g_systemName;
 extern wxString         g_dongleName;
@@ -364,7 +365,10 @@ void ocValidator::startValidation()
     wxString installDirectory = wxString(installLocation.c_str());
     LogMessage(_("  Installation directory: ") + installDirectory );
 
-    wxString chartsetBaseDirectory = installDirectory + wxFileName::GetPathSeparator() +_T("oeuSENC-") + wxString(m_chart->chartID.c_str()) + wxFileName::GetPathSeparator();
+    wxString dirType = _T("oeuSENC-");
+    if(m_chart->chartType == CHART_TYPE_OERNC)
+        dirType = _T("oeRNC-");
+    wxString chartsetBaseDirectory = installDirectory + wxFileName::GetPathSeparator() + dirType + wxString(m_chart->chartID.c_str()) + wxFileName::GetPathSeparator();
             
     LogMessage(_("  ProcessingChartList.XML") );
 
@@ -391,11 +395,15 @@ void ocValidator::startValidation()
     // Pass 1
     // For each chart in the ChartList, does an oeRNC file exist?
     LogMessage(_("    Checking ChartList for presence of each chart referenced") );
+
+    wxString extension = _T(".oesu");
+    if(m_chart->chartType == CHART_TYPE_OERNC)
+        extension = _T(".oernc");
     
     for(unsigned int i = 0 ; i < installedChartListData.size() ; i++){
         itemChartData *cData = installedChartListData[i];
         
-        wxString targetChartFILE = chartsetBaseDirectory + wxString(cData->ID.c_str()) + _T(".oesu");
+        wxString targetChartFILE = chartsetBaseDirectory + wxString(cData->ID.c_str()) + extension;
         if(!::wxFileExists(targetChartFILE) ){
             LogMessage(_("    Referenced chart is not present: ") + targetChartFILE );
             return;
@@ -412,7 +420,8 @@ void ocValidator::startValidation()
     LogMessage(_("    Checking all charts for reference in ChartList") );
 
     wxArrayString fileList;
-    wxDir::GetAllFiles(chartsetBaseDirectory, &fileList, _T("*.oesu") );
+    wxString searchString = _T("*") + extension;
+    wxDir::GetAllFiles(chartsetBaseDirectory, &fileList, searchString );
     for( unsigned int i=0 ; i < fileList.GetCount() ; i++){
         wxFileName fn(fileList.Item(i));
         wxString fileBaseName = fn.GetName();
@@ -514,8 +523,16 @@ void ocValidator::startValidation()
         wxString chartFile = fileList.Item(i);
         //LogMessage(_("  Checking chart: ") + chartFile );
 
-        oesuChart *ptestChart = new oesuChart;
-        int rv = ptestChart->Init( chartFile, PI_HEADER_ONLY );
+        int rv;
+        if(m_chart->chartType == CHART_TYPE_OERNC){
+            Chart_oeuRNC *ptestChart = new Chart_oeuRNC;
+            rv = ptestChart->Init( chartFile, PI_HEADER_ONLY );
+        }
+        else{
+            oesuChart *ptestChart = new oesuChart;
+            rv = ptestChart->Init( chartFile, PI_HEADER_ONLY );
+        }
+
         if(rv){
             wxString errMsg;
             errMsg.Printf(_T(" %d"), rv);
