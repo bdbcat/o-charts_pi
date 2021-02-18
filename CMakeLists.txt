@@ -284,6 +284,7 @@ ENDIF(NOT WIN32)
 IF(WIN32)
     ADD_DEFINITIONS(-D__MSVC__)
     ADD_DEFINITIONS(-D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_DEPRECATE)
+    INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/buildwin/include/zlib)
 ENDIF(WIN32)
 
 # Let cmake find additional modules private
@@ -333,6 +334,7 @@ SET(SRC_OCHARTS
             src/sha256.c
             src/oernc_inStream.cpp
             src/chart.cpp
+            src/georef.cpp
      )
 
 SET(SRC_CPL
@@ -481,7 +483,7 @@ endif ()
 IF(WIN32)
   TARGET_LINK_LIBRARIES( ${PACKAGE_NAME} ${CURL_LIBRARIES})
   TARGET_LINK_LIBRARIES( ${PACKAGE_NAME} ${OPENCPN_IMPORT_LIB} )
-
+  TARGET_LINK_LIBRARIES( ${PACKAGE_NAME} ${CMAKE_SOURCE_DIR}/buildwin/zlib1.lib)
 ENDIF(WIN32)
 
 IF(NOT APPLE AND NOT QT_ANDROID )
