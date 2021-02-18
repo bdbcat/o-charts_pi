@@ -16,6 +16,7 @@
 #include "ocpn_plugin.h"
 
 #include "o-charts_pi.h"
+#include "eSENCChart.h"
 
 #ifndef  WX_PRECOMP
   #include "wx/wx.h"
@@ -193,13 +194,13 @@ struct GeoRef {
 #define      RENDER_HIDEF  1
 
 
-typedef enum InitReturn
-{
-      INIT_OK = 0,
-      INIT_FAIL_RETRY,        // Init failed, retry suggested
-      INIT_FAIL_REMOVE,       // Init failed, suggest remove from further use
-      INIT_FAIL_NOERROR       // Init failed, request no explicit error message
-}_InitReturn;
+// typedef enum InitReturn
+// {
+//       INIT_OK = 0,
+//       INIT_FAIL_RETRY,        // Init failed, retry suggested
+//       INIT_FAIL_REMOVE,       // Init failed, suggest remove from further use
+//       INIT_FAIL_NOERROR       // Init failed, request no explicit error message
+// }_InitReturn;
 
 typedef enum ChartInitFlag
 {

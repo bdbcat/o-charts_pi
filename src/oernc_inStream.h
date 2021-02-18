@@ -89,7 +89,7 @@ typedef struct{
     
 } compressedHeader;
 
-struct fifo_msg {
+struct rnc_fifo_msg {
     char cmd;
     char fifo_name[256];
     char file_name[256];
@@ -138,7 +138,7 @@ public:
     
     bool readPayload( unsigned char *p );
     bool SendServerCommand( unsigned char cmd );
-    bool SendServerCommand( fifo_msg *pmsg );
+    bool SendServerCommand( rnc_fifo_msg *pmsg );
     
     oernc_inStream &Read(void *buffer, size_t size);
     bool IsOk();

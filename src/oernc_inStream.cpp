@@ -726,7 +726,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
     
     if(m_cryptoKey.Length() && m_fileName.length()){
      
-        fifo_msg msg;
+        rnc_fifo_msg msg;
         //  Build a message for the public pipe
         
         wxCharBuffer buf = m_fileName.ToUTF8();
@@ -898,7 +898,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
 
 bool oernc_inStream::SendServerCommand( unsigned char cmd )
 {
-        fifo_msg msg;
+        rnc_fifo_msg msg;
         
         strncpy(msg.fifo_name, privatefifo_name, sizeof(msg.fifo_name));
         
