@@ -4543,7 +4543,16 @@ std::string GetNormalizedChartsetName( std::string rawName)
         return rvs;                         // oeuSENC-PL
     }
     else{
-        wxFileName fn1(rawName);            // /home/xxx/.opencpn/oernc_pi/DownloadCache/oeRNC-IMR-GR-2-0-base.zip
+        wxFileName fn1(rawName);            // "/home/xxx/.opencpn/o_charts_pi/DownloadCache/oeRNC-CRBeast-2021/1-0-base.zip"
+        wxFileName fn2(fn1.GetPath());
+        wxString rv = fn2.GetName();
+        int nl = rv.Find('-', true);        // first from END
+        if(nl != wxNOT_FOUND)
+            rv=rv.Mid(0, nl);
+            
+        std::string rvs(rv.mb_str());
+        return rvs;                         // oeRNC-CRBeast
+#if 0
         wxString tlDir = fn1.GetName();     // oeRNC-IMR-GR-2-0-base
         int nl = tlDir.Find( _T("-base"));
         if(nl == wxNOT_FOUND)
@@ -4565,6 +4574,7 @@ std::string GetNormalizedChartsetName( std::string rawName)
         }
         else
             return std::string();
+#endif        
     }
 }
  
@@ -4952,7 +4962,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         wxDir unzipDir(tmp_dir);
         wxString chartTopLevelZip;
         if(chart->GetChartType() == (int)CHART_TYPE_OERNC){
-            if(!unzipDir.GetFirst( &chartTopLevelZip, _T("oeRNC*"), wxDIR_DIRS)){
+            if(!unzipDir.GetFirst( &chartTopLevelZip, _T("oeuRNC*"), wxDIR_DIRS)){
                 wxLogError(_T("Can not find oeRNC directory in zip file ") + task->cacheLinkLocn);
                 return 11;
             }
@@ -4976,8 +4986,11 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
   
         // Process added/modified charts
         for(unsigned int i = 0 ; i < actionAddUpdate.size() ; i++){
+            wxString extension = _T(".oesu");
+            if(chart->chartType == CHART_TYPE_OERNC)
+                extension = _T(".oernc");
             
-            wxString fileTarget = wxString( (actionAddUpdate[i]->ID).c_str()) + _T(".oesu");
+            wxString fileTarget = wxString( (actionAddUpdate[i]->ID).c_str()) + extension;
             // Copy the oernc chart from the temp unzip location to the target location
             wxString source = tmp_dir + wxFileName::GetPathSeparator() + chartTopLevelZip + wxFileName::GetPathSeparator() + fileTarget;
             if(!wxFileExists(source)){
