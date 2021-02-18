@@ -1985,15 +1985,12 @@ void loadShopConfig()
         }
 #endif            
 
-#if 0        
+#if 1        
         // Get the list of charts
-        wxArrayString chartIDArray;
+        chartIDArray.Clear();
         
-        pConf->SetPath ( _T ( "/PlugIns/oernc/charts" ) );
-        wxString strk;
-        wxString kval;
-        long dummyval;
-        bool bContk = pConf->GetFirstEntry( strk, dummyval );
+        pConf->SetPath ( _T ( "/PlugIns/ocharts/oeur/charts" ) );
+        bContk = pConf->GetFirstEntry( strk, dummyval );
         while( bContk ) {
             pConf->Read( strk, &kval );
             chartIDArray.Add(kval);
@@ -2003,8 +2000,8 @@ void loadShopConfig()
             
         for(unsigned int i=0 ; i < chartIDArray.GetCount() ; i++){
             wxString chartConfigIdent = chartIDArray[i];
-            pConf->SetPath ( _T ( "/PlugIns/oernc/charts/" ) + chartConfigIdent );
-            
+            pConf->SetPath ( _T ( "/PlugIns/ocharts/oeur/charts/" ) + chartConfigIdent );
+           
             wxString orderRef, chartName, overrideChartEdition, chartID;
             pConf->Read( _T("chartID"), &chartID);
             pConf->Read( _T("orderRef"), &orderRef);
@@ -2020,6 +2017,8 @@ void loadShopConfig()
                 chart->orderRef = orderRef.mb_str();
                 chart->chartID = chartID.mb_str();
                 chart->chartName = chartName.mb_str();
+                chart->chartType = CHART_TYPE_OERNC;
+
                 //chart->installedChartEdition = installedChartEdition.mb_str();
                 chart->overrideChartEdition = overrideChartEdition.mb_str();
                 ChartVector.push_back(chart);
@@ -2029,7 +2028,7 @@ void loadShopConfig()
             
             // Process Slots
             
-            pConf->SetPath ( _T ( "/PlugIns/oernc/charts/" ) + chartConfigIdent + _T("/Slots" ));
+            pConf->SetPath ( _T ( "/PlugIns/ocharts/oeur/charts/" ) + chartConfigIdent + _T("/Slots" ));
 
             bContk = pConf->GetFirstEntry( strk, dummyval );
             while( bContk ) {
@@ -2160,12 +2159,14 @@ void saveShopConfig()
       }
 #endif
       
-#if 0      
-      pConf->DeleteGroup( _T("/PlugIns/oernc/charts") );
-      pConf->SetPath( _T("/PlugIns/oernc/charts") );
+#if 1      
+      pConf->DeleteGroup( _T("/PlugIns/ocharts/oeur/charts") );
+      pConf->SetPath( _T("/PlugIns/ocharts/oeur/charts") );
 
      for(unsigned int i = 0 ; i < ChartVector.size() ; i++){
           itemChart *chart = ChartVector[i];
+          if(chart->chartType != CHART_TYPE_OERNC)
+              continue;
           wxString keyChart;
           keyChart.Printf(_T("Chart%d"), i);
           pConf->Write(keyChart, wxString(chart->chartID + "-" + chart->orderRef));
@@ -2173,7 +2174,9 @@ void saveShopConfig()
       
      for(unsigned int i = 0 ; i < ChartVector.size() ; i++){
           itemChart *chart = ChartVector[i];
-          wxString chartConfigIdent = _T("/PlugIns/oernc/charts/") + wxString(chart->chartID + "-" + chart->orderRef);
+          if(chart->chartType != CHART_TYPE_OERNC)
+              continue;
+          wxString chartConfigIdent = _T("/PlugIns/ocharts/oeur/charts/") + wxString(chart->chartID + "-" + chart->orderRef);
           pConf->DeleteGroup( chartConfigIdent );
           pConf->SetPath( chartConfigIdent );
            
