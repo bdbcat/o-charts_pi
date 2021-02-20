@@ -242,6 +242,7 @@ public:
     bool isChartsetFullyAssigned();
     bool isChartsetAssignedToSystemKey(wxString key);
     bool isChartsetAssignedToAnyDongle();
+    bool isChartsetAssignedToMe();
 
     int GetSlotAssignedToInstalledDongle( int &qId );
     int GetSlotAssignedToSystem( int &qId );
@@ -433,6 +434,8 @@ protected:
     
 
 protected:
+    void SortChartList();
+
     
 public:
     wxButton* GetButton37() { return m_button37; }

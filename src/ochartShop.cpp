@@ -1115,14 +1115,16 @@ itemSlot *itemChart::GetSlotPtr( int slot, int qId )
 
 bool itemChart::isChartsetFullyAssigned()
 {
-    
-/*    if (statusID0.IsSameAs("unassigned") || !statusID0.Len())
-        return false;
-    
-    if (statusID1.IsSameAs("unassigned") || !statusID1.Len())
-        return false;
- */   
-    return false;
+    int qtyIndex = -1;
+    for(unsigned int i=0 ; i < quantityList.size() ; i++){
+            itemQuantity Qty = quantityList[i];
+            if(Qty.slotList.size() < maxSlots){
+                qtyIndex = i;
+                break;
+            }
+    }
+        
+    return (qtyIndex < 0);
 }
 
 bool itemChart::isChartsetExpired()
@@ -1169,6 +1171,23 @@ bool itemChart::isChartsetShow()
 
     return false;
 #endif    
+}
+
+bool itemChart::isChartsetAssignedToMe()
+{
+    //  Check if I am already assigned to this chart
+    //  either by installed dongle, or systemName
+    bool bAssigned = false;
+    if(g_dongleName.Len()){
+        if(isChartsetAssignedToSystemKey(g_dongleName))
+            bAssigned = true;
+    }
+    else{
+        if(isChartsetAssignedToSystemKey(g_systemName))
+            bAssigned = true;
+    }
+    
+    return bAssigned;
 }
 
 int itemChart::GetSlotAssignedToInstalledDongle( int &qId )
@@ -3516,6 +3535,29 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
     //if(!m_pChart->quantityId.IsSameAs(_T("1")))
       //  nameString += _T(" (") + m_pChart->quantityId + _T(")");
     
+    // Thumbnail border color depends on chart type and status
+    wxColor thumbColor;
+    if(m_pChart->GetChartType() == CHART_TYPE_OERNC){
+        if( m_pChart->isChartsetExpired() || ( m_pChart->isChartsetFullyAssigned()  &&  !m_pChart->isChartsetAssignedToMe()))
+            GetGlobalColor( "BLUE2", &thumbColor );
+        else
+            GetGlobalColor( "BLUE1", &thumbColor );
+    }
+    else if(m_pChart->GetChartType() == CHART_TYPE_OEUSENC){
+        if( m_pChart->isChartsetExpired() || ( m_pChart->isChartsetFullyAssigned()  &&  !m_pChart->isChartsetAssignedToMe()))
+            GetGlobalColor( "GREEN2", &thumbColor );
+        else
+            GetGlobalColor( "GREEN1", &thumbColor );
+    }
+    else
+        thumbColor = wxColor(164,164,164);
+
+    if(!g_chartListUpdatedOK)
+        thumbColor = wxColor(220,220,220);
+
+        
+    int thumbColorWidth = 5;
+    
     if(m_bSelected){
         bool bCompact = false;
         if(width < (30 *GetCharHeight()))
@@ -3538,17 +3580,25 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
             scaledHeight = (height - (2 * base_offset)) * 50 / 100;
             scaledWidth = scaledHeight;
         }
-            
+
         wxBitmap& bm = m_pChart->GetChartThumbnail( scaledHeight );
-        
-        if(bm.IsOk()){
+        wxSize bmSize = bm.GetSize();
+
+        dc.SetBrush( wxBrush( thumbColor ));
+            
+        dc.SetPen( wxPen( wxColor(0xCE, 0xD5, 0xD6), 1 ));
+        dc.DrawRectangle( base_offset + 3 - thumbColorWidth, base_offset + 3 - thumbColorWidth,
+                          bmSize.x + thumbColorWidth * 2, bmSize.y + thumbColorWidth * 2);
+
+        if(bm.IsOk())
             dc.DrawBitmap(bm, base_offset + 3, base_offset + 3);
-        }
+
+        dc.SetPen( wxPen( wxColor(0xCE, 0xD5, 0xD6), 3 ));
 
         bool bsplit_line = false;
 
         int text_x = scaledWidth * 11 / 10;
-        int text_x_val = scaledWidth + ((width - scaledWidth) * 4 / 10);
+        int text_x_val = scaledWidth + ((width - scaledWidth) * 45/ 100);
         int yPitch = GetCharHeight();
 
         wxFont *dFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
@@ -3596,8 +3646,15 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
         tx = m_pChart->getStatusString();
         if(g_statusOverride.Len())
             tx = g_statusOverride;
+        else{
+            if(m_pChart->isChartsetExpired()){
+                dc.SetTextForeground(wxColour(200,0,0));
+            }
+        }
+                
         dc.DrawText( tx, text_x_val, yPos);
         yPos += yPitch;
+        dc.SetTextForeground(wxColour(0,0,0));
 
         tx = _("Order Reference:");
         dc.DrawText( tx, text_x, yPos);
@@ -3609,7 +3666,11 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
         tx = _("Updates available through:");
         dc.DrawText( tx, text_x, yPos);
         if(bsplit_line) yPos += yPitch;
-        tx = m_pChart->expDate;
+        size_t n = m_pChart->expDate.find_first_of(' ');
+        if(n != std::string::npos)
+            tx = m_pChart->expDate.substr(0,n);
+        else
+            tx = m_pChart->expDate;
         dc.DrawText( tx, text_x_val, yPos);
         yPos += yPitch;
         
@@ -3772,6 +3833,14 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
         // Draw the thumbnail
         int scaledHeight = (height - (2 * offset)) * 95 / 100;
         wxBitmap& bm = m_pChart->GetChartThumbnail( scaledHeight );
+        wxSize bmSize = bm.GetSize();
+        
+        dc.SetBrush( wxBrush( thumbColor ));
+            
+        //dc.DrawRectangle( offset, offset, scaledHeight + 6, scaledHeight + 6);
+        dc.DrawRectangle( offset + 3 - thumbColorWidth, offset + 3 - thumbColorWidth,
+                          bmSize.x + thumbColorWidth * 2, bmSize.y + thumbColorWidth * 2);
+
         
         if(bm.IsOk()){
             dc.DrawBitmap(bm, offset + 3, offset + 3);
@@ -3785,13 +3854,21 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
         wxFont *qFont = wxTheFontList->FindOrCreateFont( font_size, dFont->GetFamily(), dFont->GetStyle(), dFont->GetWeight());
 
         dc.SetFont( *qFont );
-        dc.SetTextForeground(wxColour(128, 128, 128));
+        dc.SetTextForeground(wxColour(64, 64, 64));
+        if( m_pChart->isChartsetFullyAssigned()  &&  !m_pChart->isChartsetAssignedToMe())
+            dc.SetTextForeground(wxColour(128,128,128));
+
         
         if(m_pContainer->GetSelectedChartPanel())
             dc.SetTextForeground(wxColour(220,220,220));
         
         dc.DrawText(nameString, scaledWidth * 15 / 10, height * 35 / 100);
         
+        if(m_pChart->isChartsetExpired()){
+            wxFont *iFont = wxTheFontList->FindOrCreateFont( font_size, dFont->GetFamily(), wxFONTSTYLE_ITALIC, dFont->GetWeight());
+            dc.SetFont( *iFont );
+            dc.DrawText(_("Expired"), scaledWidth * 18 / 10, height * 60 / 100);
+        }
     }
     
     
@@ -4233,6 +4310,8 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
         return;
     }
     g_chartListUpdatedOK = true;
+    
+    SortChartList();
     
     bool bNeedSystemName = false;
     
@@ -5731,6 +5810,48 @@ void shopPanel::OnPrepareTimer(wxTimerEvent &evt)
 {
 }    
 
+bool compareName(itemChart * i1, itemChart * i2) 
+{ 
+    return (i1->chartName < i2->chartName); 
+} 
+void shopPanel::SortChartList()
+{
+    std::vector<itemChart *> VectorActive;
+    std::vector<itemChart *> VectorInActive;
+    std::vector<itemChart *> RasterActive;
+    std::vector<itemChart *> RasterInActive;
+    
+    // Divide the entire list into 4 categories
+    
+    for(unsigned int i=0 ; i < ChartVector.size() ; i++){
+        if(ChartVector[i]->GetChartType() == CHART_TYPE_OEUSENC){
+            if( ChartVector[i]->isChartsetExpired() || ( ChartVector[i]->isChartsetFullyAssigned()  &&  !ChartVector[i]->isChartsetAssignedToMe()))
+                VectorInActive.push_back( ChartVector[i] );
+            else
+                VectorActive.push_back( ChartVector[i] );
+        }
+        else {
+            if( ChartVector[i]->isChartsetExpired() || ( ChartVector[i]->isChartsetFullyAssigned()  &&  !ChartVector[i]->isChartsetAssignedToMe()))
+                RasterInActive.push_back( ChartVector[i] );
+            else
+                RasterActive.push_back( ChartVector[i] );
+        }
+    }
+    
+    // Sort the 4 lists alphabetically on chart name
+    std::sort(VectorActive.begin(), VectorActive.end(), compareName); 
+    std::sort(RasterActive.begin(), RasterActive.end(), compareName); 
+    std::sort(VectorInActive.begin(), VectorInActive.end(), compareName); 
+    std::sort(RasterInActive.begin(), RasterInActive.end(), compareName); 
+    
+    // And then recreate the master list
+    ChartVector.clear();
+    for(unsigned int i=0 ; i < VectorActive.size() ; i++){ ChartVector.push_back(VectorActive[i]); }
+    for(unsigned int i=0 ; i < RasterActive.size() ; i++){ ChartVector.push_back(RasterActive[i]); }
+    for(unsigned int i=0 ; i < VectorInActive.size() ; i++){ ChartVector.push_back(VectorInActive[i]); }
+    for(unsigned int i=0 ; i < RasterInActive.size() ; i++){ ChartVector.push_back(RasterInActive[i]); }
+    
+}
 
 void shopPanel::UpdateChartList( )
 {
