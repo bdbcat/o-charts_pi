@@ -2541,7 +2541,7 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
                     //  Maintain a separate list of systemNames known to the server
                     if(g_systemNameServerArray.Index(sName) == wxNOT_FOUND)
                         g_systemNameServerArray.Add(sName);
-                        
+
                 }
                 
                 else if(!strcmp(child->Value(), "disabledSystemName")){
@@ -4315,6 +4315,20 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     
     bool bNeedSystemName = false;
     
+    // Has this systemName been disabled?
+    if(g_dongleName.Len()){
+        if(g_systemNameDisabledArray.Index(g_dongleName) != wxNOT_FOUND){
+            bNeedSystemName = true;
+            g_dongleName.Clear();
+        }
+    }
+    if(g_systemName.Len()){
+        if(g_systemNameDisabledArray.Index(g_systemName) != wxNOT_FOUND){
+            bNeedSystemName = true;
+            g_systemName.Clear();
+        }
+    }
+        
     // User reset system name, and removed dongle
     if(!g_systemName.Len() && !g_dongleName.Len())
          bNeedSystemName = true;
