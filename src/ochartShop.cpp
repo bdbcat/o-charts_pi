@@ -3094,7 +3094,7 @@ int doUploadXFPR(bool bDongle)
         wxString msg = _("ERROR Creating Fingerprint file") + _T("\n");
         msg += _("Check OpenCPN log file.") + _T("\n"); 
         msg += err;
-        OERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
+        ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
         return 1;
     }
         
@@ -4417,7 +4417,7 @@ int shopPanel::GetShopNameFromFPR()
         wxString msg = _("ERROR Creating Fingerprint file") + _T("\n");
         msg += _("Check OpenCPN log file.") + _T("\n"); 
         msg += err;
-        OERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
+        ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
         return 1;
     }
         
@@ -4552,13 +4552,13 @@ bool shopPanel::GetNewSystemName()
             
             if(!g_systemName.Len()){
                 wxString msg = _("Invalid System Name");
-                OERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
+                ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
                 itry++;
             }
             
             else if(g_systemNameDisabledArray.Index(g_systemName) != wxNOT_FOUND){
                 wxString msg = _("This System Name has been disabled\nPlease choose another SystemName");
-                OERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
+                ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
                 itry++;
             }
             else{
@@ -4830,12 +4830,12 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         // Check the SHA256 of both files in the task
         if(!validateSHA256(task->cacheLinkLocn, task->sha256)){
             wxLogError(_T("o-charts_pi: Sha256 error on: ") + task->cacheLinkLocn );
-            OERNCMessageDialog(NULL, _("Validation error on zip file"), _("o-charts_pi Message"), wxOK);
+            ShowOERNCMessageDialog(NULL, _("Validation error on zip file"), _("o-charts_pi Message"), wxOK);
             return 8;
         }
         if(!validateSHA256(task->cacheKeysLocn, task->sha256Keys)){
             wxLogError(_T("o-charts_pi: Sha256 error on: ") + task->cacheKeysLocn );
-            OERNCMessageDialog(NULL, _("Validation error on key file"), _("o-charts_pi Message"), wxOK);
+            ShowOERNCMessageDialog(NULL, _("Validation error on key file"), _("o-charts_pi Message"), wxOK);
             return 9;
         }
 
@@ -5296,7 +5296,7 @@ void shopPanel::ValidateChartset( wxCommandEvent& event )
         
     }
     else{
-        OERNCMessageDialog(NULL, _("No chartset selected."), _("o-charts_pi Message"), wxOK);
+        ShowOERNCMessageDialog(NULL, _("No chartset selected."), _("o-charts_pi Message"), wxOK);
     }
 
 
@@ -5309,7 +5309,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
 
     if(m_bAbortingDownload){
         m_bAbortingDownload = false;
-        OERNCMessageDialog(NULL, _("Chart download cancelled."), _("o-charts_pi Message"), wxOK);
+        ShowOERNCMessageDialog(NULL, _("Chart download cancelled."), _("o-charts_pi Message"), wxOK);
         UpdateActionControls();
         return;
     }
@@ -5449,7 +5449,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
 
                     g_statusOverride.Clear();
                     setStatusText( _("Status: Ready"));
-                    OERNCMessageDialog(NULL, _("Chart installation ERROR."), _("o-charts_pi Message"), wxOK);
+                    ShowOERNCMessageDialog(NULL, _("Chart installation ERROR."), _("o-charts_pi Message"), wxOK);
                     UpdateChartList();
                     UpdateActionControls();
                     return;
@@ -5495,7 +5495,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
         g_statusOverride.Clear();
         setStatusText( _("Status: Ready"));
                 
-        OERNCMessageDialog(NULL, _("Chart installation complete."), _("o-charts_pi Message"), wxOK);
+        ShowOERNCMessageDialog(NULL, _("Chart installation complete."), _("o-charts_pi Message"), wxOK);
 
         // Show any EULA here
         wxArrayString fileArrayEULA;
@@ -6566,7 +6566,7 @@ OESENC_CURL_EvtHandler::~OESENC_CURL_EvtHandler()
 
 void OESENC_CURL_EvtHandler::onBeginEvent(wxCurlBeginPerformEvent &evt)
 {
- //   OERNCMessageDialog(NULL, _("DLSTART."), _("oeSENC_PI Message"), wxOK);
+ //   ShowOERNCMessageDialog(NULL, _("DLSTART."), _("oeSENC_PI Message"), wxOK);
     g_shopPanel->m_startedDownload = true;
     g_shopPanel->m_buttonCancelOp->Show();
 
@@ -6574,7 +6574,7 @@ void OESENC_CURL_EvtHandler::onBeginEvent(wxCurlBeginPerformEvent &evt)
 
 void OESENC_CURL_EvtHandler::onEndEvent(wxCurlEndPerformEvent &evt)
 {
- //   OERNCMessageDialog(NULL, _("DLEnd."), _("oeSENC_PI Message"), wxOK);
+ //   ShowOERNCMessageDialog(NULL, _("DLEnd."), _("oeSENC_PI Message"), wxOK);
     
     g_ipGauge->Stop();
     g_shopPanel->setStatusTextProgress(_T(""));
