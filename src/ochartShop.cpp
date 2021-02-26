@@ -2262,6 +2262,8 @@ int checkResult(wxString &result, bool bShowLoginErrorDialog = true)
            if( bShowLoginErrorDialog ){
                 switch(dresult){
                     case 4:
+                        msg += _("User does not exist.");
+                        break;
                     case 5:
                     case 6:
                         msg += _("Invalid user/email name or password.");
