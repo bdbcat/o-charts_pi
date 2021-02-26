@@ -4497,7 +4497,14 @@ int shopPanel::GetShopNameFromFPR()
         }
         
         if(queryResult == _T("1")){
-            g_systemName = tsystemName;
+            // is the detected systemName disabled?
+            if(g_systemNameDisabledArray.Index(tsystemName) != wxNOT_FOUND){
+                wxString msg = _("The detected System Name has been disabled\nPlease choose another System Name");
+                ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
+                return false;
+            }
+            else
+                g_systemName = tsystemName;
         }
         else{
             checkResult(queryResult, true);
