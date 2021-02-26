@@ -2311,7 +2311,18 @@ int checkResult(wxString &result, bool bShowLoginErrorDialog = true)
         }
     }
     else{
-        OCPNMessageBox_PlugIn(NULL, _("o-Charts shop interface error") + _T("\n") + result + _T("\n") + _("Operation cancelled"), _("o-charts_pi Message"), wxOK);
+        // Check the "number + letter" cases...
+        wxString msg;
+        if(result.IsSameAs("3d"))
+            msg = _("void username");
+        else if(result.IsSameAs("3e"))
+            msg = _("invalid username");
+        else if(result.IsSameAs("3f"))
+            msg = _("void password");
+        else if(result.IsSameAs("3g"))
+            msg = _("wrong password");
+        
+        OCPNMessageBox_PlugIn(NULL, _("o-Charts shop interface error") + _T("\n") + result + _T("\n") + msg, _("o-charts_pi Message"), wxOK);
     }
      
     return 98;
