@@ -518,7 +518,6 @@ public:
     bool m_bconnected;
     
     ocValidator *m_validator;
-    oesu_piScreenLogContainer *m_shopLogFrame;
 };
 
 

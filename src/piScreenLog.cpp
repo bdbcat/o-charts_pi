@@ -34,6 +34,8 @@
 #include "piScreenLog.h"
 #define ID_PISLCLOSE    11357
 
+extern oesu_piScreenLogContainer *g_shopLogFrame;
+
 IMPLEMENT_DYNAMIC_CLASS( oesu_piScreenLogContainer, wxFrame )
 
 //      Screen log container implementation
@@ -100,6 +102,8 @@ void oesu_piScreenLogContainer::OnCloseClick(wxCommandEvent& event)
 {
     ClearLog();
     Hide();
+    Close();
+    g_shopLogFrame = 0;
 }
 
 

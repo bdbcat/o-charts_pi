@@ -89,6 +89,7 @@ extern wxString g_PrivateDataDir;
 extern wxString g_debugShop;
 
 shopPanel *g_shopPanel;
+oesu_piScreenLogContainer *g_shopLogFrame;
 
 #ifdef __OCPN_USE_CURL__
     OESENC_CURL_EvtHandler *g_CurlEventHandler;
@@ -3992,7 +3993,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
 : wxPanel(parent, id, pos, size, style)
 {
     m_shopLog = NULL;
-    m_shopLogFrame = NULL;
+    g_shopLogFrame = NULL;
     m_validator = NULL;
     m_bconnected = false;
 
@@ -5308,15 +5309,15 @@ void shopPanel::ValidateChartset( wxCommandEvent& event )
         GetSizer()->Layout();
         wxYield();
         
-        if(!m_shopLogFrame){
+        if(!g_shopLogFrame){
             wxSize shopSize = GetSize();
             wxSize valSize = wxSize( (shopSize.x * 9 / 10), (shopSize.y * 8 / 10));
-            m_shopLogFrame = new oesu_piScreenLogContainer( this, _T("Validate Log"), valSize);
-            m_shopLogFrame->Center();
+            g_shopLogFrame = new oesu_piScreenLogContainer( this, _T("Validate Log"), valSize);
+            g_shopLogFrame->Center();
         }
 
-        m_shopLogFrame->ClearLog();
-        m_validator = new ocValidator( m_ChartPanelSelected->GetSelectedChart(), m_shopLogFrame);
+        g_shopLogFrame->ClearLog();
+        m_validator = new ocValidator( m_ChartPanelSelected->GetSelectedChart(), g_shopLogFrame);
         m_validator->startValidation();
         
         m_buttonValidate->Enable();
