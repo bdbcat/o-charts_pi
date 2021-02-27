@@ -487,7 +487,7 @@ public:
     void UpdateChartList();
     void OnGetNewSystemName( wxCommandEvent& event );
     void OnChangeSystemName( wxCommandEvent& event );
-    bool doSystemNameWizard();
+    bool doSystemNameWizard( bool bshowAll);
     wxString doGetNewSystemName( );
     void UpdateActionControls();
     void setStatusText( const wxString &text ){ m_staticTextStatus->SetLabel( text );  m_staticTextStatus->Refresh(); }
@@ -495,7 +495,7 @@ public:
     void setStatusTextProgress( const wxString &text ){ m_staticTextStatus/*m_staticTextStatusProgress*/->SetLabel( text );  /*m_staticTextStatusProgress->Refresh();*/ }
     void MakeChartVisible(oeXChartPanel *chart);
     int ComputeUpdates(itemChart *chart, itemSlot *slot);
-    bool GetNewSystemName();
+    bool GetNewSystemName( bool bShowAll = true);
     int processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *task);
     bool validateSHA256(std::string fileName, std::string shaSum);
     int GetShopNameFromFPR();
@@ -575,7 +575,7 @@ class oeUniSystemNameSelector: public wxDialog
     
 public:
     oeUniSystemNameSelector( );
-    oeUniSystemNameSelector( wxWindow* parent, wxWindowID id = SYMBOL_GETIP_IDNAME,
+    oeUniSystemNameSelector( wxWindow* parent, bool bShowAll = true, wxWindowID id = SYMBOL_GETIP_IDNAME,
                          const wxString& caption =  _("Select OpenCPN/oeRNC System Name"),
                          const wxPoint& pos = wxDefaultPosition,
                          const wxSize& size = wxSize(500, 200),
@@ -583,13 +583,13 @@ public:
     
     ~oeUniSystemNameSelector();
     
-    bool Create( wxWindow* parent, wxWindowID id = SYMBOL_GETIP_IDNAME,
+    bool Create( wxWindow* parent, bool bshowAll = true, wxWindowID id = SYMBOL_GETIP_IDNAME,
                  const wxString& caption =  _("Select OpenCPN/oeRNC System Name"),
                  const wxPoint& pos = wxDefaultPosition,
                  const wxSize& size = wxSize(500, 200), long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
     
     
-    void CreateControls(  );
+    void CreateControls( bool bShowAll );
     
     void OnCancelClick( wxCommandEvent& event );
     void OnOkClick( wxCommandEvent& event );

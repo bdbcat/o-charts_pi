@@ -100,6 +100,7 @@ bool g_chartListUpdatedOK;
 wxString g_statusOverride;
 wxString g_lastInstallDir;
 wxString g_LastErrorMessage;
+wxString g_lastQueryResult;
 
 unsigned int    g_dongleSN;
 wxString        g_dongleName;
@@ -2321,6 +2322,8 @@ int checkResult(wxString &result, bool bShowLoginErrorDialog = true)
             msg = _("void password");
         else if(result.IsSameAs("3g"))
             msg = _("wrong password");
+        else if(result.IsSameAs("8l"))
+            msg = _("there is not a system name for this device yet");
         
         OCPNMessageBox_PlugIn(NULL, _("o-Charts shop interface error") + _T("\n") + result + _T("\n") + msg, _("o-charts_pi Message"), wxOK);
     }
@@ -4258,6 +4261,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     SetErrorMessage();
 
     // Check the dongle
+    bool bDongleFound = false;
     g_dongleName.Clear();
     if(IsDongleAvailable()){
         g_dongleSN = GetDongleSN();
@@ -4265,6 +4269,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
         snprintf(sName, 19, "sgl%08X", g_dongleSN);
 
         g_dongleName = wxString(sName);
+        bDongleFound = true;
     }
  
     RefreshSystemName();
@@ -4353,7 +4358,14 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
         
         // If the shop does not know about this system yet, then select an existing or new name by user GUI
         if(!g_systemName.Len() && !g_dongleName.Len()){
-            GetNewSystemName();
+            if(g_lastQueryResult.IsSameAs(_T("8l"))){            // very special case, new system, no match
+                if(!bDongleFound)                                // no dongle, so only a systemName is expected
+                    g_systemName = doGetNewSystemName( );
+                else    
+                    GetNewSystemName(false);                        // only show new possiblity
+            }
+            else
+                GetNewSystemName();
         }
         else
             bNeedSystemName = false;
@@ -4536,6 +4548,8 @@ int shopPanel::GetShopNameFromFPR()
         else{
             checkResult(queryResult, true);
         }
+
+        g_lastQueryResult = queryResult;
         
         long dresult;
         if(queryResult.ToLong(&dresult)){
@@ -4551,12 +4565,12 @@ int shopPanel::GetShopNameFromFPR()
 
 }
 
-bool shopPanel::GetNewSystemName()
+bool shopPanel::GetNewSystemName( bool bShowAll )
 {
         bool sname_ok = false;
         int itry = 0;
         while(!sname_ok && itry < 4){
-            bool bcont = doSystemNameWizard();
+            bool bcont = doSystemNameWizard( bShowAll );
         
             if( !bcont ){                // user "Cancel"
                 g_systemName.Clear();
@@ -6015,14 +6029,14 @@ void shopPanel::UpdateActionControls()
 }
 
     
-bool shopPanel::doSystemNameWizard(  )
+bool shopPanel::doSystemNameWizard( bool bShowAll )
 {
     // Make sure the system name array is current
     
     if( g_systemName.Len() && (g_systemNameChoiceArray.Index(g_systemName) == wxNOT_FOUND))
         g_systemNameChoiceArray.Insert(g_systemName, 0);
     
-    oeUniSystemNameSelector dlg( GetOCPNCanvasWindow());
+    oeUniSystemNameSelector dlg( GetOCPNCanvasWindow(), bShowAll);
     
     wxSize dialogSize(500, -1);
     
@@ -6360,7 +6374,7 @@ END_EVENT_TABLE()
  {
  }
  
- oeUniSystemNameSelector::oeUniSystemNameSelector( wxWindow* parent, wxWindowID id, const wxString& caption,
+ oeUniSystemNameSelector::oeUniSystemNameSelector( wxWindow* parent, bool bshowAll, wxWindowID id, const wxString& caption,
                                            const wxPoint& pos, const wxSize& size, long style )
  {
      
@@ -6375,7 +6389,7 @@ END_EVENT_TABLE()
      wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
      SetFont( *qFont );
      
-     CreateControls();
+     CreateControls( bshowAll );
      GetSizer()->SetSizeHints( this );
      Centre();
      
@@ -6386,7 +6400,7 @@ END_EVENT_TABLE()
  }
  
   
- bool oeUniSystemNameSelector::Create( wxWindow* parent, wxWindowID id, const wxString& caption,
+ bool oeUniSystemNameSelector::Create( wxWindow* parent, bool bShowAll, wxWindowID id, const wxString& caption,
                                    const wxPoint& pos, const wxSize& size, long style )
  {
      SetExtraStyle( GetExtraStyle() | wxWS_EX_BLOCK_EVENTS );
@@ -6407,13 +6421,13 @@ END_EVENT_TABLE()
     SetForegroundColour(wxColour(200, 200, 200));
 #endif
     
-     CreateControls(  );
+     CreateControls( bShowAll );
      Centre();
      return TRUE;
  }
  
  
- void oeUniSystemNameSelector::CreateControls(  )
+ void oeUniSystemNameSelector::CreateControls( bool bShowAll )
  {
      oeUniSystemNameSelector* itemDialog1 = this;
      
@@ -6435,18 +6449,22 @@ END_EVENT_TABLE()
      
      bool bDongleAdded = false;
      wxArrayString system_names;
-     for(unsigned int i=0 ; i < g_systemNameChoiceArray.GetCount() ; i++){
-         wxString candidate = g_systemNameChoiceArray.Item(i);
-         if(candidate.StartsWith("sgl")){
-             if(g_systemNameDisabledArray.Index(candidate) == wxNOT_FOUND){
-                system_names.Add(candidate + _T(" (") + _("USB Key Dongle") + _T(")"));
-                bDongleAdded = true;
-             }
-         }
+     
+     if(bShowAll){
+        for(unsigned int i=0 ; i < g_systemNameChoiceArray.GetCount() ; i++){
+            wxString candidate = g_systemNameChoiceArray.Item(i);
+            if(candidate.StartsWith("sgl")){
+                if(g_systemNameDisabledArray.Index(candidate) == wxNOT_FOUND){
+                    system_names.Add(candidate + _T(" (") + _("USB Key Dongle") + _T(")"));
+                    bDongleAdded = true;
+                }
+            }
 
-         else if(g_systemNameDisabledArray.Index(candidate) == wxNOT_FOUND)
+            else if(g_systemNameDisabledArray.Index(candidate) == wxNOT_FOUND)
             system_names.Add(candidate);
+        }
      }
+     
      // Add USB dongle if present, and not already added
      
      if(!bDongleAdded && IsDongleAvailable()){
