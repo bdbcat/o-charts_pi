@@ -56,7 +56,7 @@ oesu_piScreenLogContainer::oesu_piScreenLogContainer( wxWindow *parent, wxString
         
     long style = wxCAPTION | wxRESIZE_BORDER |  wxSTAY_ON_TOP;
 #ifdef __WXMAC__
-//    style = wxDEFAULT_FRAME_STYLE | wxSTAY_ON_TOP;
+    style = wxDEFAULT_FRAME_STYLE; // | wxSTAY_ON_TOP;
 #endif
     
     wxFrame::Create( parent, -1, title, wxDefaultPosition, size, style );
