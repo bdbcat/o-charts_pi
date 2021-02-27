@@ -36,10 +36,10 @@
 
 extern oesu_piScreenLogContainer *g_shopLogFrame;
 
-IMPLEMENT_DYNAMIC_CLASS( oesu_piScreenLogContainer, wxFrame )
+IMPLEMENT_DYNAMIC_CLASS( oesu_piScreenLogContainer, wxDialog )
 
 //      Screen log container implementation
-BEGIN_EVENT_TABLE(oesu_piScreenLogContainer, wxFrame)
+BEGIN_EVENT_TABLE(oesu_piScreenLogContainer, wxDialog)
 EVT_BUTTON(ID_PISLCLOSE, oesu_piScreenLogContainer::OnCloseClick)
 
 END_EVENT_TABLE()
@@ -56,10 +56,10 @@ oesu_piScreenLogContainer::oesu_piScreenLogContainer( wxWindow *parent, wxString
         
     long style = wxCAPTION | wxRESIZE_BORDER |  wxSTAY_ON_TOP;
 #ifdef __WXMAC__
-    style = wxDEFAULT_FRAME_STYLE; // | wxSTAY_ON_TOP;
+    style = wxDEFAULT_DIALOG_STYLE; // | wxSTAY_ON_TOP;
 #endif
     
-    wxFrame::Create( parent, -1, title, wxDefaultPosition, size, style );
+    wxDialog::Create( parent, -1, title, wxDefaultPosition, size, style );
     m_slog = new oesu_piScreenLog( this );
     
     wxBoxSizer* itemBoxSizer2 = new wxBoxSizer( wxVERTICAL );

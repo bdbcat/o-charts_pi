@@ -41,7 +41,7 @@ private:
     
 };
 
-class oesu_piScreenLogContainer : public wxFrame
+class oesu_piScreenLogContainer : public wxDialog
 {
     DECLARE_DYNAMIC_CLASS( oesu_piScreenLogContainer )
     DECLARE_EVENT_TABLE()
