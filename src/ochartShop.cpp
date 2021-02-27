@@ -2323,7 +2323,9 @@ int checkResult(wxString &result, bool bShowLoginErrorDialog = true)
         else if(result.IsSameAs("3g"))
             msg = _("wrong password");
         else if(result.IsSameAs("8l"))
-            msg = _("there is not a system name for this device yet");
+            msg = _("There is not a system name for this device yet.");
+        else if(result.IsSameAs("8h"))
+            msg = _("Something has changed in the device assigned to this system name.");
         
         OCPNMessageBox_PlugIn(NULL, _("o-Charts shop interface error") + _T("\n") + result + _T("\n") + msg, _("o-charts_pi Message"), wxOK);
     }
