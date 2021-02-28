@@ -39,10 +39,6 @@ extern oesu_piScreenLogContainer *g_shopLogFrame;
 IMPLEMENT_DYNAMIC_CLASS( oesu_piScreenLogContainer, wxDialog )
 
 //      Screen log container implementation
-BEGIN_EVENT_TABLE(oesu_piScreenLogContainer, wxDialog)
-//EVT_BUTTON(ID_PISLCLOSE, oesu_piScreenLogContainer::OnCloseClick)
-
-END_EVENT_TABLE()
 
 oesu_piScreenLogContainer::oesu_piScreenLogContainer()
 {
@@ -102,7 +98,6 @@ void oesu_piScreenLogContainer::ClearLog(void)
 
 void oesu_piScreenLogContainer::OnCloseClick(wxCommandEvent& event)
 {
-    wxLogMessage(_T("<<<<<<<<<<<<<<<CloseClick"));
     ClearLog();
     Hide();
     Close();
