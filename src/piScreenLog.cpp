@@ -40,7 +40,7 @@ IMPLEMENT_DYNAMIC_CLASS( oesu_piScreenLogContainer, wxDialog )
 
 //      Screen log container implementation
 BEGIN_EVENT_TABLE(oesu_piScreenLogContainer, wxDialog)
-EVT_BUTTON(ID_PISLCLOSE, oesu_piScreenLogContainer::OnCloseClick)
+//EVT_BUTTON(ID_PISLCLOSE, oesu_piScreenLogContainer::OnCloseClick)
 
 END_EVENT_TABLE()
 
@@ -70,6 +70,8 @@ oesu_piScreenLogContainer::oesu_piScreenLogContainer( wxWindow *parent, wxString
 
      // Close button
     wxButton* bClose = new wxButton( this, ID_PISLCLOSE, _( "Close" ), wxDefaultPosition, wxDefaultSize, 0 );
+    bClose->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(oesu_piScreenLogContainer::OnCloseClick), NULL, this);
+
     //AckBox->Add( ack, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
     itemBoxSizer2->Add(bClose);
 
@@ -100,6 +102,7 @@ void oesu_piScreenLogContainer::ClearLog(void)
 
 void oesu_piScreenLogContainer::OnCloseClick(wxCommandEvent& event)
 {
+    wxLogMessage(_T("<<<<<<<<<<<<<<<CloseClick"));
     ClearLog();
     Hide();
     Close();
