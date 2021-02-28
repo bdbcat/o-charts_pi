@@ -3560,13 +3560,13 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
         if( m_pChart->isChartsetExpired() || ( m_pChart->isChartsetFullyAssigned()  &&  !m_pChart->isChartsetAssignedToMe()))
             GetGlobalColor( "BLUE2", &thumbColor );
         else
-            GetGlobalColor( "BLUE1", &thumbColor );
+            GetGlobalColor( "BLUE2", &thumbColor );
     }
     else if(m_pChart->GetChartType() == CHART_TYPE_OEUSENC){
         if( m_pChart->isChartsetExpired() || ( m_pChart->isChartsetFullyAssigned()  &&  !m_pChart->isChartsetAssignedToMe()))
             GetGlobalColor( "GREEN2", &thumbColor );
         else
-            GetGlobalColor( "GREEN1", &thumbColor );
+            GetGlobalColor( "GREEN2", &thumbColor );
     }
     else
         thumbColor = wxColor(164,164,164);
@@ -3785,6 +3785,8 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
         if( m_pChart->isChartsetFullyAssigned()  &&  !m_pChart->isChartsetAssignedToMe())
             dc.SetTextForeground(wxColour(128,128,128));
 
+        if( m_pChart->isChartsetExpired())
+            dc.SetTextForeground(wxColour(128,128,128));
         
         if(m_pContainer->GetSelectedChartPanel())
             dc.SetTextForeground(wxColour(220,220,220));
