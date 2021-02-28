@@ -3632,6 +3632,18 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
 
         wxFont *qFont = wxTheFontList->FindOrCreateFont( font_size, dFont->GetFamily(), dFont->GetStyle(), dFont->GetWeight());
 
+        // Make sure the text fits, adjust font size to make it so...
+        int nameWidth, nameHeight;
+        int nameWidthAvail = width - text_x - 5;
+        dc.GetTextExtent( nameString, &nameWidth, &nameHeight, NULL, NULL, qFont);
+        bool bfit = nameWidth < nameWidthAvail;
+        while (!bfit && (font_size > 8)){
+            font_size--;
+            qFont = wxTheFontList->FindOrCreateFont( font_size, dFont->GetFamily(), dFont->GetStyle(), dFont->GetWeight());
+            dc.GetTextExtent( nameString, &nameWidth, &nameHeight, NULL, NULL, qFont);
+            bfit = nameWidth < nameWidthAvail;
+        }
+            
         dc.SetFont( *qFont );
         dc.SetTextForeground(wxColour(0,0,0));
         dc.DrawText(nameString, text_x, height * 5 / 100);
@@ -3722,123 +3734,6 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
                 nid++;
             }
         }
-        
-
-
-#if 0        
-        dc.SetBrush( wxBrush( m_boxColour ) );
-        
-        GetGlobalColor( _T ( "UITX1" ), &c );
-        dc.SetPen( wxPen( c, 3 ));
-        
-        dc.DrawRoundedRectangle( 0, 0, width-1, height-1, height / 10);
-         
-        wxFont *dFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
-        double font_size = dFont->GetPointSize() * 4/3;
-        wxFont *qFont = wxTheFontList->FindOrCreateFont( font_size, dFont->GetFamily(), dFont->GetStyle(), dFont->GetWeight());
-
-        dc.SetFont( *qFont );
-        dc.SetTextForeground(wxColour(0,0,0));
-        dc.DrawText(m_pChart->chartName, 5, 5);
-        
-        dc.SetFont( *dFont );
-        
-        int offset = GetCharHeight();
-        
-        int yPitch = GetCharHeight();
-        int yPos = yPitch * 2;
-        int xcolumn = GetCharHeight();
-        wxString tx; 
-        // Create and populate the current chart information
-/*        
-        <order>OAUMRVVRP</order>
-        <purchase>2017-07-06 19:27:41</purchase>
-        <expiration>2018-07-06 19:27:41</expiration>
-        <chartid>10</chartid>
-        <chartEdition>2018-2</chartEdition>
-        <chartPublication>1522533600</chartPublication>
-        <chartName>Netherlands and Belgium 2017</chartName>
-        <quantityId>1</quantityId>
-        
-        <slot>1</slot>
-        <assignedSystemName />
-        <lastRequested />
-        <state>unassigned</state>
-        <link />
-  */      
-        tx = _("Chart Edition: ") + m_pChart->currentChartEdition;
-        dc.DrawText( tx, xcolumn, yPos);
-        yPos += yPitch;
-
-        tx = _("Order Reference: ") + m_pChart->orderRef;
-        dc.DrawText( tx, xcolumn, yPos);
-        yPos += yPitch;
-
-        yPos = yPitch * 2;
-        xcolumn = width / 2;
-        
-        tx = _("Purchase date: ") + m_pChart->purchaseDate;
-        dc.DrawText( tx, xcolumn, yPos);
-        yPos += yPitch;
-        
-        tx = _("Expiration date: ") + m_pChart->expDate;
-        dc.DrawText( tx, xcolumn, yPos);
-        yPos += yPitch;
-        
-        dc.DrawLine( offset, yPos + 3, width - offset, yPos + 3);
-        yPos += 6;
-        
-        
-        //  The two assignment slots
-        xcolumn = GetCharHeight();
-        int yTable = yPos;
-        wxString adjStatus;
-        
-        tx = _("Assigment 1");
-        dc.DrawText( tx, xcolumn, yPos);
-        yPos += yPitch;
-        
-        tx = _("System: ") + m_pChart->sysID0;
-        dc.DrawText( tx, xcolumn + yPitch, yPos);
-        yPos += yPitch;
-        
-        tx = _("Installed edition: ") + m_pChart->lastRequestEdition0;
-        dc.DrawText( tx, xcolumn + yPitch, yPos);
-        yPos += yPitch;
-        
-        adjStatus = m_pChart->statusID0;
-//         if(adjStatus.IsSameAs(_T("requestable")))
-//             adjStatus = _("ok");
-        
-        tx = _("Status: ") + adjStatus;
-        dc.DrawText( tx, xcolumn + yPitch, yPos);
-        yPos += yPitch;
- 
-        yPos = yTable;
-        xcolumn = width / 2;
-        
-        tx = _("Assigment 2");
-        dc.DrawText( tx, xcolumn, yPos);
-        yPos += yPitch;
-        
-        tx = _("System: ") + m_pChart->sysID1;
-        dc.DrawText( tx, xcolumn + yPitch, yPos);
-        yPos += yPitch;
-        
-        tx = _("Installed edition: ") + m_pChart->lastRequestEdition1;
-        dc.DrawText( tx, xcolumn + yPitch, yPos);
-        yPos += yPitch;
-        
-        adjStatus = m_pChart->statusID1;
-//        if(adjStatus.IsSameAs(_T("requestable")))
-//            adjStatus = _("ok");
-        
-        tx = _("Status: ") + adjStatus;
-        dc.DrawText( tx, xcolumn + yPitch, yPos);
-        yPos += yPitch;
-#endif
-        
-        
     }
     else{
         dc.SetBrush( wxBrush( m_boxColour ) );
@@ -3867,10 +3762,23 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
         
         int scaledWidth = bm.GetWidth() * scaledHeight / bm.GetHeight();
         
+        int text_x = scaledWidth * 15 / 10;
         
         wxFont *dFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
         double font_size = dFont->GetPointSize() * 3/2;
         wxFont *qFont = wxTheFontList->FindOrCreateFont( font_size, dFont->GetFamily(), dFont->GetStyle(), dFont->GetWeight());
+
+        // Make sure the text fits, adjust font size to make it so...
+        int nameWidth, nameHeight;
+        int nameWidthAvail = width - text_x - 5;
+        dc.GetTextExtent( nameString, &nameWidth, &nameHeight, NULL, NULL, qFont);
+        bool bfit = nameWidth < nameWidthAvail;
+        while (!bfit && (font_size > 8)){
+            font_size--;
+            qFont = wxTheFontList->FindOrCreateFont( font_size, dFont->GetFamily(), dFont->GetStyle(), dFont->GetWeight());
+            dc.GetTextExtent( nameString, &nameWidth, &nameHeight, NULL, NULL, qFont);
+            bfit = nameWidth < nameWidthAvail;
+        }
 
         dc.SetFont( *qFont );
         dc.SetTextForeground(wxColour(64, 64, 64));
@@ -3881,7 +3789,7 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
         if(m_pContainer->GetSelectedChartPanel())
             dc.SetTextForeground(wxColour(220,220,220));
         
-        dc.DrawText(nameString, scaledWidth * 15 / 10, height * 35 / 100);
+        dc.DrawText(nameString, text_x, height * 35 / 100);
         
         if(m_pChart->isChartsetExpired()){
             wxFont *iFont = wxTheFontList->FindOrCreateFont( font_size, dFont->GetFamily(), wxFONTSTYLE_ITALIC, dFont->GetWeight());
@@ -3889,8 +3797,6 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
             dc.DrawText(_("Expired"), scaledWidth * 18 / 10, height * 60 / 100);
         }
     }
-    
-    
 }
 
 
