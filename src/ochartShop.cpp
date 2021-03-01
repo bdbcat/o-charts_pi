@@ -5120,6 +5120,25 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         if(wxFileExists(actionChartList)){
             wxRemoveFile(actionChartList);
         }
+        
+        // Create a surrogate Chartinfo.txt file
+        wxString ciLine = _T("ChartInfo:");
+        ciLine += wxString(chart->chartName.c_str());
+        ciLine += _T(";") + wxString(chart->editionTag.c_str());
+        ciLine += _T(";") + wxString(chart->expDate.c_str()).BeforeFirst(' ');
+
+        wxString ciPath = destinationDir;
+        ciPath += _T("Chartinfo.txt");
+        
+        wxRemoveFile(ciPath);
+        wxTextFile file( ciPath );
+        file.Create();
+
+        file.AddLine( ciLine );
+
+        file.Write();
+        file.Close();
+    
     }    
         
 

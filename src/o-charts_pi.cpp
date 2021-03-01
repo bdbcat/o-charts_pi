@@ -178,6 +178,8 @@ EULAArray                       g_EULAArray;
 wxArrayString                   g_EULAShaArray;
 wxString                        g_PrivateDataDir;
 
+wxArrayString                   g_ChartInfoArrayUnified;
+
 int                             g_admin;
 wxString                        g_debugShop;
 wxString                        g_versionString;
@@ -737,6 +739,7 @@ int o_charts_pi::Init(void)
     g_benable_screenlog = g_buser_enable_screenlog;
     
     g_ChartInfoArray.Clear();
+    g_ChartInfoArrayUnified.Clear();
    
 #ifdef __OCPN__ANDROID__
     g_deviceInfo = callActivityMethod_vs("getDeviceInfo");
@@ -5090,11 +5093,16 @@ void showChartinfoDialog( void )
             
             token = tkx.GetNextToken();         // expiry date
             wxDateTime exdate;
-            exdate.ParseDate(token);
-            wxTimeSpan diff = exdate - wxDateTime::Today();
-            // Expired? Red text
-            hdr += diff > 0 ? _T("<td>") + token + _T("</td>") :
-                              _T("<td><font color=#ff0000>") + token + _T("</font></td>");            
+            bool pok = exdate.ParseDate(token);
+            if(pok){
+                wxTimeSpan diff = exdate - wxDateTime::Today();
+                // Expired? Red text
+                hdr += diff > 0 ? _T("<td>") + token + _T("</td>") :
+                                _T("<td><font color=#ff0000>") + token + _T("</font></td>");            
+            }
+            else
+                hdr += _T("<td>") + token + _T("</td>");
+                
         }
         
         hdr += _T("</tr>");
@@ -5321,7 +5329,6 @@ bool processChartinfo(const wxString &oesenc_file)
         return false;
                 
 }
-
 
 void processUserKeyHint(const wxString &oesenc_file)
 {

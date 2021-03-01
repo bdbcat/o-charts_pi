@@ -745,6 +745,10 @@ int oesuChart::Init( const wxString& name, int init_flags )
     if( !wxFileName::FileExists( name ) )
         return PI_INIT_FAIL_REMOVE;
 
+    if(!processChartinfo( name )){
+        return PI_INIT_FAIL_REMOVE;
+    }
+ 
     //    Use a static semaphore flag to prevent recursion
     if( s_PI_bInS57 ) {
         return PI_INIT_FAIL_NOERROR;
@@ -777,6 +781,7 @@ int oesuChart::Init( const wxString& name, int init_flags )
 
     m_rKey = key;
     
+#if 0
     wxString getExpDate( wxString rkey);
     wxString ddate = getExpDate( m_rKey);
     wxString msg(_T("   o-charts_pi: "));
@@ -784,7 +789,7 @@ int oesuChart::Init( const wxString& name, int init_flags )
     msg.Append(_T(" Expiry dates: "));
     msg.Append(ddate);
     wxLogMessage(msg);
-   
+#endif   
     validate_SENC_server();
        
     if( PI_HEADER_ONLY == init_flags ){
@@ -798,7 +803,7 @@ int oesuChart::Init( const wxString& name, int init_flags )
         
     else if( PI_FULL_INIT == init_flags ){
 
-//        showChartinfoDialog();
+        showChartinfoDialog();
         
         m_SENCFileName = name;
         ret_val = PostInit( init_flags, global_color_scheme );
