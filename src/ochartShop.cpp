@@ -4265,15 +4265,21 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     
     if(bNeedSystemName ){
         // Check shop to see if systemName is already known for this system
-        GetShopNameFromFPR();
+        int nGSN = GetShopNameFromFPR();
         
         // If the shop does not know about this system yet, then select an existing or new name by user GUI
         if(!g_systemName.Len() && !g_dongleName.Len()){
-            if(g_lastQueryResult.IsSameAs(_T("8l"))){            // very special case, new system, no match
-                if(!bDongleFound)                                // no dongle, so only a systemName is expected
+            if(g_lastQueryResult.IsSameAs(_T("8l"))){           // very special case, new system, no match
+                if(!bDongleFound)                               // no dongle, so only a systemName is expected
                     g_systemName = doGetNewSystemName( );
                 else    
-                    GetNewSystemName(false);                        // only show new possiblity
+                    GetNewSystemName(false);                    // only show new possiblity, and dongle if present
+            }
+            else if(nGSN == 83){                                // system name exists, but is disabled.
+                if(!bDongleFound)                               // no dongle, so only a systemName is expected
+                    g_systemName = doGetNewSystemName( );
+                else    
+                    GetNewSystemName(false);                    // only show new possiblity, and dongle if present
             }
             else
                 GetNewSystemName();
@@ -4451,7 +4457,7 @@ int shopPanel::GetShopNameFromFPR()
             if(g_systemNameDisabledArray.Index(tsystemName) != wxNOT_FOUND){
                 wxString msg = _("The detected System Name has been disabled\nPlease choose another System Name");
                 ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
-                return false;
+                return 83;
             }
             else
                 g_systemName = tsystemName;
