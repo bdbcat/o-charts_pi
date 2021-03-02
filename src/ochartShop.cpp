@@ -5022,7 +5022,18 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         }
  
  
-        wxString destinationDir = wxString(slot->installLocation.c_str()) + wxFileName::GetPathSeparator() + task->chartsetNameNormalized + wxFileName::GetPathSeparator();
+        wxString dest(chartTopLevelZip);
+        int nc = dest.Length();
+        unsigned int i = 0;
+        int ndash = 0;
+        while(i < dest.Length() && (ndash < 2)){
+            if(dest[i] == '-')
+                ndash++;
+            i++;
+        }
+        dest = dest.Mid(0, wxMax(0, i-1));
+        
+        wxString destinationDir = wxString(slot->installLocation.c_str()) + wxFileName::GetPathSeparator() + dest + wxFileName::GetPathSeparator();
         wxFileName fndd(destinationDir);
         if( !fndd.DirExists() ){
             if( !wxFileName::Mkdir(fndd.GetPath(), 0755, wxPATH_MKDIR_FULL) ){
@@ -5090,7 +5101,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         
 
         // Write out the modified Target KeyList.XML file as the new result KeyList.XML
-        wxString destinationKLXML = destinationDir  + wxString(task->chartsetNameNormalized.c_str()) + _T("-") + keySystem + _T(".XML");
+        wxString destinationKLXML = destinationDir  + dest + _T("-") + keySystem + _T(".XML");
         if(!cskey_target.WriteFile( std::string(destinationKLXML.mb_str()) )){
             wxLogError(_T("Can not write target KefList XML file on TASK_UPDATE '") + destinationKLXML );
             return 15;

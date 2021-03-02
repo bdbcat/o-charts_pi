@@ -367,7 +367,7 @@ void ocValidator::startValidation()
 
     wxString dirType = _T("oeuSENC-");
     if(m_chart->chartType == CHART_TYPE_OERNC)
-        dirType = _T("oeRNC-");
+        dirType = _T("oeuRNC-");
     wxString chartsetBaseDirectory = installDirectory + wxFileName::GetPathSeparator() + dirType + wxString(m_chart->chartID.c_str()) + wxFileName::GetPathSeparator();
             
     LogMessage(_("  ProcessingChartList.XML") );
