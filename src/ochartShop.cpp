@@ -6032,31 +6032,49 @@ wxString shopPanel::doGetNewSystemName( )
     dlg.SetSize(dialogSize);
     dlg.Centre();
     
-    
-    int ret = dlg.ShowModal();
-    
+    wxString msg;
+    bool goodName = false;
     wxString sName;
-    if(ret == 0){               // OK
-        sName = dlg.GetNewName();
+    while(!goodName){
+        int ret = dlg.ShowModal();
+    
+        if(ret == 0){               // OK
+            bool sgood = true;
+            sName = dlg.GetNewName();
         
         // Check system name rules...
-        const char *s = sName.c_str();
-        if( (strlen(s) < 3) || (strlen(s) > 15))
-            return wxEmptyString;
+            const char *s = sName.c_str();
+            if( (strlen(s) < 3) || (strlen(s) > 15)){
+                sgood = false;
+                msg = wxString( _("A valid System Name is 3 to 15 characters in length."));
+            }
         
-        char *t = (char *)s;
-        for(unsigned int i = 0; i < strlen(s); i++, t++){
-            bool bok = false;
-            if( ((*t >= 'a') && (*t <= 'z')) ||
-                ((*t >= 'A') && (*t <= 'Z')) ||
-                ((*t >= '0') && (*t <= '9')) ){
+            char *t = (char *)s;
+            for(unsigned int i = 0; i < strlen(s); i++, t++){
+                bool bok = false;
+                if( ((*t >= 'a') && (*t <= 'z')) ||
+                    ((*t >= 'A') && (*t <= 'Z')) ||
+                    ((*t >= '0') && (*t <= '9')) ){
                 
-                bok = true;
+                        bok = true;
+                }
+                else{
+                    msg = wxString( _("No symbols or spaces are allowed in System Name."));
+                    sgood = false;
+                    sName.Clear();
+                    break;
+                }
             }
-            else{
-                sName.Clear();
-                break;
+            goodName = sgood;
+            
+            if(!goodName){
+                ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
             }
+            
+        }
+        else{                                    // cancelled
+            goodName = true;
+            sName.Clear();
         }
     }
     
@@ -6215,7 +6233,7 @@ END_EVENT_TABLE()
      wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
      SetFont( *qFont );
      
-     SetTitle( _("New OpenCPN oeRNC System Name"));
+     SetTitle( _("New OpenCPN o-charts System Name"));
      
      CreateControls(  );
      Centre();
