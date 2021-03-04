@@ -939,7 +939,7 @@ bool oesuChart::CreateChartInfoFile( wxString chartName )
                         std::string s = childVal->Value();                      // a time_t value, in ASCII text
 
                         std::string::const_iterator it = s.begin();             // Make sure this is a number
-                        while (it != s.end() && std::isdigit(*it)) ++it;
+                        while (it != s.end() && isdigit(*it)) ++it;
                         if(!s.empty() && (it == s.end())){
                             long long ll = std::stoll (s);
                             time_t tt = (time_t)(ll);
