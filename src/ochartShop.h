@@ -119,8 +119,12 @@ public:
     bool RemoveKey( std::string fileNameKap );
     bool AddKey(itemChartDataKeys *kdata);
     bool WriteFile( std::string fileName);
+    void CopyAuxData( ChartSetKeys &source);
 
     std::vector < itemChartDataKeys *> chartList;
+    std::string m_chartInfo,  m_chartInfoEdition, m_chartInfoExpirationDate;
+    std::string m_chartInfoShow, m_chartInfoEULAShow, m_chartInfoDisappearingDate;
+
     bool m_bOK;
 };
 
@@ -152,6 +156,7 @@ public:
 
     std::vector < itemChartData *> chartList;
     std::string editionTag;
+
     
 };
 

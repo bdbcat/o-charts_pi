@@ -326,6 +326,8 @@ class  Chart_oeuRNC : public PlugInChartBase
 
       double GetRasterScaleFactor() { return m_piraster_scale_factor; }
 
+      bool CreateChartInfoFile( wxString chartName );
+  
 
 protected:
 //    Methods
@@ -505,6 +507,11 @@ protected:
       unsigned char     *m_imageMap;
       size_t             m_lenImageMap;
       int                m_nColors;
+      
+      std::string m_chartInfo,  m_chartInfoEdition, m_chartInfoExpirationDate;
+      std::string m_chartInfoShow, m_chartInfoEULAShow, m_chartInfoDisappearingDate;
+
+
 
 };
 

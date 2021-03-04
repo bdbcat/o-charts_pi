@@ -721,12 +721,14 @@ bool ChartSetKeys::Load( std::string fileXML)
         TiXmlNode *child;
         for ( child = root->FirstChild(); child != 0; child = child->NextSibling()){
 
-            itemChartDataKeys *cdata = new itemChartDataKeys();
-            chartList.push_back(cdata);
+            if(!strcmp(child->Value(), "Chart")){
+            
+                itemChartDataKeys *cdata = new itemChartDataKeys();
+                chartList.push_back(cdata);
            
-            TiXmlNode *childChart = child->FirstChild();
-            for ( childChart = child->FirstChild(); childChart!= 0; childChart = childChart->NextSibling()){
-                const char *chartVal =  childChart->Value();
+                TiXmlNode *childChart = child->FirstChild();
+                for ( childChart = child->FirstChild(); childChart!= 0; childChart = childChart->NextSibling()){
+                    const char *chartVal =  childChart->Value();
   
 /*
     <Name>Chart AB 6 Walkers &amp; Grand Cays</Name>
@@ -734,27 +736,64 @@ bool ChartSetKeys::Load( std::string fileXML)
     <ID>AB6</ID>
     <RInstallKey>AF2A6D76</RInstallKey>
 */
-                if(!strcmp(chartVal, "RInstallKey")){
-                    TiXmlNode *childVal = childChart->FirstChild();
-                    if(childVal)
-                        cdata->RIK = childVal->Value();
+                    if(!strcmp(chartVal, "RInstallKey")){
+                        TiXmlNode *childVal = childChart->FirstChild();
+                        if(childVal)
+                            cdata->RIK = childVal->Value();
+                    }
+                    if(!strcmp(chartVal, "FileName")){
+                        TiXmlNode *childVal = childChart->FirstChild();
+                        if(childVal)
+                            cdata->fileName = childVal->Value();
+                    }
+                    if(!strcmp(chartVal, "Name")){
+                        TiXmlNode *childVal = childChart->FirstChild();
+                        if(childVal)
+                            cdata->Name = childVal->Value();
+                    }
+                    if(!strcmp(chartVal, "ID")){
+                        TiXmlNode *childVal = childChart->FirstChild();
+                        if(childVal)
+                            cdata->ID = childVal->Value();
+                    }
                 }
-                if(!strcmp(chartVal, "FileName")){
-                    TiXmlNode *childVal = childChart->FirstChild();
-                    if(childVal)
-                        cdata->fileName = childVal->Value();
+            }
+            
+            else if(!strcmp(child->Value(), "ChartInfo")){
+                TiXmlNode *childVal = child->FirstChild();
+                if(childVal){
+                    m_chartInfo = childVal->Value();
                 }
-                if(!strcmp(chartVal, "Name")){
-                    TiXmlNode *childVal = childChart->FirstChild();
-                    if(childVal)
-                        cdata->Name = childVal->Value();
+            }
+            else if(!strcmp(child->Value(), "Edition")){
+                TiXmlNode *childVal = child->FirstChild();
+                if(childVal){
+                    m_chartInfoEdition = childVal->Value();
                 }
-                if(!strcmp(chartVal, "ID")){
-                    TiXmlNode *childVal = childChart->FirstChild();
-                    if(childVal)
-                        cdata->ID = childVal->Value();
+            }
+            else if(!strcmp(child->Value(), "ExpirationDate")){
+                TiXmlNode *childVal = child->FirstChild();
+                if(childVal){
+                    m_chartInfoExpirationDate = childVal->Value();
                 }
-
+            }
+            else if(!strcmp(child->Value(), "ChartInfoShow")){
+                TiXmlNode *childVal = child->FirstChild();
+                if(childVal){
+                    m_chartInfoShow = childVal->Value();
+                }
+            }
+            else if(!strcmp(child->Value(), "EULAShow")){
+                TiXmlNode *childVal = child->FirstChild();
+                if(childVal){
+                    m_chartInfoEULAShow = childVal->Value();
+                }
+            }
+            else if(!strcmp(child->Value(), "DisappearingDate")){
+                TiXmlNode *childVal = child->FirstChild();
+                if(childVal){
+                    m_chartInfoDisappearingDate = childVal->Value();
+                }
             }
         }
         
@@ -856,7 +895,32 @@ bool ChartSetKeys::WriteFile( std::string fileName)
         item->LinkEndChild( new TiXmlText( chartList[i]->RIK.c_str()) );  
         chart->LinkEndChild( item );  
     }
+
+    // The aux data
+    TiXmlElement * item = new TiXmlElement( "ChartInfo" );  
+    item->LinkEndChild( new TiXmlText( m_chartInfo.c_str()) );  
+    root->LinkEndChild( item );  
     
+    item = new TiXmlElement( "Edition" );  
+    item->LinkEndChild( new TiXmlText( m_chartInfoEdition.c_str()) );  
+    root->LinkEndChild( item );  
+
+    item = new TiXmlElement( "ExpirationDate" );  
+    item->LinkEndChild( new TiXmlText( m_chartInfoExpirationDate.c_str()) );  
+    root->LinkEndChild( item );  
+
+    item = new TiXmlElement( "ChartInfoShow" );  
+    item->LinkEndChild( new TiXmlText( m_chartInfoShow.c_str()) );  
+    root->LinkEndChild( item );  
+
+    item = new TiXmlElement( "EULAShow" );  
+    item->LinkEndChild( new TiXmlText( m_chartInfoEULAShow.c_str()) );  
+    root->LinkEndChild( item );  
+
+    item = new TiXmlElement( "DisappearingDate" );  
+    item->LinkEndChild( new TiXmlText( m_chartInfoDisappearingDate.c_str()) );  
+    root->LinkEndChild( item );  
+
 /*
     <Chart>
     <Name>Chart AB 6 Walkers &amp; Grand Cays</Name>
@@ -868,6 +932,17 @@ bool ChartSetKeys::WriteFile( std::string fileName)
     return(doc.SaveFile( fileName.c_str() ));  
     
 }
+
+void ChartSetKeys::CopyAuxData( ChartSetKeys &source)
+{
+    m_chartInfo = source.m_chartInfo;
+    m_chartInfoEdition = source.m_chartInfoEdition;
+    m_chartInfoExpirationDate = source.m_chartInfoExpirationDate;
+    m_chartInfoShow = source.m_chartInfoShow;
+    m_chartInfoEULAShow = source.m_chartInfoEULAShow;
+    m_chartInfoDisappearingDate =source.m_chartInfoDisappearingDate;
+}
+
 
 // itemChart
 //------------------------------------------------------------------------------------------
@@ -4987,6 +5062,9 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             return 13;
         }
 
+        // Copy the Auxiliary data verbatim
+        cskey_target.CopyAuxData(workCSK);
+        
         //Ready to perform the actions indicated
         
         // Process withdrawn charts
@@ -5137,7 +5215,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         if(wxFileExists(actionChartList)){
             wxRemoveFile(actionChartList);
         }
-        
+#if 0        
         // Create a surrogate Chartinfo.txt file
         wxString ciLine = _T("ChartInfo:");
         ciLine += wxString(chart->chartName.c_str());
@@ -5155,7 +5233,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
 
         file.Write();
         file.Close();
-    
+#endif    
     }    
         
 

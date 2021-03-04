@@ -442,8 +442,12 @@ DECLARE_DYNAMIC_CLASS(oesuChart)
       PI_InitReturn PostInit( int flags, int cs );
 
     private:
-        
+      bool CreateChartInfoFile( wxString chartName );
+  
       wxString  m_rKey;
+
+      std::string m_chartInfo,  m_chartInfoEdition, m_chartInfoExpirationDate;
+      std::string m_chartInfoShow, m_chartInfoEULAShow, m_chartInfoDisappearingDate;
 
 
 };

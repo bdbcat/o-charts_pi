@@ -1282,7 +1282,7 @@ bool o_charts_pi::ScrubChartinfoList( void )
 
     if(g_debugLevel) wxLogMessage(_T("Scrub2: "));
     
-    pConf->SetPath ( _T ( "/PlugIns/oesenc/ChartinfoList" ) );
+    pConf->SetPath ( _T ( "/PlugIns/ocharts/ChartinfoList" ) );
     std::map<std::string, ChartInfoItem *>::iterator iter = info_hash.begin();
     while( iter != info_hash.end())
     {
@@ -1396,7 +1396,7 @@ bool o_charts_pi::LoadConfig( void )
         pConf->Read( _T("UserKey"), &g_UserKey );
 
         //  Load the persistent Chartinfo strings
-        pConf->SetPath ( _T ( "/PlugIns/ocharts/oesenc/ChartinfoList" ) );
+        pConf->SetPath ( _T ( "/PlugIns/ocharts/ChartinfoList" ) );
         
         wxString strk;
         wxString kval;
@@ -1420,7 +1420,7 @@ bool o_charts_pi::LoadConfig( void )
         }
 
         //  Load the persistent EULA information
-        pConf->SetPath ( _T ( "/PlugIns/oesenc/EULA" ) );
+        pConf->SetPath ( _T ( "/PlugIns/ocharts/EULA" ) );
         
         bContk = pConf->GetFirstEntry( strk, dummyval );
         while( bContk ) {
@@ -1473,8 +1473,8 @@ bool o_charts_pi::SaveConfig( void )
 #endif        
         
         //  Save the persistent Chartinfo strings
-        pConf->DeleteGroup(_T ( "/PlugIns/ocharts/oesenc/ChartinfoList"));
-        pConf->SetPath ( _T ( "/PlugIns/ocharts/oesenc/ChartinfoList" ) );
+        pConf->DeleteGroup(_T ( "/PlugIns/ocharts/ChartinfoList"));
+        pConf->SetPath ( _T ( "/PlugIns/ocharts/ChartinfoList" ) );
         std::map<std::string, ChartInfoItem *>::iterator iter;
         for( iter = info_hash.begin(); iter != info_hash.end(); ++iter )
         {
@@ -1486,8 +1486,8 @@ bool o_charts_pi::SaveConfig( void )
         }
 
         //  Save the persistent EULA
-        pConf->DeleteGroup(_T ( "/PlugIns/ocharts/oesenc/EULA"));
-        pConf->SetPath ( _T ( "/PlugIns/ocharts/oesenc/EULA" ) );
+        pConf->DeleteGroup(_T ( "/PlugIns/ocharts/EULA"));
+        pConf->SetPath ( _T ( "/PlugIns/ocharts/EULA" ) );
         
         for(unsigned int i=0 ; i < g_EULAArray.GetCount() ; i++){
             ChartSetEULA *cse = g_EULAArray.Item(i);
@@ -5166,12 +5166,12 @@ bool processChartinfo(const wxString &oesenc_file)
         wxString fileEULA, sshowEULA, fullEULAFileName;
         wxArrayString EULAFileArray;
         while( !info_file.Eof() ){
-            if(line.StartsWith( _T("oesencEULAFile:" ) ) ) {
+            if(line.StartsWith( _T("ochartsEULAFile:" ) ) ) {
                 wxString tentativeFileEULA = line.AfterFirst(':').Trim(false);
                 EULAFileArray.Add(tentativeFileEULA);
             }
  
-            else if(line.StartsWith( _T("oesencEULAShow:" ) ) ) {
+            else if(line.StartsWith( _T("ochartsEULAShow:" ) ) ) {
                 sshowEULA = line.AfterFirst(':').Trim(false).Trim(); 
                 
             }

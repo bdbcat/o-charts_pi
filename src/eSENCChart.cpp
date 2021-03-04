@@ -50,6 +50,7 @@
 #include "viewport.h"
 #include "s52utils.h"
 #include "uKey.h"
+#include "tinyxml.h"
 
 #ifdef __WXOSX__
 #include "GL/gl.h"
@@ -745,6 +746,9 @@ int oesuChart::Init( const wxString& name, int init_flags )
     if( !wxFileName::FileExists( name ) )
         return PI_INIT_FAIL_REMOVE;
 
+    
+    CreateChartInfoFile( name );
+    
     if(!processChartinfo( name )){
         return PI_INIT_FAIL_REMOVE;
     }
@@ -851,6 +855,185 @@ int oesuChart::Init( const wxString& name, int init_flags )
     s_PI_bInS57--;
     return ret_val;
 }
+
+bool oesuChart::CreateChartInfoFile( wxString chartName )
+{
+    // Does the Chartinfo file already exist?
+    // If so, then nothing to do....
+    wxFileName fn(chartName);
+    wxString chartInfoDir = fn.GetPath(  wxPATH_GET_VOLUME + wxPATH_GET_SEPARATOR );
+    wxString chartInfo = chartInfoDir + _T("Chartinfo.txt");
+
+    // Find and parse the Keyfile
+    wxString installBase = getChartInstallBase( chartName );
+    
+    // Make a list of all XML or xml files found in the installBase directory of the chart itself.
+    if(installBase.IsEmpty()){
+        wxFileName fn(chartName);
+        installBase = fn.GetPath();
+    }
+
+    wxArrayString xmlFiles;
+    int nFiles = wxDir::GetAllFiles(installBase, &xmlFiles, _T("*.XML"));
+    nFiles += wxDir::GetAllFiles(installBase, &xmlFiles, _T("*.xml"));
+        
+    //  Read and parse them all
+    for(unsigned int i=0; i < xmlFiles.GetCount(); i++){
+        wxString xmlFile = xmlFiles.Item(i);
+        if(xmlFile.Find(_T("ChartList")) != wxNOT_FOUND)
+            continue;
+        
+        FILE *iFile = fopen(xmlFile.mb_str(), "rb");
+        if (iFile <= (void *) 0)
+            continue;            // file error
+        
+        // compute the file length    
+        fseek(iFile, 0, SEEK_END);
+        size_t iLength = ftell(iFile);
+    
+        char *iText = (char *)calloc(iLength + 1, sizeof(char));
+    
+        // Read the file
+        fseek(iFile, 0, SEEK_SET);
+        size_t nread = 0;
+        while (nread < iLength){
+            nread += fread(iText + nread, 1, iLength - nread, iFile);
+        }           
+        fclose(iFile);
+
+    
+        //  Parse the XML
+        TiXmlDocument * doc = new TiXmlDocument();
+        const char *rr = doc->Parse( iText);
+    
+        TiXmlElement * root = doc->RootElement();
+        if(!root){
+            free( iText );
+            continue;
+        }
+            
+        wxString rootName = wxString::FromUTF8( root->Value() );
+        if(rootName.IsSameAs(_T("keyList"))){
+            
+            TiXmlNode *child;
+            for ( child = root->FirstChild(); child != 0; child = child->NextSibling()){
+                if(!strcmp(child->Value(), "Chart")){
+                    continue;
+                }
+
+                else if(!strcmp(child->Value(), "ChartInfo")){
+                    TiXmlNode *childVal = child->FirstChild();
+                    if(childVal){
+                        m_chartInfo = childVal->Value();
+                    }
+                }
+                else if(!strcmp(child->Value(), "Edition")){
+                    TiXmlNode *childVal = child->FirstChild();
+                    if(childVal){
+                        m_chartInfoEdition = childVal->Value();
+                    }
+                }
+                else if(!strcmp(child->Value(), "ExpirationDate")){
+                    TiXmlNode *childVal = child->FirstChild();
+                    if(childVal){
+                        std::string s = childVal->Value();                      // a time_t value, in ASCII text
+
+                        std::string::const_iterator it = s.begin();             // Make sure this is a number
+                        while (it != s.end() && std::isdigit(*it)) ++it;
+                        if(!s.empty() && (it == s.end())){
+                            long long ll = std::stoll (s);
+                            time_t tt = (time_t)(ll);
+                            wxDateTime dt(tt);
+                            wxString date = dt.FormatISODate();
+                            m_chartInfoExpirationDate = date.mb_str();
+                        }
+                    }
+                }
+                else if(!strcmp(child->Value(), "ChartInfoShow")){
+                    TiXmlNode *childVal = child->FirstChild();
+                    if(childVal){
+                        m_chartInfoShow = childVal->Value();
+                    }
+                }
+                else if(!strcmp(child->Value(), "EULAShow")){
+                    TiXmlNode *childVal = child->FirstChild();
+                    if(childVal){
+                        m_chartInfoEULAShow = childVal->Value();
+                    }
+                }
+                else if(!strcmp(child->Value(), "DisappearingDate")){
+                    TiXmlNode *childVal = child->FirstChild();
+                    if(childVal){
+                        m_chartInfoDisappearingDate = childVal->Value();
+                    }
+                }
+            }
+        }
+        free( iText );
+                
+//  <ChartInfo>xxx</ChartInfo>
+//  <>2021/1-4</Edition>
+//  <>1619084536</ExpirationDate>
+//  <>Session</ChartInfoShow>
+//  <EULAShow>once</EULAShow>
+//  <DisappearingDate>none</DisappearingDate>
+    }
+
+    // Find tthe EULA file, if present
+    wxArrayString htmlFiles;
+    int nhtmlFiles = wxDir::GetAllFiles(installBase, &htmlFiles, _T("*.HTML"));
+    nhtmlFiles += wxDir::GetAllFiles(installBase, &htmlFiles, _T("*.html"));
+    
+    wxString EULAfileName;
+    wxArrayString EULALines;
+    for(int i=0 ; i < nhtmlFiles ; i++){
+        wxFileName fn(htmlFiles[i]);
+        wxString l1 = _T("ochartsEULAFile:");
+        l1 += fn.GetFullName();
+        EULALines.Add(l1);
+    }
+
+    // Create the strings needed for the Chartinfo file
+    //oesencEULAFile:EN_rrc_eula_ChartSetsForOpenCPN.html
+    //oesencEULAShow:once
+    //ChartInfo:Croatia 2018;2018-5;2020-03-12
+    //ChartInfoShow:Session
+
+    wxString l2 = _T("ochartsEULAShow:");
+    l2 += wxString(m_chartInfoEULAShow.c_str());
+    
+    wxString l3 = _T("ChartInfo:");
+    l3 += wxString(m_chartInfo.c_str());
+    l3 += _T(";");
+    l3 += wxString(m_chartInfoEdition.c_str());
+    l3 += _T(";");
+    l3 += wxString(m_chartInfoExpirationDate.c_str());
+    
+    wxString l4 = _T("ChartInfoShow:");
+    l4 += wxString(m_chartInfoShow.c_str());
+
+    // Create a  Chartinfo.txt file in the installBase directory
+    wxString ciPath = installBase;
+    ciPath += wxFileName::GetPathSeparator();
+    ciPath += _T("Chartinfo.txt");
+        
+    wxRemoveFile(ciPath);
+    wxTextFile file( ciPath );
+    file.Create();
+
+    for(unsigned int i=0 ; i < EULALines.GetCount() ; i++)
+        file.AddLine(EULALines[i]);
+    
+    file.AddLine( l2 );
+    file.AddLine( l3 );
+    file.AddLine( l4 );
+
+    file.Write();
+    file.Close();
+ 
+    return true;
+}
+
 
 bool oesuChart::CreateHeaderDataFromeSENC()
 {
