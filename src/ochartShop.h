@@ -543,7 +543,7 @@ class oeUniGETSystemName: public wxDialog
 public:
     oeUniGETSystemName( );
     oeUniGETSystemName( wxWindow* parent, wxWindowID id = SYMBOL_GETIP_IDNAME,
-                         const wxString& caption =  _("OpenCPN oeRNC System Name"),
+                         const wxString& caption =  _("OpenCPN o-charts System Name"),
                           const wxPoint& pos = SYMBOL_GETIP_POSITION,
                           const wxSize& size = SYMBOL_GETIP_SIZE,
                           long style = SYMBOL_GETIP_STYLE );
@@ -551,7 +551,7 @@ public:
     ~oeUniGETSystemName();
     
     bool Create( wxWindow* parent, wxWindowID id = SYMBOL_GETIP_IDNAME,
-                 const wxString& caption =  _("OpenCPN oeRNC System Name"),
+                 const wxString& caption =  _("OpenCPN o-charts System Name"),
                  const wxPoint& pos = SYMBOL_GETIP_POSITION,
                  const wxSize& size = SYMBOL_GETIP_SIZE, long style = SYMBOL_GETIP_STYLE );
     
@@ -580,7 +580,7 @@ class oeUniSystemNameSelector: public wxDialog
 public:
     oeUniSystemNameSelector( );
     oeUniSystemNameSelector( wxWindow* parent, bool bShowAll = true, wxWindowID id = SYMBOL_GETIP_IDNAME,
-                         const wxString& caption =  _("Select OpenCPN/oeRNC System Name"),
+                         const wxString& caption =  _("Select OpenCPN/o-charts System Name"),
                          const wxPoint& pos = wxDefaultPosition,
                          const wxSize& size = wxSize(500, 200),
                          long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
@@ -588,7 +588,7 @@ public:
     ~oeUniSystemNameSelector();
     
     bool Create( wxWindow* parent, bool bshowAll = true, wxWindowID id = SYMBOL_GETIP_IDNAME,
-                 const wxString& caption =  _("Select OpenCPN/oeRNC System Name"),
+                 const wxString& caption =  _("Select OpenCPN/o-charts System Name"),
                  const wxPoint& pos = wxDefaultPosition,
                  const wxSize& size = wxSize(500, 200), long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
     

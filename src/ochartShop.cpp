@@ -4530,7 +4530,7 @@ int shopPanel::GetShopNameFromFPR()
         if(queryResult == _T("1")){
             // is the detected systemName disabled?
             if(g_systemNameDisabledArray.Index(tsystemName) != wxNOT_FOUND){
-                wxString msg = _("The detected System Name has been disabled\nPlease choose another System Name");
+                wxString msg = _("The detected System Name has been disabled\nPlease create another System Name");
                 ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
                 return 83;
             }
@@ -6457,7 +6457,7 @@ END_EVENT_TABLE()
      wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
      SetFont( *qFont );
      
-     SetTitle( _("Select OpenCPN/oeRNC System Name"));
+     SetTitle( _("Select OpenCPN/o-charts System Name"));
     
 #ifdef __OCPN__ANDROID__
     SetBackgroundColour(ANDROID_DIALOG_BACKGROUND_COLOR);
