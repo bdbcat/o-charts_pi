@@ -3107,6 +3107,9 @@ int doUploadXFPR(bool bDongle)
                 }
             }
             
+            // And delete the xfpr file
+            ::wxRemoveFile(fpr_file);
+            
             // Prepare the upload command string
             wxString url = userURL;
             if(g_admin)
@@ -4467,6 +4470,9 @@ int shopPanel::GetShopNameFromFPR()
                     stringFPR += sc;
                 }
             }
+            
+            // And delete the xfpr file
+            ::wxRemoveFile(fpr_file);
         }
         else if(fpr_file.IsSameAs(_T("DONGLE_NOT_PRESENT")))
             err = _("  {USB Dongle not found.}");
