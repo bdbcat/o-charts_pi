@@ -3310,8 +3310,11 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
         wxString downloadURL = wxString(targetSlot->taskFileList[i]->linkKeys.c_str());
         
         //  /oeRNC-IMR-CRBeast-1-0-base-hp64linux.XML
-        wxString fileTarget = Prefix +_T("-") + wxString(targetChart->chartID.c_str()) + _T("-") + wxString(targetChart->serverChartEdition.c_str());
-        fileTarget += _T("-base-");
+        wxString fileTarget = Prefix +_T("-") + wxString(targetChart->chartID.c_str()) + _T("-") + wxString(targetSlot->taskFileList[i]->result.c_str());
+        fileTarget += _T("-");
+        fileTarget += targetChart->taskRequestedFile;
+        fileTarget += _T("-");
+        
         if(g_dongleName.Length())
             fileTarget +=  g_dongleName + _T(".XML");
         else
@@ -3329,8 +3332,10 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
         downloadURL = wxString(targetSlot->taskFileList[i]->link.c_str());
 
         //  /oeRNC-IMR-GR-2-0-base.zip
-        fileTarget = Prefix + _T("-") + wxString(targetChart->chartID.c_str()) + _T("-") + wxString(targetChart->serverChartEdition.c_str());
-        fileTarget += _T("-base.zip");
+        fileTarget = Prefix + _T("-") + wxString(targetChart->chartID.c_str()) + _T("-") + wxString(targetSlot->taskFileList[i]->result.c_str());
+         fileTarget += _T("-");
+        fileTarget += targetChart->taskRequestedFile;
+        fileTarget += _T(".zip");
 
         task2.url = downloadURL;
         task2.localFile = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator() + fileTarget).mb_str();
@@ -4654,7 +4659,7 @@ int shopPanel::ComputeUpdates(itemChart *chart, itemSlot *slot)
         if(chart->overrideChartEdition.find("-0") != std::string::npos){
             chart->taskRequestedFile = _T("base");
             chart->taskRequestedEdition = chart->overrideChartEdition;
-            chart->taskCurrentEdition = std::string();
+            chart->taskCurrentEdition = slot->installedEdition;
             chart->taskAction = TASK_REPLACE;
         
             return 0;               // no error
