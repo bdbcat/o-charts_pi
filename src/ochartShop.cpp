@@ -489,6 +489,9 @@ ChartSetData::ChartSetData( std::string fileXML)
             
         TiXmlNode *child;
         for ( child = root->FirstChild(); child != 0; child = child->NextSibling()){
+            if(strcmp(child->Value(), "Chart"))
+                continue;
+            
             itemChartData *cdata = new itemChartData();
             chartList.push_back(cdata);
             
@@ -549,23 +552,13 @@ ChartSetData::ChartSetData( std::string fileXML)
 
 }
 
-bool ChartSetData::RemoveChart( std::string fileNameKap )
+bool ChartSetData::RemoveChart( std::string chartID )
 {
-    size_t nl = fileNameKap.find(".kap");
-    std::string search;
-    if(nl != std::string::npos)
-        search = fileNameKap.substr(0, nl);
-    else{
-        nl = fileNameKap.find(".KAP");
-        if(nl != std::string::npos)
-            search = fileNameKap.substr(0, nl);
-    }
-
-        // Search for the chart
+    // Search for the chart by ID
 
     for(unsigned int i=0 ; i < chartList.size() ; i++){
         itemChartData *pd = chartList[i];
-        if(!search.compare(pd->ID)){
+        if(!chartID.compare(pd->ID)){
             chartList.erase(chartList.begin()+i);
             delete pd;
             return true;
@@ -4765,141 +4758,6 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
     //Get the basic chartset name, and store in the task for later reference
     task->chartsetNameNormalized = GetNormalizedChartsetName( task->cacheLinkLocn);
     
-    
-#if 0    
-    if(chart->taskAction == TASK_REPLACE){
-        
-        if(!slot->installLocation.size())
-            return false;
-
-        // Check the SHA256 of both files in the task
-        if(!validateSHA256(task->cacheLinkLocn, task->sha256)){
-            wxLogError(_T("oernc_pi: Sha256 error on: ") + task->cacheLinkLocn );
-            OCPNMessageBox_PlugIn(NULL, _("Validation error on zip file"), _("oeRNC_pi Message"), wxOK);
-            return 6;
-        }
-        if(!validateSHA256(task->cacheKeysLocn, task->sha256Keys)){
-            wxLogError(_T("oernc_pi: Sha256 error on: ") + task->cacheKeysLocn );
-            OCPNMessageBox_PlugIn(NULL, _("Validation error on key file"), _("oeRNC_pi Message"), wxOK);
-            return 7;
-        }
-
-            
-        // Remove all .oernc files from the current installation directory
-        
-        if(chart->taskCurrentEdition.size()){
-            // Craft the name of the previous chartset's top level directory
-            wxString tlDirFull;
-            wxFileName fnInstall(task->cacheLinkLocn);      // /home/dsr/.opencpn/oernc_pi/DownloadCache/oeRNC-IMR-GR-2-0-base.zip
-            wxString tlDir = fnInstall.GetName();           // oeRNC-IMR-GR-2-0-base
-            
-            int nl = tlDir.Find( chart->taskRequestedEdition + _T("-base"));      // "2-0"
-            if(nl != wxNOT_FOUND){                  // result is a base set
-                wxString tlDirTest = tlDir;
-                tlDirTest.Replace(chart->taskRequestedEdition + _T("-base"), chart->taskCurrentEdition +_T("-base"), false);
-                tlDirTest.Prepend( wxString(slot->installLocation.c_str()) + wxFileName::GetPathSeparator());
-                if(::wxDirExists(tlDirTest)){
-                    tlDirFull = tlDirTest;
-                }
-                else{
-                    wxString tlDirTest = tlDir;
-                    tlDirTest.Replace(chart->taskRequestedEdition + _T("-base"), chart->taskCurrentEdition +_T("-update"), false);
-                    tlDirTest.Prepend( wxString(slot->installLocation.c_str()) + wxFileName::GetPathSeparator());
-                    if(::wxDirExists(tlDirTest)){
-                        tlDirFull = tlDirTest;
-                    }
-                }
-            }
-            else{
-                nl = tlDir.Find( chart->taskRequestedEdition + _T("-update"));      // "2-0"
-                if(nl != wxNOT_FOUND){                  // result is an update set
-                    wxString tlDirTest = tlDir;
-                    tlDirTest.Replace(chart->taskRequestedEdition + _T("-update"), chart->taskCurrentEdition +_T("-base"), false);
-                    tlDirTest.Prepend( wxString(slot->installLocation.c_str()) + wxFileName::GetPathSeparator());
-                    if(::wxDirExists(tlDirTest)){
-                        tlDirFull = tlDirTest;
-                    }
-                }
-                else{
-                    wxString tlDirTest = tlDir;
-                    tlDirTest.Replace(chart->taskRequestedEdition + _T("-update"), chart->taskCurrentEdition +_T("-update"), false);
-                    tlDirTest.Prepend( wxString(slot->installLocation.c_str()) + wxFileName::GetPathSeparator());
-                    if(::wxDirExists(tlDirTest)){
-                        tlDirFull = tlDirTest;
-                    }
-                }
-            }
-            
-            if(tlDirFull.Length()){
-                wxArrayString fileArray;
-                size_t nFiles = wxDir::GetAllFiles( tlDirFull, &fileArray, _T("*.oernc"));
-                for(unsigned int i=0 ; i < nFiles ;i++)
-                    ::wxRemoveFile(fileArray.Item(i));
-                
-                // Remove the directory itself, if empty.
-                wxDir oldDir(tlDirFull);
-                if(!oldDir.HasFiles() && !oldDir.HasSubDirs())
-                    wxRmdir(tlDirFull);
-
-            }
-        }
-        
-        
-        int yyp = 4;
-            
-        
-        // We can unzip the downloaded files directly to their final location
-        g_shopPanel->setStatusText( _("Unzipping chart files..."));
-        wxYield();
-        
-        ::wxBeginBusyCursor();
-        bool ret = ExtractZipFiles( task->cacheLinkLocn, slot->installLocation, false, wxDateTime::Now(), false);
-        ::wxEndBusyCursor();
-        
-        if(!ret){
-            wxLogError(_T("oernc_pi: Unable to extract: ") + task->cacheLinkLocn );
-            OCPNMessageBox_PlugIn(NULL, _("Error extracting zip file"), _("oeRNC_pi Message"), wxOK);
-            ::wxRemoveFile(wxString(task->cacheLinkLocn.c_str()));
-            return 2;
-        }
-    
-    //  keyList.XML should be simply copied to the root
-    // directory of the zip set, or, in other words, to the directory containing the .oernc files.
-    // Find that directory...
-        wxString containerDir;
-        
-        if(wxFileName::Exists(wxString(task->cacheKeysLocn.c_str()))){
-            wxFile file(wxString(task->cacheKeysLocn.c_str()));
-            if(file.IsOpened()){
-                if(!file.Length()){
-                    wxLogError(_T("oernc_pi: Found empty file: ") + task->cacheKeysLocn );
-                    OCPNMessageBox_PlugIn(NULL, _("Error empty file "), _("oeRNC_pi Message"), wxOK);
-                    ::wxRemoveFile(wxString(task->cacheKeysLocn.c_str()));
-                    return 5;
-                }
-            }
-            
-            wxFileName fnz(task->cacheLinkLocn);
-            containerDir = fnz.GetName();
-    
-            wxFileName fn(task->cacheKeysLocn);
-            if(!::wxCopyFile( task->cacheKeysLocn, slot->installLocation +  wxFileName::GetPathSeparator() + containerDir + wxFileName::GetPathSeparator() + fn.GetFullName())){
-                wxLogError(_T("oernc_pi: Unable to copy: ") + task->cacheKeysLocn );
-                OCPNMessageBox_PlugIn(NULL, _("Error copying file"), _("oeRNC_pi Message"), wxOK);
-                return 3;
-            }
-        }
-        else{
-            wxLogError(_T("oernc_pi: Unable to find: ") + task->cacheKeysLocn );
-            OCPNMessageBox_PlugIn(NULL, _("Error finding file"), _("oeRNC_pi Message"), wxOK);
-            return 4;
-        }
-            
-        
-        chart->lastInstalledtlDir = slot->installLocation +  wxFileName::GetPathSeparator() + containerDir;
-        
-    }
-#endif    
     if(1/*chart->taskAction == TASK_UPDATE*/){
         
         if(!slot->installLocation.size())
@@ -5128,9 +4986,13 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         
         // Process withdrawn charts
         for(unsigned int i = 0 ; i < actionWithdrawn.size() ; i++){
-            // Delete the oernc file
+            // Delete the chart file
+            std::string extension(".oesu");
+            if(chart->GetChartType() == (int)CHART_TYPE_OERNC)
+                extension = std::string(".oernc");
+
             wxFileName fn(actionWithdrawn[i].c_str());
-            std::string chartFileToDelete = slot->installLocation +  ps + task->chartsetNameNormalized + ps + std::string(fn.GetName().c_str()) + ".oesu";
+            std::string chartFileToDelete = slot->installLocation +  ps + task->chartsetNameNormalized + ps + std::string(fn.GetName().c_str()) + extension;
             if(::wxFileExists(wxString(chartFileToDelete.c_str()))){
                 ::wxRemoveFile(wxString(chartFileToDelete.c_str()));
             }
