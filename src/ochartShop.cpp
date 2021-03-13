@@ -801,23 +801,12 @@ bool ChartSetKeys::Load( std::string fileXML)
 
 }
 
-bool ChartSetKeys::RemoveKey( std::string fileNameKap )
+bool ChartSetKeys::RemoveKey( std::string chartID )
 {
-    size_t nl = fileNameKap.find(".kap");
-    std::string search;
-    if(nl != std::string::npos)
-        search = fileNameKap.substr(0, nl);
-    else{
-        nl = fileNameKap.find(".KAP");
-        if(nl != std::string::npos)
-            search = fileNameKap.substr(0, nl);
-    }
-
-        // Search for the chart
 
     for(unsigned int i=0 ; i < chartList.size() ; i++){
         itemChartDataKeys *pd = chartList[i];
-        if(!search.compare(pd->ID)){
+        if(!chartID.compare(pd->ID)){
             chartList.erase(chartList.begin()+i);
             delete pd;
             return true;
@@ -4912,9 +4901,9 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
                                 if(!strcmp(child->Value(), "WithdrawnCharts")){
                                     TiXmlNode *childChart = child->FirstChild();
                                     for ( childChart = child->FirstChild(); childChart!= 0; childChart = childChart->NextSibling()){
-                                        TiXmlNode *childChartName = childChart->FirstChild();
-                                        const char *chartNameKAP =  childChartName->Value();
-                                        actionWithdrawn.push_back(std::string(chartNameKAP));
+                                        TiXmlNode *childChartID = childChart->FirstChild();
+                                        const char *chartID =  childChartID->Value();
+                                        actionWithdrawn.push_back(std::string(chartID));
                                     }
                                 }
                                 else if(!strcmp(child->Value(), "Edition")){            //  <Edition>2021/1-0</Edition>
