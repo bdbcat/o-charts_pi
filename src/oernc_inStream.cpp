@@ -76,7 +76,9 @@ int makeAddr(const char* name, struct sockaddr_un* pAddr, socklen_t* pSockLen)
 //--------------------------------------------------------------------------
 //      xtr1_inStream implementation as Kernel Socket
 //--------------------------------------------------------------------------
+extern int makeAddr(const char* name, struct sockaddr_un* pAddr, socklen_t* pSockLen);
 
+#if 0
 int makeAddr(const char* name, struct sockaddr_un* pAddr, socklen_t* pSockLen)
 {
     // consider this:
@@ -94,6 +96,7 @@ int makeAddr(const char* name, struct sockaddr_un* pAddr, socklen_t* pSockLen)
 
     return 0;
 }
+#endif
 
 oernc_inStream::oernc_inStream()
 {
