@@ -1550,6 +1550,8 @@ int GetEditionInt(std::string edition)
     wxString smaj = sed.BeforeFirst('-');
     wxString smin = sed.AfterFirst('-');
 
+    if(smaj.Find('/') != wxNOT_FOUND)
+        smaj = smaj.AfterFirst('/');
         
     long major = 0;
     smaj.ToLong(&major);
