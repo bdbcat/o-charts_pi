@@ -155,14 +155,14 @@ jobs:
       machine: true
       environment:
         - OCPN_TARGET=buster-armhf
-        - DOCKER_IMAGE=jongough/raspbian-buster:plugin_build_tooling_current
+        - DOCKER_IMAGE=opencpn/raspbian-buster-cmake320:plugin_build_tooling
         - BUILD_FLAGS=-j3
         - BUILD_ENV=raspbian
       steps:
         - checkout
         - run: chmod a+x ./ci/*.sh
         - run:
-            command: ci/circleci-build-raspbian-armhf.sh
+            command: ci/circleci-build-raspbian-armhf-buster.sh
             no_output_timeout: 30m
         - run: ci/circleci-upload_arm.sh
    build-armhf-bionic-64:
