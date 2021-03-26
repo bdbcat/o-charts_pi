@@ -24,7 +24,7 @@ sudo docker run --privileged -d -ti -e "container=docker"  -v $(pwd):/ci-source:
 DOCKER_CONTAINER_ID=$(docker ps | grep $BUILD_ENV | awk '{print $1}')
 
 docker exec -ti $DOCKER_CONTAINER_ID apt-get update
-docker exec -ti $DOCKER_CONTAINER_ID apt-get -y install git build-essential cmake gettext wx-common libgtk2.0-dev libwxgtk3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release
+docker exec -ti $DOCKER_CONTAINER_ID apt-get -y install git build-essential gettext wx-common libgtk2.0-dev libwxgtk3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release
 
 #Locally built CMake 3.20 included in DOCKER_IMAGE=opencpn/raspbian-buster-cmake320:plugin_build_tooling
 # Fixes bugs in compiler detection.
