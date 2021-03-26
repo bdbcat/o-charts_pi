@@ -182,8 +182,8 @@ public:
     itemTaskFileInfo(){}
     ~itemTaskFileInfo(){}
     
-    std::string target;
-    std::string result;
+    std::string targetEdition;
+    std::string resultEdition;
     std::string link;
     std::string size;
     std::string sha256;

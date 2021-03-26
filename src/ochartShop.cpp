@@ -2698,13 +2698,13 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
                                 else if(!strcmp(fileVal, "editionTarget")){
                                     TiXmlNode *childVal = childFile->FirstChild();
                                     if(childVal) 
-                                        ptfi->target = childVal->Value();
+                                        ptfi->targetEdition = childVal->Value();
                                 }
 
                                 else if(!strcmp(fileVal, "editionResult")){
                                     TiXmlNode *childVal = childFile->FirstChild();
                                     if(childVal) 
-                                        ptfi->result = childVal->Value();
+                                        ptfi->resultEdition = childVal->Value();
                                 }
                             }
                         }
@@ -3294,7 +3294,7 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
         wxString downloadURL = wxString(targetSlot->taskFileList[i]->linkKeys.c_str());
         
         //  /oeRNC-IMR-CRBeast-1-0-base-hp64linux.XML
-        wxString fileTarget = Prefix +_T("-") + wxString(targetChart->chartID.c_str()) + _T("-") + wxString(targetSlot->taskFileList[i]->result.c_str());
+        wxString fileTarget = Prefix +_T("-") + wxString(targetChart->chartID.c_str()) + _T("-") + wxString(targetSlot->taskFileList[i]->resultEdition.c_str());
         fileTarget += _T("-");
         fileTarget += targetChart->taskRequestedFile;
         fileTarget += _T("-");
@@ -3316,7 +3316,7 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
         downloadURL = wxString(targetSlot->taskFileList[i]->link.c_str());
 
         //  /oeRNC-IMR-GR-2-0-base.zip
-        fileTarget = Prefix + _T("-") + wxString(targetChart->chartID.c_str()) + _T("-") + wxString(targetSlot->taskFileList[i]->result.c_str());
+        fileTarget = Prefix + _T("-") + wxString(targetChart->chartID.c_str()) + _T("-") + wxString(targetSlot->taskFileList[i]->resultEdition.c_str());
          fileTarget += _T("-");
         fileTarget += targetChart->taskRequestedFile;
         fileTarget += _T(".zip");
@@ -4797,7 +4797,18 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         
         // If the task type is TASK_REPLACE, we will not get any "WithdrawnCharts" directives
         // So best to simply delete all the charts, and the keylist file from the current installation
-        if(chart->taskAction == TASK_REPLACE){
+        
+        // Another special case:
+        //  The server may substitute a "base" download instead of multiple "update" downloads.
+        //  This is done to reduce file download size, when possible.
+        //  That is, multiple updates may in fact be larger than a simple "base" compilation of the requested edition.
+        //  In this case, the server makes the sensible substitution.
+        //  This condition can be recognized by inspection of the <editionTarget> tag in the request response.
+        //  If <editionTarget> is blank, we can know that the compilation is a "base" set, and so should
+        //  be treated as "TASK_REPLACE"
+ 
+        
+        if( (chart->taskAction == TASK_REPLACE) || task->targetEdition.empty() ){
             wxArrayString fileArray;
             wxString currentTLDIR = wxString((slot->installLocation +  ps + task->chartsetNameNormalized).c_str());
             if(wxDir::Exists(currentTLDIR)){
