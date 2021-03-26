@@ -12,15 +12,15 @@ matrix:
     services:
     - docker
     script:
-    - "./ci/travis-build-raspbian-armhf.sh"
+    - "./ci/travis-build-raspbian-armhf-stretch.sh"
   - env:
     - OCPN_TARGET=buster-armhf
     - OCPN_BRANCH=master
-    - DOCKER_IMAGE=opencpn/raspbian-buster:plugin_build_tooling
+    - DOCKER_IMAGE=opencpn/raspbian-buster-cmake320:plugin_build_tooling
     services:
     - docker
     script:
-    - "./ci/travis-build-raspbian-armhf.sh"
+    - "./ci/travis-build-raspbian-armhf-buster.sh"
   - env:
     - OCPN_TARGET=bionic-arm64
     - OCPN_BRANCH=master
