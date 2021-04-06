@@ -2985,6 +2985,9 @@ bool validate_SENC_server(void)
         //qDebug() << "Check running server Proc";
         Osenc_instream testAvail;
         if(testAvail.isAvailable(_T("?"))){
+            if (g_debugLevel) {
+                wxLogMessage(_T("validate_SENC_server: True"));
+            }
             return true;
         }
 
@@ -3068,7 +3071,7 @@ bool validate_SENC_server(void)
 
     
 #else           // Android
-    qDebug() << "Starting SENC server";
+    qDebug() << "o-charts_pi: Starting SENC server";
     
     //  The target binary executable
     wxString cmd = g_sencutil_bin;

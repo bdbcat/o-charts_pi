@@ -34,7 +34,6 @@
 
 #include <sys/stat.h>
 
-//#include "oernc_pi.h"
 #include "chart.h"
 #include "oernc_inStream.h"
 #include <zlib.h>
@@ -51,6 +50,7 @@
 extern bool processChartinfo(const wxString &oesenc_file);
 extern void showChartinfoDialog( void );
 extern wxString getChartInstallBase( wxString chartFileFullPath );
+extern void ShowGenericErrorMessage(wxString s_file);
 
 // ----------------------------------------------------------------------------
 // Random Prototypes
@@ -517,7 +517,6 @@ bool gs_binit_msg_shown;
 
 int Chart_oeuRNC::Init( const wxString& name, int init_flags )
 {
-    
       int nPlypoint = 0;
       Plypoint *pPlyTable = (Plypoint *)malloc(sizeof(Plypoint));
 
@@ -529,7 +528,7 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
       m_Description = m_FullPath;
       
       if(!::wxFileExists(name)){
-          wxString msg(_T("   OERNC_PI: chart file not found: "));
+          wxString msg(_T("   o-charts_pi: chart file not found: "));
           msg.Append(m_FullPath);
           wxLogMessage(msg);
           
@@ -552,7 +551,7 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
       if(!key.Len()){
           key = wxString(getAlternateKey(name));
           if(!key.Len()){
-            wxString msg(_T("   OERNC_PI: chart RInstallKey not found: "));
+            wxString msg(_T("   o-charts_pi: chart RInstallKey not found: "));
             msg.Append(m_FullPath);
             wxLogMessage(msg);
           
@@ -568,10 +567,12 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
       ifs_hdr = new oernc_inStream(name, key, bHeaderOnly);          // open the file server
 
       if(!ifs_hdr->Ok()){
-          wxString msg(_T("   OERNC_PI: chart local server error, retrying: "));
+          wxString msg(_T("   o-charts_pi: chart local server error, retrying: "));
           msg.Append(m_FullPath);
           wxLogMessage(msg);
 
+          delete ifs_hdr;
+          
           SwapKeyHashes();          // interchanges hashes, so next time will be faster
 
           key = wxString(getPrimaryKey(name));
@@ -580,9 +581,12 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
  
           ifs_hdr = new oernc_inStream(name, key, bHeaderOnly);          // open the file server
           if(!ifs_hdr->Ok()){
-              wxString msg(_T("   OERNC_PI: chart local server error, final: "));
+              wxString msg(_T("   o-charts_pi: chart local server error, final: "));
               msg.Append(m_FullPath);
               wxLogMessage(msg);
+              
+              ShowGenericErrorMessage(m_FullPath);
+
               return INIT_FAIL_REMOVE;
           }
       }
@@ -677,7 +681,7 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
       
       if((Size_X <= 0) || (Size_Y <= 0))
       {
-          wxString msg(_T("   OERNC_PI: chart header content error 2: "));
+          wxString msg(_T("   o-charts_pi: chart header content error 2: "));
           msg.Append(m_FullPath);
           wxLogMessage(msg);
           
@@ -875,7 +879,7 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
         ifs_hdr->readPayload(m_imageComp);
 
         if(!ifs_hdr->Ok()){
-            wxString msg(_T("   OERNC_PI: chart local server payload error, final: "));
+            wxString msg(_T("   o-charts_pi: chart local server payload error, final: "));
             msg.Append(m_FullPath);
             wxLogMessage(msg);
             free (m_imageComp);
@@ -885,7 +889,7 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
 //         int inflate_err = DecodeImage();
  
 //         if(inflate_err){
-//             wxString msg(_T("   OERNC_PI: chart local server inflate error, final: "));
+//             wxString msg(_T("   o-charts_pi: chart local server inflate error, final: "));
 //             msg.Append(m_FullPath);
 //             wxLogMessage(msg);
 //             free (m_imageComp);
@@ -918,7 +922,7 @@ int Chart_oeuRNC::DecodeImage( void )
 //        printf("Inflate: %g\n", sw.GetTime());
 //#endif
         if(inflate_err){
-            wxString msg(_T("   OERNC_PI: chart local server inflate error, final: "));
+            wxString msg(_T("   o-charts_pi: chart local server inflate error, final: "));
             msg.Append(m_FullPath);
             wxLogMessage(msg);
         }

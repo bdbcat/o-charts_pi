@@ -111,6 +111,8 @@ void Osenc_instream::Init()
     
     strcpy(publicsocket_name,"com.opencpn.ocharts_pi");
     
+    qDebug() << "publicsocket_name: " << publicsocket_name;
+    
     if (makeAddr(publicsocket_name, &sockAddr, &sockLen) < 0){
         wxLogMessage(_T("oesenc_pi: Could not makeAddr for PUBLIC socket"));
     }
@@ -138,12 +140,12 @@ void Osenc_instream::ReInit()
     strcpy(publicsocket_name,"com.opencpn.ocharts_pi");
     
     if (makeAddr(publicsocket_name, &sockAddr, &sockLen) < 0){
-        wxLogMessage(_T("oesenc_pi: Could not makeAddr for PUBLIC socket"));
+        wxLogMessage(_T("o-charts_pi: Could not makeAddr for PUBLIC socket"));
     }
     
     publicSocket = socket(AF_LOCAL, SOCK_STREAM, PF_UNIX);
     if (publicSocket < 0) {
-        wxLogMessage(_T("oesenc_pi: Could not make PUBLIC socket"));
+        wxLogMessage(_T("o-charts_pi: Could not make PUBLIC socket"));
     }
     //else
         //qDebug() << "ReInit() create Socket" << publicSocket;
@@ -153,7 +155,7 @@ void Osenc_instream::ReInit()
 
 void Osenc_instream::Close()
 {
-    wxLogMessage(_T("Osenc_instream::Close()"));
+    //wxLogMessage(_T("Osenc_instream::Close()"));
     
     if(-1 != privatefifo){
         if(g_debugLevel)printf("   Close private fifo: %s \n", privatefifo_name);
@@ -237,7 +239,7 @@ bool Osenc_instream::Open( unsigned char cmd, wxString senc_file_name, wxString 
         
         
         if (connect(publicSocket, (const struct sockaddr*) &sockAddr, sockLen) < 0) {
-            wxLogMessage(_T("oesenc_pi: Could not connect to PUBLIC socket"));
+            wxLogMessage(_T("o-charts_pi: Could not connect to PUBLIC socket"));
             return false;
         }
         
@@ -265,6 +267,11 @@ Osenc_instream &Osenc_instream::Read(void *buffer, size_t size)
 {
     #define READ_SIZE 64000;
     #define MAX_TRIES 100;
+    int timeout_msec = 100;
+#ifdef __OCPN__ANDROID__
+    timeout_msec = 1000;                // Longer for Android
+#endif    
+
     if(!m_uncrypt_stream){
         size_t max_read = READ_SIZE;
         //    bool blk = fcntl(privatefifo, F_GETFL) & O_NONBLOCK;
@@ -277,18 +284,14 @@ Osenc_instream &Osenc_instream::Read(void *buffer, size_t size)
             int nLoop = MAX_TRIES;
             do{
                 int bytes_to_read = MIN(remains, max_read);
-                if(bytes_to_read > 10000)
-                    int yyp = 2;
-                
                 int bytesRead;
                 
-                #if 1
                 struct pollfd fd;
                 int ret;
                 
                 fd.fd = publicSocket; // your socket handler 
                 fd.events = POLLIN;
-                ret = poll(&fd, 1, 100); // 1 second for timeout
+                ret = poll(&fd, 1, timeout_msec); // nominal 100 msec timeout, except for Android.
                 switch (ret) {
                     case -1:
                         // Error
@@ -303,13 +306,9 @@ Osenc_instream &Osenc_instream::Read(void *buffer, size_t size)
                         break;
                 }
                 
-                #else                
-                bytesRead = read(publicSocket, bufRun, bytes_to_read );
-                #endif                
-                
                 // Server may not have opened the Write end of the FIFO yet
+                //  This is also the path for normal EOF condition from the server
                 if(bytesRead == 0){
-                    //                    printf("miss %d %d %d\n", nLoop, bytes_to_read, size);
                     nLoop --;
                     wxMilliSleep(1);
                 }
@@ -2863,7 +2862,7 @@ PolyTessGeo *Osenc::BuildPolyTessGeo(_OSENC_AreaGeometry_Record_Payload *record,
         
         #ifdef OCPN_ARMHF
         double abox[4];
-        memcpy(&abox[0], pbb, 4 * sizeof(double));
+        memcpy(&abox[0], pPayloadRun, 4 * sizeof(double));
         tp->minxt = abox[0];
         tp->maxxt = abox[1];
         tp->minyt = abox[2];

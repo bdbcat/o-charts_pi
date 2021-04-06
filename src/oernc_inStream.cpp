@@ -78,8 +78,8 @@ int makeAddr(const char* name, struct sockaddr_un* pAddr, socklen_t* pSockLen)
 //--------------------------------------------------------------------------
 extern int makeAddr(const char* name, struct sockaddr_un* pAddr, socklen_t* pSockLen);
 
-#if 0
-int makeAddr(const char* name, struct sockaddr_un* pAddr, socklen_t* pSockLen)
+#if 1
+int makeAddrRNC(const char* name, struct sockaddr_un* pAddr, socklen_t* pSockLen)
 {
     // consider this:
     //http://stackoverflow.com/questions/11640826/can-not-connect-to-linux-abstract-unix-socket
@@ -116,7 +116,6 @@ oernc_inStream::oernc_inStream( const wxString &file_name, const wxString &crypt
     m_OK = Open( );
     if(m_OK){
         if(!Load(bHeaderOnly)){
-            printf("%s\n", err);
             m_OK = false;
         }
     }
@@ -162,9 +161,9 @@ void oernc_inStream::Init()
     m_lenIDat = 0;
     m_uncrypt_stream = 0;
 
-    strcpy(publicsocket_name,"com.opencpn.oernc_pi");
+    strcpy(publicsocket_name,"com.opencpn.ocharts_pi");
     
-    if (makeAddr(publicsocket_name, &sockAddr, &sockLen) < 0){
+    if (makeAddrRNC(publicsocket_name, &sockAddr, &sockLen) < 0){
         wxLogMessage(_T("oernc_pi: Could not makeAddr for PUBLIC socket"));
     }
     
@@ -611,7 +610,7 @@ oernc_inStream::oernc_inStream( const wxString &file_name, const wxString &crypt
     m_OK = Open( );
     if(m_OK){
         if(!Load( bHeaderOnly )){
-            printf("%s\n", err);
+            if(g_debugLevel) printf("%s\n", err);
             m_OK = false;
         }
     }
@@ -894,7 +893,8 @@ bool oernc_inStream::Load( bool bHeaderOnly )
 
         return true;
     }
-    
+
+    strncpy(err, "Load:  CryptoKey Empty", sizeof(err));
     return false;
 }
 
@@ -1116,7 +1116,7 @@ oernc_inStream::oernc_inStream( const wxString &file_name, const wxString &crypt
     m_OK = Open( );
     if(m_OK){
         if(!Load( bHeaderOnly )){
-            printf("%s\n", err);
+            if(g_debugLevel) printf("%s\n", err);
             m_OK = false;
         }
     }
