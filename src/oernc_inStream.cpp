@@ -60,7 +60,7 @@ int makeAddr(const char* name, struct sockaddr_un* pAddr, socklen_t* pSockLen)
     int nameLen = strlen(name);
     if (nameLen >= (int) sizeof(pAddr->sun_path) -1)  /* too long? */
         return -1;
-    memset(pAddr, 'x', sizeof(pAddr));
+    memset(pAddr, 'x', sizeof(sockaddr_un));
     pAddr->sun_path[0] = '\0';  /* abstract namespace */
     strncpy(pAddr->sun_path+1, name, nameLen);
     pAddr->sun_family = AF_LOCAL;

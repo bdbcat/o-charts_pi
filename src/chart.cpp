@@ -5710,8 +5710,14 @@ void lm_lmpar( int n, double* r, int ldr, int* ipvt, double* diag, double* qtb,
                double delta, double* par, double* x, double* sdiag,
                double* wa1, double* wa2);
 
+#ifndef MIN
 #define MIN(a,b) (((a)<=(b)) ? (a) : (b))
+#endif
+
+#ifndef MAX
 #define MAX(a,b) (((a)>=(b)) ? (a) : (b))
+#endif
+
 #define SQR(x)   (x)*(x)
 
 
