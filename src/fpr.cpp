@@ -366,7 +366,7 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
                             if (dwError == ERROR_CANCELLED)
                             {
                                 // The user refused to allow privileges elevation.
-                                OCPNMessageBox_PlugIn(NULL, _("Administrator priveleges are required to copy fpr.\n  Please try again...."), _("oeRNC_pi Message"), wxOK);
+                                OCPNMessageBox_PlugIn(NULL, _("Administrator priveleges are required to copy fpr.\n  Please try again...."), _("o-charts_pi Message"), wxOK);
                                 berror = true;
                             }
                         }

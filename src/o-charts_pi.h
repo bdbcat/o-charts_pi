@@ -1,11 +1,11 @@
 /******************************************************************************
  *
  * Project:  OpenCPN
- * Purpose:  oesenc Plugin
+ * Purpose:  o-charts Plugin
  * Author:   David Register
  *
  ***************************************************************************
- *   Copyright (C) 2016 by David S. Register   *
+ *   Copyright (C) 2021 by David S. Register   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -42,12 +42,6 @@
 #include "TexFont.h"
 #include "version.h"
 
-//  The version number now comes from (${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/include/version.h) file
-//  as configured by the CMakeLists.txt script
-
-//#define     PLUGIN_VERSION_MAJOR    0
-//#define     PLUGIN_VERSION_MINOR    2
-
 #define     MY_API_VERSION_MAJOR    1
 #define     MY_API_VERSION_MINOR    11
 
@@ -79,15 +73,10 @@ enum {
 };
 
 //      Private logging functions
-void ScreenLogMessage(wxString s);
-void HideScreenLog(void);
-void ClearScreenLog(void);
-void ClearScreenLogSeq(void);
-
-extern "C++" wxString GetUserpermit(void);
-//extern "C++" wxString GetInstallpermit(void);
-extern "C++" wxArrayString exec_SENCutil_sync( wxString cmd, bool bshowlog );
-
+//void ScreenLogMessage(wxString s);
+//void HideScreenLog(void);
+//void ClearScreenLog(void);
+//void ClearScreenLogSeq(void);
 
 class   o_charts_pi;
 class   OCPNPermitList;
@@ -95,6 +84,7 @@ class   OCPNCertificateList;
 class   o_charts_pi_event_handler;
 class   oesencPanel;
 class   shopPanel;
+class   OESENC_HTMLMessageDialog;
 
 
 class ChartInfoItem {
@@ -173,7 +163,6 @@ public:
     wxScrolledWindow    *m_pOptionsPage;
     
 private:
-//    wxString GetPermitDir();
     bool ScrubChartinfoList( void );
     bool Is_oeSENC_pi_loaded();
     bool Is_oeRNC_pi_loaded();
@@ -209,7 +198,6 @@ private:
     
     oesencPanel         *m_oesencpanel;
     
-
 };
 
 
@@ -276,116 +264,7 @@ private:
     
 };
 
-class S63ScreenLog : public wxWindow
-{
-public:
-    S63ScreenLog(wxWindow *parent);
-    ~S63ScreenLog();
 
-    void LogMessage(wxString &s);
-    void ClearLog(void);
-    void ClearLogSeq(void){ m_nseq = 0; }
-
-    void OnServerEvent(wxSocketEvent& event);
-    void OnSocketEvent(wxSocketEvent& event);
-    void OnSize( wxSizeEvent& event);
-
-
-private:
-    wxTextCtrl          *m_plogtc;
-    unsigned int        m_nseq;
-
-    wxSocketServer      *m_server;
-
-    DECLARE_EVENT_TABLE()
-
-};
-
-class S63ScreenLogContainer : public wxDialog
-{
-public:
-    S63ScreenLogContainer(wxWindow *parent);
-    ~S63ScreenLogContainer();
-
-    void LogMessage(wxString &s);
-    void ClearLog(void);
-    S63ScreenLog        *m_slog;
-
-private:
-};
-
-
-#define LEGEND_NONE             0
-#define LEGEND_FIRST            1
-#define LEGEND_SECOND           2
-#define LEGEND_THIRD            3
-#define LEGEND_FOURTH           4
-
-
-
-
-/*!
- * Control identifiers
- */
-
-#if 0
-////@begin control identifiers
-#define ID_GETIP 8200
-#define SYMBOL_GETIP_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
-#define SYMBOL_GETIP_TITLE_KEY _("OpenCPN SENC UserKey Required")
-#define SYMBOL_GETIP_IDNAME ID_GETIP
-#define SYMBOL_GETIP_SIZE wxSize(500, 200)
-#define SYMBOL_GETIP_POSITION wxDefaultPosition
-#define ID_GETIP_CANCEL 8201
-#define ID_GETIP_OK 8202
-#define ID_GETIP_IP 8203
-#define ID_GETIP_TEST 8204
-
-
-////@end control identifiers
-
-/*!
- * SENCGetUserKeyDialog class declaration
- */
-class SENCGetUserKeyDialog: public wxDialog
-{
-    DECLARE_DYNAMIC_CLASS( SENCGetUserKeyDialog )
-    DECLARE_EVENT_TABLE()
-    
-public:
-    /// Constructors
-    SENCGetUserKeyDialog( );
-    SENCGetUserKeyDialog( int legendID, wxWindow* parent, wxWindowID id = SYMBOL_GETIP_IDNAME,
-                          const wxString& caption = SYMBOL_GETIP_TITLE_KEY,
-                                const wxPoint& pos = SYMBOL_GETIP_POSITION,
-                                const wxSize& size = SYMBOL_GETIP_SIZE,
-                                long style = SYMBOL_GETIP_STYLE );
-    
-    ~SENCGetUserKeyDialog();
-    
-    /// Creation
-    bool Create( int legendID, wxWindow* parent, wxWindowID id = SYMBOL_GETIP_IDNAME,
-                 const wxString& caption = SYMBOL_GETIP_TITLE_KEY,
-                 const wxPoint& pos = SYMBOL_GETIP_POSITION,
-                 const wxSize& size = SYMBOL_GETIP_SIZE, long style = SYMBOL_GETIP_STYLE );
-    
-    
-    void CreateControls( int legendID );
-    
-    void OnCancelClick( wxCommandEvent& event );
-    void OnOkClick( wxCommandEvent& event );
-    
-    /// Should we show tooltips?
-    static bool ShowToolTips();
-    
-    wxTextCtrl*   m_UserKeyCtl;
-    wxButton*     m_CancelButton;
-    wxButton*     m_OKButton;
-    
-    
-};
-
-#endif
 
 class InfoWin: public wxWindow
 {

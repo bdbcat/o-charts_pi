@@ -96,9 +96,6 @@ extern wxString         g_s57data_dir;
 extern bool             g_bsuppress_log;
 extern wxString         g_pi_filename;
 extern wxString         g_SENCdir;
-extern bool             g_benable_screenlog;
-extern S63ScreenLogContainer           *g_pScreenLog;
-extern S63ScreenLog                    *g_pPanelScreenLog;
 extern bool             g_brendered_expired;
 
 extern bool             g_b_validated;
@@ -1385,114 +1382,6 @@ wxString eSENCChart::Get_eHDR_Name( const wxString& name000 )
     return efn;
 }
 
-#if 0
-wxString eSENCChart::Build_eHDR( const wxString& name000 )
-{
-    wxString ehdr_file_name = Get_eHDR_Name( name000 );
-
-    //  If required, build a temp file of update file array
-    
-    wxString tmp_up_file = wxFileName::CreateTempFileName( _T("") );
-    wxTextFile up_file(tmp_up_file);
-    if(m_up_file_array.GetCount()){
-        up_file.Open();
-        
-        for(unsigned int i=0 ; i < m_up_file_array.GetCount() ; i++){
-            up_file.AddLine(m_up_file_array[i]);
-        }
-        
-        up_file.Write();
-        up_file.Close();
-    }
-        
-    //  Make sure the S63SENC directory exists    
-    wxFileName ehdrfile( ehdr_file_name );
-        //      Make the target directory if needed
-    if( true != wxFileName::DirExists( ehdrfile.GetPath() ) ) {
-        if( !wxFileName::Mkdir( ehdrfile.GetPath() ) ) {
-            ScreenLogMessage(_T("   Cannot create S63SENC file directory for ") + ehdrfile.GetFullPath() );
-            return _T("");
-        }
-    }
-        
-        
-    // build the SENC utility command line
-    
-    wxString cmd;
-    cmd += _T(" -l ");                  // create secure header
-    
-    cmd += _T(" -i ");
-    cmd += _T("\"");
-    cmd += m_full_base_path;
-    cmd += _T("\"");
-    
-    cmd += _T(" -o ");
-    cmd += _T("\"");
-    cmd += ehdr_file_name;
-    cmd += _T("\"");
-    
-    cmd += _T(" -p ");
-    cmd += m_cell_permit;
-    
-    cmd += _T(" -u ");
-    cmd += GetUserpermit();
-    
-    cmd += _T(" -e ");
-    //cmd += GetInstallpermit();
-
-    if(g_benable_screenlog /*&& (g_pPanelScreenLog || g_pScreenLog) */){
-        cmd += _T(" -b ");
-        wxString port;
-        port.Printf( _T("%d"), g_backchannel_port );
-        cmd += port;
-    }
-    
-    cmd += _T(" -r ");
-    cmd += _T("\"");
-    cmd += g_s57data_dir;
-    cmd += _T("\"");
-
-   
-    if( m_up_file_array.GetCount() ){
-        cmd += _T(" -m ");
-        cmd += _T("\"");
-        cmd += tmp_up_file;
-        cmd += _T("\"");
-    }
-      
-    cmd += _T(" -z ");
-    cmd += _T("\"");
-    cmd += g_pi_filename;
-    cmd += _T("\"");
-      
-    
-    wxArrayString ehdr_result = exec_SENCutil_sync( cmd, true);
- 
-//    ::wxRemoveFile( tmp_up_file );
-    
-    //  Check results
-    if( !exec_results_check( ehdr_result ) ) {
-        m_extended_error = _T("Error executing cmd: ");
-        m_extended_error += cmd;
-        m_extended_error += _T("\n");
-        m_extended_error += s_last_sync_error;
-        
-        ScreenLogMessage( _T("\n") );
-        ScreenLogMessage( m_extended_error + _T("\n"));
-        
-        for(unsigned int i=0 ; i < ehdr_result.GetCount() ; i++){
-            ScreenLogMessage( ehdr_result[i] );
-            if(!ehdr_result[i].EndsWith(_T("\n")))
-                ScreenLogMessage( _T("\n") );
-        }
-        
-        return _T("");
-    }
-    else
-        return ehdr_file_name;
-    
-}
-#endif
 
 int nInit;
 
@@ -1502,74 +1391,6 @@ int eSENCChart::Init( const wxString& name, int init_flags )
 {
     return PI_INIT_FAIL_NOERROR;                // always implemented by derived chart classes
     
-#if 0
-    std::string sname = wx2std(name);
-    if(chartFailCount.find(sname) == chartFailCount.end()){
-        chartFailCount[sname] = 0;
-    }
-
-    if(chartFailCount[sname] > 2){
-        return PI_INIT_FAIL_REMOVE;
-    }
-            
-    //  Basic existence check...
-    if( !wxFileName::FileExists( name ) )
-        return PI_INIT_FAIL_REMOVE;
-
-    if(!processChartinfo( name )){
-        return PI_INIT_FAIL_REMOVE;
-    }
-    
-    //    Use a static semaphore flag to prevent recursion
-    if( s_PI_bInS57 ) {
-        return PI_INIT_FAIL_NOERROR;
-    }
-    s_PI_bInS57++;
-    
-    PI_InitReturn ret_val = PI_INIT_FAIL_NOERROR;
-    
-    m_FullPath = name;
-    m_Description = m_FullPath;
-
-    m_ChartType = PI_CHART_TYPE_PLUGIN;
-    m_ChartFamily = PI_CHART_FAMILY_VECTOR;
-    m_projection = PI_PROJECTION_MERCATOR;
-
-    
-    if(!g_bUserKeyHintTaken)
-        processUserKeyHint(name);
-    
-    validate_SENC_server();
-       
-    if( PI_HEADER_ONLY == init_flags ){
-       
-        m_SENCFileName = name;
-        if( !CreateHeaderDataFromeSENC() )
-            ret_val = PI_INIT_FAIL_REMOVE;
-        else
-            ret_val = PI_INIT_OK;
-    }
-        
-    else if( PI_FULL_INIT == init_flags ){
-
-        showChartinfoDialog();
-        
-        m_SENCFileName = name;
-        ret_val = PostInit( init_flags, global_color_scheme );
-    }
-    
-    // On any error, allow a new reload of UserKey from ChartInfo files
-    // presumably coming from another directory.
-    if(ret_val != PI_INIT_OK){
-        g_bUserKeyHintTaken = false;
-        chartFailCount[sname] ++;
-    }
-    else
-        chartFailCount[sname] = 0;
-
-    s_PI_bInS57--;
-    return ret_val;
-#endif    
 }
 
 

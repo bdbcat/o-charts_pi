@@ -119,10 +119,6 @@ WX_DEFINE_OBJARRAY(EULAArray);
 
 //      Some PlugIn global variables
 wxString                        g_sencutil_bin;
-S63ScreenLogContainer           *g_pScreenLog;
-S63ScreenLog                    *g_pPanelScreenLog;
-unsigned int                    g_backchannel_port;
-unsigned int                    g_frontchannel_port;
 wxString                        g_s57data_dir;
 
 wxString                        g_userpermit;
@@ -246,6 +242,8 @@ OKeyHash keyMapSystem;
 OKeyHash *pPrimaryKey;
 OKeyHash *pAlternateKey;
 
+OESENC_HTMLMessageDialog *pinfoDlg;
+
 #ifdef __OCPN__ANDROID__
 extern JavaVM *java_vm;         // found in androidUtil.cpp, accidentally exported....
 
@@ -282,7 +280,6 @@ static int ExtensionCompare( const wxString& first, const wxString& second )
 }
 */
 
-#if 1
 class  OESENC_HTMLMessageDialog: public wxDialog
 {
     
@@ -428,149 +425,7 @@ void OESENC_HTMLMessageDialog::OnTimer(wxTimerEvent &evt)
     else
         Hide();
 }
-#endif
 
-#if 0
-class  OESENC_HTMLMessageDialog: public wxWindow
-{
-    
-public:
-    OESENC_HTMLMessageDialog(wxWindow *parent, const wxString& message,
-                             const wxString& caption = wxMessageBoxCaptionStr,
-                             long style = wxOK|wxCENTRE,  
-                             bool bFixedFont = false,
-                             const wxPoint& pos = wxDefaultPosition);
-    
-    void OnYes(wxCommandEvent& event);
-    void OnNo(wxCommandEvent& event);
-    void OnCancel(wxCommandEvent& event);
-    void OnClose( wxCloseEvent& event );
-    void OnTimer(wxTimerEvent &evt);
-    
-    
-private:
-    int m_style;
-    wxTimer m_timer;
-    
-    DECLARE_EVENT_TABLE()
-};
-
-BEGIN_EVENT_TABLE(OESENC_HTMLMessageDialog, wxWindow)
-//EVT_BUTTON(wxID_YES, OESENC_HTMLMessageDialog::OnYes)
-//EVT_BUTTON(wxID_NO, OESENC_HTMLMessageDialog::OnNo)
-//EVT_BUTTON(wxID_CANCEL, OESENC_HTMLMessageDialog::OnCancel)
-EVT_CLOSE(OESENC_HTMLMessageDialog::OnClose)
-EVT_TIMER(-1, OESENC_HTMLMessageDialog::OnTimer)
-
-END_EVENT_TABLE()
-
-
-OESENC_HTMLMessageDialog::OESENC_HTMLMessageDialog( wxWindow *parent,
-                                                    const wxString& message,
-                                                    const wxString& caption,
-                                                    long style,
-                                                    bool bFixedFont,
-                                                    const wxPoint& pos)
-: wxWindow( parent, wxID_ANY,  pos, wxDefaultSize, wxCAPTION | wxMINIMIZE_BOX | wxMAXIMIZE_BOX | wxRESIZE_BORDER)
-{
-    m_style = style;
-    if(bFixedFont){
-        wxFont *dFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
-        double font_size = dFont->GetPointSize();
-        wxFont *qFont = wxTheFontList->FindOrCreateFont( font_size,wxFONTFAMILY_TELETYPE, dFont->GetStyle(), dFont->GetWeight());
-        SetFont( *qFont );
-    }
-    
-    wxBoxSizer *topsizer = new wxBoxSizer( wxVERTICAL );
-    
-    wxHtmlWindow *msgWindow = new wxHtmlWindow( this, wxID_ANY, wxDefaultPosition, wxDefaultSize,
-                                                wxHW_SCROLLBAR_AUTO | wxHW_NO_SELECTION );
-    msgWindow->SetBorders( 1 );
-    
-    topsizer->Add( msgWindow, 1, wxALIGN_CENTER_HORIZONTAL | wxEXPAND, 5 );
-    
-    wxString html;
-    html << message;
-    
-    wxCharBuffer buf = html.ToUTF8();
-    if( buf.data() )                            // string OK?
-       msgWindow->SetPage( html );
- /*   
-    // 3) buttons
-       int AllButtonSizerFlags = wxOK|wxCANCEL|wxYES|wxNO|wxHELP|wxNO_DEFAULT;
-       int center_flag = wxEXPAND;
-       if (style & wxYES_NO)
-           center_flag = wxALIGN_CENTRE;
-       wxSizer *sizerBtn = CreateSeparatedButtonSizer(style & AllButtonSizerFlags);
-       if ( sizerBtn )
-           topsizer->Add(sizerBtn, 0, center_flag | wxALL, 10 );
-       */
-
-       SetSizer( topsizer );
-       
-       topsizer->Fit( this );
-       
-       wxSize szyv = msgWindow->GetVirtualSize();
-       
-       SetClientSize(szyv.x + 20, szyv.y + 20); 
-       SetClientSize(600, szyv.y + 20); 
-       
-       //Centre( /*wxBOTH | wxCENTER_FRAME*/);
-       CentreOnParent();
-       m_timer.SetOwner( this, -1 );
-       
-       int timeout_sec = 10;
-       if(timeout_sec > 0)
-           m_timer.Start( timeout_sec * 1000, wxTIMER_ONE_SHOT );
-       Hide();
-       
-}
-
-void OESENC_HTMLMessageDialog::OnYes(wxCommandEvent& WXUNUSED(event))
-{
-//     SetReturnCode(wxID_YES);
-//     if(IsModal())
-//         EndModal( wxID_YES );
-//     else
-        Hide();
-}
-
-void OESENC_HTMLMessageDialog::OnNo(wxCommandEvent& WXUNUSED(event))
-{
-//     SetReturnCode(wxID_NO);
-//     if(IsModal())
-//         EndModal( wxID_NO );
-//     else
-        Hide();
-}
-
-void OESENC_HTMLMessageDialog::OnCancel(wxCommandEvent& WXUNUSED(event))
-{
-//     // Allow cancellation via ESC/Close button except if
-//     // only YES and NO are specified.
-//     if ( (m_style & wxYES_NO) != wxYES_NO || (m_style & wxCANCEL) )
-//     {
-//         SetReturnCode(wxID_CANCEL);
-//         EndModal( wxID_CANCEL );
-//     }
-}
-
-void OESENC_HTMLMessageDialog::OnClose( wxCloseEvent& event )
-{
-//     SetReturnCode(wxID_CANCEL);
-//     if(IsModal())
-//         EndModal( wxID_CANCEL );
-//     else
-        Hide();
-}
-
-void OESENC_HTMLMessageDialog::OnTimer(wxTimerEvent &evt)
-{
-       Hide();
-}
-#endif
-
-OESENC_HTMLMessageDialog *pinfoDlg;
 
 //---------------------------------------------------------------------------------------------------------
 //
@@ -604,14 +459,6 @@ o_charts_pi::o_charts_pi(void *ppimgr)
 
      
       g_bSENCutil_valid = false;                // not confirmed yet
-
-
-      g_backchannel_port = 49500; //49152;       //ports 49152–65535 are unallocated
-
-      g_pScreenLog = NULL;
-      g_pPanelScreenLog = NULL;
-
-      g_frontchannel_port = 50000;
 
       g_s57data_dir = *GetpSharedDataLocation();
       g_s57data_dir += _T("s57data");
@@ -1160,7 +1007,7 @@ void o_charts_pi::OnNewFPRClick( wxCommandEvent &event )
     msg += _("After creating this file, you will need it to obtain your User Key at the o-charts.org shop.\n\n");
     msg += _("Proceed to create Fingerprint file?");
     
-    int ret = OCPNMessageBox_PlugIn(NULL, msg, _("o_charts_pi Message"), wxYES_NO);
+    int ret = OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxYES_NO);
     
     if(ret == wxID_YES){
 #if 0        
@@ -1226,16 +1073,6 @@ void o_charts_pi::OnNewFPRClick( wxCommandEvent &event )
 void o_charts_pi::OnCloseToolboxPanel(int page_sel, int ok_apply_cancel)
 {
     m_up_text = NULL;
-
-    if(g_pPanelScreenLog){
-        g_pPanelScreenLog->Close();
-        delete g_pPanelScreenLog;
-        g_pPanelScreenLog = NULL;
-    }
-
-    g_backchannel_port++;
-
-
 }
 
 
@@ -1523,7 +1360,7 @@ bool o_charts_pi::SaveConfig( void )
 
 void o_charts_pi::ShowPreferencesDialog( wxWindow* parent )
 {
-    wxString titleString =  _("o_charts_pi Preferences");
+    wxString titleString =  _("o-charts_pi Preferences");
 
     long style = wxDEFAULT_DIALOG_STYLE;
 #ifdef __WXOSX__
@@ -1841,7 +1678,7 @@ void InfoWin::SetString(const wxString &s)
 
 
 
-
+#if 0
 
 //      On Screen log container
 
@@ -2116,214 +1953,10 @@ void S63ScreenLog::OnSocketEvent(wxSocketEvent& event)
 
 }
 
-
-#if 0
-/*!
- * SENCGetUserKeyDialog type definition
- */
-
-IMPLEMENT_DYNAMIC_CLASS( SENCGetUserKeyDialog, wxDialog )
-/*!
- * SENCGetUserKeyDialog event table definition
- */BEGIN_EVENT_TABLE( SENCGetUserKeyDialog, wxDialog )
-
- ////@begin SENCGetUserKeyDialog event table entries
-
- EVT_BUTTON( ID_GETIP_CANCEL, SENCGetUserKeyDialog::OnCancelClick )
- EVT_BUTTON( ID_GETIP_OK, SENCGetUserKeyDialog::OnOkClick )
-
- ////@end SENCGetUserKeyDialog event table entries
-
- END_EVENT_TABLE()
-
- /*!
-  * SENCGetUserKeyDialog constructors
-  */
-
- SENCGetUserKeyDialog::SENCGetUserKeyDialog()
- {
- }
-
- SENCGetUserKeyDialog::SENCGetUserKeyDialog( int legendID, wxWindow* parent, wxWindowID id, const wxString& caption,
-                                         const wxPoint& pos, const wxSize& size, long style )
- {
-
-     long wstyle = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER;
-     wxDialog::Create( parent, id, caption, pos, size, wstyle );
-
-     wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
-     SetFont( *qFont );
-     
-     CreateControls(legendID);
-     GetSizer()->SetSizeHints( this );
-     Centre();
-
- }
-
- SENCGetUserKeyDialog::~SENCGetUserKeyDialog()
- {
-     delete m_UserKeyCtl;
- }
-
- /*!
-  * SENCGetUserKeyDialog creator
-  */
-
- bool SENCGetUserKeyDialog::Create( int legendID, wxWindow* parent, wxWindowID id, const wxString& caption,
-                                  const wxPoint& pos, const wxSize& size, long style )
- {
-     SetExtraStyle( GetExtraStyle() | wxWS_EX_BLOCK_EVENTS );
-
-     long wstyle = style;
-#ifdef __WXMAC__
-     wstyle |= wxSTAY_ON_TOP;
-#endif
-     wxDialog::Create( parent, id, caption, pos, size, wstyle );
-     
-     wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
-     SetFont( *qFont );
-     
-     SetTitle( _("OpenCPN oeSENC UserKey Required"));
-
-     CreateControls( legendID );
-     Centre();
-     return TRUE;
- }
-
- /*!
-  * Control creation for SENCGetUserKeyDialog
-  */
-
- void SENCGetUserKeyDialog::CreateControls( int legendID )
- {
-     SENCGetUserKeyDialog* itemDialog1 = this;
-
-     wxBoxSizer* itemBoxSizer2 = new wxBoxSizer( wxVERTICAL );
-     itemDialog1->SetSizer( itemBoxSizer2 );
-
-     wxStaticBox* itemStaticBoxSizer4Static = new wxStaticBox( itemDialog1, wxID_ANY, _("Enter UserKey") );
-
-     wxStaticBoxSizer* itemStaticBoxSizer4 = new wxStaticBoxSizer( itemStaticBoxSizer4Static, wxVERTICAL );
-     itemBoxSizer2->Add( itemStaticBoxSizer4, 0, wxEXPAND | wxALL, 5 );
-
-     wxStaticText* itemStaticText5 = new wxStaticText( itemDialog1, wxID_STATIC, _T(""), wxDefaultPosition, wxDefaultSize, 0 );
-     itemStaticBoxSizer4->Add( itemStaticText5, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, 5 );
-
-     m_UserKeyCtl = new wxTextCtrl( itemDialog1, ID_GETIP_IP, _T(""), wxDefaultPosition,
-     wxSize( 180, -1 ), 0 );
-     itemStaticBoxSizer4->Add( m_UserKeyCtl, 0,  wxALIGN_LEFT | wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 5 );
-
-     wxStaticText *itemStaticTextLegend = NULL;
-     switch(legendID){
-         case LEGEND_NONE:
-             break;
-             
-         case LEGEND_FIRST:
-             itemStaticTextLegend = new wxStaticText( itemDialog1, wxID_STATIC,
-_("A valid oeSENC UserKey has the alphanumeric format:  AAAA-BBBB-CCCC-DDDD-EEEE-FF\n\n\
-Your oeSENC UserKey may be obtained from your chart provider."),
-                                                      wxDefaultPosition, wxDefaultSize, 0);
-             break;
-         case LEGEND_SECOND:
-             itemStaticTextLegend = new wxStaticText( itemDialog1, wxID_STATIC,
-_("ERROR: The UserKey entered is not valid for this oeSENC chart set.\n\
-Please verify your UserKey and try again.\n\n\
-A valid oeSENC UserKey has the alphanumeric format:  AAAA-BBBB-CCCC-DDDD-EEEE-FF\n\
-Your oeSENC UserKey may be obtained from your chart provider.\n\n"),
-                                                      wxDefaultPosition, wxDefaultSize, 0);
-             break;
-         case LEGEND_THIRD:
-             itemStaticTextLegend = new wxStaticText( itemDialog1, wxID_STATIC,
-_("ERROR: The UserKey entered is not valid for this oeSENC chart set.\n\n\
-oeSENC charts will be disabled for this session.\n\
-Please verify your UserKey and restart OpenCPN.\n\n\
-Your oeSENC UserKey may be obtained from your chart provider.\n\n"),
-                                                    wxDefaultPosition, wxDefaultSize, 0);
-             
-             m_UserKeyCtl->Disable();
-             break;
-             
-         case LEGEND_FOURTH:
-             itemStaticTextLegend = new wxStaticText( itemDialog1, wxID_STATIC,
-                                                      _("UserKey accepted.\n\n"),
-                                                      wxDefaultPosition, wxDefaultSize, 0);
-             break;
-
-         default:
-             break;
-     }
-                                       
-     if(itemStaticTextLegend){
-         itemBoxSizer2->Add( itemStaticTextLegend, 0, wxALIGN_LEFT | wxLEFT | wxRIGHT | wxTOP, 5 );
-     }
-         
-                                       
-#if 0     
-     wxBoxSizer* itemBoxSizerTest = new wxBoxSizer( wxVERTICAL );
-     itemBoxSizer2->Add( itemBoxSizerTest, 0, wxALIGN_LEFT | wxALL | wxEXPAND, 5 );
-
-     m_testBtn = new wxButton(itemDialog1, ID_GETIP_TEST, _T("Test Installpermit"));
-     m_testBtn->Disable();
-     itemBoxSizerTest->Add( m_testBtn, 0, wxALIGN_LEFT | wxALL, 5 );
-
-     wxStaticBox* itemStaticBoxTestResults = new wxStaticBox( itemDialog1, wxID_ANY,
-                                                                  _T("Test Results"), wxDefaultPosition, wxSize(-1, 40) );
-
-     wxStaticBoxSizer* itemStaticBoxSizerTest = new wxStaticBoxSizer( itemStaticBoxTestResults,  wxHORIZONTAL );
-     itemBoxSizerTest->Add( itemStaticBoxSizerTest, 0,  wxALIGN_RIGHT |wxALL | wxEXPAND, 5 );
-
-
-     m_TestResult = new wxStaticText( itemDialog1, -1, _T(""), wxDefaultPosition, wxSize( -1, -1 ), 0 );
-
-     itemStaticBoxSizerTest->Add( m_TestResult, 0, wxALIGN_LEFT | wxALL | wxEXPAND, 5 );
-
-#endif
-     wxBoxSizer* itemBoxSizer16 = new wxBoxSizer( wxHORIZONTAL );
-     itemBoxSizer2->Add( itemBoxSizer16, 0, wxALIGN_RIGHT | wxALL, 5 );
-
-     if( (legendID == LEGEND_FIRST) || (legendID == LEGEND_SECOND) ){
-        m_CancelButton = new wxButton( itemDialog1, ID_GETIP_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
-        itemBoxSizer16->Add( m_CancelButton, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
-        m_CancelButton->SetDefault();
-     }
-     else
-         m_CancelButton = NULL;
-
-     m_OKButton = new wxButton( itemDialog1, ID_GETIP_OK, _("OK"), wxDefaultPosition,
-     wxDefaultSize, 0 );
-     itemBoxSizer16->Add( m_OKButton, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
-
-     m_UserKeyCtl->AppendText(g_old_UserKey);
-     
- }
-
-
- bool SENCGetUserKeyDialog::ShowToolTips()
- {
-     return TRUE;
- }
-
-
- void SENCGetUserKeyDialog::OnCancelClick( wxCommandEvent& event )
- {
-    EndModal(2);
- }
-
- void SENCGetUserKeyDialog::OnOkClick( wxCommandEvent& event )
- {
-     if( m_UserKeyCtl->GetValue().Length() == 0 )
-         EndModal(1);
-     else {
-         g_UserKey = m_UserKeyCtl->GetValue();
-         g_pi->SaveConfig();
-
-         EndModal(0);
-     }
- }
 #endif
 
- wxString GetUserKey( int legendID, bool bforceNew)
- {
+wxString GetUserKey( int legendID, bool bforceNew)
+{
      if(g_UserKey.Len() && !bforceNew)
          return g_UserKey;
      else
@@ -2332,6 +1965,7 @@ Your oeSENC UserKey may be obtained from your chart provider.\n\n"),
      }
      
 }
+ 
  
 void ShowGenericErrorMessage(wxString s_file)
 {
@@ -2348,9 +1982,18 @@ _("This chart cannot be loaded due to any of the following reasons:\n\n\
 Please contact info@o-charts.org if the problem persists.\n");
     msg << _T("\n") << s_file; //Show one example file
     
-    OCPNMessageBox_PlugIn(NULL, msg, _("o_charts_pi Message"),  wxOK, -1, -1);
+    OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"),  wxOK, -1, -1);
     
     g_GenericMessageShown = true;
+}
+
+void ShowExpiredErrorMessage(wxString s_file, int expiryDays, int graceDays)
+{
+    wxString msg1 = _("This chart will soon become unavailable due to time restricted license requirements.");
+    wxString msg2 = _("This chart is now unavailable due to time restricted license requirements.");
+    wxString msg3 = _("Days until expiration:");
+    wxString msg4 = _("Grace days available after expiration:");
+    wxString msg5 = _("Please contact info@o-charts.org for license extension."); 
 }
 
  
@@ -2368,7 +2011,7 @@ bool validateUserKey( wxString sencFileName)
     bool b_Set = true;
     if((g_UserKey.Length() == 0) || (g_UserKey == _T("Invalid"))){
         b_Set = false;
-        g_UserKey = GetUserKey( LEGEND_FIRST, true );
+        g_UserKey = GetUserKey( 0, true );
     }
         
     // Try to read the header of the supplied oeSENC file name
@@ -3032,7 +2675,7 @@ bool validate_SENC_server(void)
         msg += _T("{");
         msg += bin_test;
         msg += _T("}");
-        OCPNMessageBox_PlugIn(NULL, msg, _("o_charts_pi Message"),  wxOK, -1, -1);
+        OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"),  wxOK, -1, -1);
         
         wxString msge= _T("Cannot find the oeserverd utility at \n");
         msge += _T("{");
@@ -3135,7 +2778,6 @@ bool validate_SENC_server(void)
             msg += bin_test;
             msg += _T("}\n");
             msg += _(" reports Unavailable.\n\n");
-            //            OCPNMessageBox_PlugIn(NULL, msg, _("o_charts_pio_charts_pi Message"),  wxOK, -1, -1);
             wxLogMessage(_T("o_charts_pi: ") + msg);
             
             ///_sencutil_bin.Clear();
@@ -3159,7 +2801,7 @@ bool validate_SENC_server(void)
         msg += bin_test;
         msg += _T("}\n");
         msg += _(" could not be started.\n\n");
-        OCPNMessageBox_PlugIn(NULL, msg, _("o_charts_pi Message"),  wxOK, -1, -1);
+        OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"),  wxOK, -1, -1);
         wxLogMessage(_T("o_charts_pi: ") + msg);
         
         g_sencutil_bin.Clear();
@@ -4075,7 +3717,7 @@ void o_charts_pi_event_handler::OnClearSystemName( wxCommandEvent &event )
     wxString msg = _("System name RESET shall be performed only by request from o-charts technical support staff.");
     msg += _T("\n\n");
     msg += _("Proceed to RESET?");
-    int ret = OCPNMessageBox_PlugIn(NULL, msg, _("o_charts_pi Message"), wxYES_NO);
+    int ret = OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxYES_NO);
     
     if(ret != wxID_YES)
         return;
@@ -4128,7 +3770,7 @@ void o_charts_pi_event_handler::OnClearCredentials( wxCommandEvent &event )
     g_loginKey.Clear();
     saveShopConfig();
     
-    OCPNMessageBox_PlugIn(NULL, _("Credential Reset Successful"), _("o_charts_pi Message"), wxOK);
+    OCPNMessageBox_PlugIn(NULL, _("Credential Reset Successful"), _("o-charts_pi Message"), wxOK);
 }
 
 void o_charts_pi_event_handler::OnSendStatus( wxCommandEvent &event )
@@ -4213,7 +3855,7 @@ void o_charts_pi_event_handler::OnNewDFPRClick( wxCommandEvent &event )
     msg += _("Proceed to create Fingerprint file?");
 
 
-    int ret = OCPNMessageBox_PlugIn(NULL, msg, _("o_charts_pi Message"), wxYES_NO);
+    int ret = OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxYES_NO);
     
     if(ret == wxID_YES){
         wxString msg1;
@@ -4223,7 +3865,7 @@ void o_charts_pi_event_handler::OnNewDFPRClick( wxCommandEvent &event )
         
         // Check for missing dongle...
         if(fpr_file.IsSameAs(_T("DONGLE_NOT_PRESENT"))){
-            OCPNMessageBox_PlugIn(NULL, _("ERROR Creating Fingerprint file\n USB key dongle not detected."), _("o_charts_pi Message"), wxOK);
+            OCPNMessageBox_PlugIn(NULL, _("ERROR Creating Fingerprint file\n USB key dongle not detected."), _("o-charts_pi Message"), wxOK);
             return;
         }
         
@@ -4234,13 +3876,13 @@ void o_charts_pi_event_handler::OnNewDFPRClick( wxCommandEvent &event )
             if(b_copyOK)
                 msg1 += _("\n\n Fingerprint file is also copied to desktop.");
             
-            OCPNMessageBox_PlugIn(NULL, msg1, _("o_charts_pi Message"), wxOK);
+            OCPNMessageBox_PlugIn(NULL, msg1, _("o-charts_pi Message"), wxOK);
             
             m_parent->Set_FPR();
             
         }
         else{
-            OCPNMessageBox_PlugIn(NULL, _("ERROR Creating Fingerprint file\n Check OpenCPN log file."), _("o_charts_pi Message"), wxOK);
+            OCPNMessageBox_PlugIn(NULL, _("ERROR Creating Fingerprint file\n Check OpenCPN log file."), _("o-charts_pi Message"), wxOK);
         }
         
         g_fpr_file = fpr_file;
@@ -4260,7 +3902,7 @@ void o_charts_pi_event_handler::OnNewFPRClick( wxCommandEvent &event )
     msg += _("After creating this file, you will need it to obtain your chart sets at the o-charts.org shop.\n\n");
     msg += _("Proceed to create Fingerprint file?");
 
-    int ret = OCPNMessageBox_PlugIn(NULL, msg, _("o_charts_pi Message"), wxYES_NO);
+    int ret = OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxYES_NO);
     
     if((ret == wxID_YES) || (ret == wxID_OK) ){
         wxString msg1;
@@ -4275,13 +3917,13 @@ void o_charts_pi_event_handler::OnNewFPRClick( wxCommandEvent &event )
             if(b_copyOK)
                 msg1 += _("\n\n Fingerprint file is also copied to desktop.");
             
-            OCPNMessageBox_PlugIn(NULL, msg1, _("o_charts_pi Message"), wxOK);
+            OCPNMessageBox_PlugIn(NULL, msg1, _("o-charts_pi Message"), wxOK);
             
             m_parent->Set_FPR();
             
         }
         else{
-            OCPNMessageBox_PlugIn(NULL, _T("ERROR Creating Fingerprint file\n Check OpenCPN log file."), _("o_charts_pi Message"), wxOK);
+            OCPNMessageBox_PlugIn(NULL, _T("ERROR Creating Fingerprint file\n Check OpenCPN log file."), _("o-charts_pi Message"), wxOK);
         }
         
         g_fpr_file = fpr_file;
@@ -4772,8 +4414,8 @@ void o_charts_pi_about::Populate( void )
         }
         license_filea.Close();
     } else {
-        licenseText.Append(_("Could not open o_charts_pi EULA: ") + m_fileName + _T("<br>"));
-        wxLogMessage( _T("Could not open o_charts_pi EULA: ") + m_fileName );
+        licenseText.Append(_("Could not open o-charts_pi EULA: ") + m_fileName + _T("<br>"));
+        wxLogMessage( _T("Could not open o-charts_pi EULA: ") + m_fileName );
         closeButton->Disable();
     }
     
@@ -5033,7 +4675,7 @@ void showChartinfoDialog( void )
     hdr += _T("</table></center>");
     hdr += _T("</body></html>");
 
-    callActivityMethod_s2s("displayHTMLAlertDialog", _("o_charts_pi Message"), hdr);
+    callActivityMethod_s2s("displayHTMLAlertDialog", _("o-charts_pi Message"), hdr);
     g_binfoShown = true;
 }
 #endif
@@ -5123,7 +4765,7 @@ void showChartinfoDialog( void )
         //        int parent_font_width = sx;
         //         wxSize sz = wxSize(len_max * parent_font_width * 1.2, -1);
         
-        pinfoDlg = new OESENC_HTMLMessageDialog( NULL /*GetOCPNCanvasWindow()*/, hdr, _("o_charts_pi Message"), wxOK);
+        pinfoDlg = new OESENC_HTMLMessageDialog( NULL /*GetOCPNCanvasWindow()*/, hdr, _("o-charts_pi Message"), wxOK);
         //        pinfoDlg->SetClientSize(sz);
         pinfoDlg->Centre();
         pinfoDlg->Show();

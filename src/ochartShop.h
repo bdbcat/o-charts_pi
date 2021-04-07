@@ -646,43 +646,6 @@ public:
 };
 #endif
 
-class oeSENCLogin: public wxDialog
-{
-    //DECLARE_DYNAMIC_CLASS( oeSENCLogin )
-    DECLARE_EVENT_TABLE()
-    
-public:
-    oeSENCLogin( );
-    oeSENCLogin( wxWindow* parent, wxWindowID id = wxID_ANY,
-                         const wxString& caption =  _("OpenCPN oeRNC Login"),
-                        const wxPoint& pos = wxDefaultPosition,
-                          const wxSize& size = wxSize(500, 200),
-                        long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
-    
-    ~oeSENCLogin();
-    
-    bool Create( wxWindow* parent, wxWindowID id = SYMBOL_GETIP_IDNAME,
-                 const wxString& caption =  _("OpenCPN oeRNC Login"),
-                 const wxPoint& pos = wxDefaultPosition,
-                 const wxSize& size = wxSize(500, 200), long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
-    
-    
-    void CreateControls(  );
-    
-    void OnCancelClick( wxCommandEvent& event );
-    void OnOkClick( wxCommandEvent& event );
-    void OnClose( wxCloseEvent& event );
-    
-    static bool ShowToolTips();
-    
-    wxTextCtrl*   m_UserNameCtl;
-    wxTextCtrl*   m_PasswordCtl;
-    wxButton*     m_CancelButton;
-    wxButton*     m_OKButton;
-    
-    
-};
-
 class oeUniLogin: public wxDialog
 {
     DECLARE_DYNAMIC_CLASS( oeUniLogin )
