@@ -86,6 +86,7 @@
 
 extern bool GetDoubleAttr( S57Obj *obj, const char *AttrName, double &val );
 bool IsDongleAvailable();
+extern void ShowExpiredErrorMessage(wxString s_file, int expiryDaysRemaining, int graceDaysRemaining, int graceDaysAllowed);
 
 
 extern wxString         g_sencutil_bin;
@@ -804,50 +805,25 @@ int oesuChart::Init( const wxString& name, int init_flags )
         
     else if( PI_FULL_INIT == init_flags ){
 
-        showChartinfoDialog();
-        
         m_SENCFileName = name;
         ret_val = PostInit( init_flags, global_color_scheme );
     }
- 
-//       bool bHeaderOnly = false;
-//       if(init_flags == HEADER_ONLY)
-//           bHeaderOnly = true;
-// 
-//       ifs_hdr = new oernc_inStream(name, key, bHeaderOnly);          // open the file server
 
-/*    
-    if(!g_bUserKeyHintTaken)
-        processUserKeyHint(name);
+    // Process any expiration information, only found on oesu chart types
     
-    validate_SENC_server();
-       
-    if( PI_HEADER_ONLY == init_flags ){
-       
-        m_SENCFileName = name;
-        if( !CreateHeaderDataFromeSENC() )
-            ret_val = PI_INIT_FAIL_REMOVE;
-        else
-            ret_val = PI_INIT_OK;
+    if(ret_val == ERROR_SENC_EXPIRED){
+        // Hard expiration, show the message and quit.
+        ShowExpiredErrorMessage(m_FullPath, m_uSENCExpireDaysRemaining, m_uSENCGraceDaysRemaining, m_uSENCGraceDaysAllowed);
+        ret_val = PI_INIT_FAIL_REMOVE;
     }
-        
-    else if( PI_FULL_INIT == init_flags ){
+    else if( ret_val == PI_INIT_OK ){
+        //  Check for "warning" cases
+        ShowExpiredErrorMessage(m_FullPath, m_uSENCExpireDaysRemaining, m_uSENCGraceDaysRemaining, m_uSENCGraceDaysAllowed);
+    }
 
+    if( ret_val == PI_INIT_OK )
         showChartinfoDialog();
         
-        m_SENCFileName = name;
-        ret_val = PostInit( init_flags, global_color_scheme );
-    }
-    
-    // On any error, allow a new reload of UserKey from ChartInfo files
-    // presumably coming from another directory.
-    if(ret_val != PI_INIT_OK){
-        g_bUserKeyHintTaken = false;
-        chartFailCount[sname] ++;
-    }
-    else
-        chartFailCount[sname] = 0;
-*/
 
     s_PI_bInS57--;
     return ret_val;
@@ -1086,7 +1062,7 @@ PI_InitReturn oesuChart::PostInit( int flags, int cs )
             msg.Append( m_SENCFileName.GetFullPath() );
             wxLogMessage( msg );
         
-            return PI_INIT_FAIL_RETRY;
+            return (PI_InitReturn)retCode;
         }
     }
     
@@ -4096,8 +4072,28 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
                 }
             }
         }
+        else if( ERROR_SENC_EXPIRED == srv ){
+            if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile ingest Error, expired chart"));
+            wxLogMessage( sencfile->getLastError() );
+            
+            m_uSENCExpireDaysRemaining = sencfile->m_expireDaysRemaining;
+            m_uSENCGraceDaysAllowed = sencfile->m_graceDaysAllowed;
+            m_uSENCGraceDaysRemaining = sencfile->m_graceDaysRemining;
+            
+            delete sencfile;
+            return srv;
+
+        }
+        
     }
 
+    // For uSENC charts, capture the expiration info
+    if(ctype == CTYPE_OESU){
+        m_uSENCExpireDaysRemaining = sencfile->m_expireDaysRemaining;
+        m_uSENCGraceDaysAllowed = sencfile->m_graceDaysAllowed;
+        m_uSENCGraceDaysRemaining = sencfile->m_graceDaysRemining;
+    }
+        
     if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile SENC Loaded OK"));
                                      
     //  Get the cell Ref point

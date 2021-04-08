@@ -231,6 +231,7 @@ wxString                        g_loginKey;
 wxString                        g_systemOS;
 
 bool                            g_GenericMessageShown;
+bool                            g_ExpiredMessageShown;
 
 bool shutdown_SENC_server( void );
 bool ShowAlwaysEULAs();
@@ -1987,13 +1988,45 @@ Please contact info@o-charts.org if the problem persists.\n");
     g_GenericMessageShown = true;
 }
 
-void ShowExpiredErrorMessage(wxString s_file, int expiryDays, int graceDays)
+void ShowExpiredErrorMessage(wxString s_file, int expiryDaysRemaining, int graceDaysRemaining, int graceDaysAllowed)
 {
-    wxString msg1 = _("This chart will soon become unavailable due to time restricted license requirements.");
-    wxString msg2 = _("This chart is now unavailable due to time restricted license requirements.");
+    if(g_ExpiredMessageShown)
+        return;
+
+    wxString msg1 = _("This chart will soon no longer display due to time restricted license requirements.");
+    wxString msg2 = _("This chart will no longer display due to time restricted license requirements.");
     wxString msg3 = _("Days until expiration:");
     wxString msg4 = _("Grace days available after expiration:");
-    wxString msg5 = _("Please contact info@o-charts.org for license extension."); 
+    wxString msg5 = _("Please re-license the charts at o-charts.org."); 
+    wxString msg6 = _("Expired");
+    wxString daysLeft;
+    daysLeft.Printf(_T(" %d"), expiryDaysRemaining);
+    wxString graceLeftRem;
+    graceLeftRem.Printf(_T(" %d/%d"), graceDaysRemaining, graceDaysAllowed);
+    wxString graceLeft;
+    graceLeft.Printf(_T(" %d"), graceDaysAllowed);
+
+    wxString msg;
+    msg << _T("\n") << s_file<< _T("\n");  //Show one example file
+
+    if( (expiryDaysRemaining < 14) && (expiryDaysRemaining > 0) && (graceDaysRemaining > 0) ){
+        msg << msg1 << _T("\n") << msg3 << daysLeft << _T("\n") << msg4 << graceLeft;
+    }
+    else if( (expiryDaysRemaining <= 0) && ( graceDaysRemaining > 0 )){
+        msg << msg1 << _T("\n") << msg4 << graceLeftRem;
+    }
+    else if( (expiryDaysRemaining <= 0) && ( graceDaysRemaining <= 0 )){
+        msg << msg2 << _T("\n") << msg5;
+    }
+    
+    else
+        return;
+        
+        
+    OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"),  wxOK, -1, -1);
+    
+    g_ExpiredMessageShown = true;
+
 }
 
  

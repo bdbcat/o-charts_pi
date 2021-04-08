@@ -51,6 +51,7 @@ extern bool processChartinfo(const wxString &oesenc_file);
 extern void showChartinfoDialog( void );
 extern wxString getChartInstallBase( wxString chartFileFullPath );
 extern void ShowGenericErrorMessage(wxString s_file);
+extern void ShowExpiredErrorMessage(wxString s_file, int expiryDaysRemaining, int graceDaysRemaining, int graceDaysAllowed);
 
 // ----------------------------------------------------------------------------
 // Random Prototypes

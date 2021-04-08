@@ -236,6 +236,10 @@ class  eSENCChart : public PlugInChartBaseExtended
 
       double      m_ref_lat;
       double      m_ref_lon;
+
+      int  m_uSENCExpireDaysRemaining;
+      int  m_uSENCGraceDaysAllowed;
+      int  m_uSENCGraceDaysRemaining;
       
 protected:
 //    Methods

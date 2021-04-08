@@ -81,6 +81,8 @@ enum
 #define         ERROR_SENCSERVER_UNAVAILABLE            9
 #define         ERROR_SENC_CORRUPT                      10
 #define         ERROR_SIGNATURE_FAILURE                 11
+#define         ERROR_SENC_EXPIRED                      12
+#define         WARNING_SENC_INGRACE                    13
 
 
 //  OSENC V2 record definitions
@@ -114,6 +116,7 @@ enum
 #define CELL_EXTENT_RECORD                      100
 #define CELL_TXTDSC_INFO_FILE_RECORD            101
 
+#define SERVER_STATUS_RECORD                    200
 
 //--------------------------------------------------------------------------
 //      Utility Structures
@@ -413,6 +416,28 @@ typedef struct _OSENC_EXTENT_Record_Payload{
      double          extent_se_lon;
  }_OSENC_EXTENT_Record_Payload;
  
+typedef struct _OSENC_SERVERSTAT_Record{
+    uint16_t        record_type;
+    uint32_t        record_length;
+    uint16_t        serverStatus;
+    uint16_t        decryptStatus;
+    uint16_t        expireStatus;
+    uint16_t        expireDaysRemaining;
+    uint16_t        graceDaysAllowed;
+    uint16_t        graceDaysRemaining;
+}_OSENC_SERVERSTAT_Record;
+
+typedef struct {
+    uint16_t        serverStatus;
+    uint16_t        decryptStatus;
+    uint16_t        expireStatus;
+    uint16_t        expireDaysRemaining;
+    uint16_t        graceDaysAllowed;
+    uint16_t        graceDaysRemaining;
+}_OSENC_SERVERSTAT_Record_Payload;
+
+
+    
 
  #pragma pack(pop)
  
@@ -506,6 +531,14 @@ public:
     void InitializePersistentBuffer( void );
     unsigned char *getBuffer( size_t length);
     
+    // Values fetched from uSENC status read
+    int m_uSENCStatus;
+    int m_uSENCDecryptStatus;
+    int m_uSENCexpireOK;
+    int m_expireDaysRemaining;
+    int m_graceDaysAllowed;
+    int m_graceDaysRemining;
+
         
 private:
     void init();
@@ -603,6 +636,8 @@ private:
     wxStringHashMap       m_TXTDSC_fileMap;
     unsigned char         m_read_esenc_cmd;
     unsigned char         m_read_esencHdr_cmd;
+    int                   m_ctype;
+    
  
 };
 
