@@ -523,8 +523,11 @@ int o_charts_pi::Init(void)
      
     // Specify the location of the xxserverd helper.
 #ifdef __WXMSW__
-      g_sencutil_bin = GetPluginDataDir("o-charts_pi") + _T("\\oexserverd.exe");
-
+    //g_sencutil_bin = GetPluginDataDir("o-charts_pi") + _T("\\oexserverd.exe");
+    wxString piWLocn = GetPlugInPath(this);
+    wxFileName pifn(piWLocn);
+    g_sencutil_bin = pifn.GetPath() + _T("\\oexserverd.exe");
+    wxLogMessage(_T("Path to Windows server is: ") + g_sencutil_bin);
 #endif
       
       // Search for helper in the $PATH.
@@ -546,6 +549,11 @@ int o_charts_pi::Init(void)
       g_sencutil_bin.Append(_T("\""));
 #endif    
 
+            // Also Windows.
+#ifdef __WXMSW__
+      g_sencutil_bin.Prepend(_T("\""));
+      g_sencutil_bin.Append(_T("\""));
+#endif    
 
     
     
@@ -2007,7 +2015,7 @@ void ShowExpiredErrorMessage(wxString s_file, int expiryDaysRemaining, int grace
     graceLeft.Printf(_T(" %d"), graceDaysAllowed);
 
     wxString msg;
-    msg << _T("\n") << s_file<< _T("\n");  //Show one example file
+    msg << _T("\n") << s_file<< _T("\n\n");  //Show one example file
 
     if( (expiryDaysRemaining < 14) && (expiryDaysRemaining > 0) && (graceDaysRemaining > 0) ){
         msg << msg1 << _T("\n") << msg3 << daysLeft << _T("\n") << msg4 << graceLeft;
