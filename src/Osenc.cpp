@@ -940,6 +940,7 @@ int Osenc::verifySENC(Osenc_instream &fpx, const wxString &senc_file_name)
         }
     }
 
+#if 1    
     // Process unified uSENC different from legacy oSENC
     if( m_ctype == CTYPE_OESU ){
         if(( first_record.record_type == SERVER_STATUS_RECORD ) && (first_record.record_length < 20) ){
@@ -954,6 +955,11 @@ int Osenc::verifySENC(Osenc_instream &fpx, const wxString &senc_file_name)
             m_expireDaysRemaining = ppayload->expireDaysRemaining;
             m_graceDaysAllowed = ppayload->graceDaysAllowed;
             m_graceDaysRemining = ppayload->graceDaysRemaining;
+            wxString msg;
+            msg.Printf(_T("verifySENC s0:  %d  %d  %d  %d"),
+                       ppayload->expireStatus, ppayload->expireDaysRemaining, ppayload->graceDaysAllowed, ppayload->graceDaysRemaining);
+            wxLogMessage(msg);
+            
             
             if(!m_uSENCexpireOK)
                 return ERROR_SENC_EXPIRED;
@@ -965,7 +971,7 @@ int Osenc::verifySENC(Osenc_instream &fpx, const wxString &senc_file_name)
 
         }
     }
-    
+#endif    
     {
         if(( first_record.record_type == HEADER_SENC_VERSION ) && (first_record.record_length < 16) ){
             unsigned char *buf = getBuffer( first_record.record_length - sizeof(OSENC_Record_Base));
