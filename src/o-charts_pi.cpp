@@ -563,7 +563,7 @@ int o_charts_pi::Init(void)
 #ifdef __OCPN__ANDROID__
     wxString piLocn = GetPlugInPath(this); //*GetpSharedDataLocation();
     wxFileName fnl(piLocn);
-    g_sencutil_bin = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("oexserverda");
+    g_sencutil_bin = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("oexserverd");
     g_serverProc = 0;
 #endif
 
