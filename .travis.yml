@@ -2,7 +2,7 @@ language: cpp
 
   
 matrix:
-  include:
+  exclude:
   - env:
     - OCPN_TARGET=stretch-armhf
     - OCPN_BRANCH=master
