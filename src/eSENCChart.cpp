@@ -811,7 +811,7 @@ int oesuChart::Init( const wxString& name, int init_flags )
 
     // Process any expiration information, only found on oesu chart types
     
-    if(ret_val == ERROR_SENC_EXPIRED){
+    if((int)ret_val == ERROR_SENC_EXPIRED){
         // Hard expiration, show the message and quit.
         ShowExpiredErrorMessage(m_FullPath, m_uSENCExpireDaysRemaining, m_uSENCGraceDaysRemaining, m_uSENCGraceDaysAllowed);
         ret_val = PI_INIT_FAIL_REMOVE;
