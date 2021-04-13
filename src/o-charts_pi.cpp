@@ -4655,6 +4655,8 @@ void o_charts_pi_about::OnPageChange( wxNotebookEvent& event )
 #ifdef __OCPN__ANDROID__
 void showChartinfoDialog( void )
 {
+    androidHideBusyIcon();              // Leftover from startup/initial chart display
+
     if(g_binfoShown)
         return;
     
