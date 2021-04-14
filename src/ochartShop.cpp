@@ -2322,16 +2322,28 @@ int checkResult(wxString &result, bool bShowLoginErrorDialog = true)
            msg += msg1;
            if( bShowLoginErrorDialog ){
                 switch(dresult){
+                    case 2:
+                        msg += _("Production server in maintenance mode.");
+                        break;
                     case 4:
                         msg += _("User does not exist.");
                         break;
                     case 5:
+                        msg += _("This oeRNC plugin version is obsolete.");
+                        msg += _T("\n");
+                        msg += _("Please update your plugin.");
+                        msg += _T("\n");
+                        msg +=  _("Operation cancelled");
+                        break;
                     case 6:
                         msg += _("Invalid user/email name or password.");
                         break;
                     case 10:
                         msg += _("This System Name is disabled.");
                         break;
+                    case 20:
+                        msg += _("This chart has already been assigned to this machine.");
+
                     default:
                         if(result.AfterFirst(':').Length()){
                             msg += result.AfterFirst(':');
@@ -2351,13 +2363,6 @@ int checkResult(wxString &result, bool bShowLoginErrorDialog = true)
                     case 5:
                     case 6:
                         bSkipErrorDialog = true;
-                        break;
-                    case 27:
-                        msg += _("This oeRNC plugin version is obsolete.");
-                        msg += _T("\n");
-                        msg += _("Please update your plugin.");
-                        msg += _T("\n");
-                        msg +=  _("Operation cancelled");
                         break;
                     default:
                         if(result.AfterFirst(':').Length()){
