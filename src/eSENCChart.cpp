@@ -589,10 +589,7 @@ int oeuSENCChart::Init( const wxString& name, int init_flags )
     if( PI_HEADER_ONLY == init_flags ){
        
         m_SENCFileName = name;
-        if( !CreateHeaderDataFromeSENC() )
-            ret_val = PI_INIT_FAIL_REMOVE;
-        else
-            ret_val = PI_INIT_OK;
+        ret_val = CreateHeaderDataFromeSENC(); 
     }
         
     else if( PI_FULL_INIT == init_flags ){
@@ -680,10 +677,7 @@ int oeuEVCChart::Init( const wxString& name, int init_flags )
     if( PI_HEADER_ONLY == init_flags ){
        
         m_SENCFileName = name;
-        if( !CreateHeaderDataFromeSENC() )
-            ret_val = PI_INIT_FAIL_REMOVE;
-        else
-            ret_val = PI_INIT_OK;
+        ret_val = CreateHeaderDataFromeSENC(); 
     }
         
     else if( PI_FULL_INIT == init_flags ){
@@ -797,10 +791,7 @@ int oesuChart::Init( const wxString& name, int init_flags )
     if( PI_HEADER_ONLY == init_flags ){
        
         m_SENCFileName = name;
-        if( !CreateHeaderDataFromeSENC() )
-            ret_val = PI_INIT_FAIL_REMOVE;
-        else
-            ret_val = PI_INIT_OK;
+        ret_val = CreateHeaderDataFromeSENC();
     }
         
     else if( PI_FULL_INIT == init_flags ){
@@ -821,7 +812,7 @@ int oesuChart::Init( const wxString& name, int init_flags )
         ShowExpiredErrorMessage(m_FullPath, m_uSENCExpireDaysRemaining, m_uSENCGraceDaysRemaining, m_uSENCGraceDaysAllowed);
     }
 
-    if( ret_val == PI_INIT_OK )
+    if( ( ret_val == PI_INIT_OK ) && ( PI_FULL_INIT == init_flags ) )
         showChartinfoDialog();
         
 
@@ -837,6 +828,9 @@ bool oesuChart::CreateChartInfoFile( wxString chartName )
     wxString chartInfoDir = fn.GetPath(  wxPATH_GET_VOLUME + wxPATH_GET_SEPARATOR );
     wxString chartInfo = chartInfoDir + _T("Chartinfo.txt");
 
+    if(::wxFileExists( chartInfo ))
+        return true;
+    
     // Find and parse the Keyfile
     wxString installBase = getChartInstallBase( chartName );
     
@@ -1008,9 +1002,8 @@ bool oesuChart::CreateChartInfoFile( wxString chartName )
 }
 
 
-bool oesuChart::CreateHeaderDataFromeSENC()
+PI_InitReturn oesuChart::CreateHeaderDataFromeSENC()
 {
-    bool ret_val = true;
 
     // Configure Osenc for unified senc read, with the proper rKey
     Osenc senc;
@@ -1018,7 +1011,12 @@ bool oesuChart::CreateHeaderDataFromeSENC()
     senc.setKey(m_rKey);
 
     int retCode = senc.ingestHeader( m_SENCFileName.GetFullPath() );
-        
+    
+    // For uSENC charts, capture the expiration info
+    m_uSENCExpireDaysRemaining = senc.m_expireDaysRemaining;
+    m_uSENCGraceDaysAllowed = senc.m_graceDaysAllowed;
+    m_uSENCGraceDaysRemaining = senc.m_graceDaysRemining;
+    
     if(retCode != SENC_NO_ERROR){
             
           wxString msg( _T("   Cannot load SENC file ") );
@@ -1034,14 +1032,14 @@ bool oesuChart::CreateHeaderDataFromeSENC()
               wxString msg( _T("   Again, cannot load SENC file ") );
               msg.Append( m_SENCFileName.GetFullPath() );
               wxLogMessage( msg );
-              return false;
+              return (PI_InitReturn)retCode;
           }
          
     }
     
     ProcessHeader( senc );
     
-    return ret_val;
+    return (PI_InitReturn)retCode;
 }
 
 PI_InitReturn oesuChart::PostInit( int flags, int cs )
@@ -1543,16 +1541,13 @@ wxBitmap *eSENCChart::GetThumbnail(int tnx, int tny, int cs)
 
 
     //    Read the  oeSENC file (CURRENT_SENC_FORMAT_VERSION >= 200) and create required Chartbase data structures
-bool eSENCChart::CreateHeaderDataFromeSENC( void )
+PI_InitReturn eSENCChart::CreateHeaderDataFromeSENC( void )
 {
-    
-    bool ret_val = true;
-
     if(!validateUserKey(m_SENCFileName.GetFullPath())){
         wxString msg( _T("   UserKey Invalid for SENC file ") );
         msg.Append( m_SENCFileName.GetFullPath() );
         wxLogMessage( msg );
-        return false;
+        return PI_INIT_FAIL_REMOVE;
     }
     
     
@@ -1576,7 +1571,7 @@ bool eSENCChart::CreateHeaderDataFromeSENC( void )
               wxString msg( _T("   Again, cannot load SENC file ") );
               msg.Append( m_SENCFileName.GetFullPath() );
               wxLogMessage( msg );
-              return false;
+              return (PI_InitReturn) retCode;
           }
          
     }
@@ -1673,7 +1668,7 @@ bool eSENCChart::CreateHeaderDataFromeSENC( void )
         
     }
 
-    return ret_val;
+    return (PI_InitReturn) retCode;
 }
 
 bool eSENCChart::ProcessHeader(Osenc &senc)

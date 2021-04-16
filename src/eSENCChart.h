@@ -243,7 +243,7 @@ class  eSENCChart : public PlugInChartBaseExtended
       
 protected:
 //    Methods
-      bool              CreateHeaderDataFromeSENC(void);
+      PI_InitReturn     CreateHeaderDataFromeSENC(void);
 
       bool              InitFrom_ehdr( wxString &efn );
       PI_InitReturn     FindOrCreateSenc( const wxString& name );
@@ -442,7 +442,7 @@ DECLARE_DYNAMIC_CLASS(oesuChart)
       
       wxString  GetFileSearchMask(void);
       int       Init( const wxString& name, int init_flags );
-      bool      CreateHeaderDataFromeSENC(void);
+      PI_InitReturn CreateHeaderDataFromeSENC(void);
       PI_InitReturn PostInit( int flags, int cs );
 
     private:
