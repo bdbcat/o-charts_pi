@@ -43,7 +43,7 @@ class ArrayOfCDI;
  wxString AndroidGetCacheDir();
  bool AndroidSecureCopyFile(wxString in, wxString out);
  
- wxString callActivityMethod_s6s(const char *method, wxString parm1, wxString parm2, wxString parm3, wxString parm4, wxString parm5, wxString parm6);
+wxString callActivityMethod_s6s(const char *method, wxString parm1, wxString parm2="", wxString parm3="", wxString parm4="", wxString parm5="", wxString parm6="");
 
  #endif
   

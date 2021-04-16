@@ -467,7 +467,26 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
 }
 
 #ifdef __OCPN__ANDROID__
-wxString androidGetSystemName(){
+wxString androidGetSystemName()
+{
+    wxString detectedSystemName;
+    wxString deviceInfo = callActivityMethod_vs("getDeviceInfo");
+    
+    wxStringTokenizer tkz(deviceInfo, _T("\n"));
+    while( tkz.HasMoreTokens() )
+    {
+        wxString s1 = tkz.GetNextToken();
+        if(wxNOT_FOUND != s1.Find(_T("systemName:"))){
+            int pos = s1.Find(_T("systemName:"));
+            detectedSystemName = s1.AfterFirst(':');
+        }
+    }
+    qDebug() << "systemName by deviceInfo: " << detectedSystemName.mb_str();
+    
+    return detectedSystemName;
+    
+#if 0    
+
         // Get systemName from the oeaserverda helper utility.
         //  The target binary executable
         wxString cmd = g_sencutil_bin;
@@ -505,5 +524,6 @@ wxString androidGetSystemName(){
         }
 
         return wxEmptyString;
+#endif        
 }
 #endif

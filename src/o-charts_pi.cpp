@@ -3809,6 +3809,9 @@ extern void saveShopConfig();
 void o_charts_pi_event_handler::OnClearCredentials( wxCommandEvent &event )
 {
     g_loginKey.Clear();
+#ifdef __OCPN__ANDROID__
+    g_systemName.Clear();
+#endif    
     saveShopConfig();
     
     OCPNMessageBox_PlugIn(NULL, _("Credential Reset Successful"), _("o-charts_pi Message"), wxOK);

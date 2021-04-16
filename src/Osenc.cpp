@@ -111,7 +111,7 @@ void Osenc_instream::Init()
     
     strcpy(publicsocket_name,"com.opencpn.ocharts_pi");
     
-    qDebug() << "publicsocket_name: " << publicsocket_name;
+    //qDebug() << "publicsocket_name: " << publicsocket_name;
     
     if (makeAddr(publicsocket_name, &sockAddr, &sockLen) < 0){
         wxLogMessage(_T("oesenc_pi: Could not makeAddr for PUBLIC socket"));

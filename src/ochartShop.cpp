@@ -88,6 +88,11 @@ extern wxString g_loginUser;
 extern wxString g_PrivateDataDir;
 extern wxString g_debugShop;
 
+extern wxString g_UUID;
+extern wxString g_WVID;
+extern int      g_SDK_INT;
+extern wxString  g_sencutil_bin;
+
 shopPanel *g_shopPanel;
 oesu_piScreenLogContainer *g_shopLogFrame;
 
@@ -3067,7 +3072,7 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
         return checkResponseCode(iResponseCode);
 }
 
-
+#if 0
 int doUploadXFPR(bool bDongle)
 {
     wxString err;
@@ -3187,6 +3192,182 @@ int doUploadXFPR(bool bDongle)
         msg += _("Check OpenCPN log file.") + _T("\n"); 
         msg += err;
         ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
+        return 1;
+    }
+        
+    return 0;
+}
+#endif
+
+int doUploadXFPR(bool bDongle)
+{
+    wxString err;
+    wxString stringFPR;
+    wxString fprName;
+    
+#ifndef __OCPN__ANDROID__    
+    // Generate the FPR file
+    bool b_copyOK = false;
+    
+    wxString fpr_file = getFPR( false, b_copyOK, bDongle);              // No copy needed
+    
+    fpr_file = fpr_file.Trim(false);            // Trim leading spaces...
+    
+    if(fpr_file.Len()){
+        //Read the file, convert to ASCII hex, and build a string
+        if(::wxFileExists(fpr_file)){
+            wxFileInputStream stream(fpr_file);
+            while(stream.IsOk() && !stream.Eof() ){
+                unsigned char c = stream.GetC();
+                if(!stream.Eof()){
+                    wxString sc;
+                    sc.Printf(_T("%02X"), c);
+                    stringFPR += sc;
+                }
+            }
+            wxFileName fnxpr(fpr_file);
+            fprName = fnxpr.GetFullName();
+        }
+        else if(fpr_file.IsSameAs(_T("DONGLE_NOT_PRESENT"))){
+            err = _("[USB Key Dongle not found.]");
+        }
+            
+        else{
+            err = _("[fpr file not found.]");
+        }
+    }
+    else{
+            err = _("[fpr file not created.]");
+    }
+#else   // Android
+
+    // Get the FPR directly from the helper oeserverda, in ASCII HEX
+    wxString cmd = g_sencutil_bin;
+    wxString result;
+    wxString prefix = "oc03R_";
+    if(g_SDK_INT < 21){          // Earlier than Android 5
+        //  Set up the parameter passed as the local app storage directory
+        wxString dataLoc = *GetpPrivateApplicationDataLocation();
+        wxFileName fn(dataLoc);
+        wxString dataDir = fn.GetPath(wxPATH_GET_SEPARATOR);
+        result = callActivityMethod_s6s("createProcSync5", cmd, "-q", dataDir, "-g");
+    }
+    else if(g_SDK_INT < 29){            // Strictly earlier than Android 10
+        result = callActivityMethod_s6s("createProcSync5stdout", cmd, "-z", g_UUID, "-g");
+    }
+    else{
+        result = callActivityMethod_s6s("createProcSync5stdout", cmd, "-y", g_WVID, "-k");
+        prefix = "oc04R_";
+    }
+    
+    //qDebug() << result.mb_str();
+    
+    wxString kv, fpr;
+    wxStringTokenizer tkz(result, _T(";"));
+    kv = tkz.GetNextToken();
+    fpr = tkz.GetNextToken();
+    //qDebug() << kv.mb_str();
+    //qDebug() << fpr.mb_str();   
+    
+    stringFPR = fpr;
+    fprName = prefix + kv + ".fpr";
+    
+    if(stringFPR.IsEmpty())
+        err = _("[fpr not created.]");
+
+    //qDebug() << "[" << stringFPR.mb_str() << "]";
+    //qDebug() << "[" << fprName.mb_str() << "]";
+    
+
+#endif
+        
+    if(stringFPR.Length()){        
+            
+        // Prepare the upload command string
+        wxString url = userURL;
+        if(g_admin)
+            url = adminURL;
+            
+        url +=_T("?fc=module&module=occharts&controller=apioesu");
+            
+            
+        wxString loginParms;
+        loginParms += _T("taskId=xfpr");
+        loginParms += _T("&username=") + g_loginUser;
+        loginParms += _T("&key=") + g_loginKey;
+        if(g_debugShop.Len())
+            loginParms += _T("&debug=") + g_debugShop;
+        loginParms += _T("&version=") + g_systemOS + g_versionString;
+
+        if(!bDongle)
+            loginParms += _T("&systemName=") + g_systemName;
+        else
+            loginParms += _T("&systemName=") + g_dongleName;
+                
+        loginParms += _T("&xfpr=") + stringFPR;
+        loginParms += _T("&xfprName=") + fprName;
+        loginParms += _T("&version=") + g_systemOS + g_versionString;
+          
+        //wxLogMessage(loginParms);
+            
+        int iResponseCode = 0;
+        size_t res = 0;
+        std::string responseBody;
+    
+#ifdef __OCPN_USE_CURL__    
+        wxCurlHTTPNoZIP post;
+        post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
+    
+        res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
+    
+        // get the response code of the server
+    
+        post.GetInfo(CURLINFO_RESPONSE_CODE, &iResponseCode);
+    
+        std::string a = post.GetDetailedErrorString();
+        std::string b = post.GetErrorString();
+        std::string c = post.GetResponseBody();
+    
+        responseBody = post.GetResponseBody();
+        //printf("%s", post.GetResponseBody().c_str());
+    
+        //wxString tt(post.GetResponseBody().data(), wxConvUTF8);
+        //wxLogMessage(tt);
+#else
+        wxString postresult;
+        //qDebug() << url.mb_str();
+        //qDebug() << loginParms.mb_str();
+
+        _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
+
+        //qDebug() << "getChartList Post Stat: " << stat;
+    
+        if(stat != OCPN_DL_FAILED){
+            wxCharBuffer buf = postresult.ToUTF8();
+            std::string response(buf.data());
+        
+            //qDebug() << response.c_str();
+            responseBody = response.c_str();
+            iResponseCode = 200;
+            res = 1;
+        }
+#endif    
+
+        if(iResponseCode == 200){
+            wxString result = ProcessResponse(responseBody);
+                
+            int iret = checkResult(result);
+            return iret;
+        }
+        else
+            return checkResponseCode(iResponseCode);
+    }
+    
+    if(err.Len()){
+        wxString msg = _("ERROR Creating Fingerprint file") + _T("\n");
+        msg += _("Check OpenCPN log file.") + _T("\n"); 
+        msg += err;
+        OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxOK);
         return 1;
     }
         
