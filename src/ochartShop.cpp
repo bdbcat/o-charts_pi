@@ -2707,8 +2707,12 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
 
                                 else if(!strcmp(fileVal, "editionTarget")){
                                     TiXmlNode *childVal = childFile->FirstChild();
-                                    if(childVal) 
+                                    if(childVal){ 
                                         ptfi->targetEdition = childVal->Value();
+                                        // Check for server "base" substitution
+                                        if(ptfi->targetEdition.empty())
+                                            ptfi->bsubBase = true;
+                                    }
                                 }
 
                                 else if(!strcmp(fileVal, "editionResult")){
@@ -3475,6 +3479,9 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
     
     for(unsigned int i=0 ; i < targetSlot->taskFileList.size() ; i++){
     
+        // Is server substituting a base file instead of multiple update files/
+        bool bsubBase = targetSlot->taskFileList[i]->bsubBase;
+        
         // First, the shorter Key file
         itemDLTask task1;
         wxString downloadURL = wxString(targetSlot->taskFileList[i]->linkKeys.c_str());
@@ -3484,6 +3491,13 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
         fileTarget += _T("-");
         fileTarget += targetChart->taskRequestedFile;
         fileTarget += _T("-");
+
+        // Check for server "base" substitution, and adjust cache file name
+        if(bsubBase){
+            fileTarget = Prefix +_T("-") + wxString(targetChart->chartID.c_str()) + _T("-") + wxString(targetSlot->taskFileList[i]->resultEdition.c_str());
+            fileTarget += _T("-");
+            fileTarget += "base-";
+        }
         
         if(g_dongleName.Length())
             fileTarget +=  g_dongleName + _T(".XML");
@@ -3503,15 +3517,39 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
 
         //  /oeRNC-IMR-GR-2-0-base.zip
         fileTarget = Prefix + _T("-") + wxString(targetChart->chartID.c_str()) + _T("-") + wxString(targetSlot->taskFileList[i]->resultEdition.c_str());
-         fileTarget += _T("-");
+        fileTarget += _T("-");
         fileTarget += targetChart->taskRequestedFile;
         fileTarget += _T(".zip");
+        
+        // Check for server "base" substitution, and adjust cache file name
+        if(bsubBase){
+            fileTarget = Prefix + _T("-") + wxString(targetChart->chartID.c_str()) + _T("-") + wxString(targetSlot->taskFileList[i]->resultEdition.c_str());
+            fileTarget += _T("-");
+            fileTarget += "base";
+            fileTarget += _T(".zip");
+        }
 
         task2.url = downloadURL;
         task2.localFile = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator() + fileTarget).mb_str();
         task2.SHA256 = targetSlot->taskFileList[i]->sha256;
         targetSlot->taskFileList[i]->cacheLinkLocn = task2.localFile;
         targetSlot->dlQueue.push_back(task2);
+        
+        // If processing any "base" chart file set, or a server "base" substitution,
+        // then this would be a good place to purge the cache of earlier "updates" and previous "base", if any..
+        if(bsubBase || (task2.localFile.rfind("base.zip") != std::string::npos)){
+            wxString editionYear = wxString(targetSlot->taskFileList[i]->resultEdition.c_str()).BeforeFirst('/');
+            wxString cacheDir = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator()
+                        + Prefix + _T("-") + wxString(targetChart->chartID.c_str()) + _T("-") + editionYear);
+            if(::wxDirExists( cacheDir) ){
+                wxArrayString files;
+                wxDir::GetAllFiles( cacheDir, &files );
+                for(unsigned int i=0 ; i < files.GetCount() ; i++){
+                    ::wxRemoveFile(files[i]);
+                }
+                ::wxRmdir( cacheDir );
+            }
+        }
     }
     
     // Store the targetSlot pointer globally for general access

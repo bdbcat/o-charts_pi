@@ -179,7 +179,7 @@ public:
 class itemTaskFileInfo
 {
 public:
-    itemTaskFileInfo(){}
+    itemTaskFileInfo(){ bsubBase = false; }
     ~itemTaskFileInfo(){}
     
     std::string targetEdition;
@@ -192,6 +192,7 @@ public:
     std::string cacheKeysLocn;
     std::string cacheLinkLocn;
     std::string chartsetNameNormalized;          // like "oeRNC-XXXXX"
+    bool bsubBase;
 };
 
 
