@@ -2713,6 +2713,9 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
                                         if(ptfi->targetEdition.empty())
                                             ptfi->bsubBase = true;
                                     }
+                                    else
+                                        ptfi->bsubBase = true;
+                                        
                                 }
 
                                 else if(!strcmp(fileVal, "editionResult")){
