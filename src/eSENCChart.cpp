@@ -6881,6 +6881,28 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
                     
                     value = GetObjectAttributeValueAsString( current, attrCounter, curAttrName );
                     
+                    if ( curAttrName == _T("TS_TSP")){ //Tidal current applet
+                        wxArrayString as;
+                        wxString ts;
+                        //int i = -6;                    
+                        wxStringTokenizer tk(value,  wxT(","));
+                        while ( tk.HasMoreTokens() ){ // read table values in array
+                            as.Add(tk.GetNextToken());
+                            if (as.Count() > 28) as.RemoveAt(0); // remove not needed info from front
+                        }
+                        ts =  _T("Tidal Streams referred to<br><b>");
+                        ts.Append(as.Item(0)).Append(_T("</b>  at  <b>")).Append(as.Item(1));
+                        ts.Append(/*tk.GetNextToken()).Append(*/_T("</b><br><table >"))  ;
+                        
+                        for (size_t j=2; j < as.Count()-1 ; j=j+2){  // fill the html current table
+                            ts.Append(_T("<tr><td>")).Append( wxString::Format(wxT("%i"),(j-14)/2)).Append(_T("</td><td>"))
+                                .Append(as.Item(j)).Append(_T("&#176</td><td>")).Append(as.Item(j+1)).Append(_T("</td></tr>")); 
+                            //i++;
+                        }   
+                        ts.Append(_T("</table>"));
+                        value = ts;
+                    }
+                    
                     if( isLight ) {
                         curLight->attributeValues.Add( value );
                     } else {
