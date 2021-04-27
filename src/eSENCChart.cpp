@@ -6742,6 +6742,7 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
     wxString positionString;
     std::vector<PI_S57Light*> lights;
     PI_S57Light* curLight = NULL;
+    wxFileName file ;
     
     for( ListOfPI_S57Obj::Node *node = obj_list->GetLast(); node; node = node->GetPrevious() ) {
         PI_S57Obj *current = node->GetData();
@@ -6881,6 +6882,26 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
                     
                     value = GetObjectAttributeValueAsString( current, attrCounter, curAttrName );
                     
+                    wxString AttrNamesFiles = _T("PICREP,TXTDSC,NTXTDS"); //AttrNames that might have a filename as value
+                    if ( AttrNamesFiles.Find( curAttrName) != wxNOT_FOUND )
+                        if ( value.Find(_T(".XML")) == wxNOT_FOUND ){ // Don't show xml files 
+                            wxFileName fn = GetFullPath();
+                            wxString suppPath = fn.GetPath();
+                            suppPath += wxFileName::GetPathSeparator();
+                            suppPath += fn.GetName();
+                            suppPath += wxFileName::GetPathSeparator();
+                            suppPath += value;
+                            file.Assign( suppPath );   
+                            file.Assign( file.GetPath(), value );
+                            file.Normalize();
+                            if( file.IsOk() ){
+                                if( file.Exists() )
+                                    value = wxString::Format( _T("<a href=\"%s\">%s</a>"), file.GetFullPath(), file.GetFullName() );
+                                else
+                                    value = value + _T("&nbsp;&nbsp;<font color=\"red\">[ ") + _("this file is not available") + _T(" ]</font>");
+                            }
+                        }
+                    
                     if ( curAttrName == _T("TS_TSP")){ //Tidal current applet
                         wxArrayString as;
                         wxString ts;
@@ -6954,8 +6975,7 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
             }
     } // Object for loop
     
-    // Add the additional info files
-    wxFileName file;       
+    // Add the additional info files      
     wxArrayString files;
     file.Assign( GetFullPath() );
     
