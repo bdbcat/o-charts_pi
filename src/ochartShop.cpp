@@ -4487,7 +4487,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
 {
     m_shopLog->ClearLog();
 
-    loadShopConfig();
+    //loadShopConfig();
 
 #ifdef __OCPN__ANDROID__
     if(!g_systemName.Length()){

@@ -236,7 +236,7 @@ public:
 class itemChart
 {
 public:    
-    itemChart() { m_downloading = false; m_bEnabled = true; m_assignedSlotIndex = -1; m_activeQtyID = -1; maxSlots = 0; bshopValidated=false;}
+    itemChart() { m_downloading = false; m_bEnabled = true; m_assignedSlotIndex = -1; m_activeQtyID = -1; maxSlots = 0; bshopValidated=false; bExpired = false;}
     ~itemChart() {};
 
     void setDownloadPath(int slot, wxString path);
