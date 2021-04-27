@@ -6901,6 +6901,36 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
                                     value = value + _T("&nbsp;&nbsp;<font color=\"red\">[ ") + _("this file is not available") + _T(" ]</font>");
                             }
                         }
+                        
+                    AttrNamesFiles = _T("DATEND,DATSTA,PEREND,PERSTA"); //AttrNames with date info
+                    if ( AttrNamesFiles.Find( curAttrName) != wxNOT_FOUND ) {
+                        bool d = true;
+                        bool m = true;
+                        wxString ts = value;
+
+                        ts.Replace(wxT("--"),wxT("0000"));//make a valid year entry if not available
+                        if( ts.Length() < 5){ //(no month set)
+                            m = false;
+                            ts.Append(wxT("01") ); // so we add a fictive month to get a valid date
+                        }
+                        if( ts.Length() < 7){ //(no day set)
+                            d=false;
+                            ts.Append(wxT("01") ); // so we add a fictive day to get a valid date
+                        }
+                        wxString::const_iterator end;
+                        wxDateTime dt;
+                        if( dt.ParseFormat( ts, "%Y%m%d", &end ) ){
+                            ts.Empty();                        
+                            if ( m ) ts =  wxDateTime::GetMonthName(dt.GetMonth());                        
+                            if ( d ) ts.Append( wxString::Format(wxT(" %d"), dt.GetDay()) );
+                            if( dt.GetYear()>0 ) ts.Append( wxString::Format(wxT(",  %i"), dt.GetYear() ) );
+                            if ( curAttrName == _T("PEREND")) ts = _("Period ends: ") + ts + wxT("  (")+ value + wxT(")");
+                            if ( curAttrName == _T("PERSTA")) ts = _("Period starts: ") + ts + wxT("  (")+ value + wxT(")");
+                            if ( curAttrName == _T("DATEND")) ts = _("Date ending: ") + ts + wxT("  (")+ value + wxT(")");
+                            if ( curAttrName == _T("DATSTA")) ts = _("Date starting: ") + ts + wxT("  (")+ value + wxT(")");
+                            value= ts;
+                        }    
+                    }
                     
                     if ( curAttrName == _T("TS_TSP")){ //Tidal current applet
                         wxArrayString as;
