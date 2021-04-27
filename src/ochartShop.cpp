@@ -139,6 +139,32 @@ extern o_charts_pi *g_pi;
 #define ANDROID_DIALOG_BACKGROUND_COLOR    wxColour(_T("#7cb0e9"))
 #define ANDROID_DIALOG_BODY_COLOR         wxColour(192, 192, 192)
 
+std::string urlEncode(std::string str){
+    std::string new_str = "";
+    char c;
+    int ic;
+    const char* chars = str.c_str();
+    char bufHex[10];
+    int len = strlen(chars);
+
+    for(int i=0;i<len;i++){
+        c = chars[i];
+        ic = c;
+        // uncomment this if you want to encode spaces with +
+        /*if (c==' ') new_str += '+';   
+        else */if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') new_str += c;
+        else {
+            sprintf(bufHex,"%X",c);
+            if(ic < 16) 
+                new_str += "%0"; 
+            else
+                new_str += "%";
+            new_str += bufHex;
+        }
+    }
+    return new_str;
+ }
+
 
 // Private class implementations
 
@@ -2442,6 +2468,10 @@ int doLogin( wxWindow *parent )
     
     g_loginUser = login.m_UserNameCtl->GetValue().Trim( true).Trim( false );
     wxString pass = login.m_PasswordCtl->GetValue().Trim( true).Trim( false );
+
+    // There may be special characters in password.  Encode them correctly for URL inclusion.
+    std::string pass_encode = urlEncode(std::string(pass.mb_str()));
+    pass = wxString( pass_encode.c_str() );
 
     wxString url = userURL;
     if(g_admin)
