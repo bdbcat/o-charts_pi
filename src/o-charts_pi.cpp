@@ -3792,9 +3792,9 @@ void o_charts_pi_event_handler::OnShowEULA( wxCommandEvent &event )
         CSE = g_EULAArray.Item(i);
         wxString file = CSE->fileName;
         file.Replace('!', wxFileName::GetPathSeparator());
-        
-        if(wxFileExists(file)){
-            o_charts_pi_about *pab = new o_charts_pi_about( GetOCPNCanvasWindow(), file );
+        wxWindow *dialogWindow=GetOCPNCanvasWindow();
+        if(wxFileExists(file) && dialogWindow){
+            o_charts_pi_about *pab = new o_charts_pi_about( dialogWindow, file );
             pab->SetOKMode();
             pab->ShowModal();
             pab->Destroy();
@@ -4159,10 +4159,16 @@ bool CheckEULA( void )
     wxString shareLocn =*GetpSharedDataLocation() +
     _T("plugins") + wxFileName::GetPathSeparator() +
     _T("o_charts_pi") + wxFileName::GetPathSeparator();
-    
-    o_charts_pi_about *pab = new o_charts_pi_about( GetOCPNCanvasWindow() );
-    pab->ShowModal();
-    g_bEULA_OK = (pab->GetReturnCode() == 0);
+    wxWindow *dialogWindow=GetOCPNCanvasWindow();
+    if (dialogWindow){
+        o_charts_pi_about *pab = new o_charts_pi_about( dialogWindow );
+        pab->ShowModal();
+        g_bEULA_OK = (pab->GetReturnCode() == 0);
+        pab->Destroy();
+    }
+    else{
+        g_bEULA_OK = true;
+    }
     
 
     if(!g_bEULA_OK)
@@ -4174,7 +4180,6 @@ bool CheckEULA( void )
     if(g_bEULA_OK && (0 == g_UserKey.Length()) )
         g_UserKey = _T("Pending");
         
-    pab->Destroy();
     
     return g_bEULA_OK;
 }
@@ -4239,10 +4244,17 @@ bool ShowEULA( wxString fileName )
 #ifdef __OCPN__ANDROID__
     androidHideBusyIcon();
 #endif
-    
-    o_charts_pi_about *pab = new o_charts_pi_about( GetOCPNCanvasWindow(), fileName );
-    pab->ShowModal();
-    bool bEULA_OK = (pab->GetReturnCode() == 0);
+    wxWindow *dialogWindow=GetOCPNCanvasWindow();
+    bool bEULA_OK=false;
+    if (dialogWindow){
+        o_charts_pi_about *pab = new o_charts_pi_about( dialogWindow, fileName );
+        pab->ShowModal();
+        bEULA_OK = (pab->GetReturnCode() == 0);
+        pab->Destroy();
+    }
+    else{
+        bEULA_OK=true;
+    }
     
     if(!bEULA_OK)
         wxLogMessage(_T("EULA Rejected."));
@@ -4255,7 +4267,6 @@ bool ShowEULA( wxString fileName )
     if(bEULA_OK && (0 == g_UserKey.Length()) )
         g_UserKey = _T("Pending");
     
-    pab->Destroy();
     
     return bEULA_OK;
 }
