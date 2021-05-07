@@ -970,7 +970,7 @@ bool oesuChart::CreateChartInfoFile( wxString chartName )
     l2 += wxString(m_chartInfoEULAShow.c_str());
     
     wxString l3 = _T("ChartInfo:");
-    l3 += wxString(m_chartInfo.c_str());
+    l3 += wxString::FromUTF8(m_chartInfo.c_str());
     l3 += _T(";");
     l3 += wxString(m_chartInfoEdition.c_str());
     l3 += _T(";");
