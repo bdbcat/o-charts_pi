@@ -575,6 +575,12 @@ int o_charts_pi::Init(void)
     wxFileName libraryPath = fn_exe;
     libraryPath.RemoveLastDir();
     wxString libDir = libraryPath.GetPath( wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) + _T("lib/opencpn");
+    
+    wxString envPath;
+    if (wxGetEnv("LD_LIBRARY_PATH", &envPath)) {
+        libDir = libDir + ":" + envPath; 
+    }
+    wxLogMessage("o-charts_pi::Using LD_LIBRARY_PATH: %s", libDir.c_str());
     wxSetEnv(_T("LD_LIBRARY_PATH"), libDir ); //"/usr/local/lib/opencpn");
 #endif
 
