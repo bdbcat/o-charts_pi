@@ -5651,14 +5651,23 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
                     installLocn = installDir;
                 else if(g_lastInstallDir.Length())
                     installLocn = g_lastInstallDir;
-        
-                //Need better default here, lik c:\Charts, if it exists.
-                //wxDirDialog dirSelector( NULL, _("Choose chart install location."), installLocn, wxDD_DEFAULT_STYLE  );
-                //int result = dirSelector.ShowModal();
-        
+
                 wxString dir_spec;
-                int result = PlatformDirSelectorDialog( NULL, &dir_spec, _("Choose chart install location."), installLocn);
-               
+                int result;
+#ifndef __OCPN__ANDROID__                
+                wxDirDialog dirSelector( NULL, _("Choose chart install location."), installLocn, wxDD_DEFAULT_STYLE  );
+                result = dirSelector.ShowModal();
+        
+                if( result == wxID_CANCEL ){
+                }
+                else{
+                    dir_spec = dirSelector.GetPath();
+                }
+#else                
+
+                result = PlatformDirSelectorDialog( NULL, &dir_spec, _("Choose chart install location."), installLocn);
+#endif          
+                
                 if(result == wxID_OK)
                     gtargetSlot->installLocation = dir_spec.mb_str(); //dirSelector.GetPath().mb_str();
                 else{
