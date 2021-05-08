@@ -37,8 +37,6 @@ modules:
           - type: archive
             url: https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/iproute2-5.7.0.tar.xz
             sha256: 725dc7ba94aae54c6f8d4223ca055d9fb4fe89d6994b1c03bfb4411c4dd10f21
-          - type: patch
-            path: 0100-iproute-Remove-failing-tc-subdir.patch
       no-autogen: true
       buildsystem: autotools
       make-args: 
