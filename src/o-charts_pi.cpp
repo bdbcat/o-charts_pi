@@ -3242,7 +3242,7 @@ oesencPrefsDialog::oesencPrefsDialog( wxWindow* parent, wxWindowID id, const wxS
         wxString extVersion;
         extVersion.Printf(_T("%d.%d.%d.%d"), PLUGIN_VERSION_MAJOR, PLUGIN_VERSION_MINOR, PLUGIN_VERSION_PATCH, PLUGIN_VERSION_TWEAK);
 
-        wxString versionText = _(" oeSENC Version: ") + extVersion;
+        wxString versionText = _(" o-charts Version: ") + extVersion;
         wxStaticText *versionTextBox = new wxStaticText(content, wxID_ANY, versionText);
         bSizer2->Add(versionTextBox, 1, wxALL | wxALIGN_CENTER_HORIZONTAL, 20 );
  
@@ -5183,13 +5183,13 @@ oesencPanel::oesencPanel( o_charts_pi* plugin, wxWindow* parent, wxWindowID id, 
     wxBoxSizer* bSizerBtns = new wxBoxSizer( wxVERTICAL );
     mainSizer->Add( bSizerBtns, 0, wxALL | wxEXPAND | wxALIGN_CENTER_VERTICAL, border_size );
     
-    m_bManageCharts = new wxButton( this, wxID_ANY, _("Add/Update oeSENC chart sets"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
+    m_bManageCharts = new wxButton( this, wxID_ANY, _("Add/Update o-charts chart sets"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT );
     //m_bManageCharts->SetToolTip( _("Add a new chart catalog.") );
     bSizerBtns->Add( m_bManageCharts, 0, wxALL|wxEXPAND, 20 );
     bSizerBtns->AddSpacer(20);
     
     m_bVisitOcharts = new wxButton( this, wxID_ANY, _("Visit o-charts.org Website"), wxDefaultPosition, wxDefaultSize, 0 );
-    m_bVisitOcharts->SetToolTip( _("Here you may order new oeSENC chart sets.") );
+    m_bVisitOcharts->SetToolTip( _("Here you may order new o-charts chart sets.") );
     bSizerBtns->Add( m_bVisitOcharts, 0, wxALL|wxEXPAND, 20 );
     bSizerBtns->AddSpacer(20);
     

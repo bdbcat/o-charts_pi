@@ -2360,7 +2360,7 @@ int checkResult(wxString &result, bool bShowLoginErrorDialog = true)
                         msg += _("User does not exist.");
                         break;
                     case 5:
-                        msg += _("This oeRNC plugin version is obsolete.");
+                        msg += _("This o-charts plugin version is obsolete.");
                         msg += _T("\n");
                         msg += _("Please update your plugin.");
                         msg += _T("\n");
