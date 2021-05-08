@@ -32,3 +32,40 @@ modules:
           - type: file
             # originally libusb-0.1.so.4.1.1, built from  libusb-0.1.6
             path: libusb-0.1.so.4
+    - name: iproute2
+      sources:
+          - type: archive
+            url: https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/iproute2-5.7.0.tar.xz
+            sha256: 725dc7ba94aae54c6f8d4223ca055d9fb4fe89d6994b1c03bfb4411c4dd10f21
+          - type: patch
+            path: 0100-iproute-Remove-failing-tc-subdir.patch
+      no-autogen: true
+      buildsystem: autotools
+      make-args: 
+          - PREFIX=/app
+      make-install-args:
+          - PREFIX=/app
+          - SBINDIR=/app/sbin
+          - CONFDIR=/app/etc
+          - ARPDDIR=/app/var/lib/arpd
+      cleanup:
+          - /app/sbin/bridge
+          - /app/sbin/ctstat
+          - /app/sbin/genl
+          - /app/sbin/ifcfg
+          - /app/sbin/ifstat
+          - /app/sbin/lnstat
+          - /app/sbin/nstat
+          - /app/sbin/routef
+          - /app/sbin/routel
+          - /app/sbin/rtacct
+          - /app/sbin/rtmon
+          - /app/sbin/rtpr
+          - /app/sbin/rtstat
+          - /app/sbin/ss
+          - /app/sbin/tc
+          - /app/sbin/etc
+          - /app/sbin/include
+          - /app/sbin/lib
+          - /app/sbin/share
+          - /app/sbin/var
