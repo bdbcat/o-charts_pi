@@ -45,7 +45,7 @@ modules:
           - PREFIX=/app
           - SBINDIR=/app/extensions/o-charts/bin
           - CONFDIR=/app
-          - ARPDDIR=/app/var/lib/arpd
+          - ARPDDIR=/app
       cleanup:
           - /app/sbin/bridge
           - /app/sbin/ctstat
