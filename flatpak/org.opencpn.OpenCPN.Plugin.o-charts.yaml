@@ -43,7 +43,7 @@ modules:
           - PREFIX=/app
       make-install-args:
           - PREFIX=/app
-          - SBINDIR=/app/sbin
+          - BINDIR=/app/extensions/o-charts/bin
           - CONFDIR=/app/etc
           - ARPDDIR=/app/var/lib/arpd
       cleanup:
