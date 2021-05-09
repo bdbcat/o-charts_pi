@@ -39,7 +39,7 @@ modules:
       make-args:
         - PREFIX=/app
       make-install-args:
-        - DESTDIR=/app/extensions/oesenc
+        - DESTDIR=/app/extensions/o-charts
         - SBINDIR=/bin
       cleanup:
         - bridge
