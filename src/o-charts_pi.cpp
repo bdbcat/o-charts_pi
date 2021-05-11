@@ -513,7 +513,7 @@ int o_charts_pi::Init(void)
     //  Get the path of the PlugIn itself
     g_pi_filename = GetPlugInPath(this);
 
-    AddLocaleCatalog( _T("opencpn-o_charts_pi") );
+    AddLocaleCatalog( _T("opencpn-o-charts_pi") );
 
     //    Build an arraystring of dynamically loadable chart class names managed by this plugin
     m_class_name_array.Add(_T("oeuSENCChart"));         // This is legacy oeSENC chart (*.oesenc)
