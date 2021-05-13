@@ -51,11 +51,13 @@ public:
     ~oesu_piScreenLogContainer();
  
     void OnCloseClick(wxCommandEvent& event);
+    void EnableCloseClick( bool enable );
 
     void LogMessage(wxString s);
     void ClearLog(void);
     oesu_piScreenLog        *m_slog;
     
+    wxButton *m_bClose;
 private:    
     
 };

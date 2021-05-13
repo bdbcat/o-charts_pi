@@ -42,10 +42,13 @@ IMPLEMENT_DYNAMIC_CLASS( oesu_piScreenLogContainer, wxDialog )
 
 oesu_piScreenLogContainer::oesu_piScreenLogContainer()
 {
+    m_bClose = NULL;
 }
 
 oesu_piScreenLogContainer::oesu_piScreenLogContainer( wxWindow *parent, wxString title, wxSize size )
 {
+    m_bClose = NULL;
+
     wxSize tsize = wxSize(100,100);
     if( (size.x >0) && (size.y > 0) )
         tsize = size;
@@ -65,11 +68,11 @@ oesu_piScreenLogContainer::oesu_piScreenLogContainer( wxWindow *parent, wxString
     
 
      // Close button
-    wxButton* bClose = new wxButton( this, ID_PISLCLOSE, _( "Close" ), wxDefaultPosition, wxDefaultSize, 0 );
-    bClose->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(oesu_piScreenLogContainer::OnCloseClick), NULL, this);
+    m_bClose = new wxButton( this, ID_PISLCLOSE, _( "Close" ), wxDefaultPosition, wxDefaultSize, 0 );
+    m_bClose->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(oesu_piScreenLogContainer::OnCloseClick), NULL, this);
 
     //AckBox->Add( ack, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
-    itemBoxSizer2->Add(bClose);
+    itemBoxSizer2->Add(m_bClose);
 
     
     Hide();
@@ -104,7 +107,11 @@ void oesu_piScreenLogContainer::OnCloseClick(wxCommandEvent& event)
     g_shopLogFrame = 0;
 }
 
-
+void oesu_piScreenLogContainer::EnableCloseClick( bool enable )
+{
+    if( m_bClose )
+        m_bClose->Enable(enable);
+}
 
 
 #define SERVER_ID       5000
