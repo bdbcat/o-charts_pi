@@ -2076,15 +2076,15 @@ void loadShopConfig()
                             else{
                                 itemQuantity *exist_qty = &(chart->quantityList[qtyIndex]);
                                 itemSlot *slot = chart->GetSlotPtr( slotUUID );
-                                if(!slot)
+                                if(!slot){
                                     slot = new itemSlot;
-                                
-                                slot->installLocation = std::string(installLocation.mb_str());
-                                slot->assignedSystemName = std::string(assignedSystemName.mb_str());
-                                slot->slotUuid = std::string(slotUUID.mb_str());
-                                slot->installedEdition = std::string(installedEdition.mb_str());
+                                    slot->installLocation = std::string(installLocation.mb_str());
+                                    slot->assignedSystemName = std::string(assignedSystemName.mb_str());
+                                    slot->slotUuid = std::string(slotUUID.mb_str());
+                                    slot->installedEdition = std::string(installedEdition.mb_str());
 
-                                exist_qty->slotList.push_back(slot);
+                                    exist_qty->slotList.push_back(slot);
+                                }
                             }
                         }
                     }
@@ -2174,15 +2174,15 @@ void loadShopConfig()
                             else{
                                 itemQuantity *exist_qty = &(chart->quantityList[qtyIndex]);
                                 itemSlot *slot = chart->GetSlotPtr( slotUUID );
-                                if(!slot)
+                                if(!slot){
                                     slot = new itemSlot;
-                                
-                                slot->installLocation = std::string(installLocation.mb_str());
-                                slot->assignedSystemName = std::string(assignedSystemName.mb_str());
-                                slot->slotUuid = std::string(slotUUID.mb_str());
-                                slot->installedEdition = std::string(installedEdition.mb_str());
+                                    slot->installLocation = std::string(installLocation.mb_str());
+                                    slot->assignedSystemName = std::string(assignedSystemName.mb_str());
+                                    slot->slotUuid = std::string(slotUUID.mb_str());
+                                    slot->installedEdition = std::string(installedEdition.mb_str());
 
-                                exist_qty->slotList.push_back(slot);
+                                    exist_qty->slotList.push_back(slot);
+                                }
                             }
                         }
                     }
@@ -5519,9 +5519,11 @@ void shopPanel::ValidateChartset( wxCommandEvent& event )
         }
 
         g_shopLogFrame->ClearLog();
+        g_shopLogFrame->EnableCloseClick(false);
         m_validator = new ocValidator( m_ChartPanelSelected->GetSelectedChart(), g_shopLogFrame);
         m_validator->startValidation();
         
+        g_shopLogFrame->EnableCloseClick(true);
         m_buttonValidate->Enable();
         GetSizer()->Layout();
         wxYield();
