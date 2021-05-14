@@ -634,15 +634,15 @@ int o_charts_pi::Init(void)
     
 #endif
     
-    if( Is_oeSENC_pi_loaded() ){
+    if( Is_oeSENC_pi_Enabled() ){
         wxString msg = _("The o-charts plugin replaces the oeSENC plugin chart display functions.\n");
-        msg += _("It is recommended that you disable/remove any existing oeSENC plugin, and restart OpenCPN.\n");
+        msg += _("It is recommended that you disable any existing oeSENC plugin, and restart OpenCPN.\n");
         int ret = OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxOK);
     }
 
-    if( Is_oeRNC_pi_loaded() ){
+    if( Is_oeRNC_pi_Enabled() ){
         wxString msg = _("The o-charts plugin replaces the oeRNC plugin chart display functions.\n");
-        msg += _("It is recommended that you disable/remove any existing oeRNC plugin, and restart OpenCPN.\n");
+        msg += _("It is recommended that you disable any existing oeRNC plugin, and restart OpenCPN.\n");
         int ret = OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxOK);
     }
 
@@ -704,20 +704,45 @@ bool o_charts_pi::DeInit(void)
 
 }
 
-bool o_charts_pi::Is_oeSENC_pi_loaded()
+bool o_charts_pi::Is_oeSENC_pi_Enabled()
 {
-    //    Instantiate a blank chart, if possible
-     wxClassInfo *pclass = wxClassInfo::FindClass(_T("oeSENCChart"));
-     return pclass != NULL;
- 
+    bool rv = false;
+#if defined(__WXMSW__)
+    wxString path = _T("/PlugIns/oesenc_pi.dll");
+#elif defined(__WXOSX__)
+    wxString path = _T("/PlugIns/liboesenc_pi.dylib");
+#else
+    wxString path = _T("/PlugIns/liboesenc_pi.so");
+#endif
+    
+     wxFileConfig *pConf = (wxFileConfig *) g_pconfig;
+     if(pConf){
+         int nen = 0;
+         pConf->SetPath( path );
+         pConf->Read( _T ( "bEnabled" ), &nen, 0 );
+         rv = (nen == 1);
+     }         
+     return rv;
 }
 
-bool o_charts_pi::Is_oeRNC_pi_loaded()
+bool o_charts_pi::Is_oeRNC_pi_Enabled()
 {
-    //    Instantiate a blank chart, if possible
-     wxClassInfo *pclass = wxClassInfo::FindClass(_T("Chart_oeRNC"));
-     return pclass != NULL;
- 
+     bool rv = false;
+#if defined(__WXMSW__)
+    wxString path = _T("/PlugIns/oernc_pi.dll");
+#elif defined(__WXOSX__)
+    wxString path = _T("/PlugIns/liboernc_pi.dylib");
+#else
+    wxString path = _T("/PlugIns/liboernc_pi.so");
+#endif
+     wxFileConfig *pConf = (wxFileConfig *) g_pconfig;
+     if(pConf){
+         int nen = 0;
+         pConf->SetPath( path );
+         pConf->Read( _T ( "bEnabled" ), &nen, 0 );
+         rv = (nen == 1);
+     }         
+     return rv;
 }
 
 int o_charts_pi::GetAPIVersionMajor()

@@ -164,8 +164,8 @@ public:
     
 private:
     bool ScrubChartinfoList( void );
-    bool Is_oeSENC_pi_loaded();
-    bool Is_oeRNC_pi_loaded();
+    bool Is_oeSENC_pi_Enabled();
+    bool Is_oeRNC_pi_Enabled();
 
     int ProcessCellPermit( wxString &permit, bool b_confirm_existing );
 
