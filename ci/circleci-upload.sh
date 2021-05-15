@@ -33,6 +33,14 @@ if [ -n  "$USE_DEADSNAKES_PY37" ]; then
     sudo update-alternatives --set python3 /usr/bin/python3.7
 fi
 
+sudo apt install -q \
+    python3-pip python3-setuptools python3-dev python3-wheel \
+    build-essential libssl-dev libffi-dev 
+
+python3 -m pip install --user --upgrade -q setuptools
+python3 -m pip install --user --upgrade -q wheel pip
+python3 -m pip install --user -q cloudsmith-cli cryptography cmake
+
 #if pyenv versions 2>&1 >/dev/null; then
 #    pyenv global 3.7.0
 #    python -m pip install cloudsmith-cli
