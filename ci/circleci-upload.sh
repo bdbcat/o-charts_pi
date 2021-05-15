@@ -20,21 +20,34 @@ if [ -z "$CLOUDSMITH_API_KEY" ]; then
     exit 0
 fi
 
-if pyenv versions 2>&1 >/dev/null; then
-    pyenv global 3.7.0
-    python -m pip install cloudsmith-cli
-    pyenv rehash
-elif dnf --version 2>&1 >/dev/null; then
-    sudo dnf install python3-pip python3-setuptools
-    sudo python3 -m pip install -q cloudsmith-cli
-elif apt-get --version 2>&1 >/dev/null; then
-    sudo apt-get install python3-pip python3-setuptools
-    sudo python3 -m pip install -q cloudsmith-cli
-else
-    sudo -H python3 -m ensurepip
-    sudo -H python3 -m pip install -q setuptools
-    sudo -H python3 -m pip install -q cloudsmith-cli
+sudo apt -qq update || apt update
+sudo apt-get -qq install devscripts equivs software-properties-common
+
+if [ -n  "$USE_DEADSNAKES_PY37" ]; then
+    sudo add-apt-repository -y ppa:deadsnakes/ppa
+    sudo apt -qq update
+    sudo  apt-get -q install  python3.7
+    for py in $(ls /usr/bin/python3.[0-9]); do
+        sudo update-alternatives --install /usr/bin/python3 python3 $py 1
+    done
+    sudo update-alternatives --set python3 /usr/bin/python3.7
 fi
+
+#if pyenv versions 2>&1 >/dev/null; then
+#    pyenv global 3.7.0
+#    python -m pip install cloudsmith-cli
+#    pyenv rehash
+#elif dnf --version 2>&1 >/dev/null; then
+#    sudo dnf install python3-pip python3-setuptools
+#    sudo python3 -m pip install -q cloudsmith-cli
+#elif apt-get --version 2>&1 >/dev/null; then
+#    sudo apt-get install python3-pip python3-setuptools
+#    sudo python3 -m pip install -q cloudsmith-cli
+#else
+#    sudo -H python3 -m ensurepip
+#    sudo -H python3 -m pip install -q setuptools
+#    sudo -H python3 -m pip install -q cloudsmith-cli
+#fi
 
 BUILD_ID=${CIRCLE_BUILD_NUM:-1}
 commit=$(git rev-parse --short=7 HEAD) || commit="unknown"
