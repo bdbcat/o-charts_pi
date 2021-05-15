@@ -87,6 +87,7 @@
 extern bool GetDoubleAttr( S57Obj *obj, const char *AttrName, double &val );
 bool IsDongleAvailable();
 extern void ShowExpiredErrorMessage(wxString s_file, int expiryDaysRemaining, int graceDaysRemaining, int graceDaysAllowed);
+extern void ShowGenericErrorMessage(wxString s_file);
 
 
 extern wxString         g_sencutil_bin;
@@ -4041,6 +4042,11 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
                                          
         if(( ERROR_SIGNATURE_FAILURE == srv )  || ( ERROR_SENC_CORRUPT == srv ) ){
 
+            if(ctype == CTYPE_OESU){
+                ShowGenericErrorMessage(FullPath);
+                return srv;
+            }
+            
             if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile Getting new UserKey"));
                                              
             // Give user one chance to fix the key, then bail out..

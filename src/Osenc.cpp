@@ -998,53 +998,7 @@ int Osenc::verifySENC(Osenc_instream &fpx, const wxString &senc_file_name)
             if(g_debugLevel) wxLogMessage(_T("verifySENC E5"));
             
             fpx.Close();
-            //  Try  with empty key, in case the SENC is unencrypted
-            if( !fpx.Open(m_read_esenc_cmd, senc_file_name, _T("")) ){    
-                if(g_debugLevel) wxLogMessage(_T("ingestHeader Backup Open failed "));
-                return ERROR_SENC_CORRUPT;        
-            }
-            
-            fpx.Read(&first_record, sizeof(OSENC_Record_Base));
-            
-            //  Bad read?
-            if(!fpx.IsOk()){
-                if(g_debugLevel) wxLogMessage(_T("verifySENC E6"));
-                return ERROR_SENC_CORRUPT;        
-            }
-            
-            if( first_record.record_type == HEADER_SENC_VERSION ){
-                if(first_record.record_length < 16){
-                    unsigned char *buf = getBuffer( first_record.record_length - sizeof(OSENC_Record_Base));
-                    if(!fpx.Read(buf, first_record.record_length - sizeof(OSENC_Record_Base)).IsOk()){
-                        if(g_debugLevel) wxLogMessage(_T("verifySENC E7"));
-                        return ERROR_SENC_CORRUPT;        
-                    }
-                    
-                    uint16_t *pint = (uint16_t*)buf;
-                    m_senc_file_read_version = *pint;
-                    
-                    //  Is there a Signature error?
-                    if(m_senc_file_read_version == 1024){
-                        if(g_debugLevel) wxLogMessage(_T("verifySENC E8"));
-                        return ERROR_SIGNATURE_FAILURE;
-                    }
-                    
-                    //  Is the oeSENC version compatible?
-                    if((m_senc_file_read_version < 200) || (m_senc_file_read_version > 299)){
-                        if(g_debugLevel) wxLogMessage(_T("verifySENC E9"));
-                        return ERROR_SENC_VERSION_MISMATCH;
-                    }
-                }
-                else{
-                    if(g_debugLevel) wxLogMessage(_T("verifySENC E10"));
-                    return ERROR_SENC_CORRUPT;
-                }
-                    
-            }
-            else{
-                if(g_debugLevel) wxLogMessage(_T("verifySENC E11"));
-                return ERROR_SENC_CORRUPT;
-            }
+            return ERROR_SENC_CORRUPT;        
         }
     }
     
@@ -1340,11 +1294,6 @@ int Osenc::ingest200(const wxString &senc_file_name,
         if( !fpx.Open(m_read_esenc_cmd, senc_file_name, m_key) ){
             if(g_debugLevel) wxLogMessage(_T("ingest200 Open failed second"));
 
-            //  Try  with empty key, in case the SENC is unencrypted
-            if( !fpx.Open(m_read_esenc_cmd, senc_file_name, _T("")) ){    
-                if(g_debugLevel) wxLogMessage(_T("ingest200 Open failed third"));
-                return ERROR_SENCFILE_NOT_FOUND;
-            }
         }
     }
     
