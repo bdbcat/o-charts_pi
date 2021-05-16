@@ -33,7 +33,7 @@ if (QT_ANDROID)
     ${CMAKE_INSTALL_PREFIX}/bin/oexserverd COPYONLY
   )
 elseif (APPLE)
-  install_libs("osx/oeserverd" "osx/libsglmac-2.29.0.0.dylib.x86_64")
+  install_libs("osx/oexserverd" "osx/libsglmac-2.29.0.0.dylib.x86_64")
   # We also need to copy the helper utility and required dylibs to the binary
   # build directory so that the PACKAGES scripts will find it.
   configure_file(
