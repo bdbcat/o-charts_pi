@@ -170,7 +170,7 @@ jobs:
        image: ubuntu-1604:202010-01
       environment:
         - OCPN_TARGET=bionic-arm64
-        - OCPN_BRANCH=master
+        - OCPN_BRANCH=ci
         - DOCKER_IMAGE=arm64v8/ubuntu:18.04
         - BUILD_FLAGS=-j3
         - BUILD_ENV=ubuntu
@@ -188,52 +188,52 @@ workflows:
       - build-trusty:
           filters:
             branches:
-              only: master
+              only: ci
       - build-xenial:
           filters:
             branches:
-              only: master
+              only: ci
       - build-bionic-gtk3:
           filters:
             branches:
-              only: master
+              only: ci
       - build-bionic:
           filters:
             branches:
-              only: master
+              only: ci
       - build-focal:
           filters:
             branches:
-              only: master
+              only: ci
       - build-buster:
           filters:
             branches:
-              only: master
+              only: ci
       - build-flatpak:
           filters:
             branches:
-              only: master
+              only: ci
       - build-macos:
           filters:
             branches:
-              only: master
+              only: ci
       - build-android-arm64:
           filters:
             branches:
-              only: master
+              only: ci
       - build-android-armhf:
           filters:
             branches:
-              only: master
+              only: ci
       - build-armhf-stretch:
           filters:
             branches:
-              only: master
+              only: ci
       - build-armhf-buster:
           filters:
             branches:
-              only: master
+              only: ci
       - build-armhf-bionic-64:
           filters:
             branches:
-              only: master
+              only: ci
