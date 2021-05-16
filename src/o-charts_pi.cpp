@@ -44,7 +44,7 @@
 
 #include "o-charts_pi.h"
 #include "eSENCChart.h"
-#include "src/myiso8211/iso8211.h"
+#include "../libs/iso8211/src/iso8211.h"
 #include "dsa_utils.h"
 #include "s57RegistrarMgr.h"
 #include "S57ClassRegistrar.h"
@@ -52,9 +52,9 @@
 #include "s52utils.h"
 #include "Osenc.h"
 #include "chartsymbols.h"
-#include "json_defs.h"
-#include "jsonwriter.h"
-#include "jsonreader.h"
+#include "../libs/wxJSON/include/wx/json_defs.h"
+#include "../libs/wxJSON/include/wx/jsonwriter.h"
+#include "../libs/wxJSON/include/wx/jsonreader.h"
 #include "dsa_utils.h"
 #include "sha1.h"
 #include "InstallDirs.h"
@@ -62,7 +62,7 @@
 
 #include "ochartShop.h"
 
-#include "version.h"
+#include "config.h"
 
 #ifdef __WXOSX__
 #include "GL/gl.h"

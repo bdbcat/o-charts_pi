@@ -33,6 +33,8 @@
   #include "wx/wx.h"
 #endif //precompiled headers
 
+#include "config.h"
+
 #include "wx/socket.h"
 #include <wx/fileconf.h>
 #include <wx/listctrl.h>
@@ -40,7 +42,6 @@
 #include <wx/html/htmlwin.h>
 
 #include "TexFont.h"
-#include "version.h"
 
 #define     MY_API_VERSION_MAJOR    1
 #define     MY_API_VERSION_MINOR    11
