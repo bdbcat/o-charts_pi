@@ -67,7 +67,7 @@ endif ()
 
 include(CPack)
 
-if (APPLE)
+if (APPLE_PKG)
   # Copy a bunch of files so the Packages installer builder can find them
   # relative to ${CMAKE_CURRENT_BINARY_DIR}
   # This avoids absolute paths in the chartdldr_pi.pkgproj file
@@ -98,7 +98,7 @@ if (APPLE)
     COMMENT "create-pkg: Done."
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/${DISPLAY_NAME}-Plugin.pkg
   )
-endif (APPLE)
+endif (APPLE_PKG)
 
 if (WIN32)
   message(STATUS "FILE: ${CPACK_PACKAGE_FILE_NAME}")
