@@ -39,7 +39,7 @@ sudo apt install -q \
 
 python3 -m pip install --user --upgrade -q setuptools
 python3 -m pip install --user --upgrade -q wheel pip
-python3 -m pip install --user -q cloudsmith-cli
+python3 -m pip install --user cloudsmith-cli
 
 #if pyenv versions 2>&1 >/dev/null; then
 #    pyenv global 3.7.0
