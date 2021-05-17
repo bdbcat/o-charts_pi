@@ -35,7 +35,7 @@
 #include "wx/dir.h"
 #include <wx/textfile.h>
 
-#ifdef __MSVC__
+#ifdef _WIN32
 #include <windows.h>
 #include <shlobj.h>
 #endif

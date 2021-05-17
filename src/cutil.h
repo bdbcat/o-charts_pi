@@ -30,7 +30,7 @@
 #define __CUTIL_H__
 
 
-#ifdef __MSVC__
+#ifdef _WIN32
 #include <windows.h>
 #endif
 
@@ -62,7 +62,7 @@ typedef struct {
 #endif
 
 
-#ifdef __MSVC__
+#ifdef _WIN32
 #ifdef __cplusplus
      extern  "C" long  __stdcall MyUnhandledExceptionFilter( struct _EXCEPTION_POINTERS *ExceptionInfo );
 #else

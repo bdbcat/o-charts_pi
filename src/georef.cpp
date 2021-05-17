@@ -42,7 +42,7 @@
 #include "cutil.h"
 
 
-#ifdef __MSVC__
+#ifdef _WIN32
 #define snprintf mysnprintf
 #endif
 
