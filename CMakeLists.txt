@@ -190,6 +190,11 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   include_directories(${CMAKE_SOURCE_DIR}/src)
   include_directories(${CMAKE_SOURCE_DIR}/include)
   include_directories(${CMAKE_SOURCE_DIR}/libs/gdal/src)
+  if (WIN32)
+  include_directories(${CMAKE_SOURCE_DIR}/buildwin/include/zlib)
+  endif (WIN32)
+  
+
   if (QT_ANDROID)
     include(libs/AndroidLibs.cmake)
   endif ()
