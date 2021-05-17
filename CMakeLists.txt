@@ -190,10 +190,6 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   include_directories(${CMAKE_SOURCE_DIR}/src)
   include_directories(${CMAKE_SOURCE_DIR}/include)
   include_directories(${CMAKE_SOURCE_DIR}/libs/gdal/src)
-  if (WIN32)
-  include_directories(${CMAKE_SOURCE_DIR}/buildwin/include/zlib)
-  endif (WIN32)
-  
 
   if (QT_ANDROID)
     include(libs/AndroidLibs.cmake)
@@ -208,6 +204,11 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   target_link_libraries(${PACKAGE_NAME} ocpn::iso8211)
   add_subdirectory("libs/tinyxml")
   target_link_libraries(${PACKAGE_NAME} ocpn::tinyxml)
+  
+  if( ("${plugin_target}" STREQUAL  "mingw") OR ("${plugin_target}" STREQUAL  "msvc") )
+    include_directories(${CMAKE_SOURCE_DIR}/buildwin/include/zlib)
+    target_link_libraries( ${PACKAGE_NAME} ${CMAKE_SOURCE_DIR}/buildwin/zlib1.lib)
+  endif( ("${plugin_target}" STREQUAL  "mingw") OR ("${plugin_target}" STREQUAL  "msvc") )
 
   if( ("${plugin_target}" STREQUAL  "mingw") OR ("${plugin_target}" STREQUAL  "msvc") )
     add_subdirectory("libs/libglu")
