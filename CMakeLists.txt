@@ -264,8 +264,6 @@ configure_file(
 )
 
 set(checksum "@checksum@")
-message(STATUS "configure XML:  ${pkg_displayname}.xml.in")
-
 configure_file(
   # The XML metadata file
   ${CMAKE_SOURCE_DIR}/o-charts-plugin.xml.in
