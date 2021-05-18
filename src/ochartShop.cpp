@@ -3264,6 +3264,8 @@ int doUploadXFPR(bool bDongle)
             }
             wxFileName fnxpr(fpr_file);
             fprName = fnxpr.GetFullName();
+            ::wxRemoveFile(fpr_file);
+
         }
         else if(fpr_file.IsSameAs(_T("DONGLE_NOT_PRESENT"))){
             err = _("[USB Key Dongle not found.]");
