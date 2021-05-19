@@ -3,7 +3,8 @@
 #
 macro (install_libs libs)
   if (APPLE)
-    set(_oe_libdir "OpenCPN.app/Contents/SharedSupport/plugins/${PACKAGE_NAME}")
+    #set(_oe_libdir "OpenCPN.app/Contents/SharedSupport/plugins/${PACKAGE_NAME}")
+    set(_oe_libdir "OpenCPN.app/Contents/PlugIns/")
   elseif (WIN32)
     set(_oe_libdir "plugins")
   elseif (UNIX)
@@ -26,16 +27,6 @@ if (QT_ANDROID)
   )
 elseif (APPLE)
   install_libs("osx/oexserverd" "osx/libsglmac-2.29.0.0.dylib.x86_64")
-  # We also need to copy the helper utility and required dylibs to the binary
-  # build directory so that the PACKAGES scripts will find it.
-  configure_file(
-    ${CMAKE_CURRENT_LIST_DIR}/osx/oexserverd
-    ${CMAKE_BINARY_DIR}/oexserverd COPYONLY
-  )
-  configure_file(
-    ${CMAKE_CURRENT_LIST_DIR}/osx/libsglmac-2.29.0.0.dylib.x86_64
-    ${CMAKE_BINARY_DIR}/libsglmac-2.29.0.0.dylib.x86_64 COPYONLY
-  )
 elseif (UNIX AND ARCH  STREQUAL "x86_64")
   configure_file(
     ${CMAKE_CURRENT_LIST_DIR}/linux64/oexserverd

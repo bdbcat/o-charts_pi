@@ -556,17 +556,6 @@ int o_charts_pi::Init(void)
         }
       }
       
-            // Account for possible "space" in Mac directory name.
-#ifdef __WXOSX__
-      g_sencutil_bin.Prepend(_T("\""));
-      g_sencutil_bin.Append(_T("\""));
-#endif    
-
-            // Also Windows.
-#ifdef __WXMSW__
-      g_sencutil_bin.Prepend(_T("\""));
-      g_sencutil_bin.Append(_T("\""));
-#endif    
 
     
     
@@ -598,11 +587,29 @@ int o_charts_pi::Init(void)
 #endif
 
 #ifdef __WXMAC__
+    // Find the oexserverd binary.
+    // It will have been installed in the same directory as the plugin (.dylib)
+    wxFileName pluginPath = GetPlugInPath(this);
+
+    wxString binDir = pluginPath.GetPath();  // Where the plugin (.dylib) lives 
+    g_sencutil_bin = binDir + _T("/oexserverd");
+
     // Set environment variable to find the required sglock dongle library
-    wxString libDir = fn_exe.GetPath( wxPATH_GET_VOLUME | wxPATH_GET_SEPARATOR) + _T("PlugIns/o_charts_pi");
+    wxString libDir = binDir;   // In the same location as the plugin dylib  
     wxSetEnv(_T("DYLD_LIBRARY_PATH"), libDir ); 
     wxLogMessage(_T("OSX LIB DYLD_LIBRARY_PATH: ") + libDir);
 #endif
+
+    // Account for possible "space" in Mac directory name.
+#ifdef __WXOSX__
+      g_sencutil_bin.Prepend(_T("\""));
+      g_sencutil_bin.Append(_T("\""));
+#endif    
+    // Also Windows.
+#ifdef __WXMSW__
+      g_sencutil_bin.Prepend(_T("\""));
+      g_sencutil_bin.Append(_T("\""));
+#endif    
 
     wxLogMessage(_T("Path to oexserverd is: ") + g_sencutil_bin);
 
