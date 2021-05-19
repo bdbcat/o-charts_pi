@@ -452,7 +452,21 @@ o_charts_pi::o_charts_pi(void *ppimgr)
       g_GenericMessageShown =false;
       
       // Create the PlugIn icons
-      m_pplugin_icon = new wxBitmap(default_pi);
+      
+      wxString dataLocn = GetPluginDataDir("o-charts_pi") + wxFileName::GetPathSeparator()
+                          + _T("data") + wxFileName::GetPathSeparator();
+
+      wxImage panelIcon(  dataLocn + _T("o-charts_panel_icon.png"));
+      if(panelIcon.IsOk()){
+        m_panelBitmap = wxBitmap(panelIcon);
+        m_pplugin_icon = &m_panelBitmap;
+      }
+      else{
+        wxLogMessage(_T("    GRIB panel icon NOT loaded"));
+        m_panelBitmap = wxBitmap(default_pi);
+        m_pplugin_icon = &m_panelBitmap;
+      }
+
 
       g_pi = this;              // Store a global handle to the PlugIn itself
 
@@ -504,7 +518,6 @@ o_charts_pi::o_charts_pi(void *ppimgr)
 
 o_charts_pi::~o_charts_pi()
 {
-      delete m_pplugin_icon;
 }
 
 int o_charts_pi::Init(void)

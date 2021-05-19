@@ -198,7 +198,7 @@ private:
     TexFont             m_TexFontMessage;
     
     oesencPanel         *m_oesencpanel;
-    
+    wxBitmap            m_panelBitmap;
 };
 
 
