@@ -9,6 +9,9 @@ set(wxWidgets_USE_UNICODE ON)
 set(wxWidgets_USE_UNIVERSAL OFF)
 set(wxWidgets_USE_STATIC OFF)
 
+# Prefer libGL.so to libOpenGL.so, see CMP0072
+set(OpenGL_GL_PREFERENCE "LEGACY")
+
 find_package(OpenGL)
 if (TARGET OpenGL::GL)
   target_link_libraries(${PACKAGE_NAME} OpenGL::GL)
