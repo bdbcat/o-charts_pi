@@ -160,7 +160,7 @@ std-filters: &std-filters
   filters:
     branches:
       only:
-        - ci
+        - master
         - build
 
 workflows:
