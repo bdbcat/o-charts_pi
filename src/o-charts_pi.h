@@ -33,6 +33,7 @@
   #include "wx/wx.h"
 #endif //precompiled headers
 
+#include "ocpn_plugin.h"
 #include "config.h"
 
 #include "wx/socket.h"
