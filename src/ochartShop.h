@@ -39,7 +39,7 @@
 #include "ocpn_plugin.h"
 
 #ifndef __OCPN__ANDROID__
- #include "wxcurl/wx/curl/http.h"
+ #include "wx/curl/http.h"
 #endif
 
 #ifdef WXC_FROM_DIP

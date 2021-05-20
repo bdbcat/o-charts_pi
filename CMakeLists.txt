@@ -127,9 +127,6 @@ SET(SRC
             src/OCPNRegion.cpp
             src/LLRegion.cpp
             src/cutil.cpp
-#            src/tinyxml.cpp
-#            src/tinyxmlerror.cpp
-#            src/tinyxmlparser.cpp
             src/razdsparser.cpp
             src/pi_DepthFont.cpp
             src/uKey.cpp
@@ -143,7 +140,6 @@ SET(SRC
             src/ochartShop.cpp
             src/ochartShop.h
             libs/gdal/src/s57classregistrar.cpp
-
      )
 
 
