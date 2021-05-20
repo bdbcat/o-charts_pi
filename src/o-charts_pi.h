@@ -73,6 +73,8 @@ enum {
     ID_NOTEBOOK
 };
 
+#define ID_ENABLE_REBUILD       23543
+
 //      Private logging functions
 //void ScreenLogMessage(wxString s);
 //void HideScreenLog(void);
@@ -227,7 +229,7 @@ public:
     wxStaticText *m_fpr_text;
     wxStaticText *m_nameTextBox;
     wxButton *m_buttonShowEULA;
-    
+    wxCheckBox *m_cbEnableRebuild;
     DECLARE_EVENT_TABLE()
     
     

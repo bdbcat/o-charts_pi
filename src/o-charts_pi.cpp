@@ -233,6 +233,8 @@ wxString                        g_systemOS;
 bool                            g_GenericMessageShown;
 bool                            g_ExpiredMessageShown;
 
+bool                            g_benableRebuild;
+
 bool shutdown_SENC_server( void );
 bool ShowAlwaysEULAs();
 extern OE_ChartSymbols          *g_oeChartSymbols;
@@ -1270,6 +1272,7 @@ bool o_charts_pi::LoadConfig( void )
         
 
         pConf->SetPath( _T("/PlugIns/ocharts") );
+        pConf->Read( _T("EnableFulldbRebuild"), &g_benableRebuild, 1);
         pConf->Read( _T("loginUser"), &g_loginUser);
         pConf->Read( _T("loginKey"), &g_loginKey);
         pConf->Read( _T("ADMIN"), &g_admin);
@@ -1501,7 +1504,7 @@ void o_charts_pi::ProcessChartManageResult( wxString result )
     }
     
     // This is a bit harsh, but always works...
-    if(b_forceUpdate)
+    if(b_forceUpdate && g_benableRebuild)
         ForceChartDBUpdate();
 #endif
 
@@ -3373,6 +3376,10 @@ oesencPrefsDialog::oesencPrefsDialog( wxWindow* parent, wxWindowID id, const wxS
         
         m_buttonSendStatus->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(o_charts_pi_event_handler::OnSendStatus), NULL, g_event_handler );
         
+        m_cbEnableRebuild = new wxCheckBox(content, ID_ENABLE_REBUILD, _("Enable full chart database rebuild after chart download"));
+        m_cbEnableRebuild->SetValue(g_benableRebuild);
+        bSizer2->Add( m_cbEnableRebuild, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
+        
         m_sdbSizer1 = new wxStdDialogButtonSizer();
         m_sdbSizer1OK = new wxButton( content, wxID_OK );
         m_sdbSizer1->AddButton( m_sdbSizer1OK );
@@ -3410,6 +3417,15 @@ void oesencPrefsDialog::OnPrefsOkClick(wxCommandEvent& event)
         }
     }
 #endif
+
+    g_benableRebuild = m_cbEnableRebuild->GetValue();
+    
+    wxFileConfig *pConf = GetOCPNConfigObject();
+    if( pConf ) {
+      pConf->SetPath( _T("/PlugIns/ocharts") );
+      pConf->Write( _T("EnableFulldbRebuild"), g_benableRebuild);
+    }
+
     EndModal( wxID_OK );
  
 }

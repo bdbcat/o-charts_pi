@@ -92,6 +92,7 @@ extern wxString g_UUID;
 extern wxString g_WVID;
 extern int      g_SDK_INT;
 extern wxString  g_sencutil_bin;
+extern bool      g_benableRebuild;
 
 shopPanel *g_shopPanel;
 oesu_piScreenLogContainer *g_shopLogFrame;
@@ -1993,6 +1994,8 @@ void loadShopConfig()
         pConf->Read( _T("DEBUG_SHOP"), &g_debugShop);
         pConf->Read( _T("LastEULAFile"), &g_lastEULAFile);
 
+        pConf->Read( _T("EnableFulldbRebuild"), &g_benableRebuild, 1);
+
 //        g_systemName = _T("");
 //        g_loginKey = _T("");
         
@@ -2209,6 +2212,8 @@ void saveShopConfig()
       pConf->Write( _T("loginKey"), g_loginKey);
       pConf->Write( _T("lastInstllDir"), g_lastInstallDir);
       pConf->Write( _T("LastEULAFile"), g_lastEULAFile);
+      pConf->Write( _T("EnableFulldbRebuild"), g_benableRebuild);
+      
 
 #if 1      
       pConf->DeleteGroup( _T("/PlugIns/ocharts/oeus/charts") );
@@ -5732,7 +5737,8 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
         keyMapDongle.clear();
         keyMapSystem.clear();
 
-        ForceChartDBUpdate();
+        if(g_benableRebuild)
+            ForceChartDBUpdate();
     
         saveShopConfig();
     
