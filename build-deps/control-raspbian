@@ -21,5 +21,5 @@ Description: Packages needed to build plugin on raspbian.
  using something like:
  .
  .   sudo apt install devscripts equivs
- .   sudo mk-build-deps -ir ci/control-raspbian
+ .   sudo mk-build-deps -ir build-deps/control-raspbian
  .   sudo apt-get -q --allow-unauthenticated install -f

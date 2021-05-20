@@ -24,7 +24,7 @@ Description: Packages needed to build opencpn on debian.
  using something like:
  .
  .   sudo apt install devscripts equivs
- .   sudo mk-build-deps --install ci/control
+ .   sudo mk-build-deps --install build-deps/control
  .
  These packages are available in trusty+. The base-files
  fallback is for optional packages available in later releases.
