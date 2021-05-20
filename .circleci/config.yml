@@ -28,9 +28,6 @@ jobs:
       - OCPN_TARGET: flatpak
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - fp-v1-{{ checksum "ci/circleci-build-flatpak.sh" }}
       - run: ci/circleci-build-flatpak.sh
       - save_cache:
           key: fp-v1-{{ checksum "ci/circleci-build-flatpak.sh" }}
