@@ -26,7 +26,7 @@ if (QT_ANDROID)
     ${CMAKE_INSTALL_PREFIX}/bin/oexserverd COPYONLY
   )
 elseif (APPLE)
-  install_libs("osx/oexserverd" "osx/libsglmac-2.29.0.0.dylib.x86_64")
+  install_libs("osx/oexserverd" "osx/libsglmac-2.38.0.0.dylib.x86_64")
 elseif (UNIX AND ARCH  STREQUAL "x86_64")
   configure_file(
     ${CMAKE_CURRENT_LIST_DIR}/linux64/oexserverd
