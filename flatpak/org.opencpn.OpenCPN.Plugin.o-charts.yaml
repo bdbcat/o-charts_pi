@@ -1,64 +1,74 @@
+#
+# Branches and runtimes:
+#   - master     Nigthly builds, 18.08 runtime
+#   - beta       Flathub beta branch, aarch64 with 20.08 runtime.
+#   - stable     Flathub main branch, x86_64 with 18.08 runtime.
+#
 id: org.opencpn.OpenCPN.Plugin.o-charts
 runtime: org.opencpn.OpenCPN
-runtime-version: master
+runtime-version: stable
+#runtime-version: master   # for nightly builds
 sdk: org.freedesktop.Sdk//18.08
 build-extension: true
 separate-locales: false
 appstream-compose: false
 modules:
-    - name: o-charts
-      no-autogen: true
-      cmake: true
-      build-options:
-          cflags: -fPIC
-          cxxflags: -fPIC -DFLATPAK
-      config-opts:
-          - -DPREFIX:PATH=/app/extensions/o-charts
-      post-install:
-          - install -t /app/extensions/o-charts/bin/ -m 755 oexserverd
-          - >
-            install -t /app/extensions/o-charts/lib -m 755
-            buildlinux64/oeserverd/libsgllnx64-2.29.02.so
-            libusb-0.1.so.4
-      sources:
-          - type: git
-            url: ..
-            branch: master
-          - type: file
-            path: oexserverd
-          - type: file
-            # originally libusb-0.1.so.4.1.1, built from  libusb-0.1.6
-            path: libusb-0.1.so.4
-    - name: iproute2
-      sources:
-          - type: archive
-            url: https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/iproute2-5.7.0.tar.xz
-            sha256: 725dc7ba94aae54c6f8d4223ca055d9fb4fe89d6994b1c03bfb4411c4dd10f21
-      no-autogen: true
-      buildsystem: autotools
-      make-args:
-        - PREFIX=/app
-      make-install-args:
-        - DESTDIR=/app/extensions/o-charts
-        - SBINDIR=/bin
-      cleanup:
-        - bridge
-        - ctstat
-        - genl
-        - ifcfg
-        - ifstat
-        - lnstat
-        - nstat
-        - routef
-        - routel
-        - rtacct
-        - rtmon
-        - rtpr
-        - rtstat
-        - ss
-        - tc
-        - /etc
-        - /usr/lib
-        - /usr/share
-        - /var
-        - /usr/include
+  - name: iproute2
+    sources:
+        - type: archive
+          url: https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/iproute2-5.7.0.tar.xz
+          sha256: 725dc7ba94aae54c6f8d4223ca055d9fb4fe89d6994b1c03bfb4411c4dd10f21
+    no-autogen: true
+    buildsystem: autotools
+    make-args:
+      - PREFIX=/app
+    make-install-args:
+      - DESTDIR=/app/extensions/o-charts
+      - SBINDIR=/bin
+    cleanup:
+      - bridge
+      - ctstat
+      - genl
+      - ifcfg
+      - ifstat
+      - lnstat
+      - nstat
+      - routef
+      - routel
+      - rtacct
+      - rtmon
+      - rtpr
+      - rtstat
+      - ss
+      - tc
+      - /etc
+      - /usr/lib
+      - /usr/share
+      - /var
+      - /usr/include
+
+  - name: o-charts
+    no-autogen: true
+    cmake: true
+    build-options:
+      cflags: -fPIC
+      cxxflags: -fPIC -DFLATPAK
+    config-opts:
+      - -DCMAKE_INSTALL_PREFIX=/app/extensions/o-charts/
+      - -DCMAKE_BUILD_TYPE:STRING=Release
+      - -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+      - -DBUILD_TYPE:STRING=tarball
+      - -Uplugin_target
+    post-install:
+      - install -t /app/extensions/o-charts/lib/ -m 755 oexserverd
+      - >
+        install -t /app/extensions/o-charts/lib -m 755 libusb-0.1.so.4
+    sources:
+      - type: git
+        url: ..
+        branch: master
+      - type: file
+        path: oexserverd
+      - type: file
+        # originally libusb-0.1.so.4.1.1, built from  libusb-0.1.6
+        path: libusb-0.1.so.4
