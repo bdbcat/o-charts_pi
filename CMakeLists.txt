@@ -99,53 +99,51 @@ are based on the same data -- the legal conditions are described in the
 EULA. The charts has world-wide coverage and provides a cost-effective
 way to access the national chart databases. Charts are encrypted and 
 can only be used after purchasing decryption keys from o-charts.org.
+
+o-charts can handle all charts previously handled by the oesenc and
+oernc plugins. It thus obsoletes these two plugins.
 ]=])
 
 set(PKG_RELEASE "1")
 set(PKG_AUTHOR "Dave register")
 
 SET(SRC
-            src/o-charts_pi.h
-            src/o-charts_pi.cpp
-            src/eSENCChart.cpp
-            src/eSENCChart.h
-            src/InstallDirs.cpp
-            src/InstallDirs.h
-            src/Osenc.cpp
-            src/Osenc.h
-            src/mygeom.h
-            src/mygeom63.cpp
-            src/TexFont.cpp
-            src/TexFont.h
-            src/s52plib.cpp
-            src/s57RegistrarMgr.cpp
-            src/chartsymbols.cpp
-            src/s52cnsy.cpp
-            src/viewport.cpp
-            src/s52utils.cpp
-            src/bbox.cpp
-            src/OCPNRegion.cpp
-            src/LLRegion.cpp
-            src/cutil.cpp
-#            src/tinyxml.cpp
-#            src/tinyxmlerror.cpp
-#            src/tinyxmlparser.cpp
-            src/razdsparser.cpp
-            src/pi_DepthFont.cpp
-            src/uKey.cpp
-            src/validator.cpp
-            src/fpr.cpp
-            src/piScreenLog.cpp
-            src/sha256.c
-            src/oernc_inStream.cpp
-            src/chart.cpp
-            src/georef.cpp
-            src/ochartShop.cpp
-            src/ochartShop.h
-            libs/gdal/src/s57classregistrar.cpp
-
-     )
-
+  src/bbox.cpp
+  src/chart.cpp
+  src/chartsymbols.cpp
+  src/cutil.cpp
+  src/eSENCChart.cpp
+  src/eSENCChart.h
+  src/fpr.cpp
+  src/georef.cpp
+  src/InstallDirs.cpp
+  src/InstallDirs.h
+  src/LLRegion.cpp
+  src/mygeom63.cpp
+  src/mygeom.h
+  src/ochartShop.cpp
+  src/ochartShop.h
+  src/o-charts_pi.cpp
+  src/o-charts_pi.h
+  src/OCPNRegion.cpp
+  src/oernc_inStream.cpp
+  src/Osenc.cpp
+  src/Osenc.h
+  src/pi_DepthFont.cpp
+  src/piScreenLog.cpp
+  src/razdsparser.cpp
+  src/s52cnsy.cpp
+  src/s52plib.cpp
+  src/s52utils.cpp
+  src/s57RegistrarMgr.cpp
+  src/sha256.c
+  src/TexFont.cpp
+  src/TexFont.h
+  src/uKey.cpp
+  src/validator.cpp
+  src/viewport.cpp
+  libs/gdal/src/s57classregistrar.cpp
+)
 
 # -------- Setup completed, build the plugin --------
 #

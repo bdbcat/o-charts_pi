@@ -42,6 +42,8 @@
 #include <wx/progdlg.h>
 #include "wx/artprov.h"
 
+#include "ocpn_plugin.h"
+#include "config.h"
 #include "o-charts_pi.h"
 #include "eSENCChart.h"
 #include "../libs/iso8211/src/iso8211.h"
@@ -62,7 +64,6 @@
 
 #include "ochartShop.h"
 
-#include "config.h"
 
 #ifdef __WXOSX__
 #include "GL/gl.h"
