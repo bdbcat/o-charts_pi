@@ -206,10 +206,8 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   add_subdirectory("libs/zlib")
   target_link_libraries(${PACKAGE_NAME} ocpn::zlib)
   
-  if( ("${plugin_target}" STREQUAL  "mingw") OR ("${plugin_target}" STREQUAL  "msvc") )
-    add_subdirectory("libs/libglu")
-    target_link_libraries(${PACKAGE_NAME} ocpn::glu)
-  endif( ("${plugin_target}" STREQUAL  "mingw") OR ("${plugin_target}" STREQUAL  "msvc") )
+  add_subdirectory("libs/libglu")
+  target_link_libraries(${PACKAGE_NAME} ocpn::glu)
   
   if( ("${plugin_target}" STREQUAL  "mingw") OR ("${plugin_target}" STREQUAL  "msvc") )  
     option(OCPN_USE_BUNDLED_WXCURL "Use wxCurl libraries" ON)
