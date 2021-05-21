@@ -104,6 +104,9 @@ o-charts can handle all charts previously handled by the oesenc and
 oernc plugins. It thus obsoletes these two plugins.
 ]=])
 
+set(CPACK_PACKAGE_HOMEPAGE_URL https://github.com/bdbcat/o-charts_pi)
+set(PKG_INFO_URL https://opencpn.org/OpenCPN/info/downloadplugins.html)
+
 set(PKG_RELEASE "1")
 set(PKG_AUTHOR "Dave register")
 
@@ -268,7 +271,7 @@ configure_file(
 set(checksum "@checksum@")
 configure_file(
   # The XML metadata file
-  ${CMAKE_SOURCE_DIR}/o-charts-plugin.xml.in
+  ${CMAKE_SOURCE_DIR}/plugin.xml.in
   ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml.in
   @ONLY
 )
