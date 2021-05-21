@@ -110,7 +110,7 @@ set(PKG_INFO_URL https://opencpn.org/OpenCPN/info/downloadplugins.html)
 set(PKG_RELEASE "1")
 set(PKG_AUTHOR "Dave register")
 
-SET(SRC
+set(SRC
   src/bbox.cpp
   src/chart.cpp
   src/chartsymbols.cpp
@@ -201,32 +201,28 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   endif ()
   add_subdirectory("libs/cpl")
   target_link_libraries(${PACKAGE_NAME} ocpn::cpl)
+
   add_subdirectory("libs/dsa")
   target_link_libraries(${PACKAGE_NAME} ocpn::dsa)
+
   add_subdirectory("libs/wxJSON")
   target_link_libraries(${PACKAGE_NAME} ocpn::wxjson)
+
   add_subdirectory("libs/iso8211")
   target_link_libraries(${PACKAGE_NAME} ocpn::iso8211)
+
   add_subdirectory("libs/tinyxml")
   target_link_libraries(${PACKAGE_NAME} ocpn::tinyxml)
+
   add_subdirectory("libs/zlib")
   target_link_libraries(${PACKAGE_NAME} ocpn::zlib)
   
   add_subdirectory("libs/libglu")
   target_link_libraries(${PACKAGE_NAME} ocpn::glu)
   
-  if( ("${plugin_target}" STREQUAL  "mingw") OR ("${plugin_target}" STREQUAL  "msvc") )  
-    option(OCPN_USE_BUNDLED_WXCURL "Use wxCurl libraries" ON)
-  else( ("${plugin_target}" STREQUAL  "mingw") OR ("${plugin_target}" STREQUAL  "msvc") ) 
-    INCLUDE_DIRECTORIES("libs/wxcurl/src")
-  endif( ("${plugin_target}" STREQUAL  "mingw") OR ("${plugin_target}" STREQUAL  "msvc") )  
-    
+  add_subdirectory("libs/wxcurl")
+  target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
 
-  if (OCPN_USE_BUNDLED_WXCURL)
-    add_subdirectory("libs/wxcurl")
-    target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
-  endif ()
-  
   add_subdirectory("libs/oeserverd")
 
   if (ARCH STREQUAL "armhf")
