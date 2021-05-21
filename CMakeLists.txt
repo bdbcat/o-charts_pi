@@ -80,9 +80,8 @@ endif ()
 # -------  Plugin setup --------
 #
 include("VERSION.cmake")
-SET(FULL_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}.${VERSION_TWEAK}" )
-
-project(o-charts_pi VERSION ${FULL_VERSION})
+project(o-charts_pi VERSION ${OCPN_VERSION})
+set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
 
 set(DISPLAY_NAME o-charts)    # Dialogs, installer artifacts, ...
 set(PLUGIN_API_NAME o-charts) # As of GetCommonName() in plugin API
@@ -107,7 +106,6 @@ oernc plugins. It thus obsoletes these two plugins.
 set(CPACK_PACKAGE_HOMEPAGE_URL https://github.com/bdbcat/o-charts_pi)
 set(PKG_INFO_URL https://opencpn.org/OpenCPN/plugins/oesenc.html)  # FIXME
 
-set(PKG_RELEASE "1")
 set(PKG_AUTHOR "Dave register")
 
 set(SRC
