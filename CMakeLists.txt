@@ -110,7 +110,7 @@ set(PKG_INFO_URL https://opencpn.org/OpenCPN/plugins/oesenc.html)  # FIXME
 set(PKG_RELEASE "1")
 set(PKG_AUTHOR "Dave register")
 
-SET(SRC
+set(SRC
   src/bbox.cpp
   src/chart.cpp
   src/chartsymbols.cpp
