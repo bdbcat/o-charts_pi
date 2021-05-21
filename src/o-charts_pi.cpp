@@ -659,13 +659,13 @@ int o_charts_pi::Init(void)
     if( Is_oeSENC_pi_Enabled() ){
         wxString msg = _("The o-charts plugin replaces the oeSENC plugin chart display functions.\n");
         msg += _("It is recommended that you disable any existing oeSENC plugin, and restart OpenCPN.\n");
-        int ret = OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxOK);
+        OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxOK);
     }
 
     if( Is_oeRNC_pi_Enabled() ){
         wxString msg = _("The o-charts plugin replaces the oeRNC plugin chart display functions.\n");
         msg += _("It is recommended that you disable any existing oeRNC plugin, and restart OpenCPN.\n");
-        int ret = OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxOK);
+        OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxOK);
     }
 
     //testSENCServer();
@@ -743,6 +743,14 @@ bool o_charts_pi::Is_oeSENC_pi_Enabled()
          pConf->SetPath( path );
          pConf->Read( _T ( "bEnabled" ), &nen, 0 );
          rv = (nen == 1);
+         
+         // It is possible that the legacy plugin is marked as "enabled" in the config file,
+         // but does not actually exist, and has thus never been loaded
+         if(rv){
+            wxClassInfo *pclass = wxClassInfo::FindClass(_T("oeSENCChart"));
+            if(pclass == NULL)
+                rv = false;
+         }
      }         
      return rv;
 }
@@ -763,6 +771,15 @@ bool o_charts_pi::Is_oeRNC_pi_Enabled()
          pConf->SetPath( path );
          pConf->Read( _T ( "bEnabled" ), &nen, 0 );
          rv = (nen == 1);
+
+         // It is possible that the legacy plugin is marked as "enabled" in the config file,
+         // but does not actually exist, and has thus never been loaded
+         if(rv){
+            wxClassInfo *pclass = wxClassInfo::FindClass(_T("Chart_oeRNC"));
+            if(pclass == NULL)
+                rv = false;
+         }
+
      }         
      return rv;
 }
