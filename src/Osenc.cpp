@@ -973,7 +973,7 @@ int Osenc::verifySENC(Osenc_instream &fpx, const wxString &senc_file_name)
     }
 #endif    
     {
-        if(( first_record.record_type == HEADER_SENC_VERSION ) && (first_record.record_length < 16) ){
+        if(( first_record.record_type == HEADER_SENC_VERSION ) && (first_record.record_length >=6) && (first_record.record_length < 16) ){
             unsigned char *buf = getBuffer( first_record.record_length - sizeof(OSENC_Record_Base));
             if(!fpx.Read(buf, first_record.record_length - sizeof(OSENC_Record_Base)).IsOk()){
                 return ERROR_SENC_CORRUPT;        
