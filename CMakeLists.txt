@@ -87,10 +87,10 @@ set(DISPLAY_NAME o-charts)    # Dialogs, installer artifacts, ...
 set(PLUGIN_API_NAME o-charts) # As of GetCommonName() in plugin API
 set(CPACK_PACKAGE_CONTACT "Dave Register")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
-  "OpenCPN support for encrypted OCPN Vector Charts "
+  "Support for encrypted OCPN Vector Charts from o-charts.org"
 )
 set(CPACK_PACKAGE_DESCRIPTION [=[
-OCPN Vector Charts licensed and sourced from chart providers like
+OpenCPN  Vector Charts licensed and sourced from chart providers like
 Hydrographic Offices.  
 
 While the charts are not officially approved official ENC charts they
@@ -178,21 +178,21 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   # Build package as required (flatpak already dealt with).
   #
   include(PluginCompiler)
-  if (NOT QT_ANDROID)
-    include(PluginLibs)
-  endif ()
   include(PluginLocalization)
   include(PluginInstall)
   include(PluginPackage)
+
+  if (QT_ANDROID)
+    include(libs/AndroidLibs.cmake)
+  else ()
+    include(PluginLibs)
+  endif ()
 
   include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
   include_directories(${CMAKE_SOURCE_DIR}/src)
   include_directories(${CMAKE_SOURCE_DIR}/include)
   include_directories(${CMAKE_SOURCE_DIR}/libs/gdal/src)
 
-  if (QT_ANDROID)
-    include(libs/AndroidLibs.cmake)
-  endif ()
   add_subdirectory("libs/cpl")
   target_link_libraries(${PACKAGE_NAME} ocpn::cpl)
 
@@ -220,7 +220,7 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   add_subdirectory("libs/oeserverd")
 
   if (ARCH STREQUAL "armhf")
-   add_definitions(-DOCPN_ARMHF)
+    add_definitions(-DOCPN_ARMHF)
   endif (ARCH STREQUAL "armhf")      
 
   if (APPLE)
