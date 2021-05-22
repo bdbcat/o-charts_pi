@@ -102,10 +102,11 @@ bool parseKeyFile( wxString kfile, bool bDongle )
     }           
     fclose(iFile);
 
+    wxFileName fn(kfile);
     
     //  Parse the XML
     TiXmlDocument * doc = new TiXmlDocument();
-    const char *rr = doc->Parse( iText);
+    doc->Parse( iText);
     
     TiXmlElement * root = doc->RootElement();
     if(!root)
@@ -139,17 +140,19 @@ bool parseKeyFile( wxString kfile, bool bDongle )
                 }
 
             }
+            wxString fileFullName = fn.GetPath( wxPATH_GET_VOLUME + wxPATH_GET_SEPARATOR ) + fileName + _T(".oesu");
+            
             if(RInstallKey.Length() && fileName.Length()){
                 if(bDongle){
-                    OKeyHash::iterator search = keyMapDongle.find(fileName);
+                    OKeyHash::iterator search = keyMapDongle.find(fileFullName);
                     if (search == keyMapDongle.end()) {
-                        keyMapDongle[fileName] = RInstallKey;
+                        keyMapDongle[fileFullName] = RInstallKey;
                     }
                 }
                 else{
-                    OKeyHash::iterator search = keyMapSystem.find(fileName);
+                    OKeyHash::iterator search = keyMapSystem.find(fileFullName);
                     if (search == keyMapSystem.end()) {
-                        keyMapSystem[fileName] = RInstallKey;
+                        keyMapSystem[fileFullName] = RInstallKey;
                     }
                 }
             }
@@ -199,14 +202,13 @@ bool loadKeyMaps( wxString file )
 wxString getPrimaryKey(wxString file)
 {
     if(pPrimaryKey){
-        wxFileName fn(file);
-        OKeyHash::iterator search = pPrimaryKey->find(fn.GetName());
+        OKeyHash::iterator search = pPrimaryKey->find(file);
         if (search != pPrimaryKey->end()) {
             return search->second;
         }
         loadKeyMaps(file);
 
-        search = pPrimaryKey->find(fn.GetName());
+        search = pPrimaryKey->find(file);
         if (search != pPrimaryKey->end()) {
             return search->second;
         }
@@ -217,15 +219,14 @@ wxString getPrimaryKey(wxString file)
 wxString getAlternateKey(wxString file)
 {
     if(pAlternateKey){
-        wxFileName fn(file);
-        OKeyHash::iterator search = pAlternateKey->find(fn.GetName());
+        OKeyHash::iterator search = pAlternateKey->find(file);
         if (search != pAlternateKey->end()) {
             return search->second;
         }
 
         loadKeyMaps(file);
 
-        search = pAlternateKey->find(fn.GetName());
+        search = pAlternateKey->find(file);
         if (search != pAlternateKey->end()) {
             return search->second;
         }
