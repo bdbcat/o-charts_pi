@@ -1267,18 +1267,17 @@ bool itemChart::isChartsetShow()
 bool itemChart::isChartsetAssignedToMe()
 {
     //  Check if I am already assigned to this chart
-    //  either by installed dongle, or systemName
-    bool bAssigned = false;
-    if(g_dongleName.Len()){
-        if(isChartsetAssignedToSystemKey(g_dongleName))
-            bAssigned = true;
-    }
-    else{
-        if(isChartsetAssignedToSystemKey(g_systemName))
-            bAssigned = true;
-    }
     
-    return bAssigned;
+    // Check systemName, irrespective of dongle availablity
+    if(isChartsetAssignedToSystemKey(g_systemName))
+        return true;
+    
+    //  Also, charts may be assigned to a dongle, whether or not the (correct) dongle is installed
+    //  We assume here that "me" is the logical owner of the dongle.
+    if(isChartsetAssignedToAnyDongle())
+        return true;
+    
+    return false;
 }
 
 int itemChart::GetSlotAssignedToInstalledDongle( int &qId )
