@@ -2577,7 +2577,6 @@ int getChartList( bool bShowErrorDialogs = true){
         qDebug() << response.c_str();
         responseBody = response.c_str();
         iResponseCode = 200;
-        res = 1;
     }
 
 #endif    
@@ -2972,7 +2971,6 @@ int doUploadXFPR(bool bDongle)
             //qDebug() << response.c_str();
             responseBody = response.c_str();
             iResponseCode = 200;
-            res = 1;
         }
 #endif    
 
@@ -3066,7 +3064,6 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
         qDebug() << response.c_str();
         responseBody = response.c_str();
         iResponseCode = 200;
-        res = 1;
     }
 
 
