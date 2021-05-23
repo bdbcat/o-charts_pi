@@ -508,7 +508,7 @@ ChartSetData::ChartSetData( std::string fileXML)
     
     //  Parse the XML
     TiXmlDocument * doc = new TiXmlDocument();
-    const char *rr = doc->Parse( iText);
+    doc->Parse( iText);
     
     TiXmlElement * root = doc->RootElement();
     if(!root){
@@ -732,7 +732,7 @@ bool ChartSetKeys::Load( std::string fileXML)
     
     //  Parse the XML
     TiXmlDocument * doc = new TiXmlDocument();
-    const char *rr = doc->Parse( iText);
+    doc->Parse( iText);
     
     TiXmlElement * root = doc->RootElement();
     if(!root){
@@ -1052,7 +1052,7 @@ wxBitmap& itemChart::GetChartThumbnail(int size, bool bDL_If_Needed)
 #ifndef __OCPN__ANDROID__                
                 wxCurlHTTP get;
                 get.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
-                bool getResult = get.Get(file, wxString(thumbLink));
+                get.Get(file, wxString(thumbLink));
 
             // get the response code of the server
                 
@@ -2194,9 +2194,9 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
             }
         }
 
-        const char *rr = doc->Parse( body.c_str());
+        doc->Parse( body.c_str());
     
-        doc->Print();
+        //doc->Print();
         
         itemChart *pChart = NULL;
 
@@ -2541,14 +2541,13 @@ int getChartList( bool bShowErrorDialogs = true){
     loginParms += _T("&version=") + g_systemOS + g_versionString;
 
     int iResponseCode = 0;
-    size_t res = 0;
     std::string responseBody;
     
 #ifdef __OCPN_USE_CURL__    
     wxCurlHTTPNoZIP post;
     post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
     
-    res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
+    post.Post( loginParms.ToAscii(), loginParms.Len(), url );
     
     // get the response code of the server
     
@@ -2648,13 +2647,12 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
     loginParms += _T("&version=") + g_systemOS + g_versionString;
     
     int iResponseCode = 0;
-    size_t res = 0;
     std::string responseBody;
 
 #ifdef __OCPN_USE_CURL__    
     wxCurlHTTPNoZIP post;
     post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
-    res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
+    post.Post( loginParms.ToAscii(), loginParms.Len(), url );
     
     // get the response code of the server
     post.GetInfo(CURLINFO_RESPONSE_CODE, &iResponseCode);
@@ -2938,14 +2936,13 @@ int doUploadXFPR(bool bDongle)
         //wxLogMessage(loginParms);
             
         int iResponseCode = 0;
-        size_t res = 0;
         std::string responseBody;
     
 #ifdef __OCPN_USE_CURL__    
         wxCurlHTTPNoZIP post;
         post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
     
-        res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
+        post.Post( loginParms.ToAscii(), loginParms.Len(), url );
     
         // get the response code of the server
     
@@ -3043,13 +3040,12 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
     wxLogMessage(loginParms);
     
     int iResponseCode = 0;
-    size_t res = 0;
     std::string responseBody;
             
 #ifdef __OCPN_USE_CURL__            
     wxCurlHTTPNoZIP post;
     post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
-    res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
+    post.Post( loginParms.ToAscii(), loginParms.Len(), url );
     
     // get the response code of the server
     post.GetInfo(CURLINFO_RESPONSE_CODE, &iResponseCode);
@@ -3572,7 +3568,7 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
         int y_line = (height * 5 / 100) + hTitle;
 
         dc.SetFont( *dFont );           // Restore default font
-        int offset = GetCharHeight();
+        //int offset = GetCharHeight();
         
         dc.DrawLine( text_x, y_line, width - base_offset, y_line);
 
@@ -3730,7 +3726,6 @@ END_EVENT_TABLE()
 chartScroller::chartScroller(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style)
 : wxScrolledWindow(parent, id, pos, size, style)
 {
-    int yyp = 3;
 }
 
 void chartScroller::OnEraseBackground(wxEraseEvent& event)
@@ -3840,7 +3835,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     int ref_len = GetCharHeight();
     
     bool bCompact = false;
-    wxSize sz = ::wxGetDisplaySize();
+    //wxSize sz = ::wxGetDisplaySize();
     //if((sz.x < 500) | (sz.y < 500))
         bCompact = true;
 
@@ -4707,7 +4702,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             }
         }
   
-        bool zret = ExtractZipFiles( task->cacheLinkLocn, tmp_dir, false, wxDateTime::Now(), false);
+        ExtractZipFiles( task->cacheLinkLocn, tmp_dir, false, wxDateTime::Now(), false);
 
         // Find any "ChartList.XML" file
         wxString actionChartList;
@@ -4748,7 +4743,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
 
                     //  Parse the XML
                     TiXmlDocument * doc = new TiXmlDocument();
-                    const char *rr = doc->Parse( iText);
+                    doc->Parse( iText);
     
                     TiXmlElement * root = doc->RootElement();
                     if(root){
@@ -4871,7 +4866,6 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
  
  
         wxString dest(chartTopLevelZip);
-        int nc = dest.Length();
         unsigned int i = 0;
         int ndash = 0;
         while(i < dest.Length() && (ndash < 2)){
@@ -5199,8 +5193,6 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
     // Chained through from download end event
     if(m_binstallChain){
         m_binstallChain = false;
-        
-        int rv = 0;
         
         //  Download is apparently done.
         g_statusOverride.Clear();
@@ -5619,7 +5611,7 @@ int shopPanel::doDownloadGui(itemChart *targetChart, itemSlot* targetSlot)
     m_binstallChain = true;
     m_bAbortingDownload = false;
     
-    int err_code = doDownload(targetChart, targetSlot);
+    doDownload(targetChart, targetSlot);
     return 0;
     
 }
@@ -5858,7 +5850,7 @@ bool shopPanel::doSystemNameWizard( bool bShowAll )
     #ifdef __OCPN__ANDROID__
 //    androidHideBusyIcon();
     #endif             
-    int ret = dlg.ShowModal();
+    dlg.ShowModal();
  
     if(dlg.GetReturnCode() == 0){               // OK
         wxString sName = dlg.getRBSelection();
@@ -5922,12 +5914,9 @@ wxString shopPanel::doGetNewSystemName( )
         
             char *t = (char *)s;
             for(unsigned int i = 0; i < strlen(s); i++, t++){
-                bool bok = false;
                 if( ((*t >= 'a') && (*t <= 'z')) ||
                     ((*t >= 'A') && (*t <= 'Z')) ||
                     ((*t >= '0') && (*t <= '9')) ){
-                
-                        bok = true;
                 }
                 else{
                     msg = wxString( _("No symbols or spaces are allowed in System Name."));
