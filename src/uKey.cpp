@@ -140,7 +140,7 @@ bool parseKeyFile( wxString kfile, bool bDongle )
                 }
 
             }
-            wxString fileFullName = fn.GetPath( wxPATH_GET_VOLUME + wxPATH_GET_SEPARATOR ) + fileName + _T(".oesu");
+            wxString fileFullName = fn.GetPath( wxPATH_GET_VOLUME + wxPATH_GET_SEPARATOR ) + fileName;
             
             if(RInstallKey.Length() && fileName.Length()){
                 if(bDongle){
@@ -201,14 +201,17 @@ bool loadKeyMaps( wxString file )
 
 wxString getPrimaryKey(wxString file)
 {
+    wxFileName fn(file);
+    wxString key = fn.GetPath(wxPATH_GET_VOLUME + wxPATH_GET_SEPARATOR) + fn.GetName();
+    
     if(pPrimaryKey){
-        OKeyHash::iterator search = pPrimaryKey->find(file);
+        OKeyHash::iterator search = pPrimaryKey->find(key);
         if (search != pPrimaryKey->end()) {
             return search->second;
         }
         loadKeyMaps(file);
 
-        search = pPrimaryKey->find(file);
+        search = pPrimaryKey->find(key);
         if (search != pPrimaryKey->end()) {
             return search->second;
         }
@@ -218,15 +221,18 @@ wxString getPrimaryKey(wxString file)
 
 wxString getAlternateKey(wxString file)
 {
+    wxFileName fn(file);
+    wxString key = fn.GetPath(wxPATH_GET_VOLUME + wxPATH_GET_SEPARATOR) + fn.GetName();
+    
     if(pAlternateKey){
-        OKeyHash::iterator search = pAlternateKey->find(file);
+        OKeyHash::iterator search = pAlternateKey->find(key);
         if (search != pAlternateKey->end()) {
             return search->second;
         }
 
         loadKeyMaps(file);
 
-        search = pAlternateKey->find(file);
+        search = pAlternateKey->find(key);
         if (search != pAlternateKey->end()) {
             return search->second;
         }
