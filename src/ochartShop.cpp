@@ -1220,7 +1220,6 @@ bool itemChart::isChartsetFullyAssigned()
 
 bool itemChart::isChartsetExpired()
 {
-    
     return bExpired;
 }
 
@@ -1229,6 +1228,19 @@ bool itemChart::isChartsetAssignedToAnyDongle() {
     int tmpQ;
     if(GetSlotAssignedToInstalledDongle( tmpQ ) >= 0)
         return true;
+    
+    // May also be assigned to some other dongle that is not installed
+    for(unsigned int i=0 ; i < quantityList.size() ; i++){
+        itemQuantity Qty = quantityList[i];
+        for(unsigned int j = 0 ; j < Qty.slotList.size() ; j++){
+            itemSlot *slot = Qty.slotList[j];
+            wxString assignedName( slot->assignedSystemName.c_str() );
+            if( assignedName.StartsWith(_T("sgl")) && (assignedName.Length() == 11)){           // reasonable test...
+                return true;
+            }
+        }
+    }
+
     return false;
 }
 
