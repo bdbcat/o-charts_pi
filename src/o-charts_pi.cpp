@@ -240,6 +240,7 @@ bool                            g_benableRebuild;
 bool shutdown_SENC_server( void );
 bool ShowAlwaysEULAs();
 extern OE_ChartSymbols          *g_oeChartSymbols;
+extern wxString                 g_dongleName;
 
 OKeyHash keyMapDongle;
 OKeyHash keyMapSystem;
@@ -3360,8 +3361,23 @@ oesencPrefsDialog::oesencPrefsDialog( wxWindow* parent, wxWindowID id, const wxS
 
 #endif        
         // System Name
-        if(g_systemName.Length()){
-            wxString nameText = _T(" ") + _("System Name:") + _T(" ") + g_systemName;
+        wxString sn;
+        if(g_dongleName.Length()){
+            sn = _("System Name:");
+            sn += _T(" ");
+            sn += g_dongleName + _T(" (") + _("USB Key Dongle") + _T(")");
+        }
+        else{
+            sn = _("System Name:");
+            sn += _T(" ");
+            if(g_systemName.IsEmpty())
+                sn += _("Pending chart refresh");
+            else
+                sn += g_systemName;
+        }
+
+        if(sn.Length()){
+            wxString nameText = _T(" ") + sn;
             m_nameTextBox = new wxStaticText(content, wxID_ANY, nameText);
             bSizer2->AddSpacer( 20 );
             bSizer2->Add(m_nameTextBox, 1, wxTOP | wxBOTTOM | wxALIGN_CENTER_HORIZONTAL, 10 );
