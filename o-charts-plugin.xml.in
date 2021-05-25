@@ -9,7 +9,7 @@
   <open-source> no </open-source>
   <author> @PKG_AUTHOR@ </author>
   <source> https://github.com/bdbcat/oesenc_pi </source>
-  <info-url> https://opencpn.org/OpenCPN/plugins/oesenc.html </info-url>
+  <info-url> https://opencpn.org/OpenCPN/info/downloadplugins.html </info-url>
 
   <description> @CPACK_PACKAGE_DESCRIPTION@ </description>
 
