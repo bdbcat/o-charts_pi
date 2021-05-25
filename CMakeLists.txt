@@ -86,7 +86,7 @@ set(DISPLAY_NAME o-charts)    # Dialogs, installer artifacts, ...
 set(PLUGIN_API_NAME o-charts) # As of GetCommonName() in plugin API
 set(CPACK_PACKAGE_CONTACT "Dave Register")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
-  "Support for encrypted OCPN Vector Charts from o-charts.org"
+  "Encrypted Vector Charts from o-charts.org"
 )
 set(CPACK_PACKAGE_DESCRIPTION [=[
 OpenCPN  Vector Charts licensed and sourced from chart providers like
