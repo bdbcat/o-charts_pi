@@ -3388,12 +3388,12 @@ oesencPrefsDialog::oesencPrefsDialog( wxWindow* parent, wxWindowID id, const wxS
         m_buttonClearCreds->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(o_charts_pi_event_handler::OnClearCredentials), NULL, g_event_handler );
         
 
-        m_buttonSendStatus = new wxButton( content, wxID_ANY, _("Transmit o-charts plugin status"), wxDefaultPosition, wxDefaultSize, 0 );
+        //m_buttonSendStatus = new wxButton( content, wxID_ANY, _("Transmit o-charts plugin status"), wxDefaultPosition, wxDefaultSize, 0 );
         
-        bSizer2->AddSpacer( 10 );
-        bSizer2->Add( m_buttonSendStatus, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
+        //bSizer2->AddSpacer( 10 );
+        //bSizer2->Add( m_buttonSendStatus, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
         
-        m_buttonSendStatus->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(o_charts_pi_event_handler::OnSendStatus), NULL, g_event_handler );
+        //m_buttonSendStatus->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(o_charts_pi_event_handler::OnSendStatus), NULL, g_event_handler );
         
         m_cbEnableRebuild = new wxCheckBox(content, ID_ENABLE_REBUILD, _("Enable full chart database rebuild after chart download"));
         m_cbEnableRebuild->SetValue(g_benableRebuild);
