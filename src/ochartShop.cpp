@@ -5380,8 +5380,11 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
    
         g_statusOverride.Clear();
         setStatusText( _("Status: Ready"));
-                
-        ShowOERNCMessageDialog(NULL, _("Chart installation complete."), _("o-charts_pi Message"), wxOK);
+        const char* message_ok =
+            "Chart installation complete.\n"
+            "Don't forget to rebuild chart database\n"
+            "(See manual)";
+        ShowOERNCMessageDialog(NULL, _(message_ok) , _("o-charts_pi Message"), wxOK);
 
         // Show any EULA here
         wxArrayString fileArrayEULA;
