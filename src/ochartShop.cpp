@@ -93,6 +93,9 @@ extern wxString g_WVID;
 extern int      g_SDK_INT;
 extern wxString  g_sencutil_bin;
 extern bool      g_benableRebuild;
+extern bool      g_binfoShown;
+extern wxString  g_lastShopUpdate;
+extern wxFileConfig *g_pconfig;
 
 shopPanel *g_shopPanel;
 oesu_piScreenLogContainer *g_shopLogFrame;
@@ -133,6 +136,8 @@ extern o_charts_pi *g_pi;
 #define ID_CMD_BUTTON_INSTALL 7783
 #define ID_CMD_BUTTON_INSTALL_CHAIN 7784
 #define ID_CMD_BUTTON_VALIDATE 7785
+
+extern void showChartinfoDialog( void );
 
 
 // Private class implementations
@@ -1577,6 +1582,7 @@ void loadShopConfig()
         pConf->Read( _T("LastEULAFile"), &g_lastEULAFile);
 
         pConf->Read( _T("EnableFulldbRebuild"), &g_benableRebuild, 1);
+        pConf->Read( _T("LastUpdate"), &g_lastShopUpdate);
 
 //        g_systemName = _T("");
 //        g_loginKey = _T("");
@@ -1795,7 +1801,7 @@ void saveShopConfig()
       pConf->Write( _T("lastInstllDir"), g_lastInstallDir);
       pConf->Write( _T("LastEULAFile"), g_lastEULAFile);
       pConf->Write( _T("EnableFulldbRebuild"), g_benableRebuild);
-      
+      pConf->Write( _T("LastUpdate"), g_lastShopUpdate );
 
 #if 1      
       pConf->DeleteGroup( _T("/PlugIns/ocharts/oeus/charts") );
@@ -3847,7 +3853,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
 #ifndef __OCPN__ANDROID__     
     wxFlexGridSizer *sysBox = new wxFlexGridSizer(2);
     sysBox->AddGrowableCol(0);
-    boxSizerTop->Add(sysBox, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    boxSizerTop->Add(sysBox, 0, wxALL|wxEXPAND, WXC_FROM_DIP(2));
    
     m_staticTextSystemName = new wxStaticText(this, wxID_ANY, sn, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     //m_staticTextSystemName->Wrap(-1);
@@ -3856,6 +3862,12 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     m_buttonUpdate = new wxButton(this, wxID_ANY, _("Refresh Chart List"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     m_buttonUpdate->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(shopPanel::OnButtonUpdate), NULL, this);
     sysBox->Add(m_buttonUpdate, 1, wxRIGHT | wxALIGN_RIGHT, WXC_FROM_DIP(5));
+    
+    sysBox->Add(new wxStaticText(this, wxID_ANY, ""), 1, wxALIGN_LEFT, WXC_FROM_DIP(5));
+    m_buttonInfo = new wxButton(this, wxID_ANY, _("Show Chart Info"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+    m_buttonInfo->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(shopPanel::OnButtonInfo), NULL, this);
+    sysBox->Add(m_buttonInfo, 1, wxRIGHT | wxALIGN_RIGHT, WXC_FROM_DIP(5));
+
 #else
     wxBoxSizer *sysBox = new wxBoxSizer(wxVERTICAL);
     boxSizerTop->Add(sysBox, 0, wxTOP | wxEXPAND, WXC_FROM_DIP(5));
@@ -3866,6 +3878,11 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     m_buttonUpdate = new wxButton(this, wxID_ANY, _("Refresh Chart List"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     m_buttonUpdate->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(shopPanel::OnButtonUpdate), NULL, this);
     sysBox->Add(m_buttonUpdate, 0, wxRIGHT | wxALIGN_RIGHT, WXC_FROM_DIP(5));
+    
+    m_buttonInfo = new wxButton(this, wxID_ANY, _("Show Chart Info"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+    m_buttonInfo->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(shopPanel::OnButtonInfo), NULL, this);
+    sysBox->Add(m_buttonInfo, 0, wxRIGHT | wxALIGN_RIGHT, WXC_FROM_DIP(5));
+
 #endif
    
     int add_prop_flag = 0;
@@ -3874,7 +3891,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
 #endif
     
     wxStaticBoxSizer* staticBoxSizerChartList = new wxStaticBoxSizer( new wxStaticBox(this, wxID_ANY, _("My Chart Sets")), wxVERTICAL);
-    boxSizerTop->Add(staticBoxSizerChartList, add_prop_flag, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    boxSizerTop->Add(staticBoxSizerChartList, add_prop_flag, wxEXPAND, WXC_FROM_DIP(5));
 
     wxPanel *cPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxBG_STYLE_ERASE );
     staticBoxSizerChartList->Add(cPanel, add_prop_flag, wxALL|wxEXPAND, WXC_FROM_DIP(5));
@@ -3971,6 +3988,13 @@ shopPanel::~shopPanel()
     delete m_shopLog;
     delete m_validator;
 }
+
+void shopPanel::OnButtonInfo( wxCommandEvent& event )
+{
+    g_binfoShown = false;
+    showChartinfoDialog();
+}
+
 
 void shopPanel::SetErrorMessage()
 {
@@ -4150,7 +4174,17 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
         return;
     }
     g_chartListUpdatedOK = true;
-    
+
+    // Record the date of the last successful update.
+    wxDateTime now = wxDateTime::Now();
+    g_lastShopUpdate = now.FormatDate();
+    wxFileConfig *pConf = (wxFileConfig *) g_pconfig;
+    if( pConf ) {
+        pConf->SetPath( _T("/PlugIns/ocharts") );
+        pConf->Write( _T("LastUpdate"), g_lastShopUpdate );
+    }
+
+
     SortChartList();
     
     bool bNeedSystemName = false;

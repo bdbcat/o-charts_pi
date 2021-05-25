@@ -421,7 +421,7 @@ protected:
     wxButton* m_buttonAssign;
     wxButton* m_buttonDownload;
     wxButton* m_buttonInstall;
-    wxButton* m_buttonUpdate;
+    wxButton* m_buttonUpdate, *m_buttonInfo;
     wxButton* m_buttonValidate;
     wxBoxSizer* boxSizerCharts;
     wxBoxSizer* gridSizerActionButtons;
@@ -480,6 +480,7 @@ public:
     oeXChartPanel *GetSelectedChartPanel(){ return m_ChartPanelSelected; }
     
     void OnButtonUpdate( wxCommandEvent& event );
+    void OnButtonInfo( wxCommandEvent& event );
     void OnButtonDownload( wxCommandEvent& event );
     void OnButtonCancelOp( wxCommandEvent& event );
     void OnButtonInstall( wxCommandEvent& event );

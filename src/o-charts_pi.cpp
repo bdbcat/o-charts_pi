@@ -181,6 +181,7 @@ int                             g_admin;
 wxString                        g_debugShop;
 wxString                        g_versionString;
 wxString                        g_lastEULAFile;
+wxString                        g_lastShopUpdate;
 
 std::map<std::string, ChartInfoItem *> info_hash;
 
@@ -2121,9 +2122,9 @@ bool validateUserKey( wxString sencFileName)
     if(g_bDeclaredInvalid)
         return false;
     
-    bool b_Set = true;
+    //bool b_Set = true;
     if((g_UserKey.Length() == 0) || (g_UserKey == _T("Invalid"))){
-        b_Set = false;
+        //b_Set = false;
         g_UserKey = GetUserKey( 0, true );
     }
         
@@ -4832,7 +4833,13 @@ void showChartinfoDialog( void )
         return;
     
     wxString hdr = _T("<html><body><center><font size=+2>");
-    hdr +=  _("The following Chart sets are available:");
+    hdr +=  _("The following Chart sets are available : ");
+    if(!g_lastShopUpdate.IsEmpty()){
+        hdr += _T("( ");
+        hdr += g_lastShopUpdate;
+        hdr += _T(" )");
+    }
+    
     hdr += _T("</font></center>");
     
     hdr += _T("<hr />");
@@ -4910,7 +4917,7 @@ void showChartinfoDialog( void )
         pinfoDlg = new OESENC_HTMLMessageDialog( NULL /*GetOCPNCanvasWindow()*/, hdr, _("o-charts_pi Message"), wxOK);
         //        pinfoDlg->SetClientSize(sz);
         pinfoDlg->Centre();
-        pinfoDlg->Show();
+        pinfoDlg->ShowModal();
         g_binfoShown = true;
     }
     
