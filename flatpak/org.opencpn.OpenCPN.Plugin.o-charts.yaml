@@ -13,11 +13,37 @@ build-extension: true
 separate-locales: false
 appstream-compose: false
 modules:
+  - name: libusb
+    config-opts:
+      - --disable-static
+      - --disable-udev
+      - --prefix=/app/extensions/o-charts
+    sources:
+      - type: archive
+        url: https://github.com/libusb/libusb/archive/v1.0.22.tar.gz
+        sha256: 3500f7b182750cd9ccf9be8b1df998f83df56a39ab264976bdb3307773e16f48
+
+  - name: libusb-compat-0.1
+    config-opts:
+      - --disable-static
+      - --prefix=/app/extensions/o-charts
+    build-options: 
+      env: 
+        PKG_CONFIG_PATH: /app/extensions/o-charts/lib/pkgconfig
+    sources:
+      - type: git
+        url: https://github.com/libusb/libusb-compat-0.1.git
+        tag: v0.1.7
+    cleanup:
+      - /lib/*.la
+      - /lib/pkgconfig
+      - /include
+
   - name: iproute2
     sources:
-        - type: archive
-          url: https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/iproute2-5.7.0.tar.xz
-          sha256: 725dc7ba94aae54c6f8d4223ca055d9fb4fe89d6994b1c03bfb4411c4dd10f21
+      - type: archive
+        url: https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/iproute2-5.7.0.tar.xz
+        sha256: 725dc7ba94aae54c6f8d4223ca055d9fb4fe89d6994b1c03bfb4411c4dd10f21
     no-autogen: true
     buildsystem: autotools
     make-args:
@@ -47,19 +73,6 @@ modules:
       - /var
       - /usr/include
 
-  - name: libusb
-    config-opts:
-      - --disable-static
-      - --disable-udev
-    cleanup:
-      - /lib/*.la
-      - /lib/pkgconfig
-      - /include
-    sources:
-      - type: archive
-      - url: https://github.com/libusb/libusb/archive/v1.0.22.tar.gz
-      - sha256: 3500f7b182750cd9ccf9be8b1df998f83df56a39ab264976bdb3307773e16f48
-
   - name: o-charts
     no-autogen: true
     cmake: true
@@ -74,6 +87,7 @@ modules:
       - -Uplugin_target
     post-install:
       - /usr/bin/bash libs/oeserverd/install-flatpak.sh
+      - cd /app/extensions/o-charts; rm -rf include etc lib/pkgconfig lib/*.la
     sources:
       - type: git
         url: ..
