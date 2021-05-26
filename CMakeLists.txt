@@ -68,7 +68,6 @@ set(OCPN_TARGET_TUPLE "" CACHE STRING
 string(TOLOWER "${OCPN_TARGET_TUPLE}" _lc_target)
 if ("${_lc_target}" MATCHES "android*")
   set(QT_ANDROID ON)
-  set(OCPN_USE_BUNDLED_WXCURL OFF)
   # Until we have a proper toolchain file:
   set(CMAKE_CROSSCOMPILING ON)
 else ()
@@ -80,18 +79,17 @@ endif ()
 # -------  Plugin setup --------
 #
 include("VERSION.cmake")
-SET(FULL_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}.${VERSION_TWEAK}" )
-
-project(o-charts_pi VERSION ${FULL_VERSION})
+project(o-charts_pi VERSION ${OCPN_VERSION})
+set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
 
 set(DISPLAY_NAME o-charts)    # Dialogs, installer artifacts, ...
 set(PLUGIN_API_NAME o-charts) # As of GetCommonName() in plugin API
 set(CPACK_PACKAGE_CONTACT "Dave Register")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
-  "OpenCPN support for encrypted OCPN Vector Charts "
+  "Encrypted Vector Charts from o-charts.org"
 )
 set(CPACK_PACKAGE_DESCRIPTION [=[
-OCPN Vector Charts licensed and sourced from chart providers like
+OpenCPN  Vector Charts licensed and sourced from chart providers like
 Hydrographic Offices.  
 
 While the charts are not officially approved official ENC charts they
@@ -104,10 +102,12 @@ o-charts can handle all charts previously handled by the oesenc and
 oernc plugins. It thus obsoletes these two plugins.
 ]=])
 
-set(PKG_RELEASE "1")
+set(CPACK_PACKAGE_HOMEPAGE_URL https://github.com/bdbcat/o-charts_pi)
+set(PKG_INFO_URL https://opencpn.org/OpenCPN/info/downloadplugins.html)
+
 set(PKG_AUTHOR "Dave register")
 
-SET(SRC
+set(SRC
   src/bbox.cpp
   src/chart.cpp
   src/chartsymbols.cpp
@@ -181,58 +181,51 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   # Build package as required (flatpak already dealt with).
   #
   include(PluginCompiler)
-  if (NOT QT_ANDROID)
-    include(PluginLibs)
-  endif ()
   include(PluginLocalization)
   include(PluginInstall)
   include(PluginPackage)
+
+  if (QT_ANDROID)
+    include(libs/AndroidLibs.cmake)
+  else ()
+    include(PluginLibs)
+  endif ()
 
   include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
   include_directories(${CMAKE_SOURCE_DIR}/src)
   include_directories(${CMAKE_SOURCE_DIR}/include)
   include_directories(${CMAKE_SOURCE_DIR}/libs/gdal/src)
 
-  if (QT_ANDROID)
-    include(libs/AndroidLibs.cmake)
-  endif ()
   add_subdirectory("libs/cpl")
   target_link_libraries(${PACKAGE_NAME} ocpn::cpl)
+
   add_subdirectory("libs/dsa")
   target_link_libraries(${PACKAGE_NAME} ocpn::dsa)
+
   add_subdirectory("libs/wxJSON")
   target_link_libraries(${PACKAGE_NAME} ocpn::wxjson)
+
   add_subdirectory("libs/iso8211")
   target_link_libraries(${PACKAGE_NAME} ocpn::iso8211)
+
   add_subdirectory("libs/tinyxml")
   target_link_libraries(${PACKAGE_NAME} ocpn::tinyxml)
-  
-  if( ("${plugin_target}" STREQUAL  "mingw") OR ("${plugin_target}" STREQUAL  "msvc") )
-    include_directories(${CMAKE_SOURCE_DIR}/buildwin/include/zlib)
-    target_link_libraries( ${PACKAGE_NAME} ${CMAKE_SOURCE_DIR}/buildwin/zlib1.lib)
-  endif( ("${plugin_target}" STREQUAL  "mingw") OR ("${plugin_target}" STREQUAL  "msvc") )
 
-  if( ("${plugin_target}" STREQUAL  "mingw") OR ("${plugin_target}" STREQUAL  "msvc") )
-    add_subdirectory("libs/libglu")
-    target_link_libraries(${PACKAGE_NAME} ocpn::glu)
-  endif( ("${plugin_target}" STREQUAL  "mingw") OR ("${plugin_target}" STREQUAL  "msvc") )
+  add_subdirectory("libs/zlib")
+  target_link_libraries(${PACKAGE_NAME} ocpn::zlib)
   
-  if( ("${plugin_target}" STREQUAL  "mingw") OR ("${plugin_target}" STREQUAL  "msvc") )  
-    option(OCPN_USE_BUNDLED_WXCURL "Use wxCurl libraries" ON)
-  else( ("${plugin_target}" STREQUAL  "mingw") OR ("${plugin_target}" STREQUAL  "msvc") ) 
-    INCLUDE_DIRECTORIES("libs/wxcurl/src")
-  endif( ("${plugin_target}" STREQUAL  "mingw") OR ("${plugin_target}" STREQUAL  "msvc") )  
-    
-
-  if (OCPN_USE_BUNDLED_WXCURL)
+  add_subdirectory("libs/libglu")
+  target_link_libraries(${PACKAGE_NAME} ocpn::glu)
+  
+  if (NOT QT_ANDROID)
     add_subdirectory("libs/wxcurl")
     target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
   endif ()
-  
+
   add_subdirectory("libs/oeserverd")
 
   if (ARCH STREQUAL "armhf")
-   add_definitions(-DOCPN_ARMHF)
+    add_definitions(-DOCPN_ARMHF)
   endif (ARCH STREQUAL "armhf")      
 
   if (APPLE)
@@ -268,7 +261,7 @@ configure_file(
 set(checksum "@checksum@")
 configure_file(
   # The XML metadata file
-  ${CMAKE_SOURCE_DIR}/o-charts-plugin.xml.in
+  ${CMAKE_SOURCE_DIR}/plugin.xml.in
   ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml.in
   @ONLY
 )
