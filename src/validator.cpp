@@ -80,7 +80,7 @@ bool LoadChartList( wxString fileName )
 
                     //  Parse the XML
                     TiXmlDocument * doc = new TiXmlDocument();
-                    const char *rr = doc->Parse( iText);
+                    doc->Parse( iText);
     
                     TiXmlElement * root = doc->RootElement();
                     if(root){
@@ -163,7 +163,7 @@ bool LoadKeyFile( wxString fileName )
 
                     //  Parse the XML
                     TiXmlDocument * doc = new TiXmlDocument();
-                    const char *rr = doc->Parse( iText);
+                    doc->Parse( iText);
     
                     TiXmlElement * root = doc->RootElement();
                     if(root){
