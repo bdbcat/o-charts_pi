@@ -27,8 +27,8 @@ modules:
     config-opts:
       - --disable-static
       - --prefix=/app/extensions/o-charts
-    build-options: 
-      env: 
+    build-options:
+      env:
         PKG_CONFIG_PATH: /app/extensions/o-charts/lib/pkgconfig
     sources:
       - type: git
@@ -51,27 +51,11 @@ modules:
     make-install-args:
       - DESTDIR=/app/extensions/o-charts
       - SBINDIR=/bin
-    cleanup:
-      - bridge
-      - ctstat
-      - genl
-      - ifcfg
-      - ifstat
-      - lnstat
-      - nstat
-      - routef
-      - routel
-      - rtacct
-      - rtmon
-      - rtpr
-      - rtstat
-      - ss
-      - tc
-      - /etc
-      - /usr/lib
-      - /usr/share
-      - /var
-      - /usr/include
+    post-install:
+      - >
+        cd /app/extensions/o-charts/bin;
+        rm -f bridge genl if* *stat route* rt* ss tc libusb-config
+      - cd /app/extensions/o-charts; rm -rf include etc lib/pkgconfig lib/*.la
 
   - name: o-charts
     no-autogen: true
@@ -87,7 +71,7 @@ modules:
       - -Uplugin_target
     post-install:
       - /usr/bin/bash libs/oeserverd/install-flatpak.sh
-      - cd /app/extensions/o-charts; rm -rf include etc lib/pkgconfig lib/*.la
+      - rm -f /app/extensions/o-charts/bin/*.so
     sources:
       - type: git
         url: ..
