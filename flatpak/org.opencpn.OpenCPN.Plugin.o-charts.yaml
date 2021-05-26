@@ -60,15 +60,8 @@ modules:
       - -DBUILD_TYPE:STRING=tarball
       - -Uplugin_target
     post-install:
-      - install -t /app/extensions/o-charts/lib/ -m 755 oexserverd
-      - >
-        install -t /app/extensions/o-charts/lib -m 755 libusb-0.1.so.4
+      - /usr/bin/bash libs/oeserverd/install-flatpak.sh
     sources:
       - type: git
         url: ..
-        branch: master
-      - type: file
-        path: oexserverd
-      - type: file
-        # originally libusb-0.1.so.4.1.1, built from  libusb-0.1.6
-        path: libusb-0.1.so.4
+        branch: HEAD
