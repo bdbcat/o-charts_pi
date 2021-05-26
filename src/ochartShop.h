@@ -328,7 +328,7 @@ public:
     oeXChartPanel( wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size, itemChart *p_itemChart, shopPanel *pContainer );
     ~oeXChartPanel();
     
-    void OnChartSelected( wxMouseEvent &event );
+    void DoChartSelected(  );
     void SetSelected( bool selected );
     void OnPaint( wxPaintEvent &event );
     void OnEraseBackground( wxEraseEvent &event );
@@ -336,7 +336,8 @@ public:
     bool GetSelected(){ return m_bSelected; }
     int GetUnselectedHeight(){ return m_unselectedHeight; }
     itemChart *GetSelectedChart() { return m_pChart; }
-
+    void OnClickDown( wxMouseEvent &event );
+    void OnClickUp( wxMouseEvent &event );
     
 private:
     shopPanel *m_pContainer;
