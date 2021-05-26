@@ -146,7 +146,7 @@ SET(SRC
 )
 
 if(QT_ANDROID)
-  set(SRCS ${SRCS} src/androidSupport.cpp)   
+  set(SRC ${SRC} src/androidSupport.cpp)   
 endif(QT_ANDROID)
 
 # -------- Setup completed, build the plugin --------
