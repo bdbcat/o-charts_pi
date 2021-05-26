@@ -145,6 +145,10 @@ SET(SRC
   libs/gdal/src/s57classregistrar.cpp
 )
 
+if(QT_ANDROID)
+  set(SRCS ${SRCS} src/androidSupport.cpp)   
+endif(QT_ANDROID)
+
 # -------- Setup completed, build the plugin --------
 #
 add_library(${CMAKE_PROJECT_NAME} SHARED ${SRC})
