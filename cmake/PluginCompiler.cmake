@@ -8,7 +8,7 @@
 
 message(STATUS "*** Staging to build ${PACKAGE_NAME} ***")
 
-set(_ocpn_cflags " -Wall -Wno-unused-result -fexceptions ")
+set(_ocpn_cflags " -Wall -Wno-unused-result -fexceptions")
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   string(APPEND CMAKE_C_FLAGS " ${_ocpn_cflags}")
   string(APPEND CMAKE_CXX_FLAGS " ${_ocpn_cflags}")
