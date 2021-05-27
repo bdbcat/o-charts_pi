@@ -444,9 +444,9 @@ DECLARE_DYNAMIC_CLASS(oesuChart)
       int       Init( const wxString& name, int init_flags );
       PI_InitReturn CreateHeaderDataFromeSENC(void);
       PI_InitReturn PostInit( int flags, int cs );
+      bool CreateChartInfoFile( wxString chartName, bool forceCreate = false );
 
     private:
-      bool CreateChartInfoFile( wxString chartName );
   
       wxString  m_rKey;
 

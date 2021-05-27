@@ -54,6 +54,8 @@
 #include "piScreenLog.h"
 #include "validator.h"
 #include "o-charts_pi.h"
+#include "eSENCChart.h"
+#include "chart.h"
 
 #include <wx/arrimpl.cpp> 
 WX_DEFINE_OBJARRAY(ArrayOfCharts);
@@ -96,6 +98,7 @@ extern bool      g_benableRebuild;
 extern bool      g_binfoShown;
 extern wxString  g_lastShopUpdate;
 extern wxFileConfig *g_pconfig;
+extern wxArrayString  g_ChartInfoArray;
 
 shopPanel *g_shopPanel;
 oesu_piScreenLogContainer *g_shopLogFrame;
@@ -138,6 +141,7 @@ extern o_charts_pi *g_pi;
 #define ID_CMD_BUTTON_VALIDATE 7785
 
 extern void showChartinfoDialog( void );
+extern bool processChartinfo(const wxString &oesenc_file);
 
 
 // Private class implementations
@@ -1645,6 +1649,7 @@ void loadShopConfig()
                         wxString assignedSystemName = tkz.GetNextToken();
                         wxString installLocation = tkz.GetNextToken();
                         wxString installedEdition = tkz.GetNextToken();
+                        wxString installName = tkz.GetNextToken();
                         
                         // Make a new "quantity" clause if necessary
                         long nqid = -1;
@@ -1659,6 +1664,7 @@ void loadShopConfig()
                                 slot->assignedSystemName = std::string(assignedSystemName.mb_str());
                                 slot->slotUuid = std::string(slotUUID.mb_str());
                                 slot->installedEdition = std::string(installedEdition.mb_str());
+                                slot->chartDirName = std::string(installName.mb_str());
                                 
                                 new_qty.slotList.push_back(slot);
 
@@ -1673,6 +1679,7 @@ void loadShopConfig()
                                     slot->assignedSystemName = std::string(assignedSystemName.mb_str());
                                     slot->slotUuid = std::string(slotUUID.mb_str());
                                     slot->installedEdition = std::string(installedEdition.mb_str());
+                                    slot->chartDirName = std::string(installName.mb_str());
 
                                     exist_qty->slotList.push_back(slot);
                                 }
@@ -1743,7 +1750,8 @@ void loadShopConfig()
                         wxString assignedSystemName = tkz.GetNextToken();
                         wxString installLocation = tkz.GetNextToken();
                         wxString installedEdition = tkz.GetNextToken();
-                        
+                        wxString installName = tkz.GetNextToken();
+
                         // Make a new "quantity" clause if necessary
                         long nqid = -1;
                         
@@ -1757,7 +1765,8 @@ void loadShopConfig()
                                 slot->assignedSystemName = std::string(assignedSystemName.mb_str());
                                 slot->slotUuid = std::string(slotUUID.mb_str());
                                 slot->installedEdition = std::string(installedEdition.mb_str());
-                                
+                                slot->chartDirName = std::string(installName.mb_str());
+
                                 new_qty.slotList.push_back(slot);
 
                                 chart->quantityList.push_back(new_qty);
@@ -1771,6 +1780,7 @@ void loadShopConfig()
                                     slot->assignedSystemName = std::string(assignedSystemName.mb_str());
                                     slot->slotUuid = std::string(slotUUID.mb_str());
                                     slot->installedEdition = std::string(installedEdition.mb_str());
+                                    slot->chartDirName = std::string(installName.mb_str());
 
                                     exist_qty->slotList.push_back(slot);
                                 }
@@ -1855,6 +1865,7 @@ void saveShopConfig()
                     val += slot->assignedSystemName + _T(";");
                     val += slot->installLocation + _T(";");
                     val += slot->installedEdition + _T(";");
+                    val += slot->chartDirName + _T(";");
                   }
               }
               if(val.Length())
@@ -1915,6 +1926,7 @@ void saveShopConfig()
                     val += slot->assignedSystemName + _T(";");
                     val += slot->installLocation + _T(";");
                     val += slot->installedEdition + _T(";");
+                    val += slot->chartDirName + _T(";");
                   }
               }
               if(val.Length())
@@ -4329,7 +4341,48 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     
     UpdateChartList();
     
+    UpdateChartInfoFiles();
+    
     saveShopConfig();
+}
+
+void shopPanel::UpdateChartInfoFiles()
+{
+    // Clear the array of processed chartInfo files.
+    g_ChartInfoArray.Clear();
+
+    // Walk the chart list, considering all installed charts
+    for(unsigned int i=0 ; i < ChartVector.size() ; i++){
+        itemChart *Chart = ChartVector[i];
+        
+        int status = Chart->getChartStatus();
+        if((status == STAT_CURRENT) || (status == STAT_STALE)){
+             itemSlot *slot = Chart->GetActiveSlot();
+             // craft the location of the chartInfo file
+             if(slot){
+                wxString chartDir = wxString(slot->installLocation.c_str()) + wxFileName::GetPathSeparator() + wxString(slot->chartDirName.c_str());
+                if(Chart->GetChartType() == CHART_TYPE_OEUSENC){
+                    wxString chartFile = chartDir;
+                    chartFile += wxFileName::GetPathSeparator();
+                    chartFile += _T("temp.oesu");
+                    oesuChart tmpChart;
+                    tmpChart.CreateChartInfoFile(chartFile, true);
+                    processChartinfo(chartFile);
+
+                }
+                else{
+                    wxString chartFile = chartDir;
+                    chartFile += wxFileName::GetPathSeparator();
+                    chartFile += _T("temp.oernc");
+                    Chart_oeuRNC tmpChart;
+                    tmpChart.CreateChartInfoFile(chartFile, true);
+                    processChartinfo(chartFile);
+
+
+                }
+             }
+        }
+    }
 }
 
 int shopPanel::GetShopNameFromFPR()
@@ -4934,6 +4987,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             i++;
         }
         dest = dest.Mid(0, wxMax(0, i-1));
+        slot->chartDirName = dest.mb_str();
         
         wxString destinationDir = wxString(slot->installLocation.c_str()) + wxFileName::GetPathSeparator() + dest + wxFileName::GetPathSeparator();
         wxFileName fndd(destinationDir);
@@ -5399,6 +5453,8 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
         
         
         UpdateChartList();
+
+        UpdateChartInfoFiles();
 
         UpdateActionControls();
 

@@ -1281,6 +1281,8 @@ bool o_charts_pi::ScrubChartinfoList( void )
 
 bool o_charts_pi::LoadConfig( void )
 {
+    g_EULAArray.Clear();
+    
     wxFileConfig *pConf = (wxFileConfig *) g_pconfig;
 
     if( pConf ) {
@@ -5122,6 +5124,11 @@ bool processChartinfo(const wxString &oesenc_file)
                     }
                     else{
                         if(g_debugLevel) wxLogMessage(_T("processChartInfo found: ") + keyn);
+
+                        // update the config string based on the current chartInfo file
+                        ChartInfoItem *pci = iter->second;
+                        pci->config_string = content;
+
                     }
                     
                     nkey++;

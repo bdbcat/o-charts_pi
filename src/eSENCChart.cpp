@@ -821,7 +821,7 @@ int oesuChart::Init( const wxString& name, int init_flags )
     return ret_val;
 }
 
-bool oesuChart::CreateChartInfoFile( wxString chartName )
+bool oesuChart::CreateChartInfoFile( wxString chartName, bool forceCreate )
 {
     // Does the Chartinfo file already exist?
     // If so, then nothing to do....
@@ -829,7 +829,7 @@ bool oesuChart::CreateChartInfoFile( wxString chartName )
     wxString chartInfoDir = fn.GetPath(  wxPATH_GET_VOLUME + wxPATH_GET_SEPARATOR );
     wxString chartInfo = chartInfoDir + _T("Chartinfo.txt");
 
-    if(::wxFileExists( chartInfo ))
+    if(::wxFileExists( chartInfo ) && !forceCreate)
         return true;
     
     // Find and parse the Keyfile

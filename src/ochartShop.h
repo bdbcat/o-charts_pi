@@ -212,6 +212,7 @@ public:
     std::string lastRequested;
     std::string installLocation;
     std::string installedEdition;
+    std::string chartDirName;
     
     std::vector<itemDLTask> dlQueue;
     std::vector<itemTaskFileInfo *>taskFileList;
@@ -463,7 +464,8 @@ public:
     //wxButton* GetButtonDownload() { return m_buttonDownload; }
     wxButton* GetButtonInstall() { return m_buttonInstall; }
     wxButton* GetButtonUpdate() { return m_buttonUpdate; }
-    
+    void UpdateChartInfoFiles();
+
     oesu_piScreenLog *m_shopLog;
     
     oeUniLogin *m_login;

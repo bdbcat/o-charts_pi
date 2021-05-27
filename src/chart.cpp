@@ -940,7 +940,7 @@ wxString Chart_oeuRNC::GetFileSearchMask(void)
       return _T("*.oernc");
 }
 
-bool Chart_oeuRNC::CreateChartInfoFile( wxString chartName )
+bool Chart_oeuRNC::CreateChartInfoFile( wxString chartName, bool forceCreate )
 {
     // Does the Chartinfo file already exist?
     // If so, then nothing to do....

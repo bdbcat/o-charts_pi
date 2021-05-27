@@ -326,7 +326,7 @@ class  Chart_oeuRNC : public PlugInChartBase
 
       double GetRasterScaleFactor() { return m_piraster_scale_factor; }
 
-      bool CreateChartInfoFile( wxString chartName );
+      bool CreateChartInfoFile( wxString chartName, bool forceCreate = false );
   
 
 protected:
