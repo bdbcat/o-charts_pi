@@ -218,9 +218,13 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   target_link_libraries(${PACKAGE_NAME} ocpn::glu)
   
   if (NOT QT_ANDROID)
-    add_subdirectory("libs/wxcurl")
-    target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
-  endif ()
+    if( "${plugin_target}" STREQUAL  "msvc" )  
+      add_subdirectory("libs/wxcurl")
+      target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
+    else( "${plugin_target}" STREQUAL  "msvc" ) 
+      INCLUDE_DIRECTORIES("libs/wxcurl/src")
+    endif( "${plugin_target}" STREQUAL  "msvc" )  
+   endif (NOT QT_ANDROID)
 
   add_subdirectory("libs/oeserverd")
 
