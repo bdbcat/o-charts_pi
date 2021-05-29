@@ -2577,10 +2577,7 @@ void init_S52Library(void)
     if( ps52plib->m_bOK ) {
         
         // Load up any S52 PLIB patch files found
-        wxString dataLocn =*GetpSharedDataLocation() +
-        _T("plugins") + wxFileName::GetPathSeparator() +
-        _T("o_charts_pi") + wxFileName::GetPathSeparator() +
-        _T("data");
+        wxString dataLocn = GetPluginDataDir("o-charts_pi");
         
         wxArrayString patchFiles;
         wxDir::GetAllFiles(dataLocn, &patchFiles, _T("*.xml"));
