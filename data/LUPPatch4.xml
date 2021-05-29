@@ -1,0 +1,57 @@
+<chartsymbols>
+    <lookups>
+                
+      <lookup id="12701" RCID="31537" name="TOPMAR">
+        <type>Point</type>
+        <disp-prio>Point Symbol</disp-prio>
+        <radar-prio>On Top</radar-prio>
+        <table-name>Paper</table-name>
+        <attrib-code index="0">TOPSHP16</attrib-code>
+        <instruction>SY(TOPMAR90);TX(OBJNAM,3,2,2,'1508',1,-1,CHBLK,26)</instruction>
+        <display-cat>Standard</display-cat>
+        <comment>22220</comment>
+      </lookup>
+      <lookup id="12702" RCID="31538" name="TOPMAR">
+        <type>Point</type>
+        <disp-prio>Point Symbol</disp-prio>
+        <radar-prio>On Top</radar-prio>
+        <table-name>Paper</table-name>
+        <attrib-code index="0">TOPSHP15</attrib-code>
+        <instruction>SY(TOPMAR93);TX(OBJNAM,3,2,2,'1508',1,-1,CHBLK,26)</instruction>
+        <display-cat>Standard</display-cat>
+        <comment>22220</comment>
+      </lookup>
+      <lookup id="12703" RCID="31539" name="TOPMAR">
+        <type>Point</type>
+        <disp-prio>Point Symbol</disp-prio>
+        <radar-prio>On Top</radar-prio>
+        <table-name>Simplified</table-name>
+        <attrib-code index="0">TOPSHP16</attrib-code>
+        <instruction>SY(TOPMAR88);TX(OBJNAM,3,2,2,'1508',1,-1,CHBLK,26)</instruction>
+        <display-cat>Standard</display-cat>
+        <comment>22220</comment>
+      </lookup>
+      <lookup id="12704" RCID="31540" name="TOPMAR">
+        <type>Point</type>
+        <disp-prio>Point Symbol</disp-prio>
+        <radar-prio>On Top</radar-prio>
+        <table-name>Simplified</table-name>
+        <attrib-code index="0">TOPSHP15</attrib-code>
+        <instruction>SY(TOPMAR87);TX(OBJNAM,3,2,2,'1508',1,-1,CHBLK,26)</instruction>
+        <display-cat>Standard</display-cat>
+        <comment>22220</comment>
+      </lookup>
+      <lookup id="12705" RCID="31541" name="BCNLAT">
+        <type>Point</type>
+        <disp-prio>Hazards</disp-prio>
+        <radar-prio>On Top</radar-prio>
+        <table-name>Simplified</table-name>
+        <attrib-code index="0">BCNSHP1</attrib-code>
+        <instruction>SY(BCNSTK02);TE('%s','OBJNAM',2,1,2,'15110',-1,-1,CHBLK,21)</instruction>
+        <display-cat>Standard</display-cat>
+        <comment>17020</comment>
+      </lookup>
+
+    </lookups>
+</chartsymbols>
+

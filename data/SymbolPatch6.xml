@@ -1,0 +1,29 @@
+<chartsymbols>
+   <symbols>
+
+    <symbol RCID="2230">
+      <name>TOPMAR90</name>
+        <description>topmark for beacons, Pricken point down, paper-chart</description>
+        <bitmap width="10" height="10">
+          <distance min="0" max="0" />
+          <pivot x="4" y="27" />
+          <origin x="0" y="0" />
+          <graphics-location x="35" y="239" />
+        </bitmap>
+        <definition>R</definition>
+    </symbol>
+
+    <symbol RCID="2131">
+      <name>TOPMAR93</name>
+        <description>topmark for beacons, Pricken point up, paper-chart</description>
+        <bitmap width="10" height="10">
+          <distance min="0" max="0" />
+          <pivot x="4" y="27" />
+          <origin x="0" y="0" />
+          <graphics-location x="55" y="239" />
+        </bitmap>
+        <definition>R</definition>
+    </symbol>
+
+   </symbols>
+</chartsymbols>
