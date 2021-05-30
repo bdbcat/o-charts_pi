@@ -113,6 +113,10 @@ void OE_ChartSymbols::ProcessColorTables( TiXmlElement* colortableNodes )
     for( TiXmlNode *childNode = colortableNodes->FirstChild(); childNode;
             childNode = childNode->NextSibling() ) {
         TiXmlElement *child = childNode->ToElement();
+    
+        if(childNode->Type() == TiXmlNode::TINYXML_COMMENT)
+            continue;
+
         colTable *colortable = new colTable;
 
         const char *pName = child->Attribute( "name" );
@@ -159,6 +163,10 @@ void OE_ChartSymbols::ProcessLookups( TiXmlElement* lookupNodes )
 
     for( TiXmlNode *childNode = lookupNodes->FirstChild(); childNode;
             childNode = childNode->NextSibling() ) {
+        
+        if(childNode->Type() == TiXmlNode::TINYXML_COMMENT)
+            continue;
+        
         TiXmlElement *child = childNode->ToElement();
 
         TGET_INT_PROPERTY_VALUE( child, "id", lookup.id )
@@ -348,6 +356,9 @@ void OE_ChartSymbols::ProcessLinestyles( TiXmlElement* linestyleNodes )
             childNode = childNode->NextSibling() ) {
         TiXmlElement *child = childNode->ToElement();
 
+        if(childNode->Type() == TiXmlNode::TINYXML_COMMENT)
+            continue;
+
         TGET_INT_PROPERTY_VALUE( child, "RCID", lineStyle.RCID )
 
         TiXmlElement* subNode = child->FirstChild()->ToElement();
@@ -427,6 +438,9 @@ void OE_ChartSymbols::ProcessPatterns( TiXmlElement* patternNodes )
     for( TiXmlNode *childNode = patternNodes->FirstChild(); childNode;
             childNode = childNode->NextSibling() ) {
         TiXmlElement *child = childNode->ToElement();
+
+        if(childNode->Type() == TiXmlNode::TINYXML_COMMENT)
+            continue;
 
         TGET_INT_PROPERTY_VALUE( child, "RCID", pattern.RCID )
 
@@ -591,6 +605,9 @@ void OE_ChartSymbols::ProcessSymbols( TiXmlElement* symbolNodes )
     for( TiXmlNode *childNode = symbolNodes->FirstChild(); childNode;
             childNode = childNode->NextSibling() ) {
         TiXmlElement *child = childNode->ToElement();
+
+        if(childNode->Type() == TiXmlNode::TINYXML_COMMENT)
+            continue;
 
         TGET_INT_PROPERTY_VALUE( child, "RCID", symbol.RCID )
 
