@@ -4874,6 +4874,10 @@ void showChartinfoDialog( void )
     hdr += _T("<td><font size=+2>");
     hdr += _("Valid until");
     hdr += _T("</font></td>");
+
+    hdr += _T("<td><font size=+2>");
+    hdr += _("Status");
+    hdr += _T("</font></td>");
     
     hdr += _T("</tr>");
     
@@ -4911,7 +4915,11 @@ void showChartinfoDialog( void )
             }
             else
                 hdr += _T("<td>") + token + _T("</td>");
-                
+
+            if ( tkx.HasMoreTokens() ){
+                token = tkx.GetNextToken();         // current status, if available
+                hdr += _T("<td>") + token + _T("</td>");
+            }
         }
         
         hdr += _T("</tr>");
@@ -4940,7 +4948,7 @@ void showChartinfoDialog( void )
 #endif
 
 
-bool processChartinfo(const wxString &oesenc_file)
+bool processChartinfo(const wxString &oesenc_file, wxString status)
 {
     // Do not process anything if a EULA has been rejected
     if (g_bEULA_Rejected) {
@@ -5113,6 +5121,10 @@ bool processChartinfo(const wxString &oesenc_file)
                     if( iter == info_hash.end() ){
                         ChartInfoItem *pitem = new ChartInfoItem;
                         pitem->config_string = content;
+                        // Add status string, if available
+                        if(!status.IsEmpty()){
+                            pitem->config_string = content + _T(";") + status;
+                        }
                         info_hash[key] = pitem;
                         if(g_debugLevel) wxLogMessage(_T("processChartInfo adding: ") + keyn);
                         wxLogMessage(_T("processChartInfo adding config_string: ") + content);
@@ -5125,6 +5137,11 @@ bool processChartinfo(const wxString &oesenc_file)
                         // update the config string based on the current chartInfo file
                         ChartInfoItem *pci = iter->second;
                         pci->config_string = content;
+
+                        // Add status string, if available
+                        if(!status.IsEmpty()){
+                            pci->config_string = content + _T(";") + status;
+                        }
 
                     }
                     

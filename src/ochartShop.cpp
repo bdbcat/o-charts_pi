@@ -140,8 +140,6 @@ extern o_charts_pi *g_pi;
 #define ID_CMD_BUTTON_INSTALL_CHAIN 7784
 #define ID_CMD_BUTTON_VALIDATE 7785
 
-extern void showChartinfoDialog( void );
-extern bool processChartinfo(const wxString &oesenc_file);
 
 
 // Private class implementations
@@ -4367,7 +4365,7 @@ void shopPanel::UpdateChartInfoFiles()
                     chartFile += _T("temp.oesu");
                     oesuChart tmpChart;
                     tmpChart.CreateChartInfoFile(chartFile, true);
-                    processChartinfo(chartFile);
+                    processChartinfo(chartFile, Chart->getStatusString());
 
                 }
                 else{
@@ -4376,7 +4374,7 @@ void shopPanel::UpdateChartInfoFiles()
                     chartFile += _T("temp.oernc");
                     Chart_oeuRNC tmpChart;
                     tmpChart.CreateChartInfoFile(chartFile, true);
-                    processChartinfo(chartFile);
+                    processChartinfo(chartFile, Chart->getStatusString());
 
 
                 }

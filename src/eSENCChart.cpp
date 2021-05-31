@@ -164,8 +164,6 @@ extern bool validate_SENC_server( void );
 //extern wxString GetUserKey( int legendID, bool bforceNew);
 extern bool validateUserKey( wxString sencFileName);
 extern bool CheckEULA( void );
-extern bool processChartinfo(const wxString &oesenc_file);
-extern void showChartinfoDialog( void );
 extern void processUserKeyHint(const wxString &oesenc_file);
 
 // ----------------------------------------------------------------------------

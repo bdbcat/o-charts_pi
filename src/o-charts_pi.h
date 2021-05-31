@@ -82,6 +82,9 @@ enum {
 //void ClearScreenLog(void);
 //void ClearScreenLogSeq(void);
 
+bool processChartinfo(const wxString &chart_file, wxString status = _T("---"));
+extern void showChartinfoDialog( void );
+
 class   o_charts_pi;
 class   OCPNPermitList;
 class   OCPNCertificateList;
