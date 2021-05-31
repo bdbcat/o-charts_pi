@@ -6483,16 +6483,16 @@ wxString oeUniSystemNameSelector::getRBSelection(  )
 {
     wxGauge::Create(parent, id, range, pos, size, style, validator, name);
     
-//    m_timer.Connect(wxEVT_TIMER, wxTimerEventHandler( InProgressIndicator::OnTimer ), NULL, this);
     m_timer.SetOwner( this, 4356 );
-    m_timer.Start( 50 );
     
+    SetValue(0);
     m_bAlive = false;
     
 }
 
 InProgressIndicator::~InProgressIndicator()
 {
+    Stop();
 }
  
 void InProgressIndicator::OnTimer(wxTimerEvent &evt)
@@ -6505,12 +6505,16 @@ void InProgressIndicator::OnTimer(wxTimerEvent &evt)
 void InProgressIndicator::Start() 
 {
      m_bAlive = true;
+     m_timer.Start( 50 );
+
 }
  
 void InProgressIndicator::Stop() 
 {
      m_bAlive = false;
      SetValue(0);
+     m_timer.Stop();
+
 }
 
 #ifdef __OCPN_USE_CURL__
