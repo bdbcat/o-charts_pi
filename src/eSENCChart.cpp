@@ -560,7 +560,7 @@ int oeuSENCChart::Init( const wxString& name, int init_flags )
     if( !wxFileName::FileExists( name ) )
         return PI_INIT_FAIL_REMOVE;
 
-    if(!processChartinfo( name )){
+    if(!processChartinfo( name, _T("KEEP") )){
         return PI_INIT_FAIL_REMOVE;
     }
     
@@ -648,7 +648,7 @@ int oeuEVCChart::Init( const wxString& name, int init_flags )
     if( !wxFileName::FileExists( name ) )
         return PI_INIT_FAIL_REMOVE;
 
-    if(!processChartinfo( name )){
+    if(!processChartinfo( name, _T("KEEP") )){
         return PI_INIT_FAIL_REMOVE;
     }
     
@@ -740,7 +740,7 @@ int oesuChart::Init( const wxString& name, int init_flags )
     
     CreateChartInfoFile( name );
     
-    if(!processChartinfo( name )){
+    if(!processChartinfo( name, _T("KEEP") )){
         return PI_INIT_FAIL_REMOVE;
     }
  
