@@ -20,9 +20,6 @@ src/bbox.cpp
 src/OCPNRegion.cpp
 src/LLRegion.cpp
 src/cutil.cpp
-src/tinyxml.cpp
-src/tinyxmlerror.cpp
-src/tinyxmlparser.cpp
 src/razdsparser.cpp
 src/pi_DepthFont.cpp
 src/uKey.cpp
@@ -34,41 +31,41 @@ src/oernc_inStream.cpp
 src/chart.cpp
 src/georef.cpp
 
-src/cpl/cpl_config.h
-src/cpl/cpl_conv.h
-src/cpl/cpl_csv.h
-src/cpl/cpl_error.h
-src/cpl/cpl_port.h
-src/cpl/cpl_string.h
-src/cpl/cpl_vsi.h
-src/cpl/cpl_conv.cpp
-src/cpl/cpl_csv.cpp
-src/cpl/cpl_error.cpp
-src/cpl/cpl_findfile.cpp
-src/cpl/cpl_path.cpp
-src/cpl/cpl_string.cpp
-src/cpl/cpl_vsisimple.cpp
+libs/cpl/src/cpl_config.h
+libs/cpl/src/cpl_conv.h
+libs/cpl/src/cpl_csv.h
+libs/cpl/src/cpl_error.h
+libs/cpl/src/cpl_port.h
+libs/cpl/src/cpl_string.h
+libs/cpl/src/cpl_vsi.h
+libs/cpl/src/cpl_conv.cpp
+libs/cpl/src/cpl_csv.cpp
+libs/cpl/src/cpl_error.cpp
+libs/cpl/src/cpl_findfile.cpp
+libs/cpl/src/cpl_path.cpp
+libs/cpl/src/cpl_string.cpp
+libs/cpl/src/cpl_vsisimple.cpp
 
-src/myiso8211/ddffielddefn.cpp
-src/myiso8211/ddfmodule.cpp
-src/myiso8211/ddfrecord.cpp
-src/myiso8211/ddfsubfielddefn.cpp
-src/myiso8211/ddffield.cpp
-src/myiso8211/ddfutils.cpp
+libs/iso8211/src/ddffielddefn.cpp
+libs/iso8211/src/ddfmodule.cpp
+libs/iso8211/src/ddfrecord.cpp
+libs/iso8211/src/ddfsubfielddefn.cpp
+libs/iso8211/src/ddffield.cpp
+libs/iso8211/src/ddfutils.cpp
 
-src/dsa/dsa_utils.cpp
-src/dsa/mp_math.c
-src/dsa/sha1.c
+libs/dsa/src/dsa_utils.cpp
+libs/dsa/src/mp_math.c
+libs/dsa/src/sha1.c
 
-src/mygdal/s57classregistrar.cpp
+libs/gdal/src/s57classregistrar.cpp
 
-src/wxJSON/json_defs.h
-src/wxJSON/jsonreader.h
-src/wxJSON/jsonval.h
-src/wxJSON/jsonwriter.h
-src/wxJSON/jsonreader.cpp
-src/wxJSON/jsonval.cpp
-src/wxJSON/jsonwriter.cpp
+libs/wxJSON/include/wx/json_defs.h
+libs/wxJSON/include/wx/jsonreader.h
+libs/wxJSON/include/wx/jsonval.h
+libs/wxJSON/include/wx/jsonwriter.h
+libs/wxJSON/src/jsonreader.cpp
+libs/wxJSON/src/jsonval.cpp
+libs/wxJSON/src/jsonwriter.cpp
 
 src/ochartShop.cpp
 src/ochartShop.h
