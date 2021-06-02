@@ -99,6 +99,7 @@ extern bool      g_binfoShown;
 extern wxString  g_lastShopUpdate;
 extern wxFileConfig *g_pconfig;
 extern wxArrayString  g_ChartInfoArray;
+extern std::map<std::string, ChartInfoItem *> info_hash;
 
 shopPanel *g_shopPanel;
 oesu_piScreenLogContainer *g_shopLogFrame;
@@ -2042,7 +2043,7 @@ int checkResponseCode(int iResponseCode)
     if(iResponseCode != 200){
         wxString msg = _("internet communications error code: ");
         wxString msg1;
-        msg1.Printf(_T("{%d}\n "), iResponseCode);
+        msg1.Printf(_T("\n{%d}\n "), iResponseCode);
         msg += msg1;
         msg += _("Check your connection and try again.");
         ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
@@ -2111,7 +2112,7 @@ int doLogin( wxWindow *parent )
     qDebug() << loginParms.mb_str();
     
     wxString postresult;
-    _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, 5 );
+    _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
 
     qDebug() << "doLogin Post Stat: " << stat;
     
@@ -2675,7 +2676,7 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
 #else
     qDebug() << "do assign";
     wxString postresult;
-    _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, 5 );
+    _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
 
     qDebug() << "doAssign Post Stat: " << stat;
 
@@ -2786,7 +2787,7 @@ int doUploadXFPR(bool bDongle)
 #else
             qDebug() << "do xfpr upload";
             wxString postresult;
-            _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, 5 );
+            _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
 
             qDebug() << "doUploadXFPR Post Stat: " << stat;
 
@@ -3069,7 +3070,7 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
     qDebug() << url.mb_str();
     qDebug() << loginParms.mb_str();
 
-    _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, 5 );
+    _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
 
     qDebug() << "doPrepare Post Stat: " << stat;
     
@@ -3382,9 +3383,16 @@ oeXChartPanel::oeXChartPanel(wxWindow *parent, wxWindowID id, const wxPoint &pos
     m_pChart = p_itemChart;
     m_bSelected = false;
 
-    int refHeight = GetCharHeight();
-    SetMinSize(wxSize(-1, 5 * refHeight));
-    m_unselectedHeight = 5 * refHeight;
+    m_refHeight = GetCharHeight();
+
+    m_unselectedHeight = 5 * m_refHeight;
+
+#ifdef __OCPN__ANDROID__
+    m_unselectedHeight = 4 * m_refHeight;
+#endif
+
+    //qDebug() << "CTOR unselected height: " << m_unselectedHeight;
+    SetMinSize(wxSize(-1, m_unselectedHeight));
     
     Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(oeXChartPanel::OnClickDown), NULL, this);
 #ifdef __OCPN__ANDROID__
@@ -3474,13 +3482,13 @@ void oeXChartPanel::SetSelected( bool selected )
             SetMinSize(wxSize(-1, (lcount + nAssign) * refHeight));
         }
         else
-            SetMinSize(wxSize(-1, 5 * refHeight));
+            SetMinSize(wxSize(-1, m_unselectedHeight));
     }
     else
     {
         GetGlobalColor(_T("DILG0"), &colour);
         m_boxColour = colour;
-        SetMinSize(wxSize(-1, 5 * refHeight));
+        SetMinSize(wxSize(-1, m_unselectedHeight));
     }
     
     Refresh( true );
@@ -3500,6 +3508,7 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
     GetSize( &width, &height );
     wxPaintDC dc( this );
  
+
     //dc.SetBackground(*wxLIGHT_GREY);
     
     dc.SetPen(*wxTRANSPARENT_PEN);
@@ -3551,11 +3560,12 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
         
         // Draw the thumbnail
         int scaledWidth = height;
-        
         int scaledHeight = (height - (2 * base_offset)) * 95 / 100;
+
         if(bCompact){
-            scaledHeight = (height - (2 * base_offset)) * 50 / 100;
-            scaledWidth = scaledHeight;
+            scaledWidth = width * 10 / 100;
+            scaledHeight = scaledWidth;
+            base_offset = 0;
         }
 
         wxBitmap& bm = m_pChart->GetChartThumbnail( scaledHeight );
@@ -3617,52 +3627,96 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
         int yPos = y_line + 4;
         wxString tx;
         
-        // Create and populate the current chart information
-        tx = _("Installed Chart Edition:");
-        dc.DrawText( tx, text_x, yPos);
-        tx = m_pChart->GetDisplayedChartEdition();
-        dc.DrawText( tx, text_x_val, yPos);
-        yPos += yPitch;
-        
-        tx = _("Current Chart Edition:");
-        dc.DrawText( tx, text_x, yPos);
-        tx = m_pChart->serverChartEdition;
-        dc.DrawText( tx, text_x_val, yPos);
-        yPos += yPitch;
-        
-        tx = _("Status:");
-        dc.DrawText( tx, text_x, yPos);
-        tx = m_pChart->getStatusString();
-        if(g_statusOverride.Len())
-            tx = g_statusOverride;
-        else{
-            if(m_pChart->isChartsetExpired()){
-                dc.SetTextForeground(wxColour(200,0,0));
-            }
-        }
-                
-        dc.DrawText( tx, text_x_val, yPos);
-        yPos += yPitch;
-        dc.SetTextForeground(wxColour(0,0,0));
+        if(bCompact){
+                        // Create and populate the current chart information
+            tx = _("Installed Chart Edition:");
+            tx += _T(" ");
+            tx += m_pChart->GetDisplayedChartEdition();
+            dc.DrawText( tx, text_x, yPos);
+            yPos += yPitch;
+            
+            tx = _("Current Chart Edition:");
+            tx += _T(" ");
+            tx += m_pChart->serverChartEdition;
 
-        tx = _("Order Reference:");
-        dc.DrawText( tx, text_x, yPos);
-        if(bsplit_line) yPos += yPitch;
-        tx = m_pChart->orderRef;
-        dc.DrawText( tx, text_x_val, yPos);
-        yPos += yPitch;
-        
-        tx = _("Updates available through:");
-        dc.DrawText( tx, text_x, yPos);
-        if(bsplit_line) yPos += yPitch;
-        size_t n = m_pChart->expDate.find_first_of(' ');
-        if(n != std::string::npos)
-            tx = m_pChart->expDate.substr(0,n);
-        else
-            tx = m_pChart->expDate;
-        dc.DrawText( tx, text_x_val, yPos);
-        yPos += yPitch;
-        
+            dc.DrawText( tx, text_x, yPos);
+            yPos += yPitch;
+            
+            tx = _("Status:");
+            tx += _T(" ");
+            wxString txs = m_pChart->getStatusString();
+            if(g_statusOverride.Len())
+                txs = g_statusOverride;
+            tx += txs;
+            dc.DrawText( tx, text_x, yPos);
+            yPos += yPitch;
+
+            tx = _("Order Reference:");
+            dc.DrawText( tx, text_x, yPos);
+            if(bsplit_line) yPos += yPitch;
+            tx = m_pChart->orderRef;
+            dc.DrawText( tx, text_x_val, yPos);
+            yPos += yPitch;
+            
+            tx = _("Updates available through:");
+            dc.DrawText( tx, text_x, yPos);
+            if(bsplit_line) yPos += yPitch;
+            size_t n = m_pChart->expDate.find_first_of(' ');
+            if(n != std::string::npos)
+                tx = m_pChart->expDate.substr(0,n);
+            else
+                tx = m_pChart->expDate;
+            dc.DrawText( tx, text_x_val, yPos);
+            yPos += yPitch;
+
+        }
+        else{
+            // Create and populate the current chart information
+            tx = _("Installed Chart Edition:");
+            dc.DrawText( tx, text_x, yPos);
+            tx = m_pChart->GetDisplayedChartEdition();
+            dc.DrawText( tx, text_x_val, yPos);
+            yPos += yPitch;
+            
+            tx = _("Current Chart Edition:");
+            dc.DrawText( tx, text_x, yPos);
+            tx = m_pChart->serverChartEdition;
+            dc.DrawText( tx, text_x_val, yPos);
+            yPos += yPitch;
+            
+            tx = _("Status:");
+            dc.DrawText( tx, text_x, yPos);
+            tx = m_pChart->getStatusString();
+            if(g_statusOverride.Len())
+                tx = g_statusOverride;
+            else{
+                if(m_pChart->isChartsetExpired()){
+                    dc.SetTextForeground(wxColour(200,0,0));
+                }
+            }
+                    
+            dc.DrawText( tx, text_x_val, yPos);
+            yPos += yPitch;
+            dc.SetTextForeground(wxColour(0,0,0));
+
+            tx = _("Order Reference:");
+            dc.DrawText( tx, text_x, yPos);
+            if(bsplit_line) yPos += yPitch;
+            tx = m_pChart->orderRef;
+            dc.DrawText( tx, text_x_val, yPos);
+            yPos += yPitch;
+            
+            tx = _("Updates available through:");
+            dc.DrawText( tx, text_x, yPos);
+            if(bsplit_line) yPos += yPitch;
+            size_t n = m_pChart->expDate.find_first_of(' ');
+            if(n != std::string::npos)
+                tx = m_pChart->expDate.substr(0,n);
+            else
+                tx = m_pChart->expDate;
+            dc.DrawText( tx, text_x_val, yPos);
+            yPos += yPitch;
+        }
 
         tx = _("Assignments:");
         int assignedCount = m_pChart->getChartAssignmentCount();
@@ -3687,7 +3741,12 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
                 tx.Prepend(id);
                 tx += _T("    ") + wxString(slot->assignedSystemName.c_str());
                 //tx += _T(" ") + wxString(slot->slotUuid.c_str());
-                dc.DrawText( tx, text_x_val, yPos);
+                if(bCompact){
+                    dc.DrawText( tx, text_x + (2 * GetCharWidth()), yPos);
+                }
+                else{
+                    dc.DrawText( tx, text_x_val, yPos);
+                }
                 yPos += yPitch;
                 nid++;
             }
@@ -3888,8 +3947,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     sn += _T(" ");
     if(g_systemName.Length())
         sn += g_systemName;
-    //else
-    //    sn += _T("                                            ");
+
 #ifndef __OCPN__ANDROID__     
     wxFlexGridSizer *sysBox = new wxFlexGridSizer(2);
     sysBox->AddGrowableCol(0);
@@ -3915,13 +3973,20 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     m_staticTextSystemName = new wxStaticText(this, wxID_ANY, sn, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     sysBox->Add(m_staticTextSystemName, 0, wxLEFT | wxALIGN_LEFT | wxEXPAND, WXC_FROM_DIP(5));
 
-    m_buttonUpdate = new wxButton(this, wxID_ANY, _("Refresh Chart List"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
-    m_buttonUpdate->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(shopPanel::OnButtonUpdate), NULL, this);
-    sysBox->Add(m_buttonUpdate, 0, wxRIGHT | wxALIGN_RIGHT, WXC_FROM_DIP(5));
-    
+    wxBoxSizer *sysBox1 = new wxBoxSizer(wxHORIZONTAL);
+    sysBox->Add(sysBox1, 0, wxEXPAND);
+ 
     m_buttonInfo = new wxButton(this, wxID_ANY, _("Show Chart Info"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     m_buttonInfo->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(shopPanel::OnButtonInfo), NULL, this);
-    sysBox->Add(m_buttonInfo, 0, wxRIGHT | wxALIGN_RIGHT, WXC_FROM_DIP(5));
+    sysBox1->Add(m_buttonInfo, 0, wxLEFT | wxALIGN_LEFT, WXC_FROM_DIP(5));
+
+    wxStaticText *staticTextSpacer = new wxStaticText(this, wxID_ANY, "", wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+    sysBox1->Add(staticTextSpacer, 1, wxEXPAND);
+ 
+    m_buttonUpdate = new wxButton(this, wxID_ANY, _("Refresh Chart List"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+    m_buttonUpdate->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(shopPanel::OnButtonUpdate), NULL, this);
+    sysBox1->Add(m_buttonUpdate, 0, wxRIGHT | wxALIGN_RIGHT, WXC_FROM_DIP(5));
+    
 
 #endif
    
@@ -3939,7 +4004,14 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     cPanel->SetSizer(boxSizercPanel);
     
     m_scrollWinChartList = new wxScrolledWindow(cPanel, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxBORDER_RAISED | wxVSCROLL | wxBG_STYLE_ERASE );
-    m_scrollWinChartList->SetScrollRate(5, 5);
+#ifndef __OCPN__ANDROID__
+    m_scrollRate = 5;
+#else
+    m_scrollRate = 2;
+#endif
+    
+    m_scrollWinChartList->SetScrollRate(m_scrollRate, m_scrollRate);
+
     boxSizercPanel->Add(m_scrollWinChartList, add_prop_flag, wxALL|wxEXPAND, WXC_FROM_DIP(5));
     
     boxSizerCharts = new wxBoxSizer(wxVERTICAL);
@@ -4120,8 +4192,8 @@ void shopPanel::MakeChartVisible(oeXChartPanel *chart)
         if( !strcmp(vchart->chartID.c_str(), lchart->chartID.c_str()) && !strcmp(vchart->orderRef.c_str(), lchart->orderRef.c_str())){
             
             int offset = i * chart->GetUnselectedHeight();
-            
-            m_scrollWinChartList->Scroll(-1, offset / 5);
+            m_scrollWinChartList->Scroll(-1, offset / m_scrollRate );
+
         }
     }
     
@@ -4356,6 +4428,7 @@ void shopPanel::UpdateChartInfoFiles()
         int status = Chart->getChartStatus();
         if((status == STAT_CURRENT) || (status == STAT_STALE)){
              itemSlot *slot = Chart->GetActiveSlot();
+
              // craft the location of the chartInfo file
              if(slot){
                 wxString chartDir = wxString(slot->installLocation.c_str()) + wxFileName::GetPathSeparator() + wxString(slot->chartDirName.c_str());
@@ -4365,6 +4438,7 @@ void shopPanel::UpdateChartInfoFiles()
                     chartFile += _T("temp.oesu");
                     oesuChart tmpChart;
                     tmpChart.CreateChartInfoFile(chartFile, true);
+                    
                     processChartinfo(chartFile, Chart->getStatusString());
 
                 }
@@ -4472,7 +4546,7 @@ int shopPanel::GetShopNameFromFPR()
     qDebug() << loginParms.mb_str();
     
     wxString postresult;
-    _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, 5 );
+    _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
 
     qDebug() << "doLogin Post Stat: " << stat;
     

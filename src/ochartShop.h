@@ -336,6 +336,7 @@ public:
     
     bool GetSelected(){ return m_bSelected; }
     int GetUnselectedHeight(){ return m_unselectedHeight; }
+    int GetRefHeight(){ return m_refHeight; }
     itemChart *GetSelectedChart() { return m_pChart; }
     void OnClickDown( wxMouseEvent &event );
     void OnClickUp( wxMouseEvent &event );
@@ -347,6 +348,7 @@ private:
     wxColour m_boxColour;
     int m_unselectedHeight;
     itemChart *m_pChart;
+    int m_refHeight;
     
     DECLARE_EVENT_TABLE()
 };
@@ -526,6 +528,7 @@ public:
     bool m_bTransferComplete;
     bool m_bTransferSuccess;
     bool m_bconnected;
+    int m_scrollRate;
     
     ocValidator *m_validator;
 };
