@@ -712,8 +712,8 @@ bool o_charts_pi::DeInit(void)
 {
     SaveConfig();
     
-    delete pinfoDlg;
-    pinfoDlg = NULL;
+//    delete pinfoDlg;
+//    pinfoDlg = NULL;
     
     if( m_pOptionsPage )
     {
@@ -2579,11 +2579,12 @@ void init_S52Library(void)
         // Load up any S52 PLIB patch files found
         wxString dataLocn = GetPluginDataDir("o-charts_pi");
         
-        wxArrayString patchFiles;
-        wxDir::GetAllFiles(dataLocn, &patchFiles, _T("*.xml"));
-        for(unsigned int i=0 ; i < patchFiles.GetCount() ; i++){
-
-            g_oeChartSymbols->PatchConfigFile( ps52plib, patchFiles.Item(i));
+        if(!dataLocn.IsEmpty()){
+            wxArrayString patchFiles;
+            wxDir::GetAllFiles(dataLocn, &patchFiles, _T("*.xml"));
+            for(unsigned int i=0 ; i < patchFiles.GetCount() ; i++){
+                g_oeChartSymbols->PatchConfigFile( ps52plib, patchFiles.Item(i));
+            }
         }
 
             //    Preset some object class visibilites for "Mariner's Standard" display category
@@ -3410,9 +3411,11 @@ oesencPrefsDialog::oesencPrefsDialog( wxWindow* parent, wxWindowID id, const wxS
         
         //m_buttonSendStatus->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(o_charts_pi_event_handler::OnSendStatus), NULL, g_event_handler );
         
+#ifndef __OCPN__ANDROID__        
         m_cbEnableRebuild = new wxCheckBox(content, ID_ENABLE_REBUILD, _("Enable full chart database rebuild after chart download"));
         m_cbEnableRebuild->SetValue(g_benableRebuild);
         bSizer2->Add( m_cbEnableRebuild, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
+#endif
         
         m_sdbSizer1 = new wxStdDialogButtonSizer();
         m_sdbSizer1OK = new wxButton( content, wxID_OK );
@@ -3452,6 +3455,8 @@ void oesencPrefsDialog::OnPrefsOkClick(wxCommandEvent& event)
     }
 #endif
 
+#ifndef __OCPN__ANDROID__        
+
     g_benableRebuild = m_cbEnableRebuild->GetValue();
     
     wxFileConfig *pConf = GetOCPNConfigObject();
@@ -3459,6 +3464,7 @@ void oesencPrefsDialog::OnPrefsOkClick(wxCommandEvent& event)
       pConf->SetPath( _T("/PlugIns/ocharts") );
       pConf->Write( _T("EnableFulldbRebuild"), g_benableRebuild);
     }
+#endif
 
     EndModal( wxID_OK );
  
@@ -4778,59 +4784,83 @@ void showChartinfoDialog( void )
     if(info_hash.empty())
         return;
     
-    wxString hdr = _T("<html><body><center><font size=+1>");
+    wxString hdr = _T("<html><body>");
+    
+    hdr += _T("<center><font size=+1>");
     hdr +=  _("Available Chart sets:");
     hdr += _T("</font></center>");
     
     hdr += _T("<hr />");
     
-    hdr += _T("<center><table border=0 bordercolor=#000000 style=background-color:#fbfbf9 width=800 cellpadding=1 cellspacing=1>");
-    
-    hdr += _T("<tr>");
-    hdr += _T("</tr>");
+    //hdr += _T("<center><table border=0 bordercolor=#000000 style=background-color:#fbfbf9 width=800 cellpadding=1 cellspacing=1>");
+//     hdr += _T("<center><table border=1 >");
+//     
+//     hdr += _T("<tr>");
+//     hdr += _T("</tr>");
    
     int len_max = 0;
     int ncs = 1;
     std::map<std::string, ChartInfoItem *>::iterator iter;
     for( iter = info_hash.begin(); iter != info_hash.end(); ++iter )
     {
-        wxString csn;
-        csn.Printf(_T("Chart set %d"), ncs);
-        
-        hdr += _T("<td><font size=+2>");
-        hdr += csn;
-        hdr += _T("</font></td>");
-        
+       
         wxString formatted;
         
         ChartInfoItem *pci = iter->second;
         std::string key = iter->first;
         wxString strk = wxString(key.c_str(), wxConvUTF8);
         wxString info = pci->config_string;
+        if(info.Length() < 10)                  // Probably a manually installed local chart set.
+            continue;
+        
         len_max = wxMax(info.Len(), len_max);
-        
-        
+
+        wxStringTokenizer tkx(info, _T(";"));
+        wxString name = tkx.GetNextToken();        //description
+
+        hdr += _T("<center>");
+        hdr +=  name;
+        hdr += _T("</center>");
+         
+        hdr += _T("<center><table border=1 >");
+//        hdr += _T("<tr>");
+//        hdr += _T("</tr>");
+
         // Get the line fields
-         wxStringTokenizer tkx(info, _T(";"));
+//         wxStringTokenizer tkx(info, _T(";"));
          while ( tkx.HasMoreTokens() ){
-            wxString token = tkx.GetNextToken();        //description
-            hdr += _T("<tr><td>  ") + token + _T("</td></tr>");
+            wxString token; // = tkx.GetNextToken();        //description
+//             hdr += _T("<tr><td>  ") + token + _T("</td></tr>");
                     
+            hdr += _T("<tr>");
             token = tkx.GetNextToken();         // version
-            hdr += _T("<tr><td>Version:</td></tr>");
-            hdr += _T("<tr><td align=\"right\">") + token + _T("</td></tr>");
+            hdr += _T("<td>Version:</td>");
+            hdr += _T("<td align=\"right\">") + token + _T("</td>");
+            hdr += _T("</tr>");
             
             token = tkx.GetNextToken();         // expiry date
-            hdr += _T("<tr><td>Valid Until:</td></tr>");
-            hdr += _T("<tr><td align=\"right\"> <font color=#ff0000>") + token + _T("</font><font color=#000000></font></td></tr>");
+            hdr += _T("<tr>");
+            hdr += _T("<td>Valid Until:</td>");
+            hdr += _T("<td align=\"right\">")  + token + _T("</td>");
+            hdr += _T("/<tr>");
+
+            if ( 1 /*tkx.HasMoreTokens()*/ ){
+                token = tkx.GetNextToken();         // current status, if available
+                hdr += _T("<tr>");
+                hdr += _T("<td>Status:</td>");
+                hdr += _T("<td align=\"right\">") + token + _T("</td>");
+                hdr += _T("/<tr>");
+            }
          }
         
         ncs++;
-        hdr += _T("</tr>");
+        hdr += _T("</table></center>");
+        hdr += _T("<hr />");
+
         
     }
  
-    hdr += _T("</table></center>");
+    //hdr += _T("</table></center>");
     hdr += _T("</body></html>");
 
     callActivityMethod_s2s("displayHTMLAlertDialog", _("o-charts_pi Message"), hdr);
@@ -4846,7 +4876,7 @@ void showChartinfoDialog( void )
     
     if(info_hash.empty())
         return;
-    
+
     wxString hdr = _T("<html><body><center><font size=+2>");
     hdr +=  _("The following Chart sets are available : ");
     if(!g_lastShopUpdate.IsEmpty()){
@@ -4927,7 +4957,7 @@ void showChartinfoDialog( void )
     
     hdr += _T("</table></center>");
     hdr += _T("</body></html>");
-    
+
     if(GetOCPNCanvasWindow()){
         wxFont *pFont = OCPNGetFont(_T("Dialog"), 12);
         wxScreenDC dc;
@@ -4942,6 +4972,7 @@ void showChartinfoDialog( void )
         pinfoDlg->Centre();
         pinfoDlg->ShowModal();
         g_binfoShown = true;
+        pinfoDlg->Destroy();
     }
     
 }
@@ -5091,7 +5122,7 @@ bool processChartinfo(const wxString &oesenc_file, wxString status)
             line = info_file.GetNextLine();
         }
     }
-    
+ 
     std::string key = std::string(fn.GetPath(wxPATH_GET_VOLUME + wxPATH_GET_SEPARATOR).c_str());
     
     if(wxFileExists(chartInfo)){
@@ -5134,13 +5165,15 @@ bool processChartinfo(const wxString &oesenc_file, wxString status)
                     else{
                         if(g_debugLevel) wxLogMessage(_T("processChartInfo found: ") + keyn);
 
-                        // update the config string based on the current chartInfo file
-                        ChartInfoItem *pci = iter->second;
-                        pci->config_string = content;
+                        if(!status.IsSameAs(_T("KEEP"))){
+                            // update the config string based on the current chartInfo file
+                            ChartInfoItem *pci = iter->second;
+                            pci->config_string = content;
 
-                        // Add status string, if available
-                        if(!status.IsEmpty()){
-                            pci->config_string = content + _T(";") + status;
+                            // Add status string, if available
+                            if(!status.IsEmpty()){
+                                pci->config_string = content + _T(";") + status;
+                            }
                         }
 
                     }
