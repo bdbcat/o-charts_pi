@@ -42,8 +42,13 @@ class ArrayOfCDI;
  bool AndroidUnzip(wxString zipFile, wxString destDir, int nStrip, bool bRemoveZip);
  wxString AndroidGetCacheDir();
  bool AndroidSecureCopyFile(wxString in, wxString out);
- 
+ int validateAndroidWriteLocation( const wxString& destination );
+
+ void androidShowBusyIcon();
+ void androidHideBusyIcon();
+
 wxString callActivityMethod_s6s(const char *method, wxString parm1, wxString parm2="", wxString parm3="", wxString parm4="", wxString parm5="", wxString parm6="");
+wxString callActivityMethod_s2s2i(const char *method, wxString parm1, wxString parm2, int parm3, int parm4);
 
  #endif
   

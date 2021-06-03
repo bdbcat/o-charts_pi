@@ -173,6 +173,7 @@ public:
     long        currentOffset;
     long        totalSize;
     std::string SHA256;
+    bool        SHA256_Verified;
 };
     
     

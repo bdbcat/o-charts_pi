@@ -391,6 +391,104 @@ wxString callActivityMethod_s2s(const char *method, wxString parm1, wxString par
         
 }
 
+wxString callActivityMethod_s2s2i(const char *method, wxString parm1, wxString parm2, int parm3, int parm4)
+{
+    if(CheckPendingJNIException())
+        return _T("NOK");
+    
+    wxString return_string;
+    QAndroidJniObject activity = QAndroidJniObject::callStaticObjectMethod("org/qtproject/qt5/android/QtNative",
+                                                                           "activity", "()Landroid/app/Activity;");
+    if(CheckPendingJNIException())
+        return _T("NOK");
+    
+    if ( !activity.isValid() ){
+        return return_string;
+    }
+    
+    //  Need a Java environment to decode the resulting string
+    JNIEnv* jenv;
+    
+    if (java_vm->GetEnv( (void **) &jenv, JNI_VERSION_1_6) != JNI_OK) {
+        //qDebug() << "GetEnv failed.";
+        return _T("jenv Error");
+    }
+    
+    wxCharBuffer p1b = parm1.ToUTF8();
+    jstring p1 = (jenv)->NewStringUTF(p1b.data());
+
+    wxCharBuffer p2b = parm2.ToUTF8();
+    jstring p2 = (jenv)->NewStringUTF(p2b.data());
+    
+    //qDebug() << "Calling method_s2s2i" << " (" << method << ")";
+    //qDebug() << parm3 << parm4;
+    
+    QAndroidJniObject data = activity.callObjectMethod(method, "(Ljava/lang/String;Ljava/lang/String;II)Ljava/lang/String;",
+                                                       p1, p2, parm3, parm4);
+    
+    (jenv)->DeleteLocalRef(p1);
+    (jenv)->DeleteLocalRef(p2);
+    
+    if(CheckPendingJNIException())
+        return _T("NOK");
+    
+    jstring s = data.object<jstring>();
+        
+    if( (jenv)->GetStringLength( s )){
+        const char *ret_string = (jenv)->GetStringUTFChars(s, NULL);
+             return_string = wxString(ret_string, wxConvUTF8);
+     }
+        
+    return return_string;
+        
+}
+
+
+wxString callActivityMethod_ssi(const char *method, wxString parm1, int parm2)
+{
+    if(CheckPendingJNIException())
+        return _T("NOK");
+    
+    wxString return_string;
+    QAndroidJniObject activity = QAndroidJniObject::callStaticObjectMethod("org/qtproject/qt5/android/QtNative",
+                                                                           "activity", "()Landroid/app/Activity;");
+    if(CheckPendingJNIException())
+        return _T("NOK");
+    
+    if ( !activity.isValid() ){
+        return return_string;
+    }
+    
+    //  Need a Java environment to decode the resulting string
+    JNIEnv* jenv;
+    
+    if (java_vm->GetEnv( (void **) &jenv, JNI_VERSION_1_6) != JNI_OK) {
+        //qDebug() << "GetEnv failed.";
+        return _T("jenv Error");
+    }
+    
+    wxCharBuffer p1b = parm1.ToUTF8();
+    jstring p1 = (jenv)->NewStringUTF(p1b.data());
+
+    QAndroidJniObject data = activity.callObjectMethod(method, "(Ljava/lang/String;I)Ljava/lang/String;", p1, parm2);
+    
+    (jenv)->DeleteLocalRef(p1);
+    
+    if(CheckPendingJNIException())
+        return _T("NOK");
+    
+    jstring s = data.object<jstring>();
+        
+    if( (jenv)->GetStringLength( s )){
+        const char *ret_string = (jenv)->GetStringUTFChars(s, NULL);
+             return_string = wxString(ret_string, wxConvUTF8);
+    }
+        
+    return return_string;
+        
+}
+
+
 bool AndroidUnzip(wxString zipFile, wxString destDir, int nStrip, bool bRemoveZip)
 {
     qDebug() << "AndroidUnzip" << zipFile.mb_str() << destDir.mb_str();
@@ -399,8 +497,8 @@ bool AndroidUnzip(wxString zipFile, wxString destDir, int nStrip, bool bRemoveZi
     ns.Printf(_T("%d"), nStrip);
     
     wxString br = _T("0");
-    if(bRemoveZip)
-        br = _T("1");
+//     if(bRemoveZip)
+//         br = _T("1");
     
     qDebug() << "br" << br.mb_str();
     
@@ -435,6 +533,16 @@ bool AndroidUnzip(wxString zipFile, wxString destDir, int nStrip, bool bRemoveZi
     
     return true;    
     
+}
+
+int validateAndroidWriteLocation( const wxString& destination )
+{
+        // validate the destination, as it might be on SDCard
+        wxString val_result = callActivityMethod_s2s2i("validateWriteLocation", destination, _T(""), 0/*OCPN_ACTION_DOWNLOAD_VALID*/, 0);
+        if( val_result.IsSameAs(_T("Pending")) )
+            return 0;           //  SAF Dialog is going to run
+        else
+            return 1;           // All well.
 }
 
 wxString AndroidGetCacheDir()
@@ -480,4 +588,40 @@ bool AndroidSecureCopyFile(wxString in, wxString out)
         bret = false;
     
     return bret;
+}
+
+void androidShowBusyIcon()
+{
+//    if(b_androidBusyShown)
+//        return;
+    
+    //  Get a reference to the running native activity
+     QAndroidJniObject activity = QAndroidJniObject::callStaticObjectMethod("org/qtproject/qt5/android/QtNative",
+        "activity", "()Landroid/app/Activity;");
+
+     if ( !activity.isValid() )
+         return;
+        
+        //  Call the desired method
+     QAndroidJniObject data = activity.callObjectMethod("showBusyCircle", "()Ljava/lang/String;");
+        
+//     b_androidBusyShown = true;
+}
+
+void androidHideBusyIcon()
+{
+//    if(!b_androidBusyShown)
+//        return;
+    
+    //  Get a reference to the running native activity
+    QAndroidJniObject activity = QAndroidJniObject::callStaticObjectMethod("org/qtproject/qt5/android/QtNative",
+        "activity", "()Landroid/app/Activity;");
+        
+    if ( !activity.isValid() )
+        return;
+        
+        //  Call the desired method
+    QAndroidJniObject data = activity.callObjectMethod("hideBusyCircle", "()Ljava/lang/String;");
+        
+//    b_androidBusyShown = false;
 }

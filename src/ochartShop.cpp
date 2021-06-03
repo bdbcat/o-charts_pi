@@ -3140,6 +3140,7 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
         task1.url = downloadURL;
         task1.localFile = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator() + fileTarget).mb_str();
         task1.SHA256 = targetSlot->taskFileList[i]->sha256Keys;
+        task1.SHA256_Verified = false;
         targetSlot->taskFileList[i]->cacheKeysLocn = task1.localFile;
         targetSlot->dlQueue.push_back(task1);
         
@@ -3164,22 +3165,31 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
         task2.url = downloadURL;
         task2.localFile = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator() + fileTarget).mb_str();
         task2.SHA256 = targetSlot->taskFileList[i]->sha256;
+        task2.SHA256_Verified = false;
         targetSlot->taskFileList[i]->cacheLinkLocn = task2.localFile;
         targetSlot->dlQueue.push_back(task2);
         
         // If processing any "base" chart file set, or a server "base" substitution,
-        // then this would be a good place to purge the cache of earlier "updates" and previous "base", if any..
+        // then this would be a  place to purge the cache of earlier "updates" and previous "base", if any..
         if(bsubBase || (task2.localFile.rfind("base.zip") != std::string::npos)){
             wxString editionYear = wxString(targetSlot->taskFileList[i]->resultEdition.c_str()).BeforeFirst('/');
             wxString cacheDir = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator()
                         + Prefix + _T("-") + wxString(targetChart->chartID.c_str()) + _T("-") + editionYear);
-            if(::wxDirExists( cacheDir) ){
-                wxArrayString files;
-                wxDir::GetAllFiles( cacheDir, &files );
-                for(unsigned int i=0 ; i < files.GetCount() ; i++){
-                    ::wxRemoveFile(files[i]);
+            
+            // Check to see if desired file is already in place, as in "re-install"
+            // If so, don't delete it
+            wxFileName fn(task2.localFile);
+            wxString zipFile = cacheDir +  wxFileName::GetPathSeparator() + fn.GetFullName();
+            
+            if(!wxFileExists( zipFile )){
+                if(::wxDirExists( cacheDir) ){
+                    wxArrayString files;
+                    wxDir::GetAllFiles( cacheDir, &files );
+                    for(unsigned int i=0 ; i < files.GetCount() ; i++){
+                        ::wxRemoveFile(files[i]);
+                    }
+                    ::wxRmdir( cacheDir );
                 }
-                ::wxRmdir( cacheDir );
             }
         }
     }
@@ -4204,8 +4214,6 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
 {
     m_shopLog->ClearLog();
 
-    //loadShopConfig();
-
 #ifdef __OCPN__ANDROID__
     if(!g_systemName.Length()){
         extern wxString androidGetSystemName();
@@ -4781,16 +4789,20 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         if(!slot->installLocation.size())
             return 11;
 
-        // Check the SHA256 of both files in the task
-        if(!validateSHA256(task->cacheLinkLocn, task->sha256)){
-            wxLogError(_T("o-charts_pi: Sha256 error on: ") + task->cacheLinkLocn );
-            ShowOERNCMessageDialog(NULL, _("Validation error on zip file"), _("o-charts_pi Message"), wxOK);
-            return 8;
+        // Check the SHA256 of both files in the task, if not already proven good.
+        if(!slot->dlQueue[1].SHA256_Verified){
+            if(!validateSHA256(task->cacheLinkLocn, task->sha256)){
+                wxLogError(_T("o-charts_pi: Sha256 error on: ") + task->cacheLinkLocn );
+                ShowOERNCMessageDialog(NULL, _("Validation error on zip file"), _("o-charts_pi Message"), wxOK);
+                return 8;
+            }
         }
-        if(!validateSHA256(task->cacheKeysLocn, task->sha256Keys)){
-            wxLogError(_T("o-charts_pi: Sha256 error on: ") + task->cacheKeysLocn );
-            ShowOERNCMessageDialog(NULL, _("Validation error on key file"), _("o-charts_pi Message"), wxOK);
-            return 9;
+        if(!slot->dlQueue[0].SHA256_Verified){
+            if(!validateSHA256(task->cacheKeysLocn, task->sha256Keys)){
+                wxLogError(_T("o-charts_pi: Sha256 error on: ") + task->cacheKeysLocn );
+                ShowOERNCMessageDialog(NULL, _("Validation error on key file"), _("o-charts_pi Message"), wxOK);
+                return 9;
+            }
         }
 
         // Extract the key type and name from the downloaded KeyList file
@@ -5064,10 +5076,25 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         wxString destinationDir = wxString(slot->installLocation.c_str()) + wxFileName::GetPathSeparator() + dest + wxFileName::GetPathSeparator();
         wxFileName fndd(destinationDir);
         if( !fndd.DirExists() ){
+#ifdef __OCPN__ANDROID__
+            if( !wxFileName::Mkdir(fndd.GetPath(), 0755, wxPATH_MKDIR_FULL) ){
+                // We do a secure copy to the target location, of a simple dummy file.
+                // This has the effect of creating the target directory.
+                wxString source =  *GetpPrivateApplicationDataLocation() + wxFileName::GetPathSeparator() + _T("chek_full.png");       // A dummy  file
+                wxString destination = fndd.GetPath() + wxFileName::GetPathSeparator() + _T("dummy1");              
+                bool bret = AndroidSecureCopyFile( source, destination );
+                if(!bret){
+                    wxLogError(_T("Can not create chart target directory on TASK_UPDATE '") + fndd.GetPath() );
+                    return 12;
+                }
+            }
+
+#else            
             if( !wxFileName::Mkdir(fndd.GetPath(), 0755, wxPATH_MKDIR_FULL) ){
                 wxLogError(_T("Can not create chart target directory on TASK_UPDATE '") + fndd.GetPath() );
                 return 12;
             }
+#endif            
         }
   
         // Process added/modified charts
@@ -5121,19 +5148,52 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         csdata_target.setEditionTag(chart->editionTag);
         
         // Write out the modified Target ChartList.XML file as the new result ChartList.XML
+#ifdef __OCPN__ANDROID__
+        wxString tmpFile = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator() + _T("ChartList.XML"));
+        if(! csdata_target.WriteFile( std::string(tmpFile.mb_str()) )){
+            wxLogError(_T("Can not write temp target ChartList.XML on TASK_UPDATE '") + tmpFile );
+            return 14;
+        }
+
+        wxString destinationCLXML = destinationDir + _T("ChartList.XML");
+        bool bret = AndroidSecureCopyFile( tmpFile, destinationCLXML );
+        if(! bret ){
+            wxLogError(_T("Can not write target ChartList.XML on TASK_UPDATE '") + destinationCLXML );
+            return 15;
+        }
+        wxRemoveFile(tmpFile);
+#else        
         wxString destinationCLXML = destinationDir + _T("ChartList.XML");
         if(! csdata_target.WriteFile( std::string(destinationCLXML.mb_str()) )){
             wxLogError(_T("Can not write target ChartList.XML on TASK_UPDATE '") + destinationCLXML );
-            return 14;
+            return 16;
         }
+#endif        
         
 
         // Write out the modified Target KeyList.XML file as the new result KeyList.XML
+#ifdef __OCPN__ANDROID__
+        wxString tmpFile2 = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator() +  dest + _T("-") + keySystem + _T(".XML"));
+        if(! cskey_target.WriteFile( std::string(tmpFile2.mb_str()) )){
+            wxLogError(_T("Can not write temp target KefList.XML on TASK_UPDATE '") + tmpFile2 );
+            return 17;
+        }
+
+        wxString destinationKLXML = destinationDir  + dest + _T("-") + keySystem + _T(".XML");
+        bool bret2 = AndroidSecureCopyFile( tmpFile2, destinationKLXML );
+        if(! bret2 ){
+            wxLogError(_T("Can not write target KefList.XML on TASK_UPDATE '") + destinationKLXML );
+            return 18;
+        }
+        wxRemoveFile(tmpFile2);
+
+#else        
         wxString destinationKLXML = destinationDir  + dest + _T("-") + keySystem + _T(".XML");
         if(!cskey_target.WriteFile( std::string(destinationKLXML.mb_str()) )){
             wxLogError(_T("Can not write target KefList XML file on TASK_UPDATE '") + destinationKLXML );
-            return 15;
+            return 19;
         }
+#endif        
         
         chart->lastInstalledtlDir = destinationDir;
 
@@ -5192,6 +5252,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
 
 bool shopPanel::validateSHA256(std::string fileName, std::string shaSum)
 {
+    
     //File...
     std::string sfile = fileName;
     
@@ -5218,6 +5279,10 @@ bool shopPanel::validateSHA256(std::string fileName, std::string shaSum)
     wxString previousStatus = getStatusText();
     setStatusText( _("Status: Validating download file..."));
     wxYield();
+
+#ifdef __OCPN__ANDROID__
+    androidShowBusyIcon();
+#endif
 
     // compute the file length    
     fseek(rFile, 0, SEEK_END);
@@ -5260,6 +5325,10 @@ bool shopPanel::validateSHA256(std::string fileName, std::string shaSum)
     
     setStatusText(previousStatus);
     wxYield();
+
+#ifdef __OCPN__ANDROID__
+    androidHideBusyIcon();
+#endif
     
     return (cval == 0);
     
@@ -5326,6 +5395,8 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
         if(wxFileExists(gtargetSlot->dlQueue[gtargetSlot->idlQueue].localFile)){
             // Validate the existing file using SHA256
             if( validateSHA256(gtargetSlot->dlQueue[gtargetSlot->idlQueue].localFile, gtargetSlot->dlQueue[gtargetSlot->idlQueue].SHA256)){
+                gtargetSlot->dlQueue[gtargetSlot->idlQueue].SHA256_Verified = true;
+
                 //  OK, Skip to next in queue
                 gtargetSlot->idlQueue++;        // next
                 
@@ -5448,7 +5519,12 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
                     return;
                 }                    
             }
-            
+#ifdef __OCPN__ANDROID__            
+            int vres = validateAndroidWriteLocation( gtargetSlot->installLocation );
+            if(!vres){                  // Running SAF dialog.
+                ShowOERNCMessageDialog(NULL, _("Proceed with chart installation."), _("o-charts_pi Message"), wxOK);
+            }
+#endif
             //Presumably there is an install directory, and a current Edition, so this is an update
                 
             // Process the array of itemTaskFileInfo
@@ -5457,10 +5533,13 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
                 int rv = 0;
                 rv = processTask(gtargetSlot, gtargetChart, pTask);
                 if(rv){
-
                     g_statusOverride.Clear();
                     setStatusText( _("Status: Ready"));
-                    ShowOERNCMessageDialog(NULL, _("Chart installation ERROR."), _("o-charts_pi Message"), wxOK);
+                    wxString msg = _("Chart installation ERROR.");
+                    wxString msg1; 
+                    msg1.Printf(_T(" %d"), rv);
+                    msg += msg1;
+                    ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
                     UpdateChartList();
                     UpdateActionControls();
                     return;
@@ -5506,16 +5585,12 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
    
         g_statusOverride.Clear();
         setStatusText( _("Status: Ready"));
-        const char* message_ok =
-            "Chart installation complete.\n";
+        wxString message_ok =_("Chart installation complete.\n");
         if(!g_benableRebuild){
-            message_ok =
-                "Chart installation complete.\n"
-                "Don't forget to rebuild chart database\n"
-                "(See manual)";
+            message_ok += _("Don't forget to rebuild chart database\n (See manual)");
         }
         
-        ShowOERNCMessageDialog(NULL, _(message_ok) , _("o-charts_pi Message"), wxOK);
+        ShowOERNCMessageDialog(NULL, message_ok , _("o-charts_pi Message"), wxOK);
 
         // Show any EULA here
         wxArrayString fileArrayEULA;

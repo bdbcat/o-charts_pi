@@ -102,8 +102,8 @@ wxString callActivityMethod_s4s(const char *method, wxString parm1, wxString par
 wxString callActivityMethod_s5s(const char *method, wxString parm1, wxString parm2, wxString parm3, wxString parm4, wxString parm5);
 wxString callActivityMethod_s6s(const char *method, wxString parm1, wxString parm2="", wxString parm3="", wxString parm4="", wxString parm5="", wxString parm6="");
 wxString callActivityMethod_s2s(const char *method, wxString parm1, wxString parm2);
-void androidShowBusyIcon();
-void androidHideBusyIcon();
+extern void androidShowBusyIcon();
+extern void androidHideBusyIcon();
 void androidGetDeviceName();
 #endif
 
@@ -5249,43 +5249,6 @@ bool ShowAlwaysEULAs()
     return true;
 }
 
-#ifdef __OCPN__ANDROID__
-void androidShowBusyIcon()
-{
-//    if(b_androidBusyShown)
-//        return;
-    
-    //  Get a reference to the running native activity
-     QAndroidJniObject activity = QAndroidJniObject::callStaticObjectMethod("org/qtproject/qt5/android/QtNative",
-        "activity", "()Landroid/app/Activity;");
-
-     if ( !activity.isValid() )
-         return;
-        
-        //  Call the desired method
-     QAndroidJniObject data = activity.callObjectMethod("showBusyCircle", "()Ljava/lang/String;");
-        
-//     b_androidBusyShown = true;
-}
-
-void androidHideBusyIcon()
-{
-//    if(!b_androidBusyShown)
-//        return;
-    
-    //  Get a reference to the running native activity
-    QAndroidJniObject activity = QAndroidJniObject::callStaticObjectMethod("org/qtproject/qt5/android/QtNative",
-        "activity", "()Landroid/app/Activity;");
-        
-    if ( !activity.isValid() )
-        return;
-        
-        //  Call the desired method
-    QAndroidJniObject data = activity.callObjectMethod("hideBusyCircle", "()Ljava/lang/String;");
-        
-//    b_androidBusyShown = false;
-}
-#endif
 
 
 
