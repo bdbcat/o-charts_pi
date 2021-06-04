@@ -72,7 +72,7 @@ std::vector<itemChart *> ChartVector;
 
 wxString userURL(_T("https://o-charts.org/shop/index.php"));
 wxString adminURL(_T("https://test.o-charts.org/shop/index.php"));
-int g_timeout_secs = 10;
+int g_timeout_secs = 15;
 
 wxArrayString g_systemNameChoiceArray;
 wxArrayString g_systemNameServerArray;
