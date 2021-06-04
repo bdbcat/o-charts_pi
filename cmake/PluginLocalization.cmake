@@ -7,6 +7,8 @@
 # ~~~
 
 find_program(GETTEXT_XGETTEXT_EXECUTABLE xgettext)
+message(STATUS  "PluginLocalization...GETTEXT_XGETTEXT_EXECUTABLE: ${GETTEXT_XGETTEXT_EXECUTABLE}")
+
 string(REPLACE "_pi" "" I18N_NAME ${PACKAGE_NAME})
 if (GETTEXT_XGETTEXT_EXECUTABLE)
   add_custom_command(
