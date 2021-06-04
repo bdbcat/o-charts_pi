@@ -4,6 +4,8 @@
 #
 cmake_minimum_required(VERSION 3.1)
 
+find_package(Gettext REQUIRED)
+
 set(Qt_Build  "build_arm64/qtbase"
   CACHE STRING "Base directory for QT build"
 )

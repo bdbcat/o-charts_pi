@@ -181,15 +181,14 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   # Build package as required (flatpak already dealt with).
   #
   include(PluginCompiler)
-  include(PluginLocalization)
   include(PluginInstall)
   include(PluginPackage)
-
   if (QT_ANDROID)
     include(libs/AndroidLibs.cmake)
   else ()
     include(PluginLibs)
   endif ()
+  include(PluginLocalization)
 
   include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
   include_directories(${CMAKE_SOURCE_DIR}/src)
