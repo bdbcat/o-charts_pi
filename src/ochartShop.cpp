@@ -2109,7 +2109,7 @@ int doLogin( wxWindow *parent )
 #else
 
     qDebug() << url.mb_str();
-    qDebug() << loginParms.mb_str();
+    //qDebug() << loginParms.mb_str();
     
     wxString postresult;
     _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
