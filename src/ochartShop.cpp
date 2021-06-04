@@ -3176,20 +3176,22 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
             wxString cacheDir = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator()
                         + Prefix + _T("-") + wxString(targetChart->chartID.c_str()) + _T("-") + editionYear);
             
-            // Check to see if desired file is already in place, as in "re-install"
+        // Check to see if desired file is already in place, as in "re-install"
             // If so, don't delete it
             wxFileName fn(task2.localFile);
             wxString zipFile = cacheDir +  wxFileName::GetPathSeparator() + fn.GetFullName();
             
-            if(!wxFileExists( zipFile )){
-                if(::wxDirExists( cacheDir) ){
-                    wxArrayString files;
-                    wxDir::GetAllFiles( cacheDir, &files );
-                    for(unsigned int i=0 ; i < files.GetCount() ; i++){
+            if(::wxDirExists( cacheDir) ){
+                wxArrayString files;
+                wxDir::GetAllFiles( cacheDir, &files );
+                for(unsigned int i=0 ; i < files.GetCount() ; i++){
+                    wxString thisFile =files[i];
+                    if(!files[i].IsSameAs(zipFile))
                         ::wxRemoveFile(files[i]);
-                    }
-                    ::wxRmdir( cacheDir );
                 }
+                wxDir dir( cacheDir );
+                if(!dir.HasFiles())
+                    ::wxRmdir( cacheDir );
             }
         }
     }
