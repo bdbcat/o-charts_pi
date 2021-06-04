@@ -101,4 +101,5 @@ if (GETTEXT_MSGFMT_EXECUTABLE)
     DEPENDS ${_gmoFiles}
   )
   add_dependencies(${PACKAGE_NAME} ${I18N_NAME}-i18n)
+  add_dependencies( tarball ${I18N_NAME}-i18n)
 endif (GETTEXT_MSGFMT_EXECUTABLE)
