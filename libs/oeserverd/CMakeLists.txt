@@ -21,10 +21,10 @@ macro (install_libs libs)
 endmacro () 
 
 if (QT_ANDROID)
-  configure_file(
-    ${CMAKE_CURRENT_LIST_DIR}/oeserverda_android/oexserverd
-    ${CMAKE_INSTALL_PREFIX}/bin/oexserverd COPYONLY
-  )
+#  configure_file(
+#    ${CMAKE_CURRENT_LIST_DIR}/oeserverda_android/oexserverd
+#    ${CMAKE_INSTALL_PREFIX}/bin/oexserverd COPYONLY
+#  )
 elseif (APPLE)
   install_libs("osx/oexserverd" "osx/libsglmac-2.38.0.0.dylib.x86_64")
 elseif (UNIX AND ARCH  STREQUAL "x86_64")
