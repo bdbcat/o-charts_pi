@@ -2771,14 +2771,14 @@ bool validate_SENC_server(void)
     
 #ifndef __OCPN__ANDROID__    
     //Verify that oeserverd actually exists, and runs.
-    wxLogMessage(_T("Validation Path to oeserverd is: ") + g_sencutil_bin);
+    wxLogMessage(_T("Validation Path to oexserverd is: ") + g_sencutil_bin);
 
     if(wxNOT_FOUND != g_sencutil_bin.Find('\"'))
         bin_test = g_sencutil_bin.Mid(1).RemoveLast();
     
     wxLogMessage(_T("Validation Path to server test is: ") + bin_test);
 
-    wxString msg = _T("Checking oeserverd utility at ");
+    wxString msg = _T("Checking oexserverd utility at ");
     msg += _T("{");
     msg += bin_test;
     msg += _T("}");
@@ -2786,13 +2786,13 @@ bool validate_SENC_server(void)
     
     
     if(!::wxFileExists(bin_test)){
-        wxString msg = _("Cannot find the oserverd utility at \n");
+        wxString msg = _("Cannot find the oexserverd utility at \n");
         msg += _T("{");
         msg += bin_test;
         msg += _T("}");
         OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"),  wxOK, -1, -1);
         
-        wxString msge= _T("Cannot find the oeserverd utility at \n");
+        wxString msge= _T("Cannot find the oexserverd utility at \n");
         msge += _T("{");
         msge += bin_test;
         msge += _T("}");
@@ -2823,7 +2823,7 @@ bool validate_SENC_server(void)
     if(g_serverDebug)
         cmds += _T(" -d");
     
-    wxLogMessage(_T("o_charts_pi: starting oeserverd utility: ") + cmds);
+    wxLogMessage(_T("o_charts_pi: starting oexserverd utility: ") + cmds);
     g_serverProc = wxExecute(cmds, flags);              // exec asynchronously
     wxMilliSleep(500);
 
@@ -2888,11 +2888,11 @@ bool validate_SENC_server(void)
         }
         
         if(!bAvail){
-            wxString msg = _("oeserverd utility at \n");
+            wxString msg = _T("oexserverd utility at \n");
             msg += _T("{");
             msg += bin_test;
             msg += _T("}\n");
-            msg += _(" reports Unavailable.\n\n");
+            msg += _T" reports Unavailable.\n\n");
             wxLogMessage(_T("o_charts_pi: ") + msg);
             
             ///_sencutil_bin.Clear();
@@ -2907,11 +2907,11 @@ bool validate_SENC_server(void)
 //             Osenc_instream testAvail_type;
 //             testAvail_type.isAvailable( _T("?") );
             
-            wxLogMessage(_T("o_charts_pi: oeserverd Check OK...") + nc);
+            wxLogMessage(_T("o_charts_pi: oexserverd Check OK...") + nc);
         }
     }
     else{
-        wxString msg = _("oeserverd utility at \n");
+        wxString msg = _("oexserverd utility at \n");
         msg += _T("{");
         msg += bin_test;
         msg += _T("}\n");
@@ -3471,333 +3471,6 @@ void oesencPrefsDialog::OnPrefsOkClick(wxCommandEvent& event)
 }
 
 
-#if 0
-bool IsDongleAvailable()
-{
-#ifndef __OCPN__ANDROID__    
-    wxString cmd = g_sencutil_bin;
-    cmd += _T(" -s ");                  // Available?
-
-    wxArrayString ret_array, err_array;      
-    wxExecute(cmd, ret_array, err_array );
- 
-    wxLogMessage(_T("IsDongleAvailable()::oeserverd execution results:"));
-    for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
-        wxString line = ret_array[i];
-        wxLogMessage(line);
-    }
-
-    // Show error in log
-    if( err_array.GetCount() ){
-        wxLogMessage(_T("IsDongleAvailable()::oeserverd execution error:"));
-        for(unsigned int i=0 ; i < err_array.GetCount() ; i++){
-            wxString line = err_array[i];
-            wxLogMessage(line);
-        }
-    }
-
-    for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
-        wxString line = ret_array[i];
-        if(line.IsSameAs(_T("1")))
-            return true;
-        if(line.IsSameAs(_T("0")))
-            return false;
-    }
-
-    // Show error in log
-    wxLogMessage(_T("IsDongleAvailable()::oeserverd execution error:"));
-    for(unsigned int i=0 ; i < err_array.GetCount() ; i++){
-        wxString line = err_array[i];
-        wxLogMessage(line);
-    }
-
-    //g_sencutil_bin.Clear();
-#endif
-    
-    return false;
-}
-
-unsigned int GetDongleSN()
-{
-    unsigned int rv = 0;
-    
-#ifndef __OCPN__ANDROID__    
-    wxString cmd = g_sencutil_bin;
-    cmd += _T(" -t ");                  // SN
-
-    wxArrayString ret_array;      
-    wxExecute(cmd, ret_array, ret_array );
-            
-    for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
-        wxString line = ret_array[i];
-        long sn;
-        line.ToLong(&sn, 10);
-        rv = sn;
-    }
-#endif    
-    return rv;
-}
-    
-    
-wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock)
-{
-
-#ifndef __OCPN__ANDROID__    
-   
-            wxString msg1;
-            wxString fpr_file;
-            wxString fpr_dir = *GetpPrivateApplicationDataLocation(); //GetWritableDocumentsDir();
-            
-#ifdef __WXMSW__
-            
-            //  On XP, we simply use the root directory, since any other directory may be hidden
-            int major, minor;
-            ::wxGetOsVersion( &major, &minor );
-            if( (major == 5) && (minor == 1) )
-                fpr_dir = _T("C:\\");
-#endif        
-            
-            if( fpr_dir.Last() != wxFileName::GetPathSeparator() )
-                fpr_dir += wxFileName::GetPathSeparator();
-            
-            wxString cmd = g_sencutil_bin;
-            if(bSGLock)
-                cmd += _T(" -k ");                  // Make SGLock fingerprint
-            else
-                cmd += _T(" -g ");                  // Make fingerprint
-            
-#ifndef __WXMSW__
-            cmd += _T("\"");
-            cmd += fpr_dir;
-            
-            //cmd += _T("my fpr/");             // testing
-            
-            //            wxString tst_cedilla = wxString::Format(_T("my fpr copy %cCedilla/"), 0x00E7);       // testing French cedilla
-            //            cmd += tst_cedilla;            // testing
-            
-            cmd += _T("\"");
-#else
-            cmd += wxString('\"'); 
-            cmd += fpr_dir;
-            
-            //            cmd += _T("my fpr\\");            // testing spaces in path
-            
-            //            wxString tst_cedilla = wxString::Format(_T("my%c\\"), 0x00E7);       // testing French cedilla
-            //            cmd += tst_cedilla;            // testing
-#endif            
-            wxLogMessage(_T("Create FPR command: ") + cmd);
-            
-            ::wxBeginBusyCursor();
-            
-            wxArrayString ret_array;      
-            wxExecute(cmd, ret_array, ret_array );
-            
-            ::wxEndBusyCursor();
-            
-            bool berr = false;
-            for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
-                wxString line = ret_array[i];
-                wxLogMessage(line);
-                if(line.Upper().Find(_T("ERROR")) != wxNOT_FOUND){
-                    berr = true;
-                    break;
-                }
-                if(line.Upper().Find(_T("FPR")) != wxNOT_FOUND){
-                    fpr_file = line.AfterFirst(':');
-                }
-                
-            }
-            if(!berr){
-                if(fpr_file.IsEmpty()){                 // Probably dongle not present
-                    fpr_file = _T("DONGLE_NOT_PRESENT");
-                    return fpr_file;
-                }
-            }
-            
-            
-            bool berror = false;
-            
-            if( bCopyToDesktop && !berr && fpr_file.Length()){
-                
-                bool bcopy = false;
-                wxString sdesktop_path;
-                
-#ifdef __WXMSW__
-                TCHAR desktop_path[MAX_PATH*2] = { 0 };
-                bool bpathGood = false;
-                HRESULT  hr;
-                HANDLE ProcToken = NULL;
-                OpenProcessToken( GetCurrentProcess(), TOKEN_READ, &ProcToken );
-                
-                hr = SHGetFolderPath( NULL,  CSIDL_DESKTOPDIRECTORY, ProcToken, 0, desktop_path);
-                if (SUCCEEDED(hr))    
-                    bpathGood = true;
-                
-                CloseHandle( ProcToken );
-                
-                //                wchar_t *desktop_path = 0;
-                //                bool bpathGood = false;
-                
-                //               if( (major == 5) && (minor == 1) ){             //XP
-                //                    if(S_OK == SHGetFolderPath( (HWND)0,  CSIDL_DESKTOPDIRECTORY, NULL, SHGFP_TYPE_CURRENT, desktop_path))
-                //                        bpathGood = true;
-                
-                
-                //                 }
-                //                 else{
-                    //                     if(S_OK == SHGetKnownFolderPath( FOLDERID_Desktop, 0, 0, &desktop_path))
-                //                         bpathGood = true;
-                //                 }
-                
-                
-                if(bpathGood){
-                    
-                    char str[128];
-                    wcstombs(str, desktop_path, 128);
-                    wxString desktop_fpr(str, wxConvAuto());
-                    
-                    sdesktop_path = desktop_fpr;
-                    if( desktop_fpr.Last() != wxFileName::GetPathSeparator() )
-                        desktop_fpr += wxFileName::GetPathSeparator();
-                    
-                    wxFileName fn(fpr_file);
-                    wxString desktop_fpr_file = desktop_fpr + fn.GetFullName();
-                    
-                    
-                    wxString exe = _T("xcopy");
-                    wxString parms = fpr_file.Trim() + _T(" ") + wxString('\"') + desktop_fpr + wxString('\"');
-                    wxLogMessage(_T("FPR copy command: ") + exe + _T(" ") + parms);
-                    
-                    const wchar_t *wexe = exe.wc_str(wxConvUTF8);
-                    const wchar_t *wparms = parms.wc_str(wxConvUTF8);
-                    
-                    if( (major == 5) && (minor == 1) ){             //XP
-                        // For some reason, this does not work...
-                        //8:43:13 PM: Error: Failed to copy the file 'C:\oc01W_1481247791.fpr' to '"C:\Documents and Settings\dsr\Desktop\oc01W_1481247791.fpr"'
-                        //                (error 123: the filename, directory name, or volume label syntax is incorrect.)
-                        //8:43:15 PM: oesenc fpr file created as: C:\oc01W_1481247791.fpr
-                        
-                        bcopy = wxCopyFile(fpr_file.Trim(false), _T("\"") + desktop_fpr_file + _T("\""));
-                    }
-                    else{
-                        ::wxBeginBusyCursor();
-                        
-                        // Launch oeserverd as admin
-                        SHELLEXECUTEINFO sei = { sizeof(sei) };
-                        sei.lpVerb = L"runas";
-                        sei.lpFile = wexe;
-                        sei.hwnd = NULL;
-                        sei.lpParameters = wparms;
-                        sei.nShow = SW_SHOWMINIMIZED;
-                        sei.fMask = SEE_MASK_NOASYNC;
-                        
-                        if (!ShellExecuteEx(&sei))
-                        {
-                            DWORD dwError = GetLastError();
-                            if (dwError == ERROR_CANCELLED)
-                            {
-                                // The user refused to allow privileges elevation.
-                                OCPNMessageBox_PlugIn(NULL, _("Administrator priveleges are required to copy fpr.\n  Please try again...."), _("o_charts_pi Message"), wxOK);
-                                berror = true;
-                            }
-                        }
-                        else
-                            bcopy = true;
-                        
-                        ::wxEndBusyCursor();
-                        
-                    }  
-                }
-#endif            // MSW
-
-#ifdef __WXOSX__
-                wxFileName fn(fpr_file);
-                wxString desktop_fpr_path = ::wxGetHomeDir() + wxFileName::GetPathSeparator() +
-                _T("Desktop") + wxFileName::GetPathSeparator() + fn.GetFullName();
-                
-                bcopy =  ::wxCopyFile(fpr_file.Trim(false), desktop_fpr_path);
-                sdesktop_path = desktop_fpr_path;
-                msg1 += _T("\n\n OSX ");
-#endif
-                
-                
-                wxLogMessage(_T("oeSENC fpr file created as: ") + fpr_file);
-                if(bCopyToDesktop && bcopy)
-                    wxLogMessage(_T("oeSENC fpr file created in desktop folder: ") + sdesktop_path);
-                
-                if(bcopy)
-                    bCopyOK = true;
-        }
-        else if(berr){
-            wxLogMessage(_T("o_charts_pi: oeserverd results:"));
-            for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
-                wxString line = ret_array[i];
-                wxLogMessage( line );
-            }
-            berror = true;
-        }
-        
-        if(berror)
-            return _T("");
-        else
-            return fpr_file;
-#else   // android
-
-        // Get XFPR from the oeserverda helper utility.
-        //  The target binary executable
-        wxString cmd = g_sencutil_bin;
-
-//  Set up the parameter passed as the local app storage directory, and append "cache/" to it
-        wxString dataLoc = *GetpPrivateApplicationDataLocation();
-        wxFileName fn(dataLoc);
-        wxString dataDir = fn.GetPath(wxPATH_GET_SEPARATOR);
-        dataDir += _T("cache/");
-
-        wxString rootDir = fn.GetPath(wxPATH_GET_SEPARATOR);
-        
-        //  Set up the parameter passed to runtime environment as LD_LIBRARY_PATH
-        // This will be {dir of g_sencutil_bin}
-        wxFileName fnl(cmd);
-//        wxString libDir = fnl.GetPath();
-        wxString libDir = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("lib");
-      
-        wxLogMessage(_T("oernc_pi: Getting XFPR: Starting: ") + cmd );
-        wxLogMessage(_T("oernc_pi: Getting XFPR: Parms: ") + rootDir + _T(" ") + dataDir + _T(" ") + libDir );
-
-        qDebug() << "FPR3" << cmd.mb_str();
-        wxString result = callActivityMethod_s6s("createProcSync4", cmd, _T("-q"), rootDir, _T("-g"), dataDir, libDir);
-
-        wxLogMessage(_T("oernc_pi: Start Result: ") + result);
-
-        bool berror = true;            //TODO
-        
-        // Find the file...
-        wxArrayString files;
-        wxString lastFile = _T("NOT_FOUND");
-        time_t tmax = -1;
-        size_t nf = wxDir::GetAllFiles(dataDir, &files, _T("*.fpr"), wxDIR_FILES);
-        if(nf){
-            for(size_t i = 0 ; i < files.GetCount() ; i++){
-                qDebug() << "looking at FPR file: " << files[i].mb_str();
-                time_t t = ::wxFileModificationTime(files[i]);
-                if(t > tmax){
-                    tmax = t;
-                    lastFile = files[i];
-                }
-            }
-        }
-
-        qDebug() << "Selected FPR file: " << lastFile.mb_str();
-
-        if(::wxFileExists(lastFile))
-            return lastFile;
-        else
-            return _T("");
-
-#endif        
-        
-}
-#endif
 
 
 // An Event handler class to catch events from UI dialog
@@ -4082,7 +3755,7 @@ void o_charts_pi_event_handler::OnNewFPRClick( wxCommandEvent &event )
     }           // yes
 #else                   // Android
 
-        // Get XFPR from the oeserverda helper utility.
+        // Get XFPR from the oexserverd helper utility.
         //  The target binary executable
         wxString cmd = g_sencutil_bin;
 
@@ -4228,7 +3901,7 @@ void o_charts_pi_event_handler::OnGetHWIDClick( wxCommandEvent &event )
 
 #else
 
-        // Get XFPR from the oeserverda helper utility.
+        // Get XFPR from the oexserverd helper utility.
         //  The target binary executable
         wxString cmd = g_sencutil_bin;
 

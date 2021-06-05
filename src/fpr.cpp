@@ -96,7 +96,7 @@ bool IsDongleAvailable()
     wxArrayString ret_array, err_array;      
     wxExecute(cmd, ret_array, err_array );
             
-    wxLogMessage(_T("oeaserverd results:"));
+    wxLogMessage(_T("oexserverd results:"));
     for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
         wxString line = ret_array[i];
         wxLogMessage(line);
@@ -109,7 +109,7 @@ bool IsDongleAvailable()
 
     // Show error in log
     if(err_array.GetCount()){
-        wxLogMessage(_T("oeaserverd execution error:"));
+        wxLogMessage(_T("oexserverd execution error:"));
         for(unsigned int i=0 ; i < err_array.GetCount() ; i++){
             wxString line = err_array[i];
             wxLogMessage(line);
@@ -351,7 +351,7 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
                     else{
                         ::wxBeginBusyCursor();
                         
-                        // Launch oeserverd as admin
+                        // Launch oexserverd as admin
                         SHELLEXECUTEINFO sei = { sizeof(sei) };
                         sei.lpVerb = L"runas";
                         sei.lpFile = wexe;
@@ -413,7 +413,7 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
         
 #else   // android
 
-        // Get XFPR from the oeserverda helper utility.
+        // Get XFPR from the oexserverd helper utility.
         //  The target binary executable
         wxString cmd = g_sencutil_bin;
 
@@ -485,45 +485,5 @@ wxString androidGetSystemName()
     
     return detectedSystemName;
     
-#if 0    
-
-        // Get systemName from the oeaserverda helper utility.
-        //  The target binary executable
-        wxString cmd = g_sencutil_bin;
-
-//  Set up the parameter passed as the local app storage directory, and append "cache/" to it
-        wxString dataLoc = *GetpPrivateApplicationDataLocation();
-        wxFileName fn(dataLoc);
-        wxString dataDir = fn.GetPath(wxPATH_GET_SEPARATOR);
-        //dataDir += _T("cache/");
-
-        wxString rootDir = fn.GetPath(wxPATH_GET_SEPARATOR);
-        
-        //  Set up the parameter passed to runtime environment as LD_LIBRARY_PATH
-        // This will be {dir of g_server_bin}
-        wxFileName fnl(cmd);
-        wxString libDir = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("lib");
-      
-        wxLogMessage(_T("oernc_pi: Getting systemName: Starting: ") + cmd );
-        wxLogMessage(_T("oernc_pi: Getting systemName: Parms: ") + rootDir + _T(" ") + dataDir + _T(" ") + libDir );
-
-        wxString result = callActivityMethod_s6s("createProcSync4", cmd, _T("-q"), rootDir, _T("-x"), dataDir, libDir);
-
-        wxLogMessage(_T("oernc_pi: Getting systemName: Start Result: ") + result);
-
-        bool berror = true;            //TODO
-        dataDir += _T("cache/");
-        wxString file( dataDir );
-        file += _T("s");
-        //qDebug() << "NameFile candidate: " << file.mb_str();
-        wxTextFile name_file( file );
-        if( name_file.Open() ){
-            wxString line = name_file.GetFirstLine();
-            //qDebug() << "Result: " << line.Trim().mb_str();
-            return line.Trim();
-        }
-
-        return wxEmptyString;
-#endif        
 }
 #endif

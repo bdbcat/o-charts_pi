@@ -2881,7 +2881,7 @@ int doUploadXFPR(bool bDongle)
     }
 #else   // Android
 
-    // Get the FPR directly from the helper oeserverda, in ASCII HEX
+    // Get the FPR directly from the helper oexserverd, in ASCII HEX
     wxString cmd = g_sencutil_bin;
     wxString result;
     wxString prefix = "oc03R_";
