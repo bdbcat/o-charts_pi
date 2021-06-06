@@ -2892,7 +2892,7 @@ bool validate_SENC_server(void)
             msg += _T("{");
             msg += bin_test;
             msg += _T("}\n");
-            msg += _T" reports Unavailable.\n\n");
+            msg += _T(" reports Unavailable.\n\n");
             wxLogMessage(_T("o_charts_pi: ") + msg);
             
             ///_sencutil_bin.Clear();
@@ -4461,16 +4461,12 @@ void showChartinfoDialog( void )
     
     hdr += _T("<center><font size=+1>");
     hdr +=  _("Available Chart sets:");
+
     hdr += _T("</font></center>");
     
     hdr += _T("<hr />");
     
-    //hdr += _T("<center><table border=0 bordercolor=#000000 style=background-color:#fbfbf9 width=800 cellpadding=1 cellspacing=1>");
-//     hdr += _T("<center><table border=1 >");
-//     
-//     hdr += _T("<tr>");
-//     hdr += _T("</tr>");
-   
+  
     int len_max = 0;
     int ncs = 1;
     std::map<std::string, ChartInfoItem *>::iterator iter;
@@ -4496,31 +4492,27 @@ void showChartinfoDialog( void )
         hdr += _T("</center>");
          
         hdr += _T("<center><table border=1 >");
-//        hdr += _T("<tr>");
-//        hdr += _T("</tr>");
 
         // Get the line fields
-//         wxStringTokenizer tkx(info, _T(";"));
          while ( tkx.HasMoreTokens() ){
             wxString token; // = tkx.GetNextToken();        //description
-//             hdr += _T("<tr><td>  ") + token + _T("</td></tr>");
                     
             hdr += _T("<tr>");
             token = tkx.GetNextToken();         // version
-            hdr += _T("<td>Version:</td>");
+            hdr += _T("<td>") + _("Version") + _T(":</td>");
             hdr += _T("<td align=\"right\">") + token + _T("</td>");
             hdr += _T("</tr>");
             
             token = tkx.GetNextToken();         // expiry date
             hdr += _T("<tr>");
-            hdr += _T("<td>Valid Until:</td>");
+            hdr += _T("<td>") + _("Valid until") + _T(":</td>");
             hdr += _T("<td align=\"right\">")  + token + _T("</td>");
             hdr += _T("/<tr>");
 
-            if ( 1 /*tkx.HasMoreTokens()*/ ){
+            if ( tkx.HasMoreTokens() ){
                 token = tkx.GetNextToken();         // current status, if available
                 hdr += _T("<tr>");
-                hdr += _T("<td>Status:</td>");
+                hdr += _T("<td>") + _("Status") +_T(":</td>");
                 hdr += _T("<td align=\"right\">") + token + _T("</td>");
                 hdr += _T("/<tr>");
             }
@@ -4533,10 +4525,12 @@ void showChartinfoDialog( void )
         
     }
  
-    //hdr += _T("</table></center>");
     hdr += _T("</body></html>");
 
-    callActivityMethod_s2s("displayHTMLAlertDialog", _("o-charts_pi Message"), hdr);
+    wxCharBuffer buf = hdr.ToUTF8();
+    if(buf.data())
+        callActivityMethod_s2s("displayHTMLAlertDialog", _("o-charts_pi Message"), buf.data());
+    
     g_binfoShown = true;
 }
 #endif

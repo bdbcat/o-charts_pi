@@ -391,6 +391,57 @@ wxString callActivityMethod_s2s(const char *method, wxString parm1, wxString par
         
 }
 
+wxString callActivityMethod_s2s(const char *method, wxString parm1, char *parm2)
+{
+    if(CheckPendingJNIException())
+        return _T("NOK");
+    JNIEnv* jenv;
+    
+    wxString return_string;
+    QAndroidJniObject activity = QAndroidJniObject::callStaticObjectMethod("org/qtproject/qt5/android/QtNative",
+                                                                           "activity", "()Landroid/app/Activity;");
+    if(CheckPendingJNIException())
+        return _T("NOK");
+    
+    if ( !activity.isValid() ){
+        //qDebug() << "Activity is not valid";
+        return return_string;
+    }
+    
+    //  Need a Java environment to decode the resulting string
+    if (java_vm->GetEnv( (void **) &jenv, JNI_VERSION_1_6) != JNI_OK) {
+        //qDebug() << "GetEnv failed.";
+        return _T("jenv Error");
+    }
+    
+    jstring p1 = (jenv)->NewStringUTF(parm1.c_str());
+    jstring p2 = (jenv)->NewStringUTF(parm2);
+    
+    
+    //  Call the desired method
+    //qDebug() << "Calling method_s2s" << " (" << method << ")";
+    
+    QAndroidJniObject data = activity.callObjectMethod(method, "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", p1, p2);
+    
+    (jenv)->DeleteLocalRef(p1);
+    (jenv)->DeleteLocalRef(p2);
+    
+    if(CheckPendingJNIException())
+        return _T("NOK");
+    
+    //qDebug() << "Back from method_s2s";
+        
+        jstring s = data.object<jstring>();
+        
+        if( (jenv)->GetStringLength( s )){
+            const char *ret_string = (jenv)->GetStringUTFChars(s, NULL);
+            return_string = wxString(ret_string, wxConvUTF8);
+        }
+        
+        return return_string;
+        
+}
+
 wxString callActivityMethod_s2s2i(const char *method, wxString parm1, wxString parm2, int parm3, int parm4)
 {
     if(CheckPendingJNIException())
