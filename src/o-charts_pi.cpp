@@ -4720,6 +4720,21 @@ bool processChartinfo(const wxString &oesenc_file, wxString status)
                         }
                     }
                 }
+
+                // Still nothing found?
+                // Find the first file in the target directory that "looks like" a EULA
+                if(!fileEULA.Length()){
+                    wxArrayString possibleFiles;
+                    wxDir::GetAllFiles( chartInfoDir, &possibleFiles);
+                    for(unsigned int i=0 ; i < possibleFiles.GetCount() ; i++){
+                        wxString test = possibleFiles[i].Lower();
+                        if(test.EndsWith(_T("html")) && test.Contains(_T("eula"))){
+                            wxFileName fn(possibleFiles[i]);
+                            fileEULA = fn.GetFullName();
+                            break;
+                        }
+                    }
+                }
                 
                 fullEULAFileName = chartInfoDir + fileEULA;
 
@@ -4756,27 +4771,30 @@ bool processChartinfo(const wxString &oesenc_file, wxString status)
                     CSE = cse;
                 }
                 
-                //  If the EULA is required to be shown, either once or always, do it here
-                bool b_show = false;
-                if( (CSE->npolicyShow == 1) && (!CSE->b_onceShown))       // once per lifetime
-                    b_show = true;
-                if( (CSE->npolicyShow == 2) && (!CSE->b_sessionShown))    // once per session
-                    b_show = true;
-                
-                bool b_showResult = false;
-                if(b_show){
-                    wxString file = CSE->fileName;
-                    file.Replace('!', wxFileName::GetPathSeparator());
+                if(fileEULA.Length()){                 // If no EULA file, skip it....
+
+                    //  If the EULA is required to be shown, either once or always, do it here
+                    bool b_show = false;
+                    if( (CSE->npolicyShow == 1) && (!CSE->b_onceShown))       // once per lifetime
+                        b_show = true;
+                    if( (CSE->npolicyShow == 2) && (!CSE->b_sessionShown))    // once per session
+                        b_show = true;
                     
-                    b_showResult = ShowEULA(file);
-                    
-                    if(!b_showResult){
-                        g_bEULA_Rejected = true;
-                        return false;                   // User did not accept EULA, or file missing
-                    }
-                    else{
-                        CSE->b_sessionShown = true;
-                        CSE->b_onceShown = true;
+                    bool b_showResult = false;
+                    if(b_show){
+                        wxString file = CSE->fileName;
+                        file.Replace('!', wxFileName::GetPathSeparator());
+                        
+                        b_showResult = ShowEULA(file);
+                        
+                        if(!b_showResult){
+                            g_bEULA_Rejected = true;
+                            return false;                   // User did not accept EULA, or file missing
+                        }
+                        else{
+                            CSE->b_sessionShown = true;
+                            CSE->b_onceShown = true;
+                        }
                     }
                 }
                 
