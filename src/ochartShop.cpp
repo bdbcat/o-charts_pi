@@ -38,6 +38,7 @@
 #include "wx/tokenzr.h"
 #include <wx/dir.h>
 #include "wx/artprov.h"
+#include <wx/textwrapper.h>
 
 #include "ochartShop.h"
 #include "ocpn_plugin.h"
@@ -143,7 +144,10 @@ extern o_charts_pi *g_pi;
 
 
 
-// Private class implementations
+// Private function dfinitions/implementations
+
+bool showInstallInfoDialog( wxString newChartDir);
+
 
 #define ANDROID_DIALOG_BACKGROUND_COLOR    wxColour(_T("#7cb0e9"))
 #define ANDROID_DIALOG_BODY_COLOR         wxColour(192, 192, 192)
@@ -176,6 +180,34 @@ std::string urlEncode(std::string str){
 
 
 // Private class implementations
+class MessageHardBreakWrapper : public wxTextWrapper
+    {
+    public:
+        MessageHardBreakWrapper(wxWindow *win, const wxString& text, int widthMax)
+        {
+            m_lineCount = 0;
+            Wrap(win, text, widthMax);
+        }
+        wxString const& GetWrapped() const { return m_wrapped; }
+        int const GetLineCount() const { return m_lineCount; }
+        wxArrayString GetLineArray(){ return m_array; }
+        
+    protected:
+        virtual void OnOutputLine(const wxString& line)
+        {
+            m_wrapped += line;
+            m_array.Add(line);
+        }
+        virtual void OnNewLine()
+        {
+            m_wrapped += '\n';
+            m_lineCount++;
+        }
+    private:
+        wxString m_wrapped;
+        int m_lineCount;
+        wxArrayString m_array;
+};
 
 class  OERNCMessageDialog: public wxDialog
 {
@@ -341,6 +373,183 @@ int ShowOERNCMessageDialog(wxWindow *parent, const wxString& message,  const wxS
 }
 
 
+
+
+
+
+
+#define OCP_ID_YES 27346
+#define OCP_ID_NO  27347
+
+class  OCP_ScrolledMessageDialog: public wxDialog
+{
+    
+public:
+    OCP_ScrolledMessageDialog(wxWindow *parent, const wxString& message,
+                      const wxString& caption = wxMessageBoxCaptionStr,
+                      wxString labelButtonYES = _T("Yes"),
+                      wxString labelButtonNO = _T("No"),
+                      long style = wxOK|wxCENTRE);
+    
+    void OnYes(wxCommandEvent& event);
+    void OnNo(wxCommandEvent& event);
+    void OnCancel(wxCommandEvent& event);
+    void OnClose( wxCloseEvent& event );
+    
+private:
+    int m_style;
+    DECLARE_EVENT_TABLE()
+};
+
+BEGIN_EVENT_TABLE(OCP_ScrolledMessageDialog, wxDialog)
+EVT_BUTTON(OCP_ID_YES, OCP_ScrolledMessageDialog::OnYes)
+EVT_BUTTON(OCP_ID_NO, OCP_ScrolledMessageDialog::OnNo)
+EVT_CLOSE(OCP_ScrolledMessageDialog::OnClose)
+END_EVENT_TABLE()
+
+
+OCP_ScrolledMessageDialog::OCP_ScrolledMessageDialog( wxWindow *parent,
+                                      const wxString& message,
+                                      const wxString& caption,
+                                      wxString labelButtonYES,
+                                      wxString labelButtonNO,
+                                      long style)
+: wxDialog( parent, wxID_ANY, caption, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP )
+{
+#ifdef __OCPN__ANDROID    
+    SetBackgroundColour(ANDROID_DIALOG_BACKGROUND_COLOR);
+#endif
+
+    wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
+    SetFont( *qFont );
+    
+    wxBoxSizer *topsizer = new wxBoxSizer( wxVERTICAL );
+    SetSizer( topsizer );
+    
+    wxStaticBox* itemStaticBoxSizer4Static = new wxStaticBox( this, wxID_ANY, caption );
+    
+    wxStaticBoxSizer* itemStaticBoxSizer4 = new wxStaticBoxSizer( itemStaticBoxSizer4Static, wxVERTICAL );
+    topsizer->Add( itemStaticBoxSizer4, 1, wxEXPAND | wxALL, 5 );
+    
+    itemStaticBoxSizer4->AddSpacer(10);
+    
+    wxStaticLine *staticLine121 = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
+    itemStaticBoxSizer4->Add(staticLine121, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+
+#if 1
+    wxPanel *cPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize );
+    itemStaticBoxSizer4->Add(cPanel, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    wxBoxSizer *boxSizercPanel = new wxBoxSizer(wxVERTICAL);
+    
+    cPanel->SetSizer(boxSizercPanel);
+    wxScrolledWindow *scroll = new wxScrolledWindow(cPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_RAISED | wxVSCROLL ); 
+    boxSizercPanel->Add(scroll, 1, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+#else    
+    wxScrolledWindow *scroll = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_RAISED | wxVSCROLL | wxBG_STYLE_ERASE ); 
+    itemStaticBoxSizer4->Add(scroll, 1, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+#endif
+    wxBoxSizer *scrollsizer = new wxBoxSizer( wxVERTICAL );
+    scroll->SetSizer(scrollsizer);
+
+#ifdef __OCPN__ANDROID__
+    scroll->SetMinSize(wxSize(-1, 10 * GetCharHeight()));
+#else
+    scroll->SetMinSize(wxSize(-1, 15 * GetCharHeight()));
+#endif    
+    
+
+    scroll->SetScrollRate(-1, 2);
+
+
+#if 0
+    wxPanel *messagePanel = new wxPanel(scroll, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBG_STYLE_ERASE );
+    scrollsizer->Add(messagePanel, 1, wxALL|wxEXPAND, WXC_FROM_DIP(5));
+    //messagePanel->SetForegroundColour(wxColour(200, 200, 200));
+    
+    wxBoxSizer *boxSizercPanel = new wxBoxSizer(wxVERTICAL);
+    messagePanel->SetSizer(boxSizercPanel);
+    
+    messagePanel->SetBackgroundColour(ANDROID_DIALOG_BODY_COLOR);
+
+    
+    m_style = style;
+ //   wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
+ //   SetFont( *qFont );
+    
+    wxStaticText *textMessage = new wxStaticText( messagePanel, wxID_ANY, message );
+    textMessage->Wrap(-1);
+    boxSizercPanel->Add( textMessage, 0, wxALIGN_CENTER | wxLEFT, 10 );
+#else
+    wxStaticText *textMessage = new wxStaticText( scroll, wxID_ANY, message );
+    scrollsizer->Add( textMessage, 0, wxALIGN_CENTER | wxLEFT, 10 );
+#endif
+    // 3) buttons
+    wxBoxSizer* buttons = new wxBoxSizer(wxHORIZONTAL);
+    topsizer->Add(buttons, 0, wxALIGN_RIGHT | wxALL, 5);
+
+    wxButton *OKButton = new wxButton(this, OCP_ID_YES, labelButtonYES);
+    OKButton->SetDefault();
+    buttons->Add(OKButton, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+
+    wxButton *CancelButton = new wxButton(this, OCP_ID_NO, labelButtonNO);
+    buttons->Add(CancelButton, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+
+#ifndef __OCPN__ANDROID
+    SetAutoLayout( true );
+    topsizer->SetSizeHints( this );
+    topsizer->Fit( this );
+#else    
+    SetSize( g_shopPanel->GetSize().x * 9 / 10, g_shopPanel->GetSize().y * 9 / 10);
+#endif
+    
+    Centre( wxBOTH | wxCENTER_FRAME);
+}
+
+void OCP_ScrolledMessageDialog::OnYes(wxCommandEvent& WXUNUSED(event))
+{
+    SetReturnCode(wxID_YES);
+    EndModal( wxID_YES );
+}
+
+void OCP_ScrolledMessageDialog::OnNo(wxCommandEvent& WXUNUSED(event))
+{
+    SetReturnCode(wxID_NO);
+    EndModal( wxID_NO );
+}
+
+void OCP_ScrolledMessageDialog::OnCancel(wxCommandEvent& WXUNUSED(event))
+{
+    // Allow cancellation via ESC/Close button except if
+    // only YES and NO are specified.
+    if ( (m_style & wxYES_NO) != wxYES_NO || (m_style & wxCANCEL) )
+    {
+        SetReturnCode(wxID_CANCEL);
+        EndModal( wxID_CANCEL );
+    }
+}
+
+void OCP_ScrolledMessageDialog::OnClose( wxCloseEvent& event )
+{
+    SetReturnCode(wxID_CANCEL);
+    EndModal( wxID_CANCEL );
+}
+
+int ShowScrollMessageDialog(wxWindow *parent, const wxString& message,  const wxString& caption, wxString labelYes, wxString labelNo, long style)
+{
+#ifdef __OCPN__ANDROID
+    androidDisableRotation();
+#endif
+    OCP_ScrolledMessageDialog dlg( parent, message, caption, labelYes, labelNo, style);
+    dlg.ShowModal();
+
+#ifdef __OCPN__ANDROID
+    androidEnableRotation();
+#endif    
+    return dlg.GetReturnCode();
+//#else
+//    return OCPNMessageBox_PlugIn(parent, message, caption, style);
+//#endif    
+}
 
 
 
@@ -2616,6 +2825,51 @@ int getChartList( bool bShowErrorDialogs = true){
         return checkResponseCode(iResponseCode);
 }
 
+bool showInstallInfoDialog( wxString newChartDir)
+{
+    wxString msg = _("This chartset will be installed as a new subdirectory within the directory you select next.\n\n");
+    msg += _("For example, if you select the directory \"Charts\", then a new directory will be created as:\n\n");
+    msg += _T("...");
+    msg += wxFileName::GetPathSeparator();
+    msg += _T("Charts");
+    msg += wxFileName::GetPathSeparator();
+    msg += newChartDir;
+    msg += _T("\n\n");
+    msg += _("The charts will be installed in this newly created directory.");
+    msg += _T("\n\n");
+    msg += _("Proceed?");
+    
+    MessageHardBreakWrapper wrapper(g_shopPanel, msg, g_shopPanel->GetSize().x * 8 / 10);
+
+    int ret = ShowScrollMessageDialog(NULL, wrapper.GetWrapped(), _("o-charts_pi Message"),
+                                      _("Yes"), _("No"), 0);
+
+    if(ret != wxID_YES)
+        return false;
+    else
+        return true;
+}
+
+bool showUpdateInfoDialog( wxString chartBaseDir, wxString newChartDir)
+{
+    wxString msg = _("This chartset will be re-installed in the following location.\n\n");
+    msg += chartBaseDir;
+    msg += wxFileName::GetPathSeparator();
+    msg += newChartDir;
+    msg += _T("\n\n");
+    msg += _("If you want to use that location, press \"Continue\" \n\n");
+    msg += _("If you want to change the installation location now, press \"Change\" \n\n");
+    
+    MessageHardBreakWrapper wrapper(g_shopPanel, msg, g_shopPanel->GetSize().x * 8 / 10);
+
+    int ret = ShowScrollMessageDialog(NULL, wrapper.GetWrapped(), _("o-charts_pi Message"),
+                                      _("Continue"), _("Change"), 0);
+
+    if(ret != wxID_YES)
+        return false;
+    else
+        return true;
+}
 
 int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
 {
@@ -4216,6 +4470,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
 {
     m_shopLog->ClearLog();
 
+
 #ifdef __OCPN__ANDROID__
     if(!g_systemName.Length()){
         extern wxString androidGetSystemName();
@@ -5377,6 +5632,39 @@ void shopPanel::ValidateChartset( wxCommandEvent& event )
 
 }
     
+wxString ChooseInstallDir(wxString wkinstallDir)
+{
+    wxString installLocn = g_PrivateDataDir;
+    if(wkinstallDir.Length())
+        installLocn = wkinstallDir;
+    else if(g_lastInstallDir.Length())
+        installLocn = g_lastInstallDir;
+
+    wxString dir_spec;
+    int result;
+#ifndef __OCPN__ANDROID__                
+    wxDirDialog dirSelector( NULL, _("Choose chart install location."), installLocn, wxDD_DEFAULT_STYLE  );
+    result = dirSelector.ShowModal();
+        
+    if( result == wxID_CANCEL ){
+    }
+    else{
+        dir_spec = dirSelector.GetPath();
+    }
+#else                
+
+    result = PlatformDirSelectorDialog( NULL, &dir_spec, _("Choose chart install location."), installLocn);
+#endif          
+                
+    if(result == wxID_OK)
+        return dir_spec;
+    else{
+        return wxEmptyString;
+    }
+}
+
+
+
 
 void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
 {
@@ -5485,42 +5773,60 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
                 if(!wxFileExists(fTest))
                     installDir.Clear();
             }
-            
-            // Update, or initial load?
+
+
+            // Re-install, or initial load?
             if(!gtargetChart->taskCurrentEdition.Length() || !installDir.Length()){             // initial load
         
-                wxString installLocn = g_PrivateDataDir;
-                if(installDir.Length())
-                    installLocn = installDir;
-                else if(g_lastInstallDir.Length())
-                    installLocn = g_lastInstallDir;
-
-                wxString dir_spec;
-                int result;
-#ifndef __OCPN__ANDROID__                
-                wxDirDialog dirSelector( NULL, _("Choose chart install location."), installLocn, wxDD_DEFAULT_STYLE  );
-                result = dirSelector.ShowModal();
-        
-                if( result == wxID_CANCEL ){
-                }
-                else{
-                    dir_spec = dirSelector.GetPath();
-                }
-#else                
-
-                result = PlatformDirSelectorDialog( NULL, &dir_spec, _("Choose chart install location."), installLocn);
-#endif          
-                
-                if(result == wxID_OK)
-                    gtargetSlot->installLocation = dir_spec.mb_str(); //dirSelector.GetPath().mb_str();
-                else{
+                bool bProceed = showInstallInfoDialog( ChartsetNormalName );
+                if(!bProceed){
                     g_statusOverride.Clear();
                     setStatusText( _("Status: Ready"));
                     UpdateChartList();
                     UpdateActionControls();
                     return;
-                }                    
+                }
+
+                wxString idir = ChooseInstallDir(installDir);
+                if(!idir.Length()){
+                    g_statusOverride.Clear();
+                    setStatusText( _("Status: Ready"));
+                    UpdateChartList();
+                    UpdateActionControls();
+                    return;
+                }
+                
+                gtargetSlot->installLocation = idir.mb_str(); 
+
             }
+            else{                       
+                bool bContinue = showUpdateInfoDialog( installDir, ChartsetNormalName );
+                if(bContinue){
+                }
+                else{
+                    bool bProceed = showInstallInfoDialog( ChartsetNormalName );
+                    if(!bProceed){
+                        g_statusOverride.Clear();
+                        setStatusText( _("Status: Ready"));
+                        UpdateChartList();
+                        UpdateActionControls();
+                        return;
+                    }
+
+                    wxString idir = ChooseInstallDir(installDir);
+                    if(!idir.Length()){
+                        g_statusOverride.Clear();
+                        setStatusText( _("Status: Ready"));
+                        UpdateChartList();
+                        UpdateActionControls();
+                        return;
+                    }
+
+                    gtargetSlot->installLocation = idir.mb_str();
+                }
+            }
+            
+            
 #ifdef __OCPN__ANDROID__            
             int vres = validateAndroidWriteLocation( gtargetSlot->installLocation );
             if(!vres){                  // Running SAF dialog.
@@ -5622,7 +5928,6 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     if(!chart)
         return;
 
-    
     g_LastErrorMessage.Clear();
     SetErrorMessage();
     
