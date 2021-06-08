@@ -70,6 +70,7 @@
 
 #ifdef __OCPN__ANDROID__
 #include "qdebug.h"
+#include "androidSupport.h" 
 #endif
 
 
@@ -709,7 +710,6 @@ IMPLEMENT_DYNAMIC_CLASS(oesuChart, eSENCChart)
 
 oesuChart::oesuChart() : eSENCChart()
 {
-    int yyp = 4;
 }
 
 oesuChart::~oesuChart()
@@ -870,7 +870,7 @@ bool oesuChart::CreateChartInfoFile( wxString chartName, bool forceCreate )
     
         //  Parse the XML
         TiXmlDocument * doc = new TiXmlDocument();
-        const char *rr = doc->Parse( iText);
+        doc->Parse( iText);
     
         TiXmlElement * root = doc->RootElement();
         if(!root){
@@ -978,6 +978,7 @@ bool oesuChart::CreateChartInfoFile( wxString chartName, bool forceCreate )
     wxString l4 = _T("ChartInfoShow:");
     l4 += wxString(m_chartInfoShow.c_str());
 
+#ifndef __OCPN__ANDROID__
     // Create a  Chartinfo.txt file in the installBase directory
     wxString ciPath = installBase;
     ciPath += wxFileName::GetPathSeparator();
@@ -997,6 +998,34 @@ bool oesuChart::CreateChartInfoFile( wxString chartName, bool forceCreate )
     file.Write();
     file.Close();
  
+#else
+    // Create a  temporary Chartinfo.txt file in the OCPN cache directory
+    wxString ciPath = AndroidGetCacheDir();
+    ciPath += wxFileName::GetPathSeparator();
+    ciPath += _T("infoTemp");
+
+    wxRemoveFile(ciPath);
+    wxTextFile file( ciPath );
+    file.Create();
+
+    for(unsigned int i=0 ; i < EULALines.GetCount() ; i++)
+        file.AddLine(EULALines[i]);
+    
+    file.AddLine( l2 );
+    file.AddLine( l3 );
+    file.AddLine( l4 );
+
+    file.Write();
+    file.Close();
+
+    // Copy to the target location
+    wxString dest = installBase;
+    dest += wxFileName::GetPathSeparator();
+    dest += _T("Chartinfo.txt");
+    
+    AndroidSecureCopyFile(ciPath, dest);
+
+#endif    
     return true;
 }
 
@@ -6948,7 +6977,6 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
     wxString AddFiles = wxString::Format(_T("<hr noshade><br><b>Additional info files attached to: </b> <font size=-2>%s</font><br><table border=0 cellspacing=0 cellpadding=3>"), file.GetFullName() );
     wxDir::GetAllFiles( suppPath, &files,  wxT("*.TXT")  );
     wxDir::GetAllFiles( suppPath, &files,  wxT("*.txt")  );
-    int nf = files.Count();
     if ( files.Count() > 0 )
     {      
         for ( size_t i=0; i < files.Count(); i++){
@@ -9893,12 +9921,11 @@ Extended_Geometry *eSENCChart::buildExtendedGeom( S57Obj *obj )
     int nls = 0;
     float lpx = 0;
     float lpy = 0;
-    float fpx, fpy;
+    //float fpx, fpy;
     
     float *ppt;
     
     int direction = 1;
-    int ndraw = 0;
     wxArrayInt contourCountArray;
     
     while(ls){
@@ -9920,8 +9947,8 @@ Extended_Geometry *eSENCChart::buildExtendedGeom( S57Obj *obj )
                     nPoints = 2;
                 }
                 
-                float pfirsty = ppt[0];
-                float pfirstx = ppt[1];
+                //float pfirsty = ppt[0];
+                //float pfirstx = ppt[1];
                 
                 
                 // fetch the last point
@@ -9959,20 +9986,20 @@ Extended_Geometry *eSENCChart::buildExtendedGeom( S57Obj *obj )
                 // we don't care about the direction of the next segment, only that it can be connected
                 
                 if( (fabs(plastx - pfirstx_next) < .05) && (fabs(plasty - pfirsty_next) < .05) ){
-                    fpx = pfirstx;
-                    fpy = pfirsty;
+//                    fpx = pfirstx;
+//                    fpy = pfirsty;
                     direction = 1;
                 }
                 
                 else if( (fabs(plastx - plastx_next) < .05) && (fabs(plasty - plasty_next) < .05) ){
                     direction = 1;
-                    fpx = pfirstx;
-                    fpy = pfirsty;
+//                    fpx = pfirstx;
+//                    fpy = pfirsty;
                 }
                 else{
                     direction = -1;
-                    fpx = plastx;
-                    fpy = plasty;
+//                    fpx = plastx;
+//                    fpy = plasty;
                 }
             }
         }
@@ -10056,15 +10083,15 @@ Extended_Geometry *eSENCChart::buildExtendedGeom( S57Obj *obj )
             else{
                 
                 // Is the contour closed?
-                if( (fabs(lpx - fpx) < 0.05) &&  (fabs(lpy - fpy) < 0.05) )
-                    int yyp = 4;
+//                if( (fabs(lpx - fpx) < 0.05) &&  (fabs(lpy - fpy) < 0.05) )
+//                    int yyp = 4;
                 
                 // Store the point count for this contour
-                    contourCountArray.Add(nls);
+                contourCountArray.Add(nls);
                     
                     
-                    nls = 0;
-                    index = 0;
+                nls = 0;
+                index = 0;
             }
         }
         else{
@@ -10072,8 +10099,8 @@ Extended_Geometry *eSENCChart::buildExtendedGeom( S57Obj *obj )
             // and record this contour
             
             // Is the contour closed?
-            if( (fabs(lpx - fpx) < 0.05) &&  (fabs(lpy - fpy) < 0.05) )
-                int yyp = 4;
+//            if( (fabs(lpx - fpx) < 0.05) &&  (fabs(lpy - fpy) < 0.05) )
+//                int yyp = 4;
             
             contourCountArray.Add(nls);
             

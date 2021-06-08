@@ -45,6 +45,7 @@
 
 #ifdef __OCPN__ANDROID__
 #include "qdebug.h"
+#include "androidSupport.h"
 #endif
 
 extern wxString getChartInstallBase( wxString chartFileFullPath );
@@ -946,6 +947,9 @@ bool Chart_oeuRNC::CreateChartInfoFile( wxString chartName, bool forceCreate )
     wxString chartInfoDir = fn.GetPath(  wxPATH_GET_VOLUME + wxPATH_GET_SEPARATOR );
     wxString chartInfo = chartInfoDir + _T("Chartinfo.txt");
 
+    if(::wxFileExists( chartInfo ) && !forceCreate)
+        return true;
+
     // Find and parse the Keyfile
     wxString installBase = getChartInstallBase( chartName );
     
@@ -986,7 +990,7 @@ bool Chart_oeuRNC::CreateChartInfoFile( wxString chartName, bool forceCreate )
     
         //  Parse the XML
         TiXmlDocument * doc = new TiXmlDocument();
-        const char *rr = doc->Parse( iText);
+        doc->Parse( iText);
     
         TiXmlElement * root = doc->RootElement();
         if(!root){
@@ -1094,6 +1098,7 @@ bool Chart_oeuRNC::CreateChartInfoFile( wxString chartName, bool forceCreate )
     wxString l4 = _T("ChartInfoShow:");
     l4 += wxString(m_chartInfoShow.c_str());
 
+#ifndef __OCPN__ANDROID__
     // Create a  Chartinfo.txt file in the installBase directory
     wxString ciPath = installBase;
     ciPath += wxFileName::GetPathSeparator();
@@ -1112,7 +1117,34 @@ bool Chart_oeuRNC::CreateChartInfoFile( wxString chartName, bool forceCreate )
 
     file.Write();
     file.Close();
- 
+#else
+    // Create a  temporary Chartinfo.txt file in the OCPN cache directory
+    wxString ciPath = AndroidGetCacheDir();
+    ciPath += wxFileName::GetPathSeparator();
+    ciPath += _T("infoTemp");
+
+    wxRemoveFile(ciPath);
+    wxTextFile file( ciPath );
+    file.Create();
+
+    for(unsigned int i=0 ; i < EULALines.GetCount() ; i++)
+        file.AddLine(EULALines[i]);
+    
+    file.AddLine( l2 );
+    file.AddLine( l3 );
+    file.AddLine( l4 );
+
+    file.Write();
+    file.Close();
+
+    // Copy to the target location
+    wxString dest = installBase;
+    dest += wxFileName::GetPathSeparator();
+    dest += _T("Chartinfo.txt");
+    
+    AndroidSecureCopyFile(ciPath, dest);
+
+#endif    
     return true;
 }
 
@@ -6891,7 +6923,7 @@ static int read_scanline_bytes( z_stream *stream, unsigned char *dest, size_t le
     if( stream == NULL || dest == NULL) return 1;
 
     int ret;
-    uint32_t bytes_read;
+    //uint32_t bytes_read;
 
     stream->avail_out = len;
     stream->next_out = dest;
@@ -6927,7 +6959,7 @@ int ocpn_decode_image( unsigned char *in, unsigned char *out, size_t in_size, si
 
     //uint8_t channels = 1; 
 
-    uint8_t bytes_per_pixel = 1;
+    //uint8_t bytes_per_pixel = 1;
 
     int bit_depth = 8;
     if(nColors <= 16)
@@ -6943,15 +6975,15 @@ int ocpn_decode_image( unsigned char *in, unsigned char *out, size_t in_size, si
         return ec;
     }
 
-    int apply_trns = 0;
-    int apply_gamma = 0;
-    int use_sbit = 0;
-    int indexed = 1;
-    int do_scaling = 0;
+    //int apply_trns = 0;
+    //int apply_gamma = 0;
+    //int use_sbit = 0;
+    //int indexed = 1;
+    //int do_scaling = 0;
 
-    int interlaced = 0;
+    //int interlaced = 0;
 
-    uint32_t i, k, scanline_idx, width;
+    uint32_t k, scanline_idx, width;
    
     const uint8_t samples_per_byte = 8 / bit_depth;
     const uint8_t mask = (uint16_t)(1 << bit_depth) - 1;
@@ -6960,7 +6992,7 @@ int ocpn_decode_image( unsigned char *in, unsigned char *out, size_t in_size, si
     size_t pixel_offset = 0;
     
     unsigned char *pixel;
-    unsigned processing_depth = bit_depth;
+    //unsigned processing_depth = bit_depth;
 
     size_t scanline_width = 0;
 
