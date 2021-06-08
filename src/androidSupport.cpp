@@ -687,4 +687,74 @@ void androidDisableRotation( void )
     callActivityMethod_vs("DisableRotation");
 }
 
+wxSize getAndroidDisplayDimensions( void )
+{
+    wxSize sz_ret = ::wxGetDisplaySize();               // default, probably reasonable, but maybe not accurate
+    
+    QAndroidJniObject activity = QAndroidJniObject::callStaticObjectMethod("org/qtproject/qt5/android/QtNative",
+                                                                           "activity", "()Landroid/app/Activity;");
+    
+    if ( !activity.isValid() ){
+        //qDebug() << "Activity is not valid";
+        return sz_ret;
+    }
+    
+    //  Call the desired method
+    QAndroidJniObject data = activity.callObjectMethod("getDisplayMetrics", "()Ljava/lang/String;");
+    
+    wxString return_string;
+    jstring s = data.object<jstring>();
+    
+    //  Need a Java environment to decode the resulting string
+    JNIEnv* jenv;
+    if (java_vm->GetEnv( (void **) &jenv, JNI_VERSION_1_6) != JNI_OK) {
+        //qDebug() << "GetEnv failed.";
+    }
+    else {
+        const char *ret_string = (jenv)->GetStringUTFChars(s, NULL);
+        return_string = wxString(ret_string, wxConvUTF8);
+    }
+    
+    //167.802994;1.000000;160;1024;527;1024;552;1024;552;56
+     wxStringTokenizer tk(return_string, _T(";"));
+    if( tk.HasMoreTokens() ){
+        wxString token = tk.GetNextToken();     // xdpi
+        token = tk.GetNextToken();              // density
+        token = tk.GetNextToken();              // densityDPI
+        
+        token = tk.GetNextToken();
+        long a = 1000;
+        if(token.ToLong( &a ))
+            sz_ret.x = a;
+        
+        token = tk.GetNextToken();
+        long b = 1000;        
+        if(token.ToLong( &b ))
+            sz_ret.y = b;
+        token = tk.GetNextToken();              
+        token = tk.GetNextToken();
+        
+        token = tk.GetNextToken();
+        token = tk.GetNextToken();
+        
+        long abh = 0;
+        token = tk.GetNextToken();              //  ActionBar height, if shown
+        if(token.ToLong( &abh ))
+            sz_ret.y -= abh;
+            
+        
+        
+    }
+
+    // Samsung sm-t590/Android 10 has some display problems in portrait mode.....
+//     if(g_detect_smt590){
+//         if(sz_ret.x < sz_ret.y)
+//             sz_ret.y = 1650;
+//     }
+    
+    //qDebug() << "getAndroidDisplayDimensions" << sz_ret.x << sz_ret.y;
+    
+    return sz_ret;
+    
+}
 
