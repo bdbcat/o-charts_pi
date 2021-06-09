@@ -1024,6 +1024,8 @@ bool oesuChart::CreateChartInfoFile( wxString chartName, bool forceCreate )
     dest += _T("Chartinfo.txt");
     
     AndroidSecureCopyFile(ciPath, dest);
+    
+    wxRemoveFile(ciPath);
 
 #endif    
     return true;

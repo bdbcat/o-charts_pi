@@ -1144,6 +1144,8 @@ bool Chart_oeuRNC::CreateChartInfoFile( wxString chartName, bool forceCreate )
     
     AndroidSecureCopyFile(ciPath, dest);
 
+    wxRemoveFile(ciPath);
+
 #endif    
     return true;
 }

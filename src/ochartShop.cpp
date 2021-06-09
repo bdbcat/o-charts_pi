@@ -152,6 +152,81 @@ bool showInstallInfoDialog( wxString newChartDir);
 #define ANDROID_DIALOG_BACKGROUND_COLOR    wxColour(_T("#7cb0e9"))
 #define ANDROID_DIALOG_BODY_COLOR         wxColour(192, 192, 192)
 
+
+// =================================================================
+//  Resources:          Code produced from modified version of CopyDir 
+//                                      function availble at:  
+//                                      http://wxforum.shadonet.com/viewtopic.php?t=2080
+//      Returns:                True if successful, false otherwise.
+// =================================================================
+bool RemDirRF(wxString rmDir) {
+
+
+    // first make sure that the dir exists
+    if(!wxDir::Exists(rmDir)) {
+            wxLogError(rmDir + " does not exist.  Could not remove directory.");
+            return false;
+    }
+       
+        // append a slash if we don't have one
+        if (rmDir[rmDir.length()-1] != wxFILE_SEP_PATH) {
+                rmDir += wxFILE_SEP_PATH;       
+    }
+
+        // define our directory object.  When we begin traversing it, the
+        // os will not let go until the object goes out of scope.
+    wxDir* dir = new wxDir(rmDir);
+
+        // check for allocation failure
+        if (dir == NULL) {
+                wxLogError("Could not allocate new memory on the heap!");
+                return false;
+        }
+
+        // our file name temp var
+    wxString filename;
+        // get the first filename
+    bool cont = dir->GetFirst(&filename);
+
+        // if there are files to process
+    if (cont){
+        do {
+                        // if the next filename is actually a directory
+            if (wxDirExists(rmDir + filename)) {
+                                // delete this directory
+                RemDirRF(rmDir + filename);
+            }
+            else {
+                                // otherwise attempt to delete this file
+                if(!wxRemoveFile(rmDir + filename)) {
+                                        // error if we couldn't
+                                        wxLogError("Could not remove file \"" + rmDir + filename + "\"");
+                                }
+            }
+        }
+                // get the next file name
+        while (dir->GetNext(&filename));
+    }   
+
+        // Remove our directory object, so the OS will let go of it and
+        // allow us to delete it
+        delete dir;
+
+        // now actually try to delete it
+        if (!wxFileName::Rmdir(rmDir)) {
+                // error if we couldn't
+                wxLogError("Could not remove directory " + rmDir);
+                // return accordingly
+                return false;
+        }
+        // otherwise
+        else {
+                // return that we were successfull.
+                return true; 
+        }
+
+}
+
 std::string urlEncode(std::string str){
     std::string new_str = "";
     char c;
@@ -5118,29 +5193,29 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         
         // Extract the zip file to a temporary location, making the embedded files available for parsing
 #ifdef __OCPN__ANDROID__
-        wxString tmp_dir = AndroidGetCacheDir();
-        tmp_dir += wxFileName::GetPathSeparator();
-        tmp_dir += _T("zipTemp");
-        tmp_dir += wxFileName::GetPathSeparator();
+        wxString tmp_Zipdir = AndroidGetCacheDir();
+        tmp_Zipdir += wxFileName::GetPathSeparator();
+        tmp_Zipdir += _T("zipTemp");
+        //tmp_Zipdir += wxFileName::GetPathSeparator();
         
         // Check and make this (parent) directory if necessary
-        wxFileName fnp(tmp_dir);
+        wxFileName fnp(tmp_Zipdir);
         if( !fnp.DirExists() ){
             if( !wxFileName::Mkdir(fnp.GetPath(), 0755, wxPATH_MKDIR_FULL) ){
                 wxLogError(_T("Can not create tmp parent directory on TASK_UPDATE '") + fnp.GetPath() + _T("'."));
                 return 10;
             }
         }
-        tmp_dir += wxString( task->chartsetNameNormalized.c_str() );
-        tmp_dir += wxFileName::GetPathSeparator();
+        tmp_Zipdir += wxString( task->chartsetNameNormalized.c_str() );
+        tmp_Zipdir += wxFileName::GetPathSeparator();
 
 #else
-        wxString tmp_dir = wxFileName::CreateTempFileName( _T("") );                    // Be careful, this method actually create a file
-        tmp_dir += _T("zipTemp");
+        wxString tmp_Zipdir = wxFileName::CreateTempFileName( _T("") );                    // Be careful, this method actually create a file
+        tmp_Zipdir += _T("zipTemp");
         //tmp_dir += wxFileName::GetPathSeparator();
 #endif
         
-        wxFileName fn(tmp_dir);
+        wxFileName fn(tmp_Zipdir);
         if( !fn.DirExists() ){
             if( !wxFileName::Mkdir(fn.GetPath(), 0755, wxPATH_MKDIR_FULL) ){
                 wxLogError(_T("Can not create tmp directory on TASK_UPDATE '") + fn.GetPath() + _T("'."));
@@ -5148,12 +5223,12 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             }
         }
   
-        ExtractZipFiles( task->cacheLinkLocn, tmp_dir, false, wxDateTime::Now(), false);
+        ExtractZipFiles( task->cacheLinkLocn, tmp_Zipdir, false, wxDateTime::Now(), false);
 
         // Find any "ChartList.XML" file
         wxString actionChartList;
         wxArrayString fileArrayXML;
-        wxDir::GetAllFiles(tmp_dir, &fileArrayXML, _T("*.XML"));
+        wxDir::GetAllFiles(tmp_Zipdir, &fileArrayXML, _T("*.XML"));
         
         for(unsigned int i=0 ; i < fileArrayXML.GetCount() ; i++){
             wxString candidate = fileArrayXML.Item(i);
@@ -5295,7 +5370,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
  
         }
         
-        wxDir unzipDir(tmp_dir);
+        wxDir unzipDir(tmp_Zipdir);
         wxString chartTopLevelZip;
         if(chart->GetChartType() == (int)CHART_TYPE_OERNC){
             if(!unzipDir.GetFirst( &chartTopLevelZip, _T("oeuRNC*"), wxDIR_DIRS)){
@@ -5354,7 +5429,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             
             wxString fileTarget = wxString( (actionAddUpdate[i]->ID).c_str()) + extension;
             // Copy the oernc chart from the temp unzip location to the target location
-            wxString source = tmp_dir + wxFileName::GetPathSeparator() + chartTopLevelZip + wxFileName::GetPathSeparator() + fileTarget;
+            wxString source = tmp_Zipdir + wxFileName::GetPathSeparator() + chartTopLevelZip + wxFileName::GetPathSeparator() + fileTarget;
             if(!wxFileExists(source)){
                 wxLogError(_T("Can not find file referenced in ChartList: ") + source);
                 continue;
@@ -5379,13 +5454,16 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
                 wxLogError(_T("Can not copy file referenced in ChartList...Source: ") + source + _T("   Destination: ") + destination);
             }
             
-            // Revocer the temporary space used.
+            // Recover the temporary space used.
             wxRemoveFile( source );
 
             // Add the entry from the working copy of ChartList.XML file
             csdata_target.AddChart( actionAddUpdate[i] );
  
         }
+        
+        //  Remove the temp zip here
+        RemDirRF(tmp_Zipdir);
         
         // Process the new Key list file, adding/editing new keys into the target set
         for(size_t i=0 ; i < workCSK.chartList.size() ; i++){
@@ -5448,7 +5526,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
 
         // Find and store any EULAs found
         wxArrayString fileArrayEULA;
-        wxDir::GetAllFiles(tmp_dir, &fileArrayEULA, _T("*.html"));
+        wxDir::GetAllFiles(tmp_Zipdir, &fileArrayEULA, _T("*.html"));
         for(unsigned int i=0 ; i < fileArrayEULA.GetCount() ; i++){
             wxFileName fn(fileArrayEULA.Item(i));
             wxString destination = destinationDir + fn.GetFullName();
@@ -5537,7 +5615,7 @@ bool shopPanel::validateSHA256(std::string fileName, std::string shaSum)
     fseek(rFile, 0, SEEK_END);
     unsigned int rLength = ftell(rFile);
                         
-    unsigned char buffer[1024 * 64];
+    unsigned char buffer[1024 * 256];
     fseek(rFile, 0, SEEK_SET);
     
     SHA256_CTX ctx;
@@ -5952,8 +6030,10 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     
     // Prefer to use the dongle, if present
     if(g_dongleName.Len()){
-        if( doUploadXFPR( true ) != 0){
-            g_dongleName.Clear();
+        int res1 = doUploadXFPR( true );
+        if( res1 != 0){
+            if(res1 < 200)
+                g_dongleName.Clear();
             g_statusOverride.Clear();
             setStatusText( _("Status: Dongle FPR upload error"));
 
@@ -5974,8 +6054,10 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
                 return;
         }
 
-        if( doUploadXFPR( false ) != 0){
-            g_systemName.Clear();
+        int res2 = doUploadXFPR( false );
+        if( res2 != 0){
+            if(res2 < 200)
+                g_systemName.Clear();
             g_statusOverride.Clear();
             setStatusText( _("Status: System FPR upload error"));
             saveShopConfig();       // record blank system name.
