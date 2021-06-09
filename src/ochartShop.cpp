@@ -4340,7 +4340,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
 #ifndef __OCPN__ANDROID__
     m_scrollRate = 5;
 #else
-    m_scrollRate = 2;
+    m_scrollRate = 1;
 #endif
     
     m_scrollWinChartList->SetScrollRate(m_scrollRate, m_scrollRate);
