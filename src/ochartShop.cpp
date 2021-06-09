@@ -414,9 +414,9 @@ OCP_ScrolledMessageDialog::OCP_ScrolledMessageDialog( wxWindow *parent,
                                       wxString labelButtonYES,
                                       wxString labelButtonNO,
                                       long style)
-: wxDialog( parent, wxID_ANY, caption, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP )
+: wxDialog( parent, wxID_ANY, caption, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE /*| wxSTAY_ON_TOP*/ )
 {
-#ifdef __OCPN__ANDROID    
+#ifdef __OCPN__ANDROID__    
     SetBackgroundColour(ANDROID_DIALOG_BACKGROUND_COLOR);
 #endif
 
@@ -425,7 +425,7 @@ OCP_ScrolledMessageDialog::OCP_ScrolledMessageDialog( wxWindow *parent,
     
     wxBoxSizer *topsizer = new wxBoxSizer( wxVERTICAL );
     SetSizer( topsizer );
-    
+
     wxStaticBox* itemStaticBoxSizer4Static = new wxStaticBox( this, wxID_ANY, caption );
     
     wxStaticBoxSizer* itemStaticBoxSizer4 = new wxStaticBoxSizer( itemStaticBoxSizer4Static, wxVERTICAL );
@@ -435,54 +435,47 @@ OCP_ScrolledMessageDialog::OCP_ScrolledMessageDialog( wxWindow *parent,
     
     wxStaticLine *staticLine121 = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL);
     itemStaticBoxSizer4->Add(staticLine121, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
-
-#if 1
+    
     wxPanel *cPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize );
     itemStaticBoxSizer4->Add(cPanel, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
-    wxBoxSizer *boxSizercPanel = new wxBoxSizer(wxVERTICAL);
     
+    wxBoxSizer *boxSizercPanel = new wxBoxSizer(wxVERTICAL);
     cPanel->SetSizer(boxSizercPanel);
+    
     wxScrolledWindow *scroll = new wxScrolledWindow(cPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_RAISED | wxVSCROLL ); 
     boxSizercPanel->Add(scroll, 1, wxALL|wxEXPAND, WXC_FROM_DIP(5));
-#else    
-    wxScrolledWindow *scroll = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_RAISED | wxVSCROLL | wxBG_STYLE_ERASE ); 
-    itemStaticBoxSizer4->Add(scroll, 1, wxALL|wxEXPAND, WXC_FROM_DIP(5));
-#endif
+
     wxBoxSizer *scrollsizer = new wxBoxSizer( wxVERTICAL );
     scroll->SetSizer(scrollsizer);
 
+    // Count the lines in the message
+    unsigned int i=0;
+    int nLines = 1;
+    while(i < message.Length()){
+        while( (message[i] != '\n') && (i < message.Length()) ){
+            i++;
+        }
+        
+        nLines++;
+        i++;
+    }
+
 #ifdef __OCPN__ANDROID__
-    scroll->SetMinSize(wxSize(-1, 10 * GetCharHeight()));
+    wxSize screenSize = getAndroidDisplayDimensions();   
+    int nMax = screenSize.y / GetCharHeight();
+    qDebug() << "nMax" << nMax;
+
+    scroll->SetMinSize(wxSize(-1, (nMax - 3) * GetCharHeight()));
 #else
     scroll->SetMinSize(wxSize(-1, 15 * GetCharHeight()));
 #endif    
     
 
-    scroll->SetScrollRate(-1, 2);
+    scroll->SetScrollRate(-1, 1);
 
-
-#if 0
-    wxPanel *messagePanel = new wxPanel(scroll, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBG_STYLE_ERASE );
-    scrollsizer->Add(messagePanel, 1, wxALL|wxEXPAND, WXC_FROM_DIP(5));
-    //messagePanel->SetForegroundColour(wxColour(200, 200, 200));
-    
-    wxBoxSizer *boxSizercPanel = new wxBoxSizer(wxVERTICAL);
-    messagePanel->SetSizer(boxSizercPanel);
-    
-    messagePanel->SetBackgroundColour(ANDROID_DIALOG_BODY_COLOR);
-
-    
-    m_style = style;
- //   wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
- //   SetFont( *qFont );
-    
-    wxStaticText *textMessage = new wxStaticText( messagePanel, wxID_ANY, message );
-    textMessage->Wrap(-1);
-    boxSizercPanel->Add( textMessage, 0, wxALIGN_CENTER | wxLEFT, 10 );
-#else
     wxStaticText *textMessage = new wxStaticText( scroll, wxID_ANY, message );
     scrollsizer->Add( textMessage, 0, wxALIGN_CENTER | wxLEFT, 10 );
-#endif
+
     // 3) buttons
     wxBoxSizer* buttons = new wxBoxSizer(wxHORIZONTAL);
     topsizer->Add(buttons, 0, wxALIGN_RIGHT | wxALL, 5);
@@ -494,15 +487,16 @@ OCP_ScrolledMessageDialog::OCP_ScrolledMessageDialog( wxWindow *parent,
     wxButton *CancelButton = new wxButton(this, OCP_ID_NO, labelButtonNO);
     buttons->Add(CancelButton, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
-#ifndef __OCPN__ANDROID
+#ifndef __OCPN__ANDROID__
     SetAutoLayout( true );
     topsizer->SetSizeHints( this );
     topsizer->Fit( this );
-#else    
-    SetSize( g_shopPanel->GetSize().x * 9 / 10, g_shopPanel->GetSize().y * 9 / 10);
+#else
+    wxSize sz = getAndroidDisplayDimensions();   
+    SetSize( g_shopPanel->GetSize().x * 9 / 10, sz/*g_shopPanel->GetSize()*/.y * 9 / 10);
 #endif
     
-    Centre( wxBOTH | wxCENTER_FRAME);
+    Centre( wxBOTH /*| wxCENTER_FRAME*/);
 }
 
 void OCP_ScrolledMessageDialog::OnYes(wxCommandEvent& WXUNUSED(event))
@@ -536,19 +530,19 @@ void OCP_ScrolledMessageDialog::OnClose( wxCloseEvent& event )
 
 int ShowScrollMessageDialog(wxWindow *parent, const wxString& message,  const wxString& caption, wxString labelYes, wxString labelNo, long style)
 {
-#ifdef __OCPN__ANDROID
+   
+#ifdef __OCPN__ANDROID__
     androidDisableRotation();
 #endif
+    
     OCP_ScrolledMessageDialog dlg( parent, message, caption, labelYes, labelNo, style);
     dlg.ShowModal();
 
-#ifdef __OCPN__ANDROID
+#ifdef __OCPN__ANDROID__
     androidEnableRotation();
 #endif    
+
     return dlg.GetReturnCode();
-//#else
-//    return OCPNMessageBox_PlugIn(parent, message, caption, style);
-//#endif    
 }
 
 
@@ -2836,13 +2830,11 @@ bool showInstallInfoDialog( wxString newChartDir)
     msg += newChartDir;
     msg += _T("\n\n");
     msg += _("The charts will be installed in this newly created directory.");
-    msg += _T("\n\n");
-    msg += _("Proceed?");
     
     MessageHardBreakWrapper wrapper(g_shopPanel, msg, g_shopPanel->GetSize().x * 8 / 10);
 
     int ret = ShowScrollMessageDialog(NULL, wrapper.GetWrapped(), _("o-charts_pi Message"),
-                                      _("Yes"), _("No"), 0);
+                                      _("Proceed"), _("Cancel"), 0);
 
     if(ret != wxID_YES)
         return false;
@@ -4561,7 +4553,6 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
         pConf->Write( _T("LastUpdate"), g_lastShopUpdate );
     }
 
-
     SortChartList();
     
     bool bNeedSystemName = false;
@@ -4679,6 +4670,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     UpdateChartInfoFiles();
     
     saveShopConfig();
+    
 }
 
 void shopPanel::UpdateChartInfoFiles()
