@@ -493,6 +493,75 @@ private:
     DECLARE_EVENT_TABLE()
 };
 
+
+class pi_HTMLMessage: public wxDialog
+{
+    DECLARE_DYNAMIC_CLASS( about )
+    DECLARE_EVENT_TABLE()
+    
+public:
+    explicit pi_HTMLMessage( );
+    explicit pi_HTMLMessage( wxWindow* parent, 
+                    wxWindowID id = ID_DIALOG,
+                    const wxString& caption = SYMBOL_ABOUT_TITLE,
+                    const wxString& message = _T("Default message"),
+                    const wxPoint& pos = wxDefaultPosition,
+                    const wxSize& size = wxSize(500, 500),
+                    long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
+
+    explicit pi_HTMLMessage( wxWindow* parent, 
+                              wxString fileName,
+                              wxWindowID id = ID_DIALOG,
+                              const wxString& caption = SYMBOL_ABOUT_TITLE,
+                              const wxString& message = _T("Default message"),
+                              const wxPoint& pos = wxDefaultPosition,
+                              const wxSize& size = wxSize(500, 500),
+                              long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
+    
+    bool Create( wxWindow* parent,
+                 wxWindowID id = ID_DIALOG,
+                 const wxString& caption = SYMBOL_ABOUT_TITLE,
+                 const wxString& message = _T("Default message"),
+                 const wxPoint& pos = wxDefaultPosition,
+                 const wxSize& size = wxSize(500, 500),
+                 long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
+    
+    void RecalculateSize( void );
+    void SetOKMode();
+    void SetText( wxString text ){ m_text = text; }
+    
+private:
+    void CreateControls( void );
+    void Populate( void );
+    void OnXidOkClick( wxCommandEvent& event );
+    void OnXidRejectClick( wxCommandEvent& event );
+    void OnPageChange(wxNotebookEvent& event);
+    void OnClose( wxCloseEvent& event );
+    
+    wxWindow *m_parent;
+    bool m_btips_loaded;
+    
+    wxPanel* itemPanelAbout;
+    wxPanel* itemPanelAuthors;
+    wxPanel* itemPanelLicense;
+    wxPanel* itemPanelTips;
+    
+    wxTextCtrl *pAuthorTextCtl;
+    wxTextCtrl *pLicenseTextCtl;
+    wxNotebook *pNotebook;
+    wxHtmlWindow *pAboutHTMLCtl;
+    wxHtmlWindow *pLicenseHTMLCtl;
+    wxHtmlWindow *pAuthorHTMLCtl;
+    
+    wxString m_fileName;
+    wxButton* closeButton;
+    wxButton* rejectButton;
+    wxString m_text;
+    
+    //wxSize m_displaySize;
+    
+};
+
 #endif          // Guard
 
 

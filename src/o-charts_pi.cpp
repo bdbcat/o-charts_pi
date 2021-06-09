@@ -236,6 +236,7 @@ bool                            g_GenericMessageShown;
 bool                            g_ExpiredMessageShown;
 
 bool                            g_benableRebuild;
+extern bool                     g_chartListUpdatedOK;
 
 bool shutdown_SENC_server( void );
 bool ShowAlwaysEULAs();
@@ -4511,10 +4512,12 @@ void showChartinfoDialog( void )
 
             if ( tkx.HasMoreTokens() ){
                 token = tkx.GetNextToken();         // current status, if available
-                hdr += _T("<tr>");
-                hdr += _T("<td>") + _("Status") +_T(":</td>");
-                hdr += _T("<td align=\"right\">") + token + _T("</td>");
-                hdr += _T("/<tr>");
+                if(g_chartListUpdatedOK){
+                    hdr += _T("<tr>");
+                    hdr += _T("<td>") + _("Status") +_T(":</td>");
+                    hdr += _T("<td align=\"right\">") + token + _T("</td>");
+                    hdr += _T("/<tr>");
+                }
             }
          }
         
@@ -4615,7 +4618,8 @@ void showChartinfoDialog( void )
 
             if ( tkx.HasMoreTokens() ){
                 token = tkx.GetNextToken();         // current status, if available
-                hdr += _T("<td>") + token + _T("</td>");
+                if(g_chartListUpdatedOK)
+                    hdr += _T("<td>") + token + _T("</td>");
             }
         }
         
@@ -4779,7 +4783,7 @@ bool processChartinfo(const wxString &oesenc_file, wxString status)
                         b_show = true;
                     if( (CSE->npolicyShow == 2) && (!CSE->b_sessionShown))    // once per session
                         b_show = true;
-                    
+
                     bool b_showResult = false;
                     if(b_show){
                         wxString file = CSE->fileName;
@@ -5037,6 +5041,421 @@ void oesencPanel::CreateHWID( wxCommandEvent &evt )
         g_event_handler->OnGetHWIDClick(evt);
 }
 
+
+IMPLEMENT_DYNAMIC_CLASS( pi_HTMLMessage, wxDialog )
+
+BEGIN_EVENT_TABLE( pi_HTMLMessage, wxDialog )
+EVT_BUTTON( xID_OK, pi_HTMLMessage::OnXidOkClick )
+EVT_BUTTON( xID_CANCEL, pi_HTMLMessage::OnXidRejectClick )
+EVT_NOTEBOOK_PAGE_CHANGED(ID_NOTEBOOK_HELP, pi_HTMLMessage::OnPageChange)
+EVT_CLOSE( pi_HTMLMessage::OnClose )
+END_EVENT_TABLE()
+
+pi_HTMLMessage::pi_HTMLMessage( void ) :
+    m_parent( NULL ),
+    m_btips_loaded ( FALSE ) { }
+
+pi_HTMLMessage::pi_HTMLMessage( wxWindow* parent, wxWindowID id, const wxString& caption,
+                  const wxString& message,
+                  const wxPoint& pos, const wxSize& size, long style) :
+    m_parent( parent ),
+    m_btips_loaded ( FALSE )
+{
+  Create(parent, id, caption, message, pos, size, style);
+}
+
+pi_HTMLMessage::pi_HTMLMessage( wxWindow* parent, wxString fileName, wxWindowID id, const wxString& caption,
+                                  const wxString& message,
+                                  const wxPoint& pos, const wxSize& size, long style) :
+                                  m_parent( parent ),
+                                  m_btips_loaded ( FALSE )
+{
+    m_fileName = fileName;
+    Create(parent, id, caption, message, pos, size, style);
+}
+                                  
+                                  
+bool pi_HTMLMessage::Create( wxWindow* parent, wxWindowID id, const wxString& caption, 
+                                                              const wxString& message,
+                                                              const wxPoint& pos,
+                                                              const wxSize& size, long style )
+{
+    m_text = message;
+
+    m_parent = parent;
+#ifdef __WXOSX__
+    style |= wxSTAY_ON_TOP;
+#endif
+
+    SetExtraStyle( GetExtraStyle() | wxWS_EX_BLOCK_EVENTS );
+    wxDialog::Create( parent, id, caption, pos, size, style );
+    wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
+    SetFont( *qFont );
+
+    closeButton = NULL;
+    rejectButton = NULL;
+        
+    //m_displaySize = g_Platform->getDisplaySize();
+    CreateControls();
+    Populate();
+
+    RecalculateSize();
+
+    return TRUE;
+}
+
+void pi_HTMLMessage::SetOKMode()
+{
+    if(closeButton)
+        closeButton->SetLabel(_T("OK"));
+    if(rejectButton)
+        rejectButton->Hide();
+}
+    
+#if 0
+void pi_HTMLMessage::SetColorScheme( void )
+{
+    DimeControl( this );
+    wxColor bg = GetBackgroundColour();
+    pAboutHTMLCtl->SetBackgroundColour( bg );
+    pLicenseHTMLCtl->SetBackgroundColour( bg );
+    pAuthorHTMLCtl->SetBackgroundColour( bg );
+    
+
+    // This looks like non-sense, but is needed for __WXGTK__
+    // to get colours to propagate down the control's family tree.
+    SetBackgroundColour( bg );
+
+#ifdef __WXQT__
+    // wxQT has some trouble clearing the background of HTML window...
+    wxBitmap tbm( GetSize().x, GetSize().y, -1 );
+    wxMemoryDC tdc( tbm );
+    tdc.SetBackground( bg );
+    tdc.Clear();
+    pAboutHTMLCtl->SetBackgroundImage(tbm);
+    pLicenseHTMLCtl->SetBackgroundImage(tbm);
+    pAuthorHTMLCtl->SetBackgroundImage(tbm);
+#endif
+
+}
+#endif
+
+void pi_HTMLMessage::Populate( void )
+{
+
+    wxColor bg = GetBackgroundColour();
+    wxColor fg = wxColour( 0, 0, 0 );
+
+    // The HTML Header
+    wxString aboutText =
+        wxString::Format(
+            _T( "<html><body bgcolor=#%02x%02x%02x><font color=#%02x%02x%02x>" ),
+            bg.Red(), bg.Blue(), bg.Green(), fg.Red(), fg.Blue(), fg.Green() );
+
+    wxFont *dFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
+    
+    // Do weird font size calculation
+    int points = dFont->GetPointSize();
+#ifndef __WXOSX__
+    ++points;
+#endif
+    int sizes[7];
+    for ( int i = -2; i < 5; i++ ) {
+        sizes[i+2] = points + i + ( i > 0 ? i : 0 );
+    }
+    wxString face = dFont->GetFaceName();
+//    pAboutHTMLCtl->SetFonts( face, face, sizes );
+
+    if( wxFONTSTYLE_ITALIC == dFont->GetStyle() )
+        aboutText.Append( _T("<i>") );
+
+#if 0
+#ifdef __OCPN__ANDROID__    
+    aboutText.Append( AboutText + OpenCPNVersionAndroid  + OpenCPNInfoAlt );
+#else
+    aboutText.Append( AboutText + OpenCPNVersion + OpenCPNInfo );
+#endif    
+
+    // Show where the log file is going to be placed
+    wxString log_string = _T("Logfile location: ") + g_Platform->GetLogFileName();
+    log_string.Replace(_T("/"), _T("/ "));      // allow line breaks, in a cheap way...
+    
+    aboutText.Append( log_string );
+
+    // Show where the config file is going to be placed
+    wxString config_string = _T("<br><br>Config file location: ") + g_Platform->GetConfigFileName();
+    config_string.Replace(_T("/"), _T("/ "));      // allow line breaks, in a cheap way...
+    aboutText.Append( config_string );
+#endif
+
+    if(wxFONTSTYLE_ITALIC == dFont->GetStyle())
+        aboutText.Append( _T("</i>") );
+
+    // The HTML Footer
+    aboutText.Append( _T("</font></body></html>") );
+
+//    pAboutHTMLCtl->SetPage( aboutText );
+    
+    
+    ///Authors page
+    // The HTML Header
+    wxString authorText =
+    wxString::Format(
+        _T( "<html><body bgcolor=#%02x%02x%02x><font color=#%02x%02x%02x>" ),
+                     bg.Red(), bg.Blue(), bg.Green(), fg.Red(), fg.Blue(), fg.Green() );
+    
+//    pAuthorHTMLCtl->SetFonts( face, face, sizes );
+    
+    
+    wxString authorFixText = _T(""); //AuthorText;
+    authorFixText.Replace(_T("\n"), _T("<br>"));
+    authorText.Append( authorFixText );
+    
+    // The HTML Footer
+    authorText.Append( _T("</font></body></html>") );
+
+//    pAuthorHTMLCtl->SetPage( authorFixText );
+    
+
+    ///License page
+    // The HTML Header
+    wxString licenseText =
+    wxString::Format(
+        _T( "<html><body bgcolor=#%02x%02x%02x><font color=#%02x%02x%02x>" ),
+            bg.Red(), bg.Blue(), bg.Green(), fg.Red(), fg.Blue(), fg.Green() );
+        
+    pLicenseHTMLCtl->SetFonts( face, face, sizes );
+
+#if 0    
+    wxString shareLocn =*GetpSharedDataLocation() +
+    _T("plugins") + wxFileName::GetPathSeparator() +
+    _T("o_charts_pi") + wxFileName::GetPathSeparator();
+    
+    wxFileName fn(m_fileName);
+    bool bhtml = fn.GetExt().Upper() == _T("HTML");
+    
+    wxTextFile license_filea( m_fileName );
+    if ( license_filea.Open() ) {
+        for ( wxString str = license_filea.GetFirstLine(); !license_filea.Eof() ; str = license_filea.GetNextLine() ){
+            licenseText.Append( str +_T(" ") );
+            if(!bhtml)
+                licenseText += _T("<br>");
+        }
+        license_filea.Close();
+    } else {
+        licenseText.Append(_("Could not open o-charts_pi EULA: ") + m_fileName + _T("<br>"));
+        wxLogMessage( _T("Could not open o-charts_pi EULA: ") + m_fileName );
+        closeButton->Disable();
+    }
+#endif
+
+    unsigned int i=0;
+    wxString line;
+    while(i < m_text.Length()){
+        line.Clear();
+        while( (m_text[i] != '\n') && (i < m_text.Length()) ){
+            line += m_text[i];
+            i++;
+        }
+        
+        licenseText.Append( line +_T(" ") );
+        licenseText += _T("<br>");
+        
+        i++;
+    }
+        
+        
+        
+        
+        // The HTML Footer
+    licenseText.Append( _T("</font></body></html>") );
+        
+    pLicenseHTMLCtl->SetPage( licenseText );
+    
+    pLicenseHTMLCtl->SetBackgroundColour( bg );
+    
+    #ifdef __WXQT__
+    // wxQT has some trouble clearing the background of HTML window...
+    wxBitmap tbm( GetSize().x, GetSize().y, -1 );
+    wxMemoryDC tdc( tbm );
+    tdc.SetBackground( bg );
+    tdc.Clear();
+    pLicenseHTMLCtl->SetBackgroundImage(tbm);
+    #endif
+    
+        
+#if 0    
+    wxTextFile license_file( m_DataLocn + _T("license.txt") );
+    if ( license_file.Open() ) {
+        for ( wxString str = license_file.GetFirstLine(); !license_file.Eof() ; str = license_file.GetNextLine() )
+            pLicenseTextCtl->AppendText( str + '\n' );
+        license_file.Close();
+    } else {
+        wxLogMessage( _T("Could not open License file: ") + m_DataLocn );
+    }
+    
+    wxString suppLicense = g_Platform->GetSupplementalLicenseString();
+    pLicenseTextCtl->AppendText( suppLicense );
+    
+    pLicenseTextCtl->SetInsertionPoint( 0 );
+#endif
+
+//    SetColorScheme();
+}
+
+void pi_HTMLMessage::RecalculateSize( void )
+{
+    //  Make an estimate of the dialog size, without scrollbars showing
+    
+    wxSize esize;
+    esize.x = GetCharWidth() * 110;
+    esize.y = GetCharHeight() * 44;
+    
+    wxSize dsize = GetParent()->GetClientSize();
+    esize.y = wxMin(esize.y, dsize.y - (2 * GetCharHeight()));
+    esize.x = wxMin(esize.x, dsize.x - (1 * GetCharHeight()));
+    SetClientSize(esize);
+    
+    wxSize fsize = GetSize();
+    fsize.y = wxMin(fsize.y, dsize.y - (2 * GetCharHeight()));
+    fsize.x = wxMin(fsize.x, dsize.x - (1 * GetCharHeight()));
+    
+    SetSize(fsize);
+    
+    Centre();
+}
+
+
+void pi_HTMLMessage::CreateControls( void )
+{
+    //  Set the nominal vertical size of the embedded controls
+    //int v_size = 300; //g_bresponsive ? -1 : 300;
+
+    wxBoxSizer* mainSizer = new wxBoxSizer( wxVERTICAL );
+    SetSizer( mainSizer );
+    wxStaticText *pST1 = new wxStaticText( this, -1,
+        _("o-charts PlugIn for OpenCPN"), wxDefaultPosition,
+        wxSize( -1, 50 /* 500, 30 */ ), wxALIGN_CENTRE /* | wxALIGN_CENTER_VERTICAL */ );
+
+    wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
+    
+    wxFont *headerFont = qFont;// FontMgr::Get().FindOrCreateFont( 14, wxFONTFAMILY_DEFAULT, qFont->GetStyle(), wxFONTWEIGHT_BOLD, false, qFont->GetFaceName() );
+    
+    pST1->SetFont( *headerFont );
+    mainSizer->Add( pST1, 0, wxALL | wxEXPAND, 8 );
+
+#ifndef __OCPN__ANDROID__    
+    wxSizer *buttonSizer = new wxBoxSizer( wxHORIZONTAL /*m_displaySize.x < m_displaySize.y ? wxVERTICAL : wxHORIZONTAL*/ );
+    mainSizer->Add( buttonSizer, 0, wxALL, 0 );
+    
+//     wxButton* donateButton = new wxBitmapButton( this, ID_DONATE,
+//             g_StyleManager->GetCurrentStyle()->GetIcon( _T("donate") ),
+//             wxDefaultPosition, wxDefaultSize, 0 );
+// 
+//     buttonSizer->Add( new wxButton( this, ID_COPYLOG, _T("Copy Log File to Clipboard") ), 1, wxALL | wxEXPAND, 3 );
+//     buttonSizer->Add( new wxButton( this, ID_COPYINI, _T("Copy Settings File to Clipboard") ), 1, wxALL | wxEXPAND, 3 );
+//     buttonSizer->Add( donateButton, 1, wxALL | wxEXPAND | wxALIGN_RIGHT, 3 );
+#endif
+    
+    //  Main Notebook
+    pNotebook = new wxNotebook( this, ID_NOTEBOOK_HELP, wxDefaultPosition,
+            wxSize( -1, -1 ), wxNB_TOP );
+    pNotebook->InheritAttributes();
+    mainSizer->Add( pNotebook, 1, wxALIGN_CENTER_VERTICAL | wxEXPAND | wxALL, 5 );
+
+#if 0    
+    //  About Panel
+    itemPanelAbout = new wxPanel( pNotebook, -1, wxDefaultPosition, wxDefaultSize,
+            wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
+    itemPanelAbout->InheritAttributes();
+    pNotebook->AddPage( itemPanelAbout, _T("About"), TRUE /* Default page */ );
+
+    pAboutHTMLCtl = new wxHtmlWindow( itemPanelAbout, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                wxHW_SCROLLBAR_AUTO | wxHW_NO_SELECTION);
+    pAboutHTMLCtl->SetBorders( 5 );
+    wxBoxSizer* aboutSizer = new wxBoxSizer( wxVERTICAL );
+    aboutSizer->Add( pAboutHTMLCtl, 1, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, 5 );
+    itemPanelAbout->SetSizer( aboutSizer );
+
+    //  Authors Panel
+
+    itemPanelAuthors = new wxPanel( pNotebook, -1, wxDefaultPosition, wxDefaultSize,
+                                wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
+    itemPanelAuthors->InheritAttributes();
+    pNotebook->AddPage( itemPanelAuthors, _T("Authors") );
+
+    pAuthorHTMLCtl = new wxHtmlWindow( itemPanelAuthors, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                    wxHW_SCROLLBAR_AUTO | wxHW_NO_SELECTION);
+    pAuthorHTMLCtl->SetBorders( 5 );
+    wxBoxSizer* authorSizer = new wxBoxSizer( wxVERTICAL );
+    authorSizer->Add( pAuthorHTMLCtl, 1, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, 5 );
+    itemPanelAuthors->SetSizer( authorSizer );
+#endif    
+    
+
+    //  License Panel
+    itemPanelLicense = new wxPanel( pNotebook, -1, wxDefaultPosition, wxDefaultSize,
+            wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
+    itemPanelLicense->InheritAttributes();
+    pNotebook->AddPage( itemPanelLicense, _("License") );
+    
+    pLicenseHTMLCtl = new wxHtmlWindow( itemPanelLicense, wxID_ANY, wxDefaultPosition, wxDefaultSize,
+                                      wxHW_SCROLLBAR_AUTO | wxHW_NO_SELECTION);
+    pLicenseHTMLCtl->SetBorders( 5 );
+    wxBoxSizer* licenseSizer = new wxBoxSizer( wxVERTICAL );
+    licenseSizer->Add( pLicenseHTMLCtl, 1, wxALIGN_CENTER_HORIZONTAL | wxEXPAND | wxALL, 5 );
+    itemPanelLicense->SetSizer( licenseSizer );
+    
+#if 0
+    //  Help Panel
+    itemPanelTips = new wxPanel( pNotebook, -1, wxDefaultPosition, wxDefaultSize,
+            wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
+    itemPanelTips->InheritAttributes();
+    pNotebook->AddPage( itemPanelTips, _T("Help") );
+
+    wxBoxSizer* helpSizer = new wxBoxSizer( wxVERTICAL );
+    itemPanelTips->SetSizer( helpSizer );
+#endif
+
+    //   Buttons
+    wxSizer *buttonBottomSizer = new wxBoxSizer( wxHORIZONTAL );
+    mainSizer->Add( buttonBottomSizer, 0, wxALL, 5 );
+    
+    
+    closeButton = new wxButton( this, xID_OK, _("Accept"), wxDefaultPosition, wxDefaultSize, 0 );
+    closeButton->SetDefault();
+    closeButton->InheritAttributes();
+    buttonBottomSizer->Add( closeButton, 0, wxEXPAND | wxALL, 5 );
+
+    rejectButton = new wxButton( this, xID_CANCEL, _("Reject"), wxDefaultPosition, wxDefaultSize, 0 );
+    rejectButton->InheritAttributes();
+    buttonBottomSizer->Add( rejectButton, 0, wxEXPAND | wxALL, 5 );
+    
+     
+}
+
+
+void pi_HTMLMessage::OnXidOkClick( wxCommandEvent& event )
+{
+    SetReturnCode(0);
+    EndModal(0);
+}
+
+void pi_HTMLMessage::OnXidRejectClick( wxCommandEvent& event )
+{
+    SetReturnCode(1);
+    EndModal(1);
+}
+
+void pi_HTMLMessage::OnClose( wxCloseEvent& event )
+{
+    EndModal(1);
+    Destroy();
+}
+
+void pi_HTMLMessage::OnPageChange( wxNotebookEvent& event )
+{
+}
 
 
 
