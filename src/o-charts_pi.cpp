@@ -671,7 +671,7 @@ int o_charts_pi::Init(void)
     wxString msg = _T("Default ChartInstall Directory is: ");
     msg += g_DefaultChartInstallDir;
     wxLogMessage( msg );
-    OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxOK);
+    //OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxOK);
     
     if( Is_oeSENC_pi_Enabled() ){
         wxString msg = _("The o-charts plugin replaces the oeSENC plugin chart display functions.\n");
