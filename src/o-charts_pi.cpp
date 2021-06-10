@@ -5499,8 +5499,11 @@ wxString GetDefaultChartInstallDirectory()
     rv = _T("/storage/emulated/0/Charts");
 #endif
 
-#if defined( __WXOSX__ )    
-     rv = std_paths.GetUserConfigDir() + _T("/Documents/Charts");
+#if defined( __WXOSX__ ) 
+    wxString rvb= _T("~/Documents/Charts");
+    wxFileName fna(rvb);
+    fna.Normalize();
+    rv = fna.GetFullPath();
 #endif    
     return rv;
 }
