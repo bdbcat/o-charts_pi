@@ -101,6 +101,7 @@ extern wxString  g_lastShopUpdate;
 extern wxFileConfig *g_pconfig;
 extern wxArrayString  g_ChartInfoArray;
 extern std::map<std::string, ChartInfoItem *> info_hash;
+extern wxString g_DefaultChartInstallDir;
 
 shopPanel *g_shopPanel;
 oesu_piScreenLogContainer *g_shopLogFrame;
@@ -5702,11 +5703,12 @@ void shopPanel::ValidateChartset( wxCommandEvent& event )
 
 }
     
-wxString ChooseInstallDir(wxString wkinstallDir)
+wxString ChooseInstallDir(wxString wk_installDir)
 {
-    wxString installLocn = g_PrivateDataDir;
-    if(wkinstallDir.Length())
-        installLocn = wkinstallDir;
+    wxString installLocn = g_DefaultChartInstallDir;
+    
+    if(wk_installDir.Length())
+        installLocn = wk_installDir;
     else if(g_lastInstallDir.Length())
         installLocn = g_lastInstallDir;
 
@@ -5823,7 +5825,17 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
             if(pTask)
                 ChartsetNormalName = GetNormalizedChartsetName( pTask->cacheLinkLocn);
         }
+        
+        /* Decide if the install location can be changed, 
+         *  Rules:
+         *      1. Install location can be changed ONLY on re-install.
+        */   
 
+        /* Decide if the DirSelector dialog can be skipped 
+         *  Rules:
+         *      1. Can be skipped only on TASK_UPDATE, and only if the config file installLocation is already known
+        */   
+        
         // the simple case of initial load, or full base update
         if( (gtargetChart->taskAction == TASK_REPLACE) || (gtargetChart->taskAction == TASK_UPDATE) ){
             
@@ -5845,35 +5857,13 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
             }
 
 
-            // Re-install, or initial load?
-            if(!gtargetChart->taskCurrentEdition.Length() || !installDir.Length()){             // initial load
-        
-                bool bProceed = showInstallInfoDialog( ChartsetNormalName );
-                if(!bProceed){
-                    g_statusOverride.Clear();
-                    setStatusText( _("Status: Ready"));
-                    UpdateChartList();
-                    UpdateActionControls();
-                    return;
-                }
-
-                wxString idir = ChooseInstallDir(installDir);
-                if(!idir.Length()){
-                    g_statusOverride.Clear();
-                    setStatusText( _("Status: Ready"));
-                    UpdateChartList();
-                    UpdateActionControls();
-                    return;
-                }
+            if( (gtargetChart->taskAction == TASK_REPLACE) || !installDir.Length() ){
                 
-                gtargetSlot->installLocation = idir.mb_str(); 
-
-            }
-            else{                       
-                bool bContinue = showUpdateInfoDialog( installDir, ChartsetNormalName );
-                if(bContinue){
-                }
-                else{
+                // initial load, or re-install ?
+                bool b_reinstall = gtargetChart->getChartStatus() == STAT_CURRENT;
+                
+                if(!b_reinstall || !installDir.Length()){             // initial load
+            
                     bool bProceed = showInstallInfoDialog( ChartsetNormalName );
                     if(!bProceed){
                         g_statusOverride.Clear();
@@ -5891,11 +5881,41 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
                         UpdateActionControls();
                         return;
                     }
+                    
+                    gtargetSlot->installLocation = idir.mb_str(); 
 
-                    gtargetSlot->installLocation = idir.mb_str();
+                }
+                else{                                       // re-install            
+                    bool bContinue = showUpdateInfoDialog( installDir, ChartsetNormalName );
+                    if(bContinue){
+                    }
+                    else{
+                        bool bProceed = showInstallInfoDialog( ChartsetNormalName );
+                        if(!bProceed){
+                            g_statusOverride.Clear();
+                            setStatusText( _("Status: Ready"));
+                            UpdateChartList();
+                            UpdateActionControls();
+                            return;
+                        }
+
+                        wxString idir = ChooseInstallDir(installDir);
+                        if(!idir.Length()){
+                            g_statusOverride.Clear();
+                            setStatusText( _("Status: Ready"));
+                            UpdateChartList();
+                            UpdateActionControls();
+                            return;
+                        }
+
+                        gtargetSlot->installLocation = idir.mb_str();
+                    }
                 }
             }
-            
+            else{               // use the known install location on updates
+                gtargetSlot->installLocation = installDir.mb_str();
+            }
+                
             
 #ifdef __OCPN__ANDROID__            
             int vres = validateAndroidWriteLocation( gtargetSlot->installLocation );
@@ -5928,6 +5948,13 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
             gtargetSlot->installedEdition = gtargetChart->taskRequestedEdition;
         }
         
+        else{                   // This is a logical error, should not happen
+            g_statusOverride.Clear();
+            setStatusText( _("Status: Ready"));
+            UpdateChartList();
+            UpdateActionControls();
+            return;
+        }
 
         //  We know that the unzip process puts all charts in a subdir whose name is the "downloadFile", without extension
         //  This is the dir that we want to add to database.
@@ -6022,7 +6049,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     GetSizer()->Layout();
     
     wxYield();
-
+#if 0
     // Create and upload an XFPR and selected systemName to the server.
     // If the systemName is already known, and the XFPR matches no harm done.
     // Or, if the systemName is new, it will be registered with the shop.
@@ -6068,7 +6095,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
             return;
         }
     }
-
+#endif
     int qtyIndex = -1;
     
     //  Check if I am already assigned to this chart

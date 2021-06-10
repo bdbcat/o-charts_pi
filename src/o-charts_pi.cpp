@@ -31,6 +31,8 @@
   #include "wx/wx.h"
 #endif //precompiled headers
 
+#include <wx/app.h>
+#include <wx/apptrait.h>
 #include <wx/textfile.h>
 #include "wx/tokenzr.h"
 #include "wx/dir.h"
@@ -41,6 +43,7 @@
 #include <wx/statline.h>
 #include <wx/progdlg.h>
 #include "wx/artprov.h"
+#include <wx/stdpaths.h>
 
 #include "ocpn_plugin.h"
 #include "config.h"
@@ -115,6 +118,8 @@ void init_GLLibrary();
 
 bool IsDongleAvailable();
 
+wxString GetDefaultChartInstallDirectory();
+
 #include <wx/arrimpl.cpp> 
 WX_DEFINE_OBJARRAY(EULAArray);
 
@@ -182,6 +187,7 @@ wxString                        g_debugShop;
 wxString                        g_versionString;
 wxString                        g_lastEULAFile;
 wxString                        g_lastShopUpdate;
+wxString                        g_DefaultChartInstallDir;
 
 std::map<std::string, ChartInfoItem *> info_hash;
 
@@ -659,6 +665,13 @@ int o_charts_pi::Init(void)
     g_SDK_INT = nsdk;
     
 #endif
+
+    // Establish platform specific chart install directory
+    g_DefaultChartInstallDir = GetDefaultChartInstallDirectory();
+    wxString msg = _T("Default ChartInstall Directory is: ");
+    msg += g_DefaultChartInstallDir;
+    wxLogMessage( msg );
+    OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxOK);
     
     if( Is_oeSENC_pi_Enabled() ){
         wxString msg = _("The o-charts plugin replaces the oeSENC plugin chart display functions.\n");
@@ -5457,5 +5470,37 @@ void pi_HTMLMessage::OnPageChange( wxNotebookEvent& event )
 {
 }
 
+wxString GetDefaultChartInstallDirectory()
+{
+    wxString rv;
+#ifndef __OCPN__ANDROID__ 
+    wxStandardPaths& std_paths = wxStandardPaths::Get();
+#else 
+    wxStandardPaths& std_paths = *dynamic_cast<wxStandardPaths*>(&(wxTheApp->GetTraits())->GetStandardPaths());
+#endif    
 
 
+#if defined( __UNIX__ ) && !defined(__WXOSX__) && !defined(__OCPN__ANDROID__)    // linux desktop
+     rv = std_paths.GetUserConfigDir() + _T("/Charts");
+    //http://docs.wxwidgets.org/stable/wx_wxfilename.html#wxfilenamenormalize
+#endif    
+
+#if defined( __WXMSW__ )     // Windows desktop
+    wxString winChartDir;
+    bool ok = wxGetEnv( _T("LOCALAPPDATA"), &winChartDir);
+    if (!ok) {
+        wxLogMessage("winPluginDir: Cannot lookup LOCALAPPDATA");
+        winChartDir = _T("C:");
+    }
+    rv = winChartDir + _T("\\Charts");
+#endif     
+
+#ifdef __OCPN__ANDROID__
+    rv = _T("/storage/emulated/0/Charts");
+#endif
+
+#if defined( __WXOSX__ )    
+     rv = std_paths.GetUserConfigDir() + _T("/Documents/Charts");
+#endif    
+    return rv;
+}
