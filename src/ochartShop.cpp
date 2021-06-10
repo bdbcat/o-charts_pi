@@ -6049,7 +6049,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     GetSizer()->Layout();
     
     wxYield();
-#if 0
+
     // Create and upload an XFPR and selected systemName to the server.
     // If the systemName is already known, and the XFPR matches no harm done.
     // Or, if the systemName is new, it will be registered with the shop.
@@ -6095,7 +6095,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
             return;
         }
     }
-#endif
+
     int qtyIndex = -1;
     
     //  Check if I am already assigned to this chart
