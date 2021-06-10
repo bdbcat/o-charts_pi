@@ -4559,6 +4559,8 @@ void showChartinfoDialog( void )
     
     if(info_hash.empty())
         return;
+    
+    g_binfoShown = true;
 
     wxString hdr = _T("<html><body><center><font size=+2>");
     hdr +=  _("The following Chart sets are available : ");
@@ -4655,7 +4657,6 @@ void showChartinfoDialog( void )
         //        pinfoDlg->SetClientSize(sz);
         pinfoDlg->Centre();
         pinfoDlg->ShowModal();
-        g_binfoShown = true;
         pinfoDlg->Destroy();
     }
     
