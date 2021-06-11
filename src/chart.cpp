@@ -541,9 +541,6 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
         return PI_INIT_FAIL_REMOVE;
       }
       
-      if(init_flags != HEADER_ONLY)
-        showChartinfoDialog();
-
       validate_SENC_server();
       
 

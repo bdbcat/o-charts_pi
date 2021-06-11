@@ -594,8 +594,6 @@ int oeuSENCChart::Init( const wxString& name, int init_flags )
         
     else if( PI_FULL_INIT == init_flags ){
 
-        showChartinfoDialog();
-        
         m_SENCFileName = name;
         ret_val = PostInit( init_flags, global_color_scheme );
     }
@@ -682,8 +680,6 @@ int oeuEVCChart::Init( const wxString& name, int init_flags )
         
     else if( PI_FULL_INIT == init_flags ){
 
-        showChartinfoDialog();
-        
         m_SENCFileName = name;
         ret_val = PostInit( init_flags, global_color_scheme );
     }
@@ -811,9 +807,6 @@ int oesuChart::Init( const wxString& name, int init_flags )
         ShowExpiredErrorMessage(m_FullPath, m_uSENCExpireDaysRemaining, m_uSENCGraceDaysRemaining, m_uSENCGraceDaysAllowed);
     }
 
-    if( ( ret_val == PI_INIT_OK ) && ( PI_FULL_INIT == init_flags ) )
-        showChartinfoDialog();
-        
 
     s_PI_bInS57--;
     return ret_val;
