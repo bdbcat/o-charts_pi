@@ -4878,7 +4878,10 @@ bool processChartinfo(const wxString &oesenc_file, wxString status)
                                 pci->config_string = content + _T(";") + status;
                             }
                         }
-
+                        else{
+                            ChartInfoItem *pci = iter->second;
+                            pci->config_string = content;
+                        }                            
                     }
                     
                     nkey++;
