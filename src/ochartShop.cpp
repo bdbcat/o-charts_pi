@@ -1671,9 +1671,9 @@ int itemChart::getChartStatus()
     // If a dongle is present, all operations will apply to dongle assigned slot, if any
     if(g_dongleName.Len()){
         
-        // If chartset is not assigned to any dongle, result (for dongle) is clear
+        // If chartset is not assigned to any dongle, or to the systemName, the result is clearly known
         //  If it is already assigned to a dongle, we pass thru and determine the slot later
-        if(!isChartsetAssignedToAnyDongle()){
+        if(!isChartsetAssignedToAnyDongle() && !isChartsetAssignedToSystemKey( g_systemName )){
             m_status = STAT_PURCHASED;
             return m_status;
         }
@@ -6050,13 +6050,52 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     
     wxYield();
 
+
+    // If this is an update, or re-install, then decide what systemName (or dongleName) is to be used
+    // Otherwise, alwys prefer the dongle, if present
+    
+    bool bUseDongle = false;
+    wxString selectedSystemName = g_systemName;
+    if( (chart->getChartStatus() == STAT_CURRENT) || (chart->getChartStatus() == STAT_STALE)){
+        if(g_dongleName.Length()){
+            int tmpQ;
+            if(chart->GetSlotAssignedToInstalledDongle( tmpQ ) >= 0){
+                selectedSystemName = g_dongleName;
+                bUseDongle = true;
+            }
+        }
+    }
+    else{
+        if(g_dongleName.Len()){
+            selectedSystemName = g_dongleName;
+            bUseDongle = true;
+        }
+        else{
+            if(!g_systemName.Length()){
+                if(GetNewSystemName())
+                    RefreshSystemName();
+            }
+        
+            if(!g_systemName.Length()){
+                saveShopConfig();       // record blank system name.
+                UpdateActionControls();
+                RefreshSystemName();
+                return;
+            }
+            selectedSystemName = g_systemName;
+        }
+    }
+
+
+    
+
     // Create and upload an XFPR and selected systemName to the server.
     // If the systemName is already known, and the XFPR matches no harm done.
     // Or, if the systemName is new, it will be registered with the shop.
     // Otherwise, an error is shown, and the operation cancels.
     
     // Prefer to use the dongle, if present
-    if(g_dongleName.Len()){
+    if(bUseDongle){
         int res1 = doUploadXFPR( true );
         if( res1 != 0){
             if(res1 < 200)
@@ -6069,18 +6108,6 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
         }
     }
     else{
-        if(!g_systemName.Length()){
-            if(GetNewSystemName())
-                RefreshSystemName();
-        }
-        
-        if(!g_systemName.Length()){
-                saveShopConfig();       // record blank system name.
-                UpdateActionControls();
-                RefreshSystemName();
-                return;
-        }
-
         int res2 = doUploadXFPR( false );
         if( res2 != 0){
             if(res2 < 200)
@@ -6100,7 +6127,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     
     //  Check if I am already assigned to this chart
     bool bNeedAssign = false;
-    if(g_dongleName.Len()){
+    if(bUseDongle){
         if(!chart->isChartsetAssignedToSystemKey(g_dongleName))
             bNeedAssign = true;
     }
@@ -6132,7 +6159,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
         //Try to assign to dongle first..... 
         int assignResult;
 
-        if(g_dongleName.Len())
+        if(bUseDongle)
             assignResult = doAssign(chart, qtyIndex, g_dongleName);
         else
             assignResult = doAssign(chart, qtyIndex, g_systemName);
@@ -6161,7 +6188,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
         return;
     }
 
-    // Slot is know, now determine what edition to request
+    // Slot is known, now determine what edition to request
     ComputeUpdates(chart, activeSlot);
 
     bool bNeedRequestWait = true;
@@ -6453,11 +6480,22 @@ void shopPanel::UpdateActionControls()
     m_buttonValidate->Show();
     m_buttonValidate->Enable();
     
-    wxString suffix = g_systemName;
-    if(g_dongleName.Length())
-        suffix = g_dongleName  + _T(" (") + _("USB Key Dongle") + _T(")");
-    
     itemChart *chart = m_ChartPanelSelected->GetSelectedChart();
+ 
+    //Fix this for Norway
+    
+    wxString suffix = g_systemName;
+    if(g_dongleName.Length()){
+        int tmpQ;
+        if(chart->GetSlotAssignedToInstalledDongle( tmpQ ) >= 0)
+            suffix = g_dongleName  + _T(" (") + _("USB Key Dongle") + _T(")");
+    }
+
+    // If the chart is not yet installed, prefer a dongle assignement, if dongle is present
+   if( (chart->getChartStatus() == STAT_REQUESTABLE) || (chart->getChartStatus() == STAT_PURCHASED) ){
+        if(g_dongleName.Length())
+            suffix = g_dongleName  + _T(" (") + _("USB Key Dongle") + _T(")");
+   }
 
     wxString labelDownload = _("Download Selected Chart");
     wxString labelInstall = _("Install Selected Chart for ") + suffix;
