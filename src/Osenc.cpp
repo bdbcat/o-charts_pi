@@ -1309,7 +1309,6 @@ int Osenc::ingest200(const wxString &senc_file_name,
     uint32_t primitiveType;
         
     int dun = 0;
-        
     while( !dun ) {
         
         //      Read a record Header
@@ -1324,7 +1323,20 @@ int Osenc::ingest200(const wxString &senc_file_name,
         }
         
         // Process Records
+            
+        // On Windows, we must stop the read loop if the required read buffer size seems excessive.
+        // Otherwise, Windows will throw an exception on the buffer re-alloc, and fail.
+        // This generally happens at EOF on some SENC files, so we can take this as a "normal" EOF condition.
+        // On linux type systems, the buffer alloc succeeds, but then the read file fails, as expected, due to EOF on the input file.
+        //  Either way, we are finished reading.
+        
+        if(abs(record.record_length)  > 2000000){
+            dun = 1;
+            break;
+        }
+
         switch( record.record_type){
+
             case HEADER_SENC_VERSION:
             {
                 unsigned char *buf = getBuffer( record.record_length - sizeof(OSENC_Record_Base));
