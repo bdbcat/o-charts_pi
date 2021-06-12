@@ -323,8 +323,6 @@ Osenc_instream &Osenc_instream::Read(void *buffer, size_t size)
             } while( (remains > 0) && (nLoop) );
             
             m_OK = (totalBytesRead == size);
-            if(!m_OK)
-                int yyp = 4;
             m_lastBytesRead = totalBytesRead;
             m_lastBytesReq = size;
         }
@@ -341,9 +339,6 @@ Osenc_instream &Osenc_instream::Read(void *buffer, size_t size)
 
 bool Osenc_instream::IsOk()
 {
-    if(!m_OK)
-        int yyp = 4;
-    
     return m_OK;
 }
 
@@ -541,8 +536,6 @@ Osenc_instream &Osenc_instream::Read(void *buffer, size_t size)
             } while( (remains > 0) && (nLoop) );
             
             m_OK = (totalBytesRead == size);
-            if(!m_OK)
-                int yyp = 4;
             m_lastBytesRead = totalBytesRead;
             m_lastBytesReq = size;
         }
@@ -559,9 +552,6 @@ Osenc_instream &Osenc_instream::Read(void *buffer, size_t size)
 
 bool Osenc_instream::IsOk()
 {
-    if(!m_OK)
-        int yyp = 4;
-    
     return m_OK;
 }
 
@@ -796,9 +786,6 @@ Osenc_instream &Osenc_instream::Read(void *buffer, size_t size)
     #define READ_SIZE 64000;
     size_t max_read = READ_SIZE;
     
-    if(size > max_read)
-        int yyp = 4;
-    
     if( (HANDLE)-1 != hPipe){
         size_t remains = size;
         char *bufRun = (char *)buffer;
@@ -824,7 +811,6 @@ Osenc_instream &Osenc_instream::Read(void *buffer, size_t size)
             //_tprintf( TEXT("\"%s\"\n"), chBuf ); 
             
             if(bytesRead == 0){
-                int yyp = 3;
                 remains = 0;    // break it
             }
             
@@ -847,9 +833,6 @@ Osenc_instream &Osenc_instream::Read(void *buffer, size_t size)
 
 bool Osenc_instream::IsOk()
 {
-    if(!m_OK)
-        int yyp = 4;
-    
     return m_OK;
 }
 
@@ -1048,8 +1031,6 @@ int Osenc::ingestHeader(const wxString &senc_file_name)
         return verify_val;
     
     if(g_debugLevel) wxLogMessage(_T("ingestHeader SENC verified OK"));
-    
-    S57Obj *obj = 0;
     
     //  Read the rest of the records in the header
     int dun = 0;
@@ -1267,7 +1248,6 @@ int Osenc::ingest200(const wxString &senc_file_name,
 {
     
     int ret_val = SENC_NO_ERROR;                    // default is OK
-    int senc_file_version = 0;
     
     wxFileName fn(senc_file_name);
     m_ID = fn.GetName();                          // This will be the NOAA File name, usually
@@ -1275,8 +1255,6 @@ int Osenc::ingest200(const wxString &senc_file_name,
     //    Sanity check for existence of file
     if(!fn.Exists())
         return ERROR_SENCFILE_NOT_FOUND;
-    
-    int nProg = 0;
     
     wxString ifs( senc_file_name );
 
@@ -1306,7 +1284,6 @@ int Osenc::ingest200(const wxString &senc_file_name,
                                      
     S57Obj *obj = 0;
     int featureID;
-    uint32_t primitiveType;
         
     int dun = 0;
     while( !dun ) {
@@ -1330,7 +1307,7 @@ int Osenc::ingest200(const wxString &senc_file_name,
         // On linux type systems, the buffer alloc succeeds, but then the read file fails, as expected, due to EOF on the input file.
         //  Either way, we are finished reading.
         
-        if(abs(record.record_length)  > 2000000){
+        if((unsigned long)(record.record_length)  > 2000000){
             dun = 1;
             break;
         }
@@ -1517,9 +1494,9 @@ int Osenc::ingest200(const wxString &senc_file_name,
                 //  Handle Special cases...
                 
                 //  The primitive type of the Feature is encoded in the SENC as an attribute of defined type.
-                if( ATTRIBUTE_ID_PRIM == attributeTypeCode ){
-                    primitiveType = pPayload->attribute_value_int;
-                }
+//                 if( ATTRIBUTE_ID_PRIM == attributeTypeCode ){
+//                     primitiveType = pPayload->attribute_value_int;
+//                 }
                 
                     
                 //  Get the standard attribute acronym
@@ -1933,12 +1910,11 @@ int Osenc::ingest200(const wxString &senc_file_name,
                 }
                 
                 // Get the payload & parse it
-                OSENC_TXTDSCInfo_Record_Payload *pPayload = (OSENC_TXTDSCInfo_Record_Payload *)buf;
+                //OSENC_TXTDSCInfo_Record_Payload *pPayload = (OSENC_TXTDSCInfo_Record_Payload *)buf;
                 uint8_t *pRun = (uint8_t *)buf;
                 
                 int nameLength = *(uint32_t *)pRun;
                 pRun += sizeof(uint32_t);
-                int contentLength = *(uint32_t *)pRun;
                 pRun += sizeof(uint32_t);
                 
                 wxString name = wxString((char *)pRun, wxConvUTF8);
@@ -2797,7 +2773,7 @@ PolyTessGeo *Osenc::BuildPolyTessGeo(_OSENC_AreaGeometry_Record_Payload *record,
     void *payLoad = &record->payLoad;
     
     //  skip over the contour vertex count array, for now  TODO
-    uint8_t *pTriPrims = (uint8_t *)payLoad + (nContours * sizeof(uint32_t));
+    //uint8_t *pTriPrims = (uint8_t *)payLoad + (nContours * sizeof(uint32_t));
     
   
     //  Create the head of the linked list of TriPrims
@@ -2830,7 +2806,6 @@ PolyTessGeo *Osenc::BuildPolyTessGeo(_OSENC_AreaGeometry_Record_Payload *record,
     unsigned int tri_type;
     int nvert;
     int nvert_max = 0;
-    bool not_finished = true;
     int total_byte_size = 2 * sizeof(float);
     
     uint8_t *pPayloadRun = (uint8_t *)contour_pointcount_array_run; //Points to the start of the triangle primitives
@@ -2852,7 +2827,6 @@ PolyTessGeo *Osenc::BuildPolyTessGeo(_OSENC_AreaGeometry_Record_Payload *record,
         nvert_max = wxMax(nvert_max, nvert);       // Keep a running tab of largest vertex count
         
         //  Read the triangle primitive bounding box as lat/lon
-        double *pbb = (double *)pPayloadRun;
         
         #ifdef OCPN_ARMHF
         double abox[4];
@@ -2862,6 +2836,7 @@ PolyTessGeo *Osenc::BuildPolyTessGeo(_OSENC_AreaGeometry_Record_Payload *record,
         tp->minyt = abox[2];
         tp->maxyt = abox[3];
         #else            
+        double *pbb = (double *)pPayloadRun;
         tp->minxt = *pbb++;
         tp->maxxt = *pbb++;
         tp->minyt = *pbb++;
