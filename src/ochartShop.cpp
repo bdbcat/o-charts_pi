@@ -2918,9 +2918,30 @@ bool showInstallInfoDialog( wxString newChartDir)
         return true;
 }
 
-bool showUpdateInfoDialog( wxString chartBaseDir, wxString newChartDir)
+bool showReinstallInfoDialog( wxString chartBaseDir, wxString newChartDir)
 {
     wxString msg = _("This chartset will be re-installed in the following location.\n\n");
+    msg += chartBaseDir;
+    msg += wxFileName::GetPathSeparator();
+    msg += newChartDir;
+    msg += _T("\n\n");
+    msg += _("If you want to use that location, press \"Continue\" \n\n");
+    msg += _("If you want to change the installation location now, press \"Change\" \n\n");
+    
+    MessageHardBreakWrapper wrapper(g_shopPanel, msg, g_shopPanel->GetSize().x * 8 / 10);
+
+    int ret = ShowScrollMessageDialog(NULL, wrapper.GetWrapped(), _("o-charts_pi Message"),
+                                      _("Continue"), _("Change"), 0);
+
+    if(ret != wxID_YES)
+        return false;
+    else
+        return true;
+}
+
+bool showInstallConfirmDialog( wxString chartBaseDir, wxString newChartDir)
+{
+    wxString msg = _("This chartset will be installed in the following location.\n\n");
     msg += chartBaseDir;
     msg += wxFileName::GetPathSeparator();
     msg += newChartDir;
@@ -5856,6 +5877,16 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
                     installDir.Clear();
             }
 
+            
+            
+            if( !installDir.Length() ){
+                wxString installLocn = g_DefaultChartInstallDir;
+                if(g_lastInstallDir.Length())
+                    installLocn = g_lastInstallDir;
+                
+                installDir = installLocn;
+            }
+
 
             if( (gtargetChart->taskAction == TASK_REPLACE) || !installDir.Length() ){
                 
@@ -5864,29 +5895,35 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
                 
                 if(!b_reinstall || !installDir.Length()){             // initial load
             
-                    bool bProceed = showInstallInfoDialog( ChartsetNormalName );
-                    if(!bProceed){
-                        g_statusOverride.Clear();
-                        setStatusText( _("Status: Ready"));
-                        UpdateChartList();
-                        UpdateActionControls();
-                        return;
+                    bool bProceed0 = showInstallConfirmDialog( installDir, ChartsetNormalName );
+                    if(bProceed0){                      // "Continue"
+                        gtargetSlot->installLocation = installDir.mb_str();
                     }
+                    else{                               // Change
+                        bool bProceed = showInstallInfoDialog( ChartsetNormalName );
+                        if(!bProceed){
+                            g_statusOverride.Clear();
+                            setStatusText( _("Status: Ready"));
+                            UpdateChartList();
+                            UpdateActionControls();
+                            return;
+                        }
 
-                    wxString idir = ChooseInstallDir(installDir);
-                    if(!idir.Length()){
-                        g_statusOverride.Clear();
-                        setStatusText( _("Status: Ready"));
-                        UpdateChartList();
-                        UpdateActionControls();
-                        return;
+                        wxString idir = ChooseInstallDir(installDir);
+                        if(!idir.Length()){
+                            g_statusOverride.Clear();
+                            setStatusText( _("Status: Ready"));
+                            UpdateChartList();
+                            UpdateActionControls();
+                            return;
+                        }
+                        
+                        gtargetSlot->installLocation = idir.mb_str(); 
+
                     }
-                    
-                    gtargetSlot->installLocation = idir.mb_str(); 
-
                 }
                 else{                                       // re-install            
-                    bool bContinue = showUpdateInfoDialog( installDir, ChartsetNormalName );
+                    bool bContinue = showReinstallInfoDialog( installDir, ChartsetNormalName );
                     if(bContinue){
                     }
                     else{
@@ -5912,7 +5949,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
                     }
                 }
             }
-            else{               // use the known install location on updates
+            else{               // must use the known install location on updates
                 gtargetSlot->installLocation = installDir.mb_str();
             }
                 
