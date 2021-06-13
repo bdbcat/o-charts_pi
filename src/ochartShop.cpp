@@ -4345,7 +4345,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
 
 #endif
    
-    int add_prop_flag = 0;
+    int add_prop_flag = 1;
 #ifdef __OCPN__ANDROID__
     add_prop_flag = 1;
 #endif
@@ -4422,12 +4422,11 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     boxSizerTop->Add(m_shopLog, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
     
     SetName(wxT("shopPanel"));
-    //SetSize(500,600);
     
-    if (GetSizer()) {
-        GetSizer()->Fit(this);
-    }
-    
+//     if (GetSizer()) {
+//         GetSizer()->Fit(this);
+//     }
+
     //  Turn off all buttons initially.
 //     m_buttonInstall->Hide();
 //     m_buttonCancelOp->Hide();

@@ -4987,10 +4987,10 @@ void o_charts_pi::OnSetupOptions( void )
     
     m_shoppanel = new shopPanel( m_pOptionsPage, wxID_ANY, wxDefaultPosition, wxDefaultSize );
     
-    m_pOptionsPage->InvalidateBestSize();
-    sizer->Add( m_shoppanel, 1, wxALL | wxEXPAND );
-    m_shoppanel->FitInside();
-
+     m_pOptionsPage->InvalidateBestSize();
+     sizer->Add( m_shoppanel, 1, wxEXPAND );
+     m_shoppanel->FitInside();
+     m_pOptionsPage->Layout();
 #endif
 }
 
