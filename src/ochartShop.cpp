@@ -502,7 +502,12 @@ OCP_ScrolledMessageDialog::OCP_ScrolledMessageDialog( wxWindow *parent,
     wxBoxSizer *topsizer = new wxBoxSizer( wxVERTICAL );
     SetSizer( topsizer );
 
-    wxStaticBox* itemStaticBoxSizer4Static = new wxStaticBox( this, wxID_ANY, caption );
+    //  Need a caption on StaticBox for Android, otherwise not.
+    wxString boxCaption = caption;
+#ifndef __OCPN__ANDROID__
+    boxCaption.Clear();
+#endif    
+    wxStaticBox* itemStaticBoxSizer4Static = new wxStaticBox( this, wxID_ANY, boxCaption );
     
     wxStaticBoxSizer* itemStaticBoxSizer4 = new wxStaticBoxSizer( itemStaticBoxSizer4Static, wxVERTICAL );
     topsizer->Add( itemStaticBoxSizer4, 1, wxEXPAND | wxALL, 5 );
