@@ -3238,7 +3238,8 @@ int doUploadXFPR(bool bDongle)
         wxString dataLoc = *GetpPrivateApplicationDataLocation();
         wxFileName fn(dataLoc);
         wxString dataDir = fn.GetPath(wxPATH_GET_SEPARATOR);
-        result = callActivityMethod_s6s("createProcSync5", cmd, "-q", dataDir, "-g");
+//        result = callActivityMethod_s6s("createProcSync5", cmd, "-q", dataDir, "-g");
+        result = callActivityMethod_s6s("createProcSync5stdout", cmd, "-z", g_UUID, "-g");
     }
     else if(g_SDK_INT < 29){            // Strictly earlier than Android 10
         result = callActivityMethod_s6s("createProcSync5stdout", cmd, "-z", g_UUID, "-g");
@@ -5222,7 +5223,6 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         wxString tmp_Zipdir = AndroidGetCacheDir();
         tmp_Zipdir += wxFileName::GetPathSeparator();
         tmp_Zipdir += _T("zipTemp");
-        //tmp_Zipdir += wxFileName::GetPathSeparator();
         
         // Check and make this (parent) directory if necessary
         wxFileName fnp(tmp_Zipdir);
@@ -5367,6 +5367,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         }
         if( !workCSK.m_bOK){
             wxLogError(_T("New ChartKey list cannot be loaded: ") + wxString(task->cacheKeysLocn.c_str()));
+            RemDirRF(tmp_Zipdir);
             return 13;
         }
 
@@ -5401,12 +5402,14 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         if(chart->GetChartType() == (int)CHART_TYPE_OERNC){
             if(!unzipDir.GetFirst( &chartTopLevelZip, _T("oeuRNC*"), wxDIR_DIRS)){
                 wxLogError(_T("Can not find oeRNC directory in zip file ") + task->cacheLinkLocn);
+                RemDirRF(tmp_Zipdir);
                 return 11;
             }
         }
         else{
             if(!unzipDir.GetFirst( &chartTopLevelZip, _T("oeuSENC*"), wxDIR_DIRS)){
                 wxLogError(_T("Can not find oeSENC directory in zip file ") + task->cacheLinkLocn);
+                RemDirRF(tmp_Zipdir);
                 return 11;
             }
         }
@@ -5435,6 +5438,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
                 bool bret = AndroidSecureCopyFile( source, destination );
                 if(!bret){
                     wxLogError(_T("Can not create chart target directory on TASK_UPDATE '") + fndd.GetPath() );
+                    RemDirRF(tmp_Zipdir);
                     return 12;
                 }
             }
@@ -5442,6 +5446,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
 #else            
             if( !wxFileName::Mkdir(fndd.GetPath(), 0755, wxPATH_MKDIR_FULL) ){
                 wxLogError(_T("Can not create chart target directory on TASK_UPDATE '") + fndd.GetPath() );
+                RemDirRF(tmp_Zipdir);
                 return 12;
             }
 #endif            
@@ -5488,9 +5493,6 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
  
         }
         
-        //  Remove the temp zip here
-        RemDirRF(tmp_Zipdir);
-        
         // Process the new Key list file, adding/editing new keys into the target set
         for(size_t i=0 ; i < workCSK.chartList.size() ; i++){
             cskey_target.AddKey(workCSK.chartList[i]);
@@ -5505,6 +5507,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         wxString tmpFile = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator() + _T("ChartList.XML"));
         if(! csdata_target.WriteFile( std::string(tmpFile.mb_str()) )){
             wxLogError(_T("Can not write temp target ChartList.XML on TASK_UPDATE '") + tmpFile );
+            RemDirRF(tmp_Zipdir);
             return 14;
         }
 
@@ -5512,6 +5515,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         bool bret = AndroidSecureCopyFile( tmpFile, destinationCLXML );
         if(! bret ){
             wxLogError(_T("Can not write target ChartList.XML on TASK_UPDATE '") + destinationCLXML );
+            RemDirRF(tmp_Zipdir);
             return 15;
         }
         wxRemoveFile(tmpFile);
@@ -5519,6 +5523,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         wxString destinationCLXML = destinationDir + _T("ChartList.XML");
         if(! csdata_target.WriteFile( std::string(destinationCLXML.mb_str()) )){
             wxLogError(_T("Can not write target ChartList.XML on TASK_UPDATE '") + destinationCLXML );
+            RemDirRF(tmp_Zipdir);
             return 16;
         }
 #endif        
@@ -5529,6 +5534,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         wxString tmpFile2 = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator() +  dest + _T("-") + keySystem + _T(".XML"));
         if(! cskey_target.WriteFile( std::string(tmpFile2.mb_str()) )){
             wxLogError(_T("Can not write temp target KefList.XML on TASK_UPDATE '") + tmpFile2 );
+            RemDirRF(tmp_Zipdir);
             return 17;
         }
 
@@ -5536,6 +5542,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         bool bret2 = AndroidSecureCopyFile( tmpFile2, destinationKLXML );
         if(! bret2 ){
             wxLogError(_T("Can not write target KefList.XML on TASK_UPDATE '") + destinationKLXML );
+            RemDirRF(tmp_Zipdir);
             return 18;
         }
         wxRemoveFile(tmpFile2);
@@ -5544,6 +5551,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         wxString destinationKLXML = destinationDir  + dest + _T("-") + keySystem + _T(".XML");
         if(!cskey_target.WriteFile( std::string(destinationKLXML.mb_str()) )){
             wxLogError(_T("Can not write target KefList XML file on TASK_UPDATE '") + destinationKLXML );
+            RemDirRF(tmp_Zipdir);
             return 19;
         }
 #endif        
@@ -5578,25 +5586,9 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         if(wxFileExists(actionChartList)){
             wxRemoveFile(actionChartList);
         }
-#if 0        
-        // Create a surrogate Chartinfo.txt file
-        wxString ciLine = _T("ChartInfo:");
-        ciLine += wxString(chart->chartName.c_str());
-        ciLine += _T(";") + wxString(chart->editionTag.c_str());
-        ciLine += _T(";") + wxString(chart->expDate.c_str()).BeforeFirst(' ');
 
-        wxString ciPath = destinationDir;
-        ciPath += _T("Chartinfo.txt");
-        
-        wxRemoveFile(ciPath);
-        wxTextFile file( ciPath );
-        file.Create();
-
-        file.AddLine( ciLine );
-
-        file.Write();
-        file.Close();
-#endif    
+        //  Remove the temp zip here
+        RemDirRF(tmp_Zipdir);
     }    
         
 
