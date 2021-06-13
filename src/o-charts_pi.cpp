@@ -4672,6 +4672,8 @@ bool processChartinfo(const wxString &oesenc_file, wxString status)
         return false;
     }
     
+    if(g_debugLevel) wxLogMessage( _T("ProcessChartInfo for: ") + oesenc_file);
+
     // get the Chartinfo as a wxTextFile
     wxFileName fn(oesenc_file);
     wxString chartInfoDir = fn.GetPath(  wxPATH_GET_VOLUME + wxPATH_GET_SEPARATOR );
@@ -4700,13 +4702,14 @@ bool processChartinfo(const wxString &oesenc_file, wxString status)
         wxArrayString EULAFileArray;
         while( !info_file.Eof() ){
             if(line.StartsWith( _T("ochartsEULAFile:" ) ) ) {
+                if(g_debugLevel) wxLogMessage( _T("ProcessChartInfo parse1: ") + line);
                 wxString tentativeFileEULA = line.AfterFirst(':').Trim(false);
                 EULAFileArray.Add(tentativeFileEULA);
             }
  
             else if(line.StartsWith( _T("ochartsEULAShow:" ) ) ) {
+                if(g_debugLevel) wxLogMessage( _T("ProcessChartInfo parse2: ") + line);
                 sshowEULA = line.AfterFirst(':').Trim(false).Trim(); 
-                
             }
      
             if( (EULAFileArray.GetCount()) && (sshowEULA.Length())){
@@ -4756,6 +4759,13 @@ bool processChartinfo(const wxString &oesenc_file, wxString status)
                 
                 fullEULAFileName = chartInfoDir + fileEULA;
 
+                if(g_debugLevel) wxLogMessage( _T("Selected EULA: ") + fullEULAFileName);
+
+                if(!wxFileExists(fullEULAFileName)){
+                    if(g_debugLevel) wxLogMessage( _T("Cannot find EULA: ") + fullEULAFileName);
+                }
+                    
+ 
                 wxString subEULAFileName = fullEULAFileName;
                 subEULAFileName.Replace(wxFileName::GetPathSeparator(), '!');
                 
