@@ -3238,8 +3238,7 @@ int doUploadXFPR(bool bDongle)
         wxString dataLoc = *GetpPrivateApplicationDataLocation();
         wxFileName fn(dataLoc);
         wxString dataDir = fn.GetPath(wxPATH_GET_SEPARATOR);
-//        result = callActivityMethod_s6s("createProcSync5", cmd, "-q", dataDir, "-g");
-        result = callActivityMethod_s6s("createProcSync5stdout", cmd, "-z", g_UUID, "-g");
+        result = callActivityMethod_s6s("createProcSync5stdout", cmd, "-q", dataDir, "-g");
     }
     else if(g_SDK_INT < 29){            // Strictly earlier than Android 10
         result = callActivityMethod_s6s("createProcSync5stdout", cmd, "-z", g_UUID, "-g");

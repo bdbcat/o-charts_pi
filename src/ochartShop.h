@@ -345,7 +345,6 @@ public:
 private:
     shopPanel *m_pContainer;
     bool m_bSelected;
-    wxStaticText *m_pName;
     wxColour m_boxColour;
     int m_unselectedHeight;
     itemChart *m_pChart;
@@ -354,39 +353,6 @@ private:
     DECLARE_EVENT_TABLE()
 };
 
-#if 0
-class oeSencChartPanel: public wxPanel
-{
-public:
-    oeSencChartPanel( wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size, oitemChart *p_itemChart, shopPanel *pContainer );
-    ~oeSencChartPanel();
-    
-    void OnChartSelected( wxMouseEvent &event );
-    void SetSelected( bool selected );
-    void OnPaint( wxPaintEvent &event );
-    void OnEraseBackground( wxEraseEvent &event );
-    
-    bool GetSelected(){ return m_bSelected; }
-    int GetUnselectedHeight(){ return m_unselectedHeight; }
-    oitemChart *GetSelectedChart() { return m_pChart; }
-    
-    oitemChart *m_pChart;
-    
-private:
-    shopPanel *m_pContainer;
-    bool m_bSelected;
-    wxStaticText *m_pName;
-    wxColour m_boxColour;
-    int m_unselectedHeight;
-    
-    DECLARE_EVENT_TABLE()
-};
-
-
-
-WX_DECLARE_OBJARRAY(oeSencChartPanel *,      ArrayOfChartPanels);    
-
-#endif
 
 WX_DECLARE_OBJARRAY(oeXChartPanel *,      ArrayOfChartPanels);    
 
