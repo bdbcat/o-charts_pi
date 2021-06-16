@@ -5697,7 +5697,7 @@ void shopPanel::ValidateChartset( wxCommandEvent& event )
         if(!g_shopLogFrame){
             wxSize shopSize = GetSize();
             wxSize valSize = wxSize( (shopSize.x * 9 / 10), (shopSize.y * 8 / 10));
-            g_shopLogFrame = new oesu_piScreenLogContainer( this, _T("Validate Log"), valSize);
+            g_shopLogFrame = new oesu_piScreenLogContainer( this, _("Validate Log"), valSize);
             g_shopLogFrame->Center();
         }
 
