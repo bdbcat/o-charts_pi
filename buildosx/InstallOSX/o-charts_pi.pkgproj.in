@@ -33,7 +33,7 @@
 																<key>GID</key>
 																<integer>80</integer>
 																<key>PATH</key>
-																<string>liboesenc_pi.dylib</string>
+																<string>libo-charts_pi.dylib</string>
 																<key>PATH_TYPE</key>
 																<integer>3</integer>
 																<key>PERMISSIONS</key>
@@ -79,7 +79,7 @@
 														<key>GID</key>
 														<integer>80</integer>
 														<key>PATH</key>
-														<string>oesenc_pi</string>
+														<string>o-charts_pi</string>
 														<key>PATH_TYPE</key>
 														<integer>0</integer>
 														<key>PERMISSIONS</key>
@@ -198,7 +198,7 @@
 																<key>GID</key>
 																<integer>80</integer>
 																<key>PATH</key>
-																<string>oesenc_pi</string>
+																<string>o-charts_pi</string>
 																<key>PATH_TYPE</key>
 																<integer>0</integer>
 																<key>PERMISSIONS</key>
@@ -746,9 +746,9 @@
 			<key>CONCLUSION_ACTION</key>
 			<integer>0</integer>
 			<key>IDENTIFIER</key>
-			<string>org.opencpn.pkg.oesenc</string>
+			<string>org.opencpn.pkg.o-charts</string>
 			<key>NAME</key>
-			<string>oesenc-Plugin_0.1</string>
+			<string>o-charts-Plugin_0.1</string>
 			<key>OVERWRITE_PERMISSIONS</key>
 			<false/>
 			<key>USE_HFS+_COMPRESSION</key>
