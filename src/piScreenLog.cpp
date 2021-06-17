@@ -86,6 +86,8 @@ oesu_piScreenLogContainer::~oesu_piScreenLogContainer()
 
 void oesu_piScreenLogContainer::LogMessage(wxString s)
 {
+    if(s.Trim().IsEmpty())
+        return;
     if( m_slog  ) {
         m_slog->LogMessage( s );
         Show();
@@ -205,7 +207,7 @@ void oesu_piScreenLog::OnSize( wxSizeEvent& event)
 
 void oesu_piScreenLog::LogMessage(wxString s)
 {
-    if(s.IsEmpty())
+    if(s.Trim().IsEmpty())
         return;
         
     if( m_plogtc  ) {
