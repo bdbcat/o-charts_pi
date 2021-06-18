@@ -498,6 +498,7 @@ o_charts_pi::o_charts_pi(void *ppimgr)
       g_PrivateDataDir += wxFileName::GetPathSeparator();
       g_PrivateDataDir += _T("o_charts_pi");
       g_PrivateDataDir += wxFileName::GetPathSeparator();
+
       if(!::wxDirExists( g_PrivateDataDir ))
           ::wxMkdir( g_PrivateDataDir );
       
@@ -5510,7 +5511,15 @@ wxString GetDefaultChartInstallDirectory()
 #endif     
 
 #ifdef __OCPN__ANDROID__
-    rv = _T("/storage/emulated/0/Charts");
+    if(g_SDK_INT > 28){                         // Android 10, and later
+        rv = _T("/storage/emulated/0/Android/data/org.opencpn.opencpn/files/Charts");
+        if(!::wxDirExists( rv ) ){
+            if(!wxMkdir( rv ))
+                wxLogMessage(_T("Cannot create default chart directory on A10+"));
+        }
+    }
+    else
+        rv = _T("/storage/emulated/0/Charts");
 #endif
 
 #if defined( __WXOSX__ ) 
