@@ -1871,9 +1871,6 @@ void loadShopConfig()
         pConf->Read( _T("EnableFulldbRebuild"), &g_benableRebuild, 1);
         pConf->Read( _T("LastUpdate"), &g_lastShopUpdate);
 
-//        g_systemName = _T("");
-//        g_loginKey = _T("");
-        
 #if 1        
         // Get the list of charts
         wxArrayString chartIDArray;
@@ -4563,7 +4560,6 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
 {
     m_shopLog->ClearLog();
 
-
 #ifdef __OCPN__ANDROID__
     if(!g_systemName.Length()){
         extern wxString androidGetSystemName();
@@ -5723,10 +5719,14 @@ wxString ChooseInstallDir(wxString wk_installDir)
 {
     wxString installLocn = g_DefaultChartInstallDir;
     
-    if(wk_installDir.Length())
-        installLocn = wk_installDir;
-    else if(g_lastInstallDir.Length())
-        installLocn = g_lastInstallDir;
+    if(wk_installDir.Length()){
+       if(::wxDirExists( wk_installDir ))
+            installLocn = wk_installDir;
+    }
+    else if(g_lastInstallDir.Length()){
+        if(::wxDirExists( g_lastInstallDir ))
+            installLocn = g_lastInstallDir;
+    }
 
     wxString dir_spec;
     int result;
