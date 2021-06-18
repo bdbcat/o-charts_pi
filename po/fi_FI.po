@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-06-11 23:31-0400\n"
-"PO-Revision-Date: 2021-06-12 13:55\n"
+"PO-Revision-Date: 2021-06-18 14:03\n"
 "Last-Translator: \n"
 "Language-Team: Finnish\n"
 "Language: fi_FI\n"
@@ -261,7 +261,7 @@ msgstr "Sormenjälkitiedosto sisältää tämän tietokoneen yksilöintitiedot.\
 
 #: src/o-charts_pi.cpp:4266 src/o-charts_pi.cpp:5263
 msgid "Could not open o-charts_pi EULA: "
-msgstr "o-charts_pi -käyttöoikeussopimusta ei voitu avata: "
+msgstr "o-charts_pi -käyttöoikeussopimusta (EULA) ei voitu avata: "
 
 #: src/o-charts_pi.cpp:4339 src/o-charts_pi.cpp:5354
 msgid "o-charts PlugIn for OpenCPN"
@@ -612,11 +612,11 @@ msgstr "Valitse hakemisto, mihin karttasarja asennetaan. Karttasarjalle luodaan 
 
 #: src/ochartShop.cpp:2901
 msgid "For example, if you select the directory \"Charts\", then a new directory will be created as:\n\n"
-msgstr "Jos valitset esimerkiksi hakemiston \"Kartat\", karttasarjan asennushakemisto on:\n\n"
+msgstr "Jos valitset esimerkiksi hakemiston \"...\\Charts\", karttasarjan asennushakemisto on:\n\n"
 
 #: src/ochartShop.cpp:2908
 msgid "The charts will be installed in this newly created directory."
-msgstr "Kartasarja asennetaan luotuun hakemistoon."
+msgstr "Karttasarja asennetaan luotuun hakemistoon."
 
 #: src/ochartShop.cpp:2913
 msgid "Proceed"
@@ -629,7 +629,7 @@ msgstr "Peruuta"
 
 #: src/ochartShop.cpp:2923
 msgid "This chartset will be re-installed in the following location.\n\n"
-msgstr "Tämä karttasarja asennetaan uudelleen seuraavaan hakemistoon.\n\n"
+msgstr "Tämä karttasarja asennetaan uudelleen seuraavaan hakemistoon:\n\n"
 
 #: src/ochartShop.cpp:2928 src/ochartShop.cpp:2949
 msgid "If you want to use that location, press \"Continue\" \n\n"
@@ -649,7 +649,7 @@ msgstr "Muuta"
 
 #: src/ochartShop.cpp:2944
 msgid "This chartset will be installed in the following location.\n\n"
-msgstr "Tämä karttasarja asennetaan hakemistoon.\n\n"
+msgstr "Tämä karttasarja asennetaan hakemistoon:\n\n"
 
 #: src/ochartShop.cpp:2965
 msgid "This action will PERMANENTLY assign the chart:"
@@ -738,7 +738,7 @@ msgstr "%d) "
 
 #: src/ochartShop.cpp:4315 src/ochartShop.cpp:4341
 msgid "Refresh Chart List"
-msgstr "Päivitä karttaluettelo"
+msgstr "Päivitä karttasarjaluettelo"
 
 #: src/ochartShop.cpp:4320 src/ochartShop.cpp:4334
 msgid "Show Chart Info"
