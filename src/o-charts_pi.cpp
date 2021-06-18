@@ -246,7 +246,7 @@ extern bool                     g_chartListUpdatedOK;
 
 bool shutdown_SENC_server( void );
 bool ShowAlwaysEULAs();
-extern OE_ChartSymbols          *g_oeChartSymbols;
+extern ChartSymbols          *g_oeChartSymbols;
 extern wxString                 g_dongleName;
 
 OKeyHash keyMapDongle;
@@ -1001,7 +1001,7 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
             g_GLOptionsSet = true;
             
             init_GLLibrary();                                  // once
-            g_oeChartSymbols->ResetRasterTextureCache();
+            ///g_oeChartSymbols->ResetRasterTextureCache();
  
         }
     }

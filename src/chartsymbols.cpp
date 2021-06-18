@@ -22,6 +22,7 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,  USA.         *
  **************************************************************************/
+#include "config.h"
 
 #include "wx/wxprec.h"
 
@@ -37,11 +38,10 @@
 #include <wx/glcanvas.h>
 #endif
 
-extern bool pi_bopengl;
-
+extern bool g_bopengl;
 
 #ifdef ocpnUSE_GL
-extern GLenum       g_oe_texture_rectangle_format;
+extern GLenum       g_texture_rectangle_format;
 #endif
 
 //--------------------------------------------------------------------------------------
@@ -50,73 +50,207 @@ extern GLenum       g_oe_texture_rectangle_format;
 // needs some methods from ChartSymbol. So s52plib only calls static methods in
 // order to resolve circular include file dependencies.
 
-
+wxArrayPtrVoid* colorTables;
+unsigned int rasterSymbolsTexture;
+wxSize rasterSymbolsTextureSize;
+wxBitmap rasterSymbols;
+int rasterSymbolsLoadedColorMapNumber;
 wxString configFileDirectory;
+int ColorTableIndex;
 
+WX_DECLARE_STRING_HASH_MAP( wxRect, symbolGraphicsHashMap );
 
-
-//  Some refined HPGL vector rendering strings allowing direct OpenGL rendering without pre-tesselation
-
-char fix3501[] = {"SPA;ST3;PU1944,1950;PM0;PD2245,1500;PD2553,1950;PD1944,1950;PM2;FP;\
-PU2096,1940;PM0;PD2096,2566;PD2401,2566;PD2401,1940;PD2096,1940;PM2;FP;\
-PU1944,2546;PM0;PD2245,2999;PD2553,2546;PD1944,2546;PM2;FP;\
-SPA;SW1;PU2096,1950;PD1944,1950;PD2245,1500;PD2553,1950;PD2401,1950;PD2401,2546;PD2563,2546;PD2252,2999;PD1947,2546;PD2096,2546;PD2096,1950;\
-"};
-
+symbolGraphicsHashMap* symbolGraphicLocations;
 //--------------------------------------------------------------------------------------
 
-OE_ChartSymbols::OE_ChartSymbols( void )
+ChartSymbols::ChartSymbols( void )
 {
 }
 
-OE_ChartSymbols::~OE_ChartSymbols( void )
+ChartSymbols::~ChartSymbols( void )
 {
 }
 
-void OE_ChartSymbols::InitializeGlobals( void )
+void ChartSymbols::InitializeGlobals( void )
 {
-    oe_pi_colorTables = new wxArrayPtrVoid;
-    oe_pi_symbolGraphicLocations = new symbolGraphicsHashMap;
-    oe_rasterSymbolsLoadedColorMapNumber = -1;
-    oe_ColorTableIndex = 0;
-    oe_rasterSymbolsTexture = 0;
+    if( !colorTables ) colorTables = new wxArrayPtrVoid;
+    if( !symbolGraphicLocations ) symbolGraphicLocations = new symbolGraphicsHashMap;
+    rasterSymbolsLoadedColorMapNumber = -1;
+    ColorTableIndex = 0;
 }
 
-void OE_ChartSymbols::DeleteGlobals( void )
+void ChartSymbols::DeleteGlobals( void )
 {
 
-    ( *oe_pi_symbolGraphicLocations ).clear();
-    delete oe_pi_symbolGraphicLocations;
-    oe_pi_symbolGraphicLocations = NULL;
+    ( *symbolGraphicLocations ).clear();
+    delete symbolGraphicLocations;
+    symbolGraphicLocations = NULL;
 
-    for( unsigned int i = 0; i < oe_pi_colorTables->GetCount(); i++ ) {
-        colTable *ct = (colTable *) oe_pi_colorTables->Item( i );
+    for( unsigned int i = 0; i < colorTables->GetCount(); i++ ) {
+        colTable *ct = (colTable *) colorTables->Item( i );
         delete ct->tableName;
         ct->colors.clear();
         ct->wxColors.clear();
         delete ct;
     }
 
-    oe_pi_colorTables->Clear();
-    delete oe_pi_colorTables;
-    oe_pi_colorTables = NULL;
+    colorTables->Clear();
+    delete colorTables;
+    colorTables = NULL;
 }
+
+bool ChartSymbols::PatchConfigFile(s52plib* plibArg, const wxString &xmlPatchFileName)
+{
+    
+    plib = plibArg;
+    
+    if( !wxFileName::FileExists( xmlPatchFileName ) ) {
+        wxString msg( _T("ChartSymbols PatchFile not found: ") );
+        msg += xmlPatchFileName;
+        wxLogMessage( msg );
+        return false;
+    }
+    
+#if 1
+    pugi::xml_document patch_symbolsDoc;
+    
+    if(patch_symbolsDoc.load_file( xmlPatchFileName.fn_str() ) ){
+        wxString msg( _T("ChartSymbols PatchFileloaded from ") );
+        msg += xmlPatchFileName;
+        wxLogMessage( msg );
+        
+        pugi::xml_node elements = patch_symbolsDoc.child("chartsymbols");
+        
+        for (pugi::xml_node element = elements.first_child(); element; element = element.next_sibling()){
+            if( !strcmp(element.name(), "color-tables") ) ProcessColorTables( element );
+            else if( !strcmp(element.name(), "lookups") ) ProcessLookups( element );
+            else if( !strcmp(element.name(), "line-styles") ) ProcessLinestyles( element );
+            else if( !strcmp(element.name(), "patterns") ) ProcessPatterns( element );
+            else if( !strcmp(element.name(), "symbols") ) ProcessSymbols( element );
+            
+        }
+        patch_symbolsDoc.reset();           // purge the document to recover memory;
+        
+    }
+    else{
+        wxString msg( _T("    ChartSymbols PatchFile Failed to load ") );
+        msg += xmlPatchFileName;
+        wxLogMessage( msg );
+        return false;
+    }
+        
+#else    
+    TiXmlDocument doc;
+
+    if( !doc.LoadFile( (const char *) xmlPatchFileName.mb_str() ) ) {
+        wxString msg( _T("    ChartSymbols PatchFile Failed to load ") );
+        msg += xmlPatchFileName;
+        wxLogMessage( msg );
+        return false;
+    }
+    
+    wxString msg( _T("ChartSymbols PatchFile loaded from ") );
+    msg += xmlPatchFileName;
+    wxLogMessage( msg );
+    TiXmlHandle hRoot( doc.RootElement() );
+    
+    wxString root = wxString( doc.RootElement()->Value(), wxConvUTF8 );
+    if( root != _T("chartsymbols" ) ) {
+        wxLogMessage(
+            _T("    ChartSymbols::LoadConfigFile(): Expected XML Root <chartsymbols> not found.") );
+            return false;
+    }
+    
+    TiXmlElement* pElem = hRoot.FirstChild().Element();
+    
+    for( ; pElem != 0; pElem = pElem->NextSiblingElement() ) {
+        wxString child = wxString( pElem->Value(), wxConvUTF8 );
+        
+        if( child == _T("color-tables") ) ProcessColorTables( pElem );
+        if( child == _T("lookups") ) ProcessLookups( pElem );
+        if( child == _T("line-styles") ) ProcessLinestyles( pElem );
+        if( child == _T("patterns") ) ProcessPatterns( pElem );
+        if( child == _T("symbols") ) ProcessSymbols( pElem );
+                     
+    }
+#endif
+
+    return true;
+}
+
+
+void ChartSymbols::ProcessColorTables( pugi::xml_node &node )
+{
+    for( pugi::xml_node child = node.first_child(); child != 0; child = child.next_sibling() ) {
+        const char *pcn = child.name();
+        
+        if( !strcmp( pcn, "color-table" ) ) {
+            colTable *colortable = new colTable;
+            colortable->tableName = new wxString( child.first_attribute().value(), wxConvUTF8 );
+            
+            pugi::xml_node colorNode =child.first_child();
+            while(colorNode){
+                if(!strcmp(colorNode.name(), "graphics-file")){
+                    colortable->rasterFileName = wxString( colorNode.first_attribute().value(), wxConvUTF8 );
+                }
+
+                if(!strcmp(colorNode.name(), "color")){
+                    wxString key;
+                    S52color color;
+                    
+                    for ( pugi::xml_attribute attr = colorNode.first_attribute(); attr; attr = attr.next_attribute() ) {
+                        const char *pca = attr.name();
+                        if(!strcmp(pca, "name")){
+                            strncpy(color.colName, attr.value(), 5);
+                            color.colName[5] = 0;
+                            key = wxString( attr.value(), wxConvUTF8 );
+                            
+                        }                        
+                        else if(!strcmp(pca, "r")){
+                            color.R = attr.as_int();
+                        }
+                        else if(!strcmp(pca, "g")){
+                            color.G = attr.as_int();
+                        }
+                        else if(!strcmp(pca, "b")){
+                            color.B = attr.as_int();
+                        }
+                        
+                    }
+                    
+                    colortable->colors[key] = color;
+                    wxColour wxcolor( color.R, color.G, color.B );
+                    colortable->wxColors[key] = wxcolor;
+                    
+                }
+            
+	            colorNode = colorNode.next_sibling();
+            }
+            
+            colorTables->Add( (void *) colortable );
+        }
+    }
+}
+
+
+
+
+
+
+
+
 
 #define TGET_INT_PROPERTY_VALUE( node, name, target )  \
       propVal = wxString(node->Attribute(name), wxConvUTF8); \
       propVal.ToLong( &numVal, 0 ); \
       target = numVal;
 
-void OE_ChartSymbols::ProcessColorTables( TiXmlElement* colortableNodes )
+void ChartSymbols::ProcessColorTables( TiXmlElement* colortableNodes )
 {
 
     for( TiXmlNode *childNode = colortableNodes->FirstChild(); childNode;
             childNode = childNode->NextSibling() ) {
         TiXmlElement *child = childNode->ToElement();
-    
-        if(childNode->Type() == TiXmlNode::TINYXML_COMMENT)
-            continue;
-
         colTable *colortable = new colTable;
 
         const char *pName = child->Attribute( "name" );
@@ -150,12 +284,326 @@ void OE_ChartSymbols::ProcessColorTables( TiXmlElement* colortableNodes )
             next: colorNode = colorNode->NextSiblingElement();
         }
 
-        oe_pi_colorTables->Add( (void *) colortable );
+        colorTables->Add( (void *) colortable );
 
     }
 }
 
-void OE_ChartSymbols::ProcessLookups( TiXmlElement* lookupNodes )
+void ChartSymbols::ProcessLookups( pugi::xml_node &node )
+{
+    Lookup lookup;
+    
+    for( pugi::xml_node child = node.first_child(); child != 0; child = child.next_sibling() ) {
+        const char *pcn = child.name();
+        
+        
+        if( !strcmp( pcn, "lookup" ) ) {
+            for ( pugi::xml_attribute attr = child.first_attribute(); attr; attr = attr.next_attribute() ) {
+                const char *pca = attr.name();
+                if(!strcmp(pca, "name")){
+                    lookup.name = wxString (attr.value(), wxConvUTF8 );
+                }
+                else if(!strcmp(pca, "RCID")){
+                    lookup.RCID = attr.as_int();
+                }
+                else if(!strcmp(pca, "id")){
+                    lookup.id = attr.as_int();
+                }
+            }
+            lookup.attributeCodeArray = NULL;
+        }
+        
+        pugi::xml_node lookupNode = child.first_child();
+        while(lookupNode){
+            const char *nodeText = lookupNode.first_child().value();
+ 
+            if(!strcmp( lookupNode.name(), "type")){
+                if(!strcmp(nodeText, "Area")) lookup.type = AREAS_T;
+                else if(!strcmp(nodeText, "Line")) lookup.type = LINES_T;
+                else lookup.type = POINT_T;
+            }
+            else if( !strcmp( lookupNode.name(), "disp-prio") ) {
+                if( !strcmp(nodeText,"Group 1") ) lookup.displayPrio = PRIO_GROUP1;
+                else if( !strcmp(nodeText,"Area 1") ) lookup.displayPrio = PRIO_AREA_1;
+                else if( !strcmp(nodeText,"Area 2") ) lookup.displayPrio = PRIO_AREA_2;
+                else if( !strcmp(nodeText,"Point Symbol") ) lookup.displayPrio = PRIO_SYMB_POINT;
+                else if( !strcmp(nodeText,"Line Symbol") ) lookup.displayPrio = PRIO_SYMB_LINE;
+                else if( !strcmp(nodeText,"Area Symbol") ) lookup.displayPrio = PRIO_SYMB_AREA;
+                else if( !strcmp(nodeText,"Routing") ) lookup.displayPrio = PRIO_ROUTEING;
+                else if( !strcmp(nodeText,"Hazards") ) lookup.displayPrio = PRIO_HAZARDS;
+                else if( !strcmp(nodeText,"Mariners") ) lookup.displayPrio = PRIO_MARINERS;
+                else lookup.displayPrio = PRIO_NODATA;
+                
+            }
+
+            else if(!strcmp( lookupNode.name(), "radar-prio")){
+                if( !strcmp(nodeText,"On Top") ) lookup.radarPrio = RAD_OVER;
+                else lookup.radarPrio = RAD_SUPP;
+            }                
+            
+            else if( !strcmp( lookupNode.name(), "table-name") ) {
+                if( !strcmp(nodeText, "Simplified") ) lookup.tableName = SIMPLIFIED;
+                else if( !strcmp(nodeText, "Lines") ) lookup.tableName = LINES;
+                else if( !strcmp(nodeText,"Plain") ) lookup.tableName = PLAIN_BOUNDARIES;
+                else if( !strcmp(nodeText,"Symbolized") ) lookup.tableName = SYMBOLIZED_BOUNDARIES;
+                else  lookup.tableName = PAPER_CHART;
+            }
+            
+            else if( !strcmp( lookupNode.name(), "display-cat") ) {
+                if( !strcmp( nodeText,"Displaybase") ) lookup.displayCat = DISPLAYBASE;
+                else  if( !strcmp( nodeText,"Standard") ) lookup.displayCat = STANDARD;
+                else  if( !strcmp( nodeText,"Other") ) lookup.displayCat = OTHER;
+                else  if( !strcmp( nodeText,"Mariners") ) lookup.displayCat = MARINERS_STANDARD;
+                else  lookup.displayCat = OTHER;
+            }
+            
+            else if( !strcmp( lookupNode.name(), "comment") ) {
+                lookup.comment = lookupNode.first_child().text().as_int();
+            }
+            
+            else if( !strcmp( lookupNode.name(), "instruction") ) {
+                wxString inst(nodeText, wxConvUTF8);
+                lookup.instruction = inst;
+                lookup.instruction.Append( '\037' );
+                
+            }
+            
+            else if( !strcmp( lookupNode.name(), "attrib-code") ) {
+                if( !lookup.attributeCodeArray )
+                    lookup.attributeCodeArray = new wxArrayString();
+
+                int nc = strlen(nodeText);
+                if(nc >= 6){                            //  ignore spurious short fields
+                    char *attVal = (char *)calloc(nc+2, sizeof(char));
+                    memcpy(attVal, nodeText, nc);
+                
+                    if( attVal[6] == '\0')
+                        attVal[6] = ' ';
+                    wxString atv(attVal);
+                    lookup.attributeCodeArray->Add( atv );
+                    //lookup.attributeCodeArray.push_back(attVal);
+                }
+                
+            }
+        
+            lookupNode = lookupNode.next_sibling();
+        }
+        
+        BuildLookup( lookup );
+        //lookup.attributeCodeArray->Clear();
+    }
+            
+}
+
+void ChartSymbols::ProcessVectorTag( pugi::xml_node &vectorNode, SymbolSizeInfo_t &vectorSize )
+{
+    vectorSize.size.x = vectorNode.attribute("width").as_int();
+    vectorSize.size.y = vectorNode.attribute("height").as_int();
+    
+    
+    for( pugi::xml_node child = vectorNode.first_child(); child != 0; child = child.next_sibling() ) {
+        const char *nodeType = child.name();
+        
+        if( !strcmp(nodeType,"distance") ){
+            vectorSize.minDistance = child.attribute("min").as_int();
+            vectorSize.maxDistance = child.attribute("max").as_int();
+        }
+
+        else if( !strcmp(nodeType,"origin") ){
+            vectorSize.origin.x = child.attribute("x").as_int();
+            vectorSize.origin.y = child.attribute("y").as_int();
+        }
+    
+        else if( !strcmp(nodeType,"pivot") ){
+            vectorSize.pivot.x = child.attribute("x").as_int();
+            vectorSize.pivot.y = child.attribute("y").as_int();
+        }
+    }
+}
+
+void ChartSymbols::ProcessLinestyles( pugi::xml_node &node )
+{
+    LineStyle lineStyle;
+    
+    for( pugi::xml_node child = node.first_child(); child != 0; child = child.next_sibling() ) {
+        lineStyle.RCID = child.attribute("RCID").as_int();
+        
+        pugi::xml_node lineNode = child.first_child();
+        while(lineNode){
+            const char *nodeText = lineNode.first_child().value();
+            const char *nodeType = lineNode.name();
+            
+            if( !strcmp(nodeType,"description") ) lineStyle.description = nodeText;
+            else if( !strcmp(nodeType,"name") ) lineStyle.name = nodeText;
+            else if( !strcmp(nodeType,"color-ref") ) lineStyle.colorRef = nodeText;
+            else if( !strcmp(nodeType,"HPGL") ) lineStyle.HPGL = nodeText;
+            else if( !strcmp(nodeType,"vector") ) ProcessVectorTag( lineNode, lineStyle.vectorSize );
+        
+            lineNode = lineNode.next_sibling();
+        }
+        BuildLineStyle( lineStyle );
+    }            
+}
+
+
+void ChartSymbols::ProcessPatterns( pugi::xml_node &node )
+{
+    OCPNPattern pattern;
+ 
+    for( pugi::xml_node child = node.first_child(); child != 0; child = child.next_sibling() ) {
+        pattern.RCID = child.attribute("RCID").as_int();
+    
+        pattern.hasVector = false;
+        pattern.hasBitmap = false;
+        pattern.preferBitmap = true;
+        
+        pugi::xml_node pattNode = child.first_child();
+        while(pattNode){
+            const char *nodeText = pattNode.first_child().value();
+            const char *nodeType = pattNode.name();
+            
+            if( !strcmp(nodeType,"description") ) pattern.description = nodeText;
+            else if( !strcmp(nodeType,"name") ) pattern.name = nodeText;
+            else if( !strcmp(nodeType,"filltype") ) pattern.fillType = nodeText[0];
+            else if( !strcmp(nodeType,"spacing") ) pattern.spacing = nodeText[0];
+            else if( !strcmp(nodeType,"definition") ) pattern.hasVector = !strcmp(nodeText, "V");
+            else if( !strcmp(nodeType,"color-ref") ) pattern.colorRef = nodeText;
+            else if( !strcmp(nodeType,"HPGL") ) { pattern.HPGL = nodeText; pattern.hasVector = true; }
+            
+            else if( !strcmp(nodeType,"prefer-bitmap") ){
+                if(!strcmp(nodeText, "no")) pattern.preferBitmap = false;
+                else if(!strcmp(nodeText, "false")) pattern.preferBitmap = false;
+            }
+                
+            else if( !strcmp(nodeType,"bitmap") ){
+                pattern.bitmapSize.size.x = pattNode.attribute("width").as_int();
+                pattern.bitmapSize.size.y = pattNode.attribute("height").as_int();
+                
+                for( pugi::xml_node child = pattNode.first_child(); child != 0; child = child.next_sibling() ) {
+                    const char *nodeType = child.name();
+                    
+                    if( !strcmp(nodeType,"distance") ){
+                        pattern.bitmapSize.minDistance = child.attribute("min").as_int();
+                        pattern.bitmapSize.maxDistance = child.attribute("max").as_int();
+                    }
+                    else if( !strcmp(nodeType,"origin") ){
+                        pattern.bitmapSize.origin.x = child.attribute("x").as_int();
+                        pattern.bitmapSize.origin.y = child.attribute("y").as_int();
+                    }
+                    else if( !strcmp(nodeType,"pivot") ){
+                        pattern.bitmapSize.pivot.x = child.attribute("x").as_int();
+                        pattern.bitmapSize.pivot.y = child.attribute("y").as_int();
+                    }
+                    else if( !strcmp(nodeType,"graphics-location") ){
+                        pattern.bitmapSize.graphics.x = child.attribute("x").as_int();
+                        pattern.bitmapSize.graphics.y = child.attribute("y").as_int();
+                    }
+                }
+            }
+            
+            else if( !strcmp(nodeType,"vector") )
+                ProcessVectorTag( pattNode, pattern.vectorSize );
+                
+            
+            pattNode = pattNode.next_sibling();
+        }
+        
+        
+        BuildPattern( pattern );
+    }
+}
+
+
+
+void ChartSymbols::ProcessSymbols( pugi::xml_node &node )
+{
+    ChartSymbol symbol;
+    
+    for( pugi::xml_node child = node.first_child(); child != 0; child = child.next_sibling() ) {
+        symbol.RCID = child.attribute("RCID").as_int();
+ 
+        symbol.hasVector = false;
+        symbol.hasBitmap = false;
+        symbol.preferBitmap = true;
+        
+        pugi::xml_node symbolNode = child.first_child();
+        while(symbolNode){
+            const char *nodeText = symbolNode.first_child().value();
+            const char *nodeType = symbolNode.name();
+            
+            if( !strcmp(nodeType,"description") ) symbol.description = nodeText;
+            else if( !strcmp(nodeType,"name") ) symbol.name = nodeText;
+            else if( !strcmp(nodeType,"definition") ) symbol.hasVector = !strcmp(nodeText, "V");
+            else if( !strcmp(nodeType,"color-ref") ) symbol.colorRef = nodeText;
+            
+            else if( !strcmp(nodeType,"prefer-bitmap") ){
+                if(!strcmp(nodeText, "no")) symbol.preferBitmap = false;
+                else if(!strcmp(nodeText, "false")) symbol.preferBitmap = false;
+            }
+            
+            else if( !strcmp(nodeType,"bitmap") ){
+                symbol.bitmapSize.size.x = symbolNode.attribute("width").as_int();
+                symbol.bitmapSize.size.y = symbolNode.attribute("height").as_int();
+                symbol.hasBitmap = true;
+                
+                for( pugi::xml_node child = symbolNode.first_child(); child != 0; child = child.next_sibling() ) {
+                    const char *nodeType = child.name();
+                    
+                    if( !strcmp(nodeType,"distance") ){
+                        symbol.bitmapSize.minDistance = child.attribute("min").as_int();
+                        symbol.bitmapSize.maxDistance = child.attribute("max").as_int();
+                    }
+                    else if( !strcmp(nodeType,"origin") ){
+                        symbol.bitmapSize.origin.x = child.attribute("x").as_int();
+                        symbol.bitmapSize.origin.y = child.attribute("y").as_int();
+                    }
+                    else if( !strcmp(nodeType,"pivot") ){
+                        symbol.bitmapSize.pivot.x = child.attribute("x").as_int();
+                        symbol.bitmapSize.pivot.y = child.attribute("y").as_int();
+                    }
+                    else if( !strcmp(nodeType,"graphics-location") ){
+                        symbol.bitmapSize.graphics.x = child.attribute("x").as_int();
+                        symbol.bitmapSize.graphics.y = child.attribute("y").as_int();
+                    }
+                }
+            }
+            
+            else if( !strcmp(nodeType,"vector") ){
+                symbol.vectorSize.size.x = symbolNode.attribute("width").as_int();
+                symbol.vectorSize.size.y = symbolNode.attribute("height").as_int();
+                symbol.hasVector = true;
+                
+                for( pugi::xml_node child = symbolNode.first_child(); child != 0; child = child.next_sibling() ) {
+                    const char *nodeType = child.name();
+                    
+                    if( !strcmp(nodeType,"distance") ){
+                        symbol.vectorSize.minDistance = child.attribute("min").as_int();
+                        symbol.vectorSize.maxDistance = child.attribute("max").as_int();
+                    }
+                    else if( !strcmp(nodeType,"origin") ){
+                        symbol.vectorSize.origin.x = child.attribute("x").as_int();
+                        symbol.vectorSize.origin.y = child.attribute("y").as_int();
+                    }
+                    else if( !strcmp(nodeType,"pivot") ){
+                        symbol.vectorSize.pivot.x = child.attribute("x").as_int();
+                        symbol.vectorSize.pivot.y = child.attribute("y").as_int();
+                    }
+                    else if( !strcmp(nodeType,"HPGL") ){
+                        symbol.HPGL = wxString( child.first_child().value(), wxConvUTF8 );
+                    }
+                }
+            }
+            
+            
+            symbolNode = symbolNode.next_sibling();
+        }
+        
+        BuildSymbol( symbol );
+    }
+    
+}
+
+void ChartSymbols::ProcessLookups( TiXmlElement* lookupNodes )
 {
     Lookup lookup;
     wxString propVal;
@@ -163,16 +611,11 @@ void OE_ChartSymbols::ProcessLookups( TiXmlElement* lookupNodes )
 
     for( TiXmlNode *childNode = lookupNodes->FirstChild(); childNode;
             childNode = childNode->NextSibling() ) {
-        
-        if(childNode->Type() == TiXmlNode::TINYXML_COMMENT)
-            continue;
-        
         TiXmlElement *child = childNode->ToElement();
 
         TGET_INT_PROPERTY_VALUE( child, "id", lookup.id )
         TGET_INT_PROPERTY_VALUE( child, "RCID", lookup.RCID )
         lookup.name = wxString( child->Attribute( "name" ), wxConvUTF8 );
-        lookup.attributeCodeArray = NULL;
 
         TiXmlElement* subNode = child->FirstChild()->ToElement();
 
@@ -256,12 +699,14 @@ void OE_ChartSymbols::ProcessLookups( TiXmlElement* lookupNodes )
                 goto nextNode;
             }
             if( nodeType == _T("attrib-code") ) {
-                if( !lookup.attributeCodeArray )
-                    lookup.attributeCodeArray = new wxArrayString();
-                wxString value = wxString( subNode->GetText(), wxConvUTF8 );
-                if( value.length() == 6 )
-                    value << _T(" ");
-                lookup.attributeCodeArray->Add( value );
+                char *attVal = (char *)calloc(8, sizeof(char));
+                strncpy(attVal, nodeText, 7);
+                if( attVal[6] == '\0')
+                    attVal[6] = ' ';
+                wxString avc(attVal);
+                lookup.attributeCodeArray->Add( avc );
+                //lookup.attributeCodeArray.push_back(attVal);
+
                 goto nextNode;
             }
 
@@ -272,7 +717,7 @@ void OE_ChartSymbols::ProcessLookups( TiXmlElement* lookupNodes )
     }
 }
 
-void OE_ChartSymbols::BuildLookup( Lookup &lookup )
+void ChartSymbols::BuildLookup( Lookup &lookup )
 {
 
     LUPrec *LUP = (LUPrec*) calloc( 1, sizeof(LUPrec) );
@@ -286,7 +731,7 @@ void OE_ChartSymbols::BuildLookup( Lookup &lookup )
     LUP->RPRI = lookup.radarPrio;
     LUP->TNAM = lookup.tableName;
     LUP->OBCL[6] = 0;
-    strncpy( LUP->OBCL, lookup.name.mb_str(), 7 );
+    memcpy( LUP->OBCL, lookup.name.mb_str(), 7 );
 
     LUP->ATTCArray = lookup.attributeCodeArray;
 
@@ -305,7 +750,7 @@ void OE_ChartSymbols::BuildLookup( Lookup &lookup )
         LUPrec *pLUPCandidate = pLUPARRAYtyped->Item( index );
         if( LUP->RCID == pLUPCandidate->RCID ) {
             pLUPARRAYtyped->RemoveAt(index);
-            plib->DestroyLUP( pLUPCandidate ); // empties the LUP
+            plib->DestroyLUP(pLUPCandidate); // empties the LUP
             break;
         }
         index++;
@@ -314,7 +759,7 @@ void OE_ChartSymbols::BuildLookup( Lookup &lookup )
     pLUPARRAYtyped->Add( LUP );
 }
 
-void OE_ChartSymbols::ProcessVectorTag( TiXmlElement* vectorNode, SymbolSizeInfo_t &vectorSize )
+void ChartSymbols::ProcessVectorTag( TiXmlElement* vectorNode, SymbolSizeInfo_t &vectorSize )
 {
     wxString propVal;
     long numVal;
@@ -345,7 +790,8 @@ void OE_ChartSymbols::ProcessVectorTag( TiXmlElement* vectorNode, SymbolSizeInfo
     }
 }
 
-void OE_ChartSymbols::ProcessLinestyles( TiXmlElement* linestyleNodes )
+
+void ChartSymbols::ProcessLinestyles( TiXmlElement* linestyleNodes )
 {
 
     LineStyle lineStyle;
@@ -355,9 +801,6 @@ void OE_ChartSymbols::ProcessLinestyles( TiXmlElement* linestyleNodes )
     for( TiXmlNode *childNode = linestyleNodes->FirstChild(); childNode;
             childNode = childNode->NextSibling() ) {
         TiXmlElement *child = childNode->ToElement();
-
-        if(childNode->Type() == TiXmlNode::TINYXML_COMMENT)
-            continue;
 
         TGET_INT_PROPERTY_VALUE( child, "RCID", lineStyle.RCID )
 
@@ -393,14 +836,14 @@ void OE_ChartSymbols::ProcessLinestyles( TiXmlElement* linestyleNodes )
     }
 }
 
-void OE_ChartSymbols::BuildLineStyle( LineStyle &lineStyle )
+void ChartSymbols::BuildLineStyle( LineStyle &lineStyle )
 {
     Rule *lnstmp = NULL;
     Rule *lnst = (Rule*) calloc( 1, sizeof(Rule) );
     plib->pAlloc->Add( lnst );
 
     lnst->RCID = lineStyle.RCID;
-    strncpy( lnst->name.PANM, lineStyle.name.mb_str(), 8 );
+    memcpy( lnst->name.PANM, lineStyle.name.mb_str(), 8 );
     lnst->bitmap.PBTM = NULL;
 
     lnst->vector.LVCT = (char *) malloc( lineStyle.HPGL.Len() + 1 );
@@ -428,7 +871,7 @@ void OE_ChartSymbols::BuildLineStyle( LineStyle &lineStyle )
         if( lnst->name.LINM != lnstmp->name.LINM ) ( *plib->_line_sym )[lineStyle.name] = lnst;
 }
 
-void OE_ChartSymbols::ProcessPatterns( TiXmlElement* patternNodes )
+void ChartSymbols::ProcessPatterns( TiXmlElement* patternNodes )
 {
 
     OCPNPattern pattern;
@@ -438,9 +881,6 @@ void OE_ChartSymbols::ProcessPatterns( TiXmlElement* patternNodes )
     for( TiXmlNode *childNode = patternNodes->FirstChild(); childNode;
             childNode = childNode->NextSibling() ) {
         TiXmlElement *child = childNode->ToElement();
-
-        if(childNode->Type() == TiXmlNode::TINYXML_COMMENT)
-            continue;
 
         TGET_INT_PROPERTY_VALUE( child, "RCID", pattern.RCID )
 
@@ -534,7 +974,7 @@ void OE_ChartSymbols::ProcessPatterns( TiXmlElement* patternNodes )
 
 }
 
-void OE_ChartSymbols::BuildPattern( OCPNPattern &pattern )
+void ChartSymbols::BuildPattern( OCPNPattern &pattern )
 {
     Rule *pattmp = NULL;
 
@@ -543,7 +983,7 @@ void OE_ChartSymbols::BuildPattern( OCPNPattern &pattern )
 
     patt->RCID = pattern.RCID;
     patt->exposition.PXPO = new wxString( pattern.description );
-    strncpy( patt->name.PANM, pattern.name.mb_str(), 8 );
+    memcpy( patt->name.PANM, pattern.name.mb_str(), 8 );
     patt->bitmap.PBTM = NULL;
     patt->fillType.PATP = pattern.fillType;
     patt->spacing.PASP = pattern.spacing;
@@ -577,7 +1017,7 @@ void OE_ChartSymbols::BuildPattern( OCPNPattern &pattern )
     patt->pos.patt.bnbox_y.SBXR = patternSize.origin.y;
 
     wxRect graphicsLocation( pattern.bitmapSize.graphics, pattern.bitmapSize.size );
-    ( *oe_pi_symbolGraphicLocations )[pattern.name] = graphicsLocation;
+    ( *symbolGraphicLocations )[pattern.name] = graphicsLocation;
 
     // check if key already there
 
@@ -595,7 +1035,7 @@ void OE_ChartSymbols::BuildPattern( OCPNPattern &pattern )
     }
 }
 
-void OE_ChartSymbols::ProcessSymbols( TiXmlElement* symbolNodes )
+void ChartSymbols::ProcessSymbols( TiXmlElement* symbolNodes )
 {
 
     ChartSymbol symbol;
@@ -605,9 +1045,6 @@ void OE_ChartSymbols::ProcessSymbols( TiXmlElement* symbolNodes )
     for( TiXmlNode *childNode = symbolNodes->FirstChild(); childNode;
             childNode = childNode->NextSibling() ) {
         TiXmlElement *child = childNode->ToElement();
-
-        if(childNode->Type() == TiXmlNode::TINYXML_COMMENT)
-            continue;
 
         TGET_INT_PROPERTY_VALUE( child, "RCID", symbol.RCID )
 
@@ -701,12 +1138,7 @@ void OE_ChartSymbols::ProcessSymbols( TiXmlElement* symbolNodes )
                         goto nextVector;
                     }
                     if( vectornodeType == _T("HPGL") ) {
-                        
-                        // Substitute some vector rendering strings
-                        if(symbol.RCID == 3501)
-                            symbol.HPGL = wxString( fix3501, wxConvUTF8 );
-                        else
-                            symbol.HPGL = wxString( vectorNodes->GetText(), wxConvUTF8 );
+                        symbol.HPGL = wxString( vectorNodes->GetText(), wxConvUTF8 );
                     }
                     nextVector: vectorNodes = vectorNodes->NextSiblingElement();
                 }
@@ -719,9 +1151,8 @@ void OE_ChartSymbols::ProcessSymbols( TiXmlElement* symbolNodes )
 
 }
 
-void OE_ChartSymbols::BuildSymbol( ChartSymbol& symbol )
+void ChartSymbols::BuildSymbol( ChartSymbol& symbol )
 {
-
     Rule *symb = (Rule*) calloc( 1, sizeof(Rule) );
     plib->pAlloc->Add( symb );
 
@@ -729,7 +1160,7 @@ void OE_ChartSymbols::BuildSymbol( ChartSymbol& symbol )
     wxString SCRF;
 
     symb->RCID = symbol.RCID;
-    strncpy( symb->name.SYNM, symbol.name.char_str(), 8 );
+    memcpy( symb->name.SYNM, symbol.name.char_str(), 8 );
 
     symb->exposition.SXPO = new wxString( symbol.description );
 
@@ -764,7 +1195,7 @@ void OE_ChartSymbols::BuildSymbol( ChartSymbol& symbol )
     symb->pos.symb.bnbox_y.SBXR = symbolSize.origin.y;
 
     wxRect graphicsLocation( symbol.bitmapSize.graphics, symbol.bitmapSize.size );
-    ( *oe_pi_symbolGraphicLocations )[symbol.name] = graphicsLocation;
+    ( *symbolGraphicLocations )[symbol.name] = graphicsLocation;
 
     // Already something here with same key? Then free its strings, otherwise they leak.
     Rule* symbtmp = ( *plib->_symb_sym )[symbol.name];
@@ -778,7 +1209,7 @@ void OE_ChartSymbols::BuildSymbol( ChartSymbol& symbol )
 
 }
 
-bool OE_ChartSymbols::LoadConfigFile(s52plib* plibArg, const wxString & s52ilePath)
+bool ChartSymbols::LoadConfigFile(s52plib* plibArg, const wxString & s52ilePath)
 {
     TiXmlDocument doc;
 
@@ -805,6 +1236,27 @@ bool OE_ChartSymbols::LoadConfigFile(s52plib* plibArg, const wxString & s52ilePa
         return false;
     }
 
+#if 1   
+    if(m_symbolsDoc.load_file( fullFilePath.fn_str() ) ){
+        wxString msg( _T("ChartSymbols loaded from ") );
+        msg += fullFilePath;
+        wxLogMessage( msg );
+        
+        pugi::xml_node elements = m_symbolsDoc.child("chartsymbols");
+        
+        for (pugi::xml_node element = elements.first_child(); element; element = element.next_sibling()){
+            if( !strcmp(element.name(), "color-tables") ) ProcessColorTables( element );
+            else if( !strcmp(element.name(), "lookups") ) ProcessLookups( element );
+            else if( !strcmp(element.name(), "line-styles") ) ProcessLinestyles( element );
+            else if( !strcmp(element.name(), "patterns") ) ProcessPatterns( element );
+            else if( !strcmp(element.name(), "symbols") ) ProcessSymbols( element );
+            
+        }
+        m_symbolsDoc.reset();           // purge the document to recover memory;
+        
+    }    
+    
+#else
     if( !doc.LoadFile( (const char *) fullFilePath.mb_str() ) ) {
         wxString msg( _T("    ChartSymbols ConfigFile Failed to load ") );
         msg += fullFilePath;
@@ -815,9 +1267,9 @@ bool OE_ChartSymbols::LoadConfigFile(s52plib* plibArg, const wxString & s52ilePa
     wxString msg( _T("ChartSymbols loaded from ") );
     msg += fullFilePath;
     wxLogMessage( msg );
-
+    
     TiXmlHandle hRoot( doc.RootElement() );
-
+    
     wxString root = wxString( doc.RootElement()->Value(), wxConvUTF8 );
     if( root != _T("chartsymbols" ) ) {
         wxLogMessage(
@@ -837,92 +1289,35 @@ bool OE_ChartSymbols::LoadConfigFile(s52plib* plibArg, const wxString & s52ilePa
         if( child == _T("symbols") ) ProcessSymbols( pElem );
 
     }
+#endif
 
     return true;
 }
-
-bool OE_ChartSymbols::PatchConfigFile(s52plib* plibArg, const wxString &xmlPatchFileName)
+void ChartSymbols::SetColorTableIndex( int index )
 {
-    TiXmlDocument doc;
-    
-    plib = plibArg;
-    
-    if( !wxFileName::FileExists( xmlPatchFileName ) ) {
-        wxString msg( _T("ChartSymbols PatchFile not found: ") );
-        msg += xmlPatchFileName;
-        wxLogMessage( msg );
-        return false;
-    }
-    
-    if( !doc.LoadFile( (const char *) xmlPatchFileName.mb_str() ) ) {
-        wxString msg( _T("    ChartSymbols PatchFile Failed to load ") );
-        msg += xmlPatchFileName;
-        wxLogMessage( msg );
-        return false;
-    }
-    
-    wxString msg( _T("ChartSymbols PatchFile loaded from ") );
-    msg += xmlPatchFileName;
-    wxLogMessage( msg );
-    
-    TiXmlHandle hRoot( doc.RootElement() );
-    
-    wxString root = wxString( doc.RootElement()->Value(), wxConvUTF8 );
-    if( root != _T("chartsymbols" ) ) {
-        wxLogMessage(
-            _T("    ChartSymbols::LoadConfigFile(): Expected XML Root <chartsymbols> not found.") );
-            return false;
-    }
-    
-    TiXmlElement* pElem = hRoot.FirstChild().Element();
-    
-    for( ; pElem != 0; pElem = pElem->NextSiblingElement() ) {
-        wxString child = wxString( pElem->Value(), wxConvUTF8 );
-        
-        if( child == _T("color-tables") ) ProcessColorTables( pElem );
-        if( child == _T("lookups") ) ProcessLookups( pElem );
-        if( child == _T("line-styles") ) ProcessLinestyles( pElem );
-        if( child == _T("patterns") ) ProcessPatterns( pElem );
-        if( child == _T("symbols") ) ProcessSymbols( pElem );
-                     
-    }
-    
-    return true;
+    ColorTableIndex = index;
+    LoadRasterFileForColorTable(ColorTableIndex);
 }
 
 
-void OE_ChartSymbols::SetColorTableIndex( int index )
+int ChartSymbols::LoadRasterFileForColorTable( int tableNo, bool flush )
 {
-    oe_ColorTableIndex = index;
-    LoadRasterFileForColorTable(oe_ColorTableIndex);
-}
 
-
-void OE_ChartSymbols::ResetRasterTextureCache()
-{
-    oe_rasterSymbolsTexture = 0;               // This will leak one texture
-                                                // but we cannot just delete it, since it might have been erroeously created
-                                                // while there was no valid GLcontext.
-                                                
-    LoadRasterFileForColorTable(oe_ColorTableIndex, true);
-}
-    
-int OE_ChartSymbols::LoadRasterFileForColorTable( int tableNo, bool flush )
-{
-    if( tableNo == oe_rasterSymbolsLoadedColorMapNumber && !flush ){
-        if( pi_bopengl) {
-            if(oe_rasterSymbolsTexture > 0)
+    if( tableNo == rasterSymbolsLoadedColorMapNumber && !flush ){
+        if( g_bopengl) {
+            if(rasterSymbolsTexture)
                 return true;
 #ifdef ocpnUSE_GL            
-            else if( !g_oe_texture_rectangle_format && oe_rasterSymbols.IsOk()) 
+            else if( !g_texture_rectangle_format && rasterSymbols.IsOk()) 
                 return true;
 #endif            
         }
-        if( oe_rasterSymbols.IsOk())
+        if( rasterSymbols.IsOk())
             return true;
     }
         
-    colTable* coltab = (colTable *) oe_pi_colorTables->Item( tableNo );
+    
+    colTable* coltab = (colTable *) colorTables->Item( tableNo );
 
     wxString filename = configFileDirectory + wxFileName::GetPathSeparator()
             + coltab->rasterFileName;
@@ -931,7 +1326,7 @@ int OE_ChartSymbols::LoadRasterFileForColorTable( int tableNo, bool flush )
     if( rasterFileImg.LoadFile( filename, wxBITMAP_TYPE_PNG ) ) {
 #ifdef ocpnUSE_GL
         /* for opengl mode, load the symbols into a texture */
-        if( pi_bopengl && g_oe_texture_rectangle_format) {
+        if( g_bopengl && g_texture_rectangle_format) {
 
             int w = rasterFileImg.GetWidth();
             int h = rasterFileImg.GetHeight();
@@ -953,42 +1348,37 @@ int OE_ChartSymbols::LoadRasterFileForColorTable( int tableNo, bool flush )
                         e[off * 4 + 3] = a[off];
                     }
             }
-            
-            glEnable(GL_TEXTURE_2D);
+            if(!rasterSymbolsTexture)
+                glGenTextures(1, &rasterSymbolsTexture);
 
+            glBindTexture(g_texture_rectangle_format, rasterSymbolsTexture);
 
-            if(oe_rasterSymbolsTexture == 0)
-            {
-                if(oe_rasterSymbolsTexture)
-                    glDeleteTextures(1, &oe_rasterSymbolsTexture);
-                glGenTextures(1, &oe_rasterSymbolsTexture);
-                wxString msg;
-                msg.Printf(_T("oeSENC_PI RasterSymbols texture: %d"), oe_rasterSymbolsTexture);
-                wxLogMessage(msg);
-            }
-
-            glBindTexture(g_oe_texture_rectangle_format, oe_rasterSymbolsTexture);
+            /* unfortunately this texture looks terrible with compression */
             GLuint format = GL_RGBA;
-            glTexImage2D(g_oe_texture_rectangle_format, 0, format, w, h,
+            glTexImage2D(g_texture_rectangle_format, 0, format, w, h,
                          0, GL_RGBA, GL_UNSIGNED_BYTE, e);
 
-            glTexParameteri(g_oe_texture_rectangle_format, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(g_oe_texture_rectangle_format, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//             glTexParameteri( g_texture_rectangle_format, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+//             glTexParameteri( g_texture_rectangle_format, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+
+            glTexParameteri(g_texture_rectangle_format, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(g_texture_rectangle_format, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
             
-            glTexParameteri(g_oe_texture_rectangle_format, GL_TEXTURE_MAG_FILTER,  GL_NEAREST );   // No mipmapping
-            glTexParameteri(g_oe_texture_rectangle_format, GL_TEXTURE_MIN_FILTER,  GL_NEAREST );
+            glTexParameteri(g_texture_rectangle_format, GL_TEXTURE_MAG_FILTER,  GL_NEAREST );   // No mipmapping
+            glTexParameteri( g_texture_rectangle_format, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 
-            oe_rasterSymbolsTextureSize = wxSize(w, h);
+            rasterSymbolsTextureSize = wxSize(w, h);
 
-            glDisable(GL_TEXTURE_2D);
+            glDisable( GL_TEXTURE_2D );
+            
             free(e);
         } 
 #endif
         {
-            oe_rasterSymbols = wxBitmap( rasterFileImg, -1/*32*/);
+            rasterSymbols = wxBitmap( rasterFileImg, -1/*32*/);
         }
 
-        oe_rasterSymbolsLoadedColorMapNumber = tableNo;
+        rasterSymbolsLoadedColorMapNumber = tableNo;
         return true;
     }
 
@@ -999,37 +1389,37 @@ int OE_ChartSymbols::LoadRasterFileForColorTable( int tableNo, bool flush )
 }
 
 // Convenience method for old s52plib code.
-wxArrayPtrVoid* OE_ChartSymbols::GetColorTables()
+wxArrayPtrVoid* ChartSymbols::GetColorTables()
 {
-    return oe_pi_colorTables;
+    return colorTables;
 }
 
-S52color* OE_ChartSymbols::GetColor( const char *colorName, int fromTable )
+S52color* ChartSymbols::GetColor( const char *colorName, int fromTable )
 {
     colTable *colortable;
     wxString key( colorName, wxConvUTF8, 5 );
-    colortable = (colTable *)oe_pi_colorTables->Item( fromTable );
+    colortable = (colTable *) colorTables->Item( fromTable );
     return &( colortable->colors[key] );
 }
 
-wxColor OE_ChartSymbols::GetwxColor( const wxString &colorName, int fromTable )
+wxColor ChartSymbols::GetwxColor( const wxString &colorName, int fromTable )
 {
     colTable *colortable;
-    colortable = (colTable *) oe_pi_colorTables->Item( fromTable );
+    colortable = (colTable *) colorTables->Item( fromTable );
     wxColor c = colortable->wxColors[colorName];
     return c;
 }
 
-wxColor OE_ChartSymbols::GetwxColor( const char *colorName, int fromTable )
+wxColor ChartSymbols::GetwxColor( const char *colorName, int fromTable )
 {
     wxString key( colorName, wxConvUTF8, 5 );
     return GetwxColor( key, fromTable );
 }
 
-int OE_ChartSymbols::FindColorTable(const wxString & tableName)
+int ChartSymbols::FindColorTable(const wxString & tableName)
 {
-    for( unsigned int i = 0; i < oe_pi_colorTables->GetCount(); i++ ) {
-        colTable *ct = (colTable *) oe_pi_colorTables->Item( i );
+    for( unsigned int i = 0; i < colorTables->GetCount(); i++ ) {
+        colTable *ct = (colTable *) colorTables->Item( i );
         if( tableName.IsSameAs( *ct->tableName ) ) {
             return i;
         }
@@ -1037,7 +1427,7 @@ int OE_ChartSymbols::FindColorTable(const wxString & tableName)
     return 0;
 }
 
-wxString OE_ChartSymbols::HashKey( const char* symbolName )
+wxString ChartSymbols::HashKey( const char* symbolName )
 {
     char key[9];
     key[8] = 0;
@@ -1045,24 +1435,24 @@ wxString OE_ChartSymbols::HashKey( const char* symbolName )
     return wxString( key, wxConvUTF8 );
 }
 
-wxImage OE_ChartSymbols::GetImage( const char* symbolName )
+wxImage ChartSymbols::GetImage( const char* symbolName )
 {
-    wxRect bmArea = ( *oe_pi_symbolGraphicLocations )[HashKey( symbolName )];
-    if(oe_rasterSymbols.IsOk()){
-        wxBitmap bitmap = oe_rasterSymbols.GetSubBitmap( bmArea );
+    wxRect bmArea = ( *symbolGraphicLocations )[HashKey( symbolName )];
+    if(rasterSymbols.IsOk()){
+        wxBitmap bitmap = rasterSymbols.GetSubBitmap( bmArea );
         return bitmap.ConvertToImage();
     }
     else
         return wxImage(1,1);
 }
 
-unsigned int OE_ChartSymbols::GetGLTextureRect( wxRect &rect, const char* symbolName )
+unsigned int ChartSymbols::GetGLTextureRect( wxRect &rect, const char* symbolName )
 {
-    rect = ( *oe_pi_symbolGraphicLocations )[HashKey( symbolName )];
-    return oe_rasterSymbolsTexture;
+    rect = ( *symbolGraphicLocations )[HashKey( symbolName )];
+    return rasterSymbolsTexture;
 }
 
-wxSize OE_ChartSymbols::GLTextureSize()
+wxSize ChartSymbols::GLTextureSize()
 {
-    return oe_rasterSymbolsTextureSize;
+    return rasterSymbolsTextureSize;
 }

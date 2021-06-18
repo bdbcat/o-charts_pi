@@ -71,7 +71,7 @@ extern GLenum       g_oe_texture_rectangle_format;
 
 float g_scaminScale;
 
-OE_ChartSymbols *g_oeChartSymbols;
+ChartSymbols *g_oeChartSymbols;
 
 extern PFNGLGENBUFFERSPROC                 s_glGenBuffers;
 extern PFNGLBINDBUFFERPROC                 s_glBindBuffer;
@@ -385,7 +385,7 @@ s52plib::s52plib( const wxString& PLib, bool b_forceLegacy )
     m_txf_ready = false;
     m_txf = NULL;
 
-    g_oeChartSymbols = new OE_ChartSymbols();
+    g_oeChartSymbols = new ChartSymbols();
     g_oeChartSymbols->InitializeGlobals();
 
     m_bOK = !( S52_load_Plib( PLib, b_forceLegacy ) == 0 );
