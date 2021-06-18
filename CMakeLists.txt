@@ -143,6 +143,7 @@ set(SRC
   src/validator.cpp
   src/viewport.cpp
   libs/gdal/src/s57classregistrar.cpp
+  src/pugixml.cpp
 )
 
 if(QT_ANDROID)

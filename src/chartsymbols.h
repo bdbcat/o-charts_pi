@@ -27,6 +27,7 @@
 
 #include "s52plib.h"
 #include <tinyxml.h>
+#include "pugixml.hpp"
 
 
 class Lookup {
@@ -38,7 +39,7 @@ public:
 	DisPrio        displayPrio;             // Display Priority
 	RadPrio        radarPrio;             // 'O' or 'S', Radar Priority
 	LUPname        tableName;             // FTYP:  areas, points, lines
-	wxArrayString* attributeCodeArray;        // ArrayString of LUP Attributes
+	wxArrayString * attributeCodeArray;  // ArrayString of LUP Attributes
 	wxString       instruction;            // Instruction Field (rules)
 	DisCat         displayCat;             // Display Categorie: D/S/O, DisplayBase, Standard, Other
 	int            comment;             // Look-Up Comment (PLib3.x put 'groupes' here,
@@ -99,31 +100,28 @@ public:
 	wxString HPGL;
 };
 
-WX_DECLARE_STRING_HASH_MAP( wxRect, symbolGraphicsHashMap );
 
-
-class OE_ChartSymbols
+class ChartSymbols
 {
 public:
-	OE_ChartSymbols(void);
-	~OE_ChartSymbols(void);
-        bool LoadConfigFile(s52plib* plibArg, const wxString & path);
+	ChartSymbols(void);
+	~ChartSymbols(void);
+	bool LoadConfigFile(s52plib* plibArg, const wxString & path);
+
+	static void InitializeGlobals( void );
+	static void DeleteGlobals( void );
+	static int LoadRasterFileForColorTable( int tableNo, bool flush=false );
+	static wxArrayPtrVoid * GetColorTables();
+	static int FindColorTable(const wxString & tableName);
+	static S52color* GetColor( const char *colorName, int fromTable );
+	static wxColor GetwxColor( const wxString &colorName, int fromTable );
+	static wxColor GetwxColor( const char *colorName, int fromTable );
+	static wxString HashKey( const char* symbolName );
+	static wxImage GetImage( const char* symbolName );
+        static unsigned int GetGLTextureRect( wxRect &rect, const char* symbolName );
+        static wxSize GLTextureSize();
+        static void SetColorTableIndex( int index );
         bool PatchConfigFile(s52plib* plibArg, const wxString &xmlPatchFileName);
-        
-	void InitializeGlobals( void );
-	void DeleteGlobals( void );
-	int LoadRasterFileForColorTable( int tableNo, bool flush=false );
-	wxArrayPtrVoid * GetColorTables();
-	int FindColorTable(const wxString & tableName);
-	S52color* GetColor( const char *colorName, int fromTable );
-	wxColor GetwxColor( const wxString &colorName, int fromTable );
-	wxColor GetwxColor( const char *colorName, int fromTable );
-	wxString HashKey( const char* symbolName );
-	wxImage GetImage( const char* symbolName );
-        unsigned int GetGLTextureRect( wxRect &rect, const char* symbolName );
-        wxSize GLTextureSize();
-        void SetColorTableIndex( int index );
-        void ResetRasterTextureCache();
 
 private:
       void ProcessVectorTag( TiXmlElement* subNodes, SymbolSizeInfo_t &vectorSize );
@@ -132,20 +130,20 @@ private:
       void ProcessLinestyles( TiXmlElement* linestyleNodes );
       void ProcessPatterns( TiXmlElement* patternNodes );
       void ProcessSymbols( TiXmlElement* symbolNodes );
-	void BuildLineStyle( LineStyle &lineStyle );
-	void BuildLookup( Lookup &lookup );
-	void BuildPattern( OCPNPattern &pattern );
-	void BuildSymbol( ChartSymbol &symol );
+      void BuildLineStyle( LineStyle &lineStyle );
+      void BuildLookup( Lookup &lookup );
+      void BuildPattern( OCPNPattern &pattern );
+      void BuildSymbol( ChartSymbol &symol );
+       
+      void ProcessColorTables( pugi::xml_node &node );
+      void ProcessLookups( pugi::xml_node &node );
+      void ProcessLinestyles( pugi::xml_node &node );
+      void ProcessPatterns( pugi::xml_node &node );
+      void ProcessSymbols( pugi::xml_node &node );
+      void ProcessVectorTag( pugi::xml_node &vectorNode, SymbolSizeInfo_t &vectorSize );
+      
+      pugi::xml_document m_symbolsDoc;
 
-        s52plib* plib;
-        
-        wxArrayPtrVoid* oe_pi_colorTables;
-        unsigned int oe_rasterSymbolsTexture;
-        wxSize oe_rasterSymbolsTextureSize;
-        wxBitmap oe_rasterSymbols;
-        int oe_rasterSymbolsLoadedColorMapNumber;
-        int oe_ColorTableIndex;
-        symbolGraphicsHashMap* oe_pi_symbolGraphicLocations;
-
+      s52plib* plib;
 };
 
