@@ -138,6 +138,7 @@ extern OKeyHash keyMapDongle;
 extern OKeyHash keyMapSystem;
 
 extern o_charts_pi *g_pi;
+bool g_bShowExpired;
 
 #define ID_CMD_BUTTON_INSTALL 7783
 #define ID_CMD_BUTTON_INSTALL_CHAIN 7784
@@ -1553,6 +1554,8 @@ bool itemChart::isChartsetDontShow()
     
 bool itemChart::isChartsetShow()
 {
+    if(bExpired && !g_bShowExpired)
+        return false;
     return true;
 }
 
@@ -1870,6 +1873,7 @@ void loadShopConfig()
 
         pConf->Read( _T("EnableFulldbRebuild"), &g_benableRebuild, 1);
         pConf->Read( _T("LastUpdate"), &g_lastShopUpdate);
+        pConf->Read( _T("ShowExpiredCharts"), &g_bShowExpired, 0);
 
 #if 1        
         // Get the list of charts
@@ -2092,6 +2096,7 @@ void saveShopConfig()
       pConf->Write( _T("LastEULAFile"), g_lastEULAFile);
       pConf->Write( _T("EnableFulldbRebuild"), g_benableRebuild);
       pConf->Write( _T("LastUpdate"), g_lastShopUpdate );
+      pConf->Write( _T("ShowExpiredCharts"), g_bShowExpired );
 
 #if 1      
       pConf->DeleteGroup( _T("/PlugIns/ocharts/oeus/charts") );
@@ -4318,7 +4323,12 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     m_buttonUpdate->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(shopPanel::OnButtonUpdate), NULL, this);
     sysBox->Add(m_buttonUpdate, 1, wxRIGHT | wxALIGN_RIGHT, WXC_FROM_DIP(5));
     
-    sysBox->Add(new wxStaticText(this, wxID_ANY, ""), 1, wxALIGN_LEFT, WXC_FROM_DIP(5));
+    //sysBox->Add(new wxStaticText(this, wxID_ANY, ""), 1, wxALIGN_LEFT, WXC_FROM_DIP(5));
+    m_cbShowExpired = new wxCheckBox(this, wxID_ANY, _("Show Expired Charts"));
+    sysBox->Add(m_cbShowExpired, 1, wxALIGN_LEFT, WXC_FROM_DIP(5));
+    m_cbShowExpired->Bind(wxEVT_CHECKBOX, &shopPanel::OnShowExpiredToggle, this);
+    m_cbShowExpired->SetValue( g_bShowExpired );
+
     m_buttonInfo = new wxButton(this, wxID_ANY, _("Show Chart Info"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     m_buttonInfo->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(shopPanel::OnButtonInfo), NULL, this);
     sysBox->Add(m_buttonInfo, 1, wxRIGHT | wxALIGN_RIGHT, WXC_FROM_DIP(5));
@@ -4343,6 +4353,12 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     m_buttonUpdate = new wxButton(this, wxID_ANY, _("Refresh Chart List"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     m_buttonUpdate->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(shopPanel::OnButtonUpdate), NULL, this);
     sysBox1->Add(m_buttonUpdate, 0, wxRIGHT | wxALIGN_RIGHT, WXC_FROM_DIP(5));
+    
+    m_cbShowExpired = new wxCheckBox(this, wxID_ANY, _("Show Expired Charts"));
+    sysBox->Add(m_cbShowExpired, 1, wxALIGN_LEFT, WXC_FROM_DIP(5));
+    m_cbShowExpired->Bind(wxEVT_CHECKBOX, &shopPanel::OnShowExpiredToggle, this);
+    m_cbShowExpired->SetValue( g_bShowExpired );
+
     
 
 #endif
@@ -4455,6 +4471,14 @@ shopPanel::~shopPanel()
 {
     delete m_shopLog;
     delete m_validator;
+}
+
+void shopPanel::OnShowExpiredToggle( wxCommandEvent& event )
+{
+    g_bShowExpired = m_cbShowExpired->GetValue();
+    m_ChartPanelSelected = NULL;        // Clear any selection
+    UpdateChartList();
+
 }
 
 void shopPanel::OnButtonInfo( wxCommandEvent& event )

@@ -409,7 +409,8 @@ protected:
     wxStaticText *m_staticTextStatusProgress;
     wxStaticText *m_staticTextLEM;
     
-
+    wxCheckBox   *m_cbShowExpired;
+    
 protected:
     void SortChartList();
 
@@ -434,7 +435,8 @@ public:
     wxButton* GetButtonInstall() { return m_buttonInstall; }
     wxButton* GetButtonUpdate() { return m_buttonUpdate; }
     void UpdateChartInfoFiles();
-
+    void OnShowExpiredToggle( wxCommandEvent& event );
+    
     oesu_piScreenLog *m_shopLog;
     
     oeUniLogin *m_login;
