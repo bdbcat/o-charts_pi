@@ -2902,6 +2902,54 @@ int getChartList( bool bShowErrorDialogs = true){
         return checkResponseCode(iResponseCode);
 }
 
+wxArrayString breakPath( wxWindow *win, wxString path, int pix_width)
+{
+    wxArrayString rv;
+    if(!path.Length())
+        return rv;
+    
+    if(!win)
+        return rv;
+    
+    char sep = wxFileName::GetPathSeparator();
+    
+    wxArrayString temp;
+    wxString patha = path;
+    patha += _T(" ");
+    wxString sepa = sep;
+    sepa += _T(" ");
+    wxStringTokenizer tokenizer(patha, sepa);
+    while ( tokenizer.HasMoreTokens() ){
+        wxString token = tokenizer.GetNextToken();
+        wxString spt = token + wxString(sep);
+        temp.Add( spt );
+    }
+
+    if(!temp.GetCount())
+        return rv;
+    
+    unsigned int it = 0;
+    wxSize sz;
+    wxString accum, previous;
+    while ( it < temp.GetCount()){
+        previous = accum;
+        accum += temp[it];
+        
+        sz = win->GetTextExtent(accum);
+        if(sz.x > pix_width){
+            rv.Add(previous);
+            //printf("%s\n", static_cast<const char*>(previous));
+            accum.Clear();
+        }
+        else
+            it++;
+    }
+    rv.Add(accum.Mid(0, accum.Length() - 1));
+    //printf("%s\n", static_cast<const char*>(accum.Mid(0, accum.Length() - 1)));
+    
+    return rv;
+}
+
 bool showInstallInfoDialog( wxString newChartDir)
 {
     wxString msg = _("This chartset will be installed as a new subdirectory within the directory you select next.\n\n");
@@ -2927,10 +2975,17 @@ bool showInstallInfoDialog( wxString newChartDir)
 
 bool showReinstallInfoDialog( wxString chartBaseDir, wxString newChartDir)
 {
+    wxString cl = chartBaseDir + wxFileName::GetPathSeparator() + newChartDir;
+    wxArrayString cla = breakPath( g_shopPanel, cl, g_shopPanel->GetSize().x * 7 / 10);
+
     wxString msg = _("This chartset will be re-installed in the following location.\n\n");
-    msg += chartBaseDir;
-    msg += wxFileName::GetPathSeparator();
-    msg += newChartDir;
+    for(unsigned int i=0 ; i < cla.GetCount() ; i++){
+            msg += cla[i];
+            msg += _T("\n");
+    }
+//     msg += chartBaseDir;
+//     msg += wxFileName::GetPathSeparator();
+//     msg += newChartDir;
     msg += _T("\n\n");
     msg += _("If you want to use that location, press \"Continue\" \n\n");
     msg += _("If you want to change the installation location now, press \"Change\" \n\n");
@@ -2948,10 +3003,17 @@ bool showReinstallInfoDialog( wxString chartBaseDir, wxString newChartDir)
 
 bool showInstallConfirmDialog( wxString chartBaseDir, wxString newChartDir)
 {
+    wxString cl = chartBaseDir + wxFileName::GetPathSeparator() + newChartDir;
+    wxArrayString cla = breakPath( g_shopPanel, cl, g_shopPanel->GetSize().x * 7 / 10);
+
     wxString msg = _("This chartset will be installed in the following location.\n\n");
-    msg += chartBaseDir;
-    msg += wxFileName::GetPathSeparator();
-    msg += newChartDir;
+    for(unsigned int i=0 ; i < cla.GetCount() ; i++){
+            msg += cla[i];
+            msg += _T("\n");
+    }
+//    msg += chartBaseDir;
+//    msg += wxFileName::GetPathSeparator();
+//    msg += newChartDir;
     msg += _T("\n\n");
     msg += _("If you want to use that location, press \"Continue\" \n\n");
     msg += _("If you want to change the installation location now, press \"Change\" \n\n");
