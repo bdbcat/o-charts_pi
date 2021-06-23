@@ -102,7 +102,7 @@ oernc plugins. It thus obsoletes these two plugins.
 ]=])
 
 set(CPACK_PACKAGE_HOMEPAGE_URL https://github.com/bdbcat/o-charts_pi)
-set(PKG_INFO_URL https://opencpn.org/OpenCPN/info/downloadplugins.html)
+set(PKG_INFO_URL https://o-charts.org/)
 
 set(PKG_AUTHOR "Dave register")
 
