@@ -79,7 +79,7 @@ set(_pre_rel ${PKG_PRERELEASE})
 if (_pre_rel MATCHES "^[^-]")
   string(PREPEND _pre_rel "-")
 endif ()
-set(pkg_semver "${PROJECT_VERSION}${_pre_rel}+${_gitversion}")
+set(pkg_semver "${PROJECT_VERSION}${_pre_rel}")
 
 # pkg_displayname: Used for xml metadata and GUI name
 if (ARCH MATCHES "arm64|aarch64")
