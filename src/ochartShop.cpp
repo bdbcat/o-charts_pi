@@ -5048,7 +5048,12 @@ int shopPanel::GetShopNameFromFPR()
                 g_systemName = tsystemName;
         }
         else{
-            checkResult(queryResult, true);
+            if(queryResult == _T("8l")){                // system name not found, must be new, not an error
+                g_lastQueryResult = queryResult;
+                return 0;                              // Avoid showing "error" dialog
+            }
+
+            checkResult(queryResult, true);            // Other errors. 
         }
 
         g_lastQueryResult = queryResult;
