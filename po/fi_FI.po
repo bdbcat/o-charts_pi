@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-06-19 09:51-0400\n"
-"PO-Revision-Date: 2021-06-20 00:50\n"
+"PO-Revision-Date: 2021-06-26 15:13\n"
 "Last-Translator: \n"
 "Language-Team: Finnish\n"
 "Language: fi_FI\n"
@@ -742,7 +742,7 @@ msgstr "Päivitä karttasarjaluettelo"
 
 #: src/ochartShop.cpp:4327 src/ochartShop.cpp:4357
 msgid "Show Expired Charts"
-msgstr ""
+msgstr "Näytä vanhentuneet karttasarjat"
 
 #: src/ochartShop.cpp:4332 src/ochartShop.cpp:4346
 msgid "Show Chart Info"
@@ -835,7 +835,7 @@ msgstr "Tila: tarkistetaan ladattua tiedostoa..."
 
 #: src/ochartShop.cpp:5720
 msgid "Validate Log"
-msgstr ""
+msgstr "Tarkistuslogi"
 
 #: src/ochartShop.cpp:5736
 msgid "No chartset selected."

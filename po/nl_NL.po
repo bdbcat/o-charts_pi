@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-06-19 09:51-0400\n"
-"PO-Revision-Date: 2021-06-20 00:50\n"
+"PO-Revision-Date: 2021-06-26 15:13\n"
 "Last-Translator: \n"
 "Language-Team: Dutch\n"
 "Language: nl_NL\n"
@@ -143,11 +143,11 @@ msgstr "Verlopen"
 
 #: src/o-charts_pi.cpp:2803
 msgid "Cannot find the oexserverd utility at \n"
-msgstr ""
+msgstr "Kan hulpprogramma oexserverd niet vinden op \n"
 
 #: src/o-charts_pi.cpp:2928
 msgid "oexserverd utility at \n"
-msgstr ""
+msgstr "oexserverd hulpprogramma op\n"
 
 #: src/o-charts_pi.cpp:2932
 msgid " could not be started.\n\n"
@@ -607,19 +607,19 @@ msgstr "Controleer de verbinding en probeer het opnieuw."
 
 #: src/ochartShop.cpp:2907
 msgid "This chartset will be installed as a new subdirectory within the directory you select next.\n\n"
-msgstr ""
+msgstr "Deze kaartset zal worden geïnstalleerd als een nieuwe submap in de map die je hierna selecteert.\n\n"
 
 #: src/ochartShop.cpp:2908
 msgid "For example, if you select the directory \"Charts\", then a new directory will be created as:\n\n"
-msgstr ""
+msgstr "Bijvoorbeeld, als je de map \"Kaarten\" selecteert, dan wordt een nieuwe map aangemaakt als:\n\n"
 
 #: src/ochartShop.cpp:2915
 msgid "The charts will be installed in this newly created directory."
-msgstr ""
+msgstr "De kaarten zullen worden geïnstalleerd in deze nieuwe map."
 
 #: src/ochartShop.cpp:2920
 msgid "Proceed"
-msgstr ""
+msgstr "Doorgaan"
 
 #: src/ochartShop.cpp:2920 src/ochartShop.cpp:6911 src/ochartShop.cpp:7094
 #: src/ochartShop.cpp:7391 src/ochartShop.cpp:7460
@@ -628,27 +628,27 @@ msgstr "Annuleren"
 
 #: src/ochartShop.cpp:2930
 msgid "This chartset will be re-installed in the following location.\n\n"
-msgstr ""
+msgstr "Deze kaartset zal opnieuw worden geïnstalleerd op de volgende locatie.\n\n"
 
 #: src/ochartShop.cpp:2935 src/ochartShop.cpp:2956
 msgid "If you want to use that location, press \"Continue\" \n\n"
-msgstr ""
+msgstr "Als je die locatie wilt gebruiken, klik je op \"Doorgaan\" \n\n"
 
 #: src/ochartShop.cpp:2936 src/ochartShop.cpp:2957
 msgid "If you want to change the installation location now, press \"Change\" \n\n"
-msgstr ""
+msgstr "Als u de installatielocatie nu wilt wijzigen, klik dan op \"Wijzigen\" \n\n"
 
 #: src/ochartShop.cpp:2941 src/ochartShop.cpp:2962
 msgid "Continue"
-msgstr ""
+msgstr "Doorgaan"
 
 #: src/ochartShop.cpp:2941 src/ochartShop.cpp:2962
 msgid "Change"
-msgstr ""
+msgstr "Wijzigen"
 
 #: src/ochartShop.cpp:2951
 msgid "This chartset will be installed in the following location.\n\n"
-msgstr ""
+msgstr "Deze kaartset zal worden geïnstalleerd op de volgende locatie.\n\n"
 
 #: src/ochartShop.cpp:2972
 msgid "This action will PERMANENTLY assign the chart:"
@@ -741,7 +741,7 @@ msgstr "Kaartenlijst vernieuwen"
 
 #: src/ochartShop.cpp:4327 src/ochartShop.cpp:4357
 msgid "Show Expired Charts"
-msgstr ""
+msgstr "Toon verlopen kaarten"
 
 #: src/ochartShop.cpp:4332 src/ochartShop.cpp:4346
 msgid "Show Chart Info"
@@ -834,7 +834,7 @@ msgstr "Status: Downloadbestand valideren..."
 
 #: src/ochartShop.cpp:5720
 msgid "Validate Log"
-msgstr ""
+msgstr "Valideer log"
 
 #: src/ochartShop.cpp:5736
 msgid "No chartset selected."
@@ -850,7 +850,7 @@ msgstr "Kaartdownload geannuleerd."
 
 #: src/ochartShop.cpp:5979
 msgid "Proceed with chart installation."
-msgstr ""
+msgstr "Ga verder met de kaartinstallatie."
 
 #: src/ochartShop.cpp:5992
 msgid "Chart installation ERROR."

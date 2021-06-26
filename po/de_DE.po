@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-06-19 09:51-0400\n"
-"PO-Revision-Date: 2021-06-20 00:50\n"
+"PO-Revision-Date: 2021-06-26 15:13\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -741,7 +741,7 @@ msgstr "Kartenliste aktualisieren"
 
 #: src/ochartShop.cpp:4327 src/ochartShop.cpp:4357
 msgid "Show Expired Charts"
-msgstr ""
+msgstr "Abgelaufene Karten anzeigen"
 
 #: src/ochartShop.cpp:4332 src/ochartShop.cpp:4346
 msgid "Show Chart Info"
@@ -834,7 +834,7 @@ msgstr "Status: Überprüfe Download-Datei..."
 
 #: src/ochartShop.cpp:5720
 msgid "Validate Log"
-msgstr ""
+msgstr "Protokoll validieren"
 
 #: src/ochartShop.cpp:5736
 msgid "No chartset selected."

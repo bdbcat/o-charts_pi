@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-06-19 09:51-0400\n"
-"PO-Revision-Date: 2021-06-20 00:50\n"
+"PO-Revision-Date: 2021-06-26 15:13\n"
 "Last-Translator: \n"
 "Language-Team: Swedish\n"
 "Language: sv_SE\n"
@@ -375,7 +375,7 @@ msgstr "  Kontrollerar kortfiler kopplade till enhetsnamn: "
 
 #: src/validator.cpp:343
 msgid "  Unable to validate unassigned chartset."
-msgstr "  Det går inte att validera ej tilldelad sjökort."
+msgstr "  Det går inte att validera ej tilldelat sjökort."
 
 #: src/validator.cpp:350
 msgid "  Unable to find slot assignment."
@@ -391,7 +391,7 @@ msgstr "  Markerat kortset är inte installerat."
 
 #: src/validator.cpp:366
 msgid "  Installation directory: "
-msgstr "Installationskatalog"
+msgstr "  Installationskatalog: "
 
 #: src/validator.cpp:373
 msgid "  ProcessingChartList.XML"
@@ -743,7 +743,7 @@ msgstr "Uppdatera listan"
 
 #: src/ochartShop.cpp:4327 src/ochartShop.cpp:4357
 msgid "Show Expired Charts"
-msgstr ""
+msgstr "Visa utgångna sjökortlicenser"
 
 #: src/ochartShop.cpp:4332 src/ochartShop.cpp:4346
 msgid "Show Chart Info"
@@ -836,7 +836,7 @@ msgstr "Status: Kontrollerar nedladdad fil..."
 
 #: src/ochartShop.cpp:5720
 msgid "Validate Log"
-msgstr ""
+msgstr "Valideringslog"
 
 #: src/ochartShop.cpp:5736
 msgid "No chartset selected."
