@@ -2331,7 +2331,10 @@ int checkResponseCode(int iResponseCode)
         wxString msg1;
         msg1.Printf(_T("\n{%d}\n "), iResponseCode);
         msg += msg1;
-        msg += _("Check your connection and try again.");
+        if (iResponseCode == 503)
+            msg += _("The o-charts server may be inaccessible for the moment.\n Please try again later");
+        else
+            msg += _("Check your connection and try again.");
         ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
     }
     
