@@ -2327,11 +2327,21 @@ int checkResult(wxString &result, bool bShowLoginErrorDialog = true)
 int checkResponseCode(int iResponseCode)
 {
     if(iResponseCode != 200){
-        wxString msg = _("internet communications error code: ");
-        wxString msg1;
-        msg1.Printf(_T("\n{%d}\n "), iResponseCode);
-        msg += msg1;
-        msg += _("Check your connection and try again.");
+        wxString msg;
+        if (iResponseCode == 503) {
+            msg = _("Internet communications error code: ");
+            wxString msg1;
+            msg1.Printf(_T("{%d}\n "), iResponseCode);
+            msg += msg1;
+            msg += _("The o-charts server may be inaccessible for the moment.\n Please try again later");
+        }
+        else {
+            msg = _("internet communications error code: ");
+            wxString msg1;
+            msg1.Printf(_T("\n{%d}\n "), iResponseCode);
+            msg += msg1;
+            msg += _("Check your connection and try again.");
+        }
         ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
     }
     
