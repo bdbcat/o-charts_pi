@@ -10859,6 +10859,80 @@ bool s52plib::ObjectRenderCheckCat( ObjRazRules *rzRules, ViewPort *vp )
     return b_visible;
 }
 
+bool s52plib::ObjectRenderCheckDates( ObjRazRules *rzRules )
+{
+    // Check DATSTA/DATEND attributes, if present
+    // DATSTA
+    wxString datsta = rzRules->obj->GetAttrValueAsString("DATSTA");
+    if (datsta.Len() > 0) {
+        bool bDateValid = false;
+
+        // CCYYMMDD
+        wxDateTime objDate;
+        wxString::const_iterator end;
+        if ( objDate.ParseFormat(datsta, "%Y%m%d", &end) ){
+            if(end == datsta.end()) {                            // Require perfect parsing
+                if(objDate.IsValid())
+                    bDateValid = true;
+            }
+        }
+        if(bDateValid){
+            objDate.ResetTime();                    // DATSTA specifications take effect at 00:01- on the specified date
+            wxDateTime now = wxDateTime::Now();
+            if(now.IsEarlierThan(objDate))
+                return false;                       // No Show
+        }
+    }
+
+    // DATEND
+    datsta = rzRules->obj->GetAttrValueAsString("DATEND");
+    if (datsta.Len() > 0) {
+        bool bDateValid = false;
+
+        // CCYYMMDD
+        wxDateTime objDate;
+        wxString::const_iterator end;
+        if ( objDate.ParseFormat(datsta, "%Y%m%d", &end) ){
+            if(end == datsta.end()) {                            // Require perfect parsing
+                if(objDate.IsValid())
+                    bDateValid = true;
+            }
+        }
+        if(bDateValid){
+            objDate.ResetTime();                    // DATEND specifications take effect at 23:59+ on the specified date.
+            objDate += wxTimeSpan(24);
+            wxDateTime now = wxDateTime::Now();
+            if(now.IsLaterThan(objDate))
+                return false;                       // No Show
+        }
+    }
+
+    // PEREND
+    datsta = rzRules->obj->GetAttrValueAsString("PEREND");
+    if( (datsta.Len() > 0) && !datsta.StartsWith(_T("--")) ){
+        bool bDateValid = false;
+
+        // CCYYMMDD
+        wxDateTime objDate;
+        wxString::const_iterator end;
+        if ( objDate.ParseFormat(datsta, "%Y%m%d", &end) ){
+            if(end == datsta.end()) {                            // Require perfect parsing
+                if(objDate.IsValid())
+                    bDateValid = true;
+            }
+        }
+        if(bDateValid){
+            objDate.ResetTime();                    // PEREND specifications take effect at 23:59+ on the specified date.
+            objDate += wxTimeSpan(24);
+            wxDateTime now = wxDateTime::Now();
+            if(now.IsLaterThan(objDate))
+                return false;                       // No Show
+        }
+    }
+
+    return true;
+}
+
 bool s52plib::ObjectRenderCheckRules( ObjRazRules *rzRules, ViewPort *vp, bool check_noshow )
 {
     if( !ObjectRenderCheckPos( rzRules, vp ) ) 
@@ -10867,8 +10941,9 @@ bool s52plib::ObjectRenderCheckRules( ObjRazRules *rzRules, ViewPort *vp, bool c
     if( check_noshow && IsObjNoshow( rzRules->LUP->OBCL) )
         return false;
 
-    if( ObjectRenderCheckCat( rzRules, vp ) ) 
-        return true;
+    if( ObjectRenderCheckCat( rzRules, vp ) ){
+        return ObjectRenderCheckDates( rzRules );
+     }
 
     //  If this object cannot be moved to a higher category by CS procedures,
     //  then we are done here
@@ -10900,7 +10975,7 @@ bool s52plib::ObjectRenderCheckRules( ObjRazRules *rzRules, ViewPort *vp, bool c
     if( !ObjectRenderCheckCat( rzRules, vp ) ) 
         return false;
 
-    return true;
+    return ObjectRenderCheckDates( rzRules );
 }
 
 

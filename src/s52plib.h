@@ -152,6 +152,7 @@ public:
     bool ObjectRenderCheckPos( ObjRazRules *rzRules, ViewPort *vp );
     bool ObjectRenderCheckCat( ObjRazRules *rzRules, ViewPort *vp );
     bool ObjectRenderCheckCS( ObjRazRules *rzRules, ViewPort *vp );
+    bool ObjectRenderCheckDates( ObjRazRules *rzRules );
 
     static void DestroyLUP( LUPrec *pLUP );
     static void ClearRulesCache( Rule *pR );
