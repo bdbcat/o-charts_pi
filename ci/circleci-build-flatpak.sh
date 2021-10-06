@@ -10,6 +10,9 @@ echo "Using manifest file: $MANIFEST"
 set -x
 
 sudo apt update
+
+# Avoid using outdated certificates causing "Unacceptable TLS certificate"
+# errors.
 sudo apt install --reinstall  ca-certificates
 
 
