@@ -10,6 +10,7 @@ echo "Using manifest file: $MANIFEST"
 set -x
 
 sudo apt update
+sudo apt install --reinstall  ca-certificates
 
 
 # Install flatpak and flatpak-builder
