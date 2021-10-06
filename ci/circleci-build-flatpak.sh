@@ -11,6 +11,10 @@ set -x
 
 sudo apt update
 
+# Avoid using outdated certificates causing "Unacceptable TLS certificate"
+# errors.
+sudo apt install --reinstall  ca-certificates
+
 
 # Install flatpak and flatpak-builder
 sudo apt install flatpak flatpak-builder
