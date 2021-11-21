@@ -1,0 +1,149 @@
+# ~~~
+# Author:      bdcat <Dave Register>
+# Copyright:
+# License:     GPLv2+
+# ~~~
+
+# -------- Cmake setup ---------
+#
+
+set(OCPN_TEST_REPO
+    "david-register/ocpn-plugins-unstable"
+    CACHE STRING "Default repository for untagged builds"
+)
+set(OCPN_BETA_REPO
+    "david-register/ocpn-plugins-unstable"
+    CACHE STRING 
+    "Default repository for tagged builds matching 'beta'"
+)
+set(OCPN_RELEASE_REPO
+    "david-register/ocpn-plugins-stable"
+    CACHE STRING 
+    "Default repository for tagged builds not matching 'beta'"
+)
+
+set(OCPN_TARGET_TUPLE "" CACHE STRING
+  "Target spec: \"platform;version;arch\""
+)
+
+# -------  Plugin setup --------
+#
+include("VERSION.cmake")
+set(PKG_NAME o-charts_pi)
+set(PKG_VERSION ${OCPN_VERSION})
+
+set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
+
+set(DISPLAY_NAME o-charts)    # Dialogs, installer artifacts, ...
+set(PLUGIN_API_NAME o-charts) # As of GetCommonName() in plugin API
+set(CPACK_PACKAGE_CONTACT "Dave Register")
+set(PKG_SUMMARY
+  "Encrypted Vector Charts from o-charts.org"
+)
+set(PKG_DESCRIPTION [=[
+OpenCPN  Vector Charts licensed and sourced from chart providers like
+Hydrographic Offices.  
+
+While the charts are not officially approved official ENC charts they
+are based on the same data -- the legal conditions are described in the
+EULA. The charts has world-wide coverage and provides a cost-effective
+way to access the national chart databases. Charts are encrypted and 
+can only be used after purchasing decryption keys from o-charts.org.
+
+o-charts can handle all charts previously handled by the oesenc and
+oernc plugins. It thus obsoletes these two plugins.
+]=])
+
+set(PKG_HOMEPAGE https://github.com/bdbcat/o-charts_pi)
+set(PKG_INFO_URL https://o-charts.org/)
+
+set(PKG_AUTHOR "Dave register")
+
+set(SRC
+  src/bbox.cpp
+  src/chart.cpp
+  src/chartsymbols.cpp
+  src/cutil.cpp
+  src/eSENCChart.cpp
+  src/eSENCChart.h
+  src/fpr.cpp
+  src/georef.cpp
+  src/InstallDirs.cpp
+  src/InstallDirs.h
+  src/LLRegion.cpp
+  src/mygeom63.cpp
+  src/mygeom.h
+  src/ochartShop.cpp
+  src/ochartShop.h
+  src/o-charts_pi.cpp
+  src/o-charts_pi.h
+  src/OCPNRegion.cpp
+  src/oernc_inStream.cpp
+  src/Osenc.cpp
+  src/Osenc.h
+  src/pi_DepthFont.cpp
+  src/piScreenLog.cpp
+  src/razdsparser.cpp
+  src/s52cnsy.cpp
+  src/s52plib.cpp
+  src/s52utils.cpp
+  src/s57RegistrarMgr.cpp
+  src/sha256.c
+  src/TexFont.cpp
+  src/TexFont.h
+  src/uKey.cpp
+  src/validator.cpp
+  src/viewport.cpp
+  libs/gdal/src/s57classregistrar.cpp
+  src/pugixml.cpp
+)
+
+if(QT_ANDROID)
+  set(SRC ${SRC} src/androidSupport.cpp)   
+endif(QT_ANDROID)
+
+set(PKG_API_LIB api-16)  #  A directory in libs/ e. g., api-17 or api-16
+
+macro(late_init)
+  # Perform initialization after the PACKAGE_NAME library, compilers
+  # and ocpn::api is available.
+  if (ARCH STREQUAL "armhf")
+    add_definitions(-DOCPN_ARMHF)
+  endif ()      
+  target_include_directories(${PACKAGE_NAME} PRIVATE libs/gdal/src src)
+endmacro ()
+
+macro(add_plugin_libraries)
+  add_subdirectory("libs/cpl")
+  target_link_libraries(${PACKAGE_NAME} ocpn::cpl)
+
+  add_subdirectory("libs/dsa")
+  target_link_libraries(${PACKAGE_NAME} ocpn::dsa)
+
+  add_subdirectory("libs/wxJSON")
+  target_link_libraries(${PACKAGE_NAME} ocpn::wxjson)
+
+  add_subdirectory("libs/iso8211")
+  target_link_libraries(${PACKAGE_NAME} ocpn::iso8211)
+
+  add_subdirectory("libs/tinyxml")
+  target_link_libraries(${PACKAGE_NAME} ocpn::tinyxml)
+
+  add_subdirectory("libs/zlib")
+  target_link_libraries(${PACKAGE_NAME} ocpn::zlib)
+  
+  add_subdirectory("libs/libglu")
+  target_link_libraries(${PACKAGE_NAME} ocpn::glu)
+  
+  if (NOT QT_ANDROID)
+    if( "${plugin_target}" STREQUAL  "msvc" )  
+      add_subdirectory("libs/wxcurl")
+      target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
+    else( "${plugin_target}" STREQUAL  "msvc" ) 
+      INCLUDE_DIRECTORIES("libs/wxcurl/src")
+    endif( "${plugin_target}" STREQUAL  "msvc" )  
+   endif ()
+
+  add_subdirectory("libs/oeserverd")
+
+endmacro ()
