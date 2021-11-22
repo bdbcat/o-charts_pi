@@ -12569,7 +12569,7 @@ void PLIBDrawGLThickLine( float x1, float y1, float x2, float y2, wxPen pen, boo
 
 #ifdef USE_ANDROID_GLES2
 
-#include "../include/GLES/gl2.h"
+#include "GLES2/gl2.h"
 
 // Simple colored triangle shader
 

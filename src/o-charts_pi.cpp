@@ -83,6 +83,7 @@
     #else
         #include <qopengl.h>
         #include <GL/gl.h>
+        #include <EGL/egl.h>
     #endif
 
 #endif
