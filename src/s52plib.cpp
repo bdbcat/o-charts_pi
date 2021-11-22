@@ -59,6 +59,12 @@
 
 #ifdef __OCPN__ANDROID__
 #include "qdebug.h"
+
+#ifndef GL_DOUBLE
+#define GL_DOUBLE 0x140A
+// FIXME:  Does not exist in android sysroot, but never the less used.
+#endif
+
 #endif
 
 extern float g_GLMinCartographicLineWidth;
@@ -4039,7 +4045,7 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     }
 #endif
     
-#ifndef ocpnUSE_GLES // linestipple is emulated poorly
+#if defined(GL_LINE_STIPPLE) && !defined(ocpnUSE_GLES) // linestipple is emulated poorly
     if( !strncmp( str, "DASH", 4 ) ) {
         glLineStipple( 1, 0x3F3F );
         glEnable( GL_LINE_STIPPLE );
@@ -4050,7 +4056,7 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     }
     else
         glDisable( GL_LINE_STIPPLE );
-#endif    
+#endif
         
     GLuint textureDot = -1;
 
@@ -4238,8 +4244,9 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     glUniformMatrix4fv( matlocf, 1, GL_FALSE, (const GLfloat*)IM);
 #endif
 
-
+#ifdef GL_LINE_STIPPLE
     glDisable( GL_LINE_STIPPLE );
+#endif
     glDisable( GL_LINE_SMOOTH );
     glDisable( GL_BLEND );
     
@@ -4336,7 +4343,8 @@ int s52plib::RenderLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         } else
             glLineWidth( wxMax(g_GLMinCartographicLineWidth, 1) );
         
-#ifndef ocpnUSE_GLES // linestipple is emulated poorly
+// linestipple is emulated poorly
+#if defined(GL_LINE_STIPPLE) && !defined(ocpnUSE_GLES)
             if( !strncmp( str, "DASH", 4 ) ) {
                 glLineStipple( 1, 0x3F3F );
                 glEnable( GL_LINE_STIPPLE );
@@ -4455,7 +4463,9 @@ int s52plib::RenderLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     
 #ifdef ocpnUSE_GL
     if( !m_pdc ){
+#ifdef GL_LINE_STIPPLE
         glDisable( GL_LINE_STIPPLE );
+#endif
         glDisable( GL_LINE_SMOOTH );
         glDisable( GL_BLEND );
     }
@@ -4739,7 +4749,9 @@ int s52plib::RenderLSLegacy( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     }
 #ifdef ocpnUSE_GL
     if( !m_pdc ){
+#ifdef GL_LINE_STIPPLE
         glDisable( GL_LINE_STIPPLE );
+#endif
         glDisable( GL_LINE_SMOOTH );
         glDisable( GL_BLEND );
     }
@@ -4952,10 +4964,10 @@ int s52plib::RenderLSPlugIn( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                     #endif              
     }
     
-    #ifdef ocpnUSE_GL
+#if defined(GL_LINE_STIPPLE) && defined(ocpnUSE_GL)
     if( !m_pdc )
         glDisable( GL_LINE_STIPPLE );
-    #endif                
+#endif
 
 #endif
         return 1;
@@ -6972,7 +6984,8 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         //qDebug() << buffer.line_width[0] << buffer.line_width[1] << buffer.line_width[2];
         
         if(buffer.line_width[2]) {
-#ifndef ocpnUSE_GLES // linestipple is emulated poorly
+// linestipple is emulated poorly
+#if defined(GL_LINE_STIPPLE) && defined(ocpnUSE_GLES)
             glLineStipple( 1, 0x3F3F );
             glEnable( GL_LINE_STIPPLE );
 #endif
