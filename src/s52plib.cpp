@@ -11719,8 +11719,10 @@ void RenderFromHPGL::SetPen()
     }
 #ifdef ocpnUSE_GL
     if( renderToOpenGl ) {
+#ifdef GL_POLYGON_SMOOTH
         if( plib->GetGLPolygonSmoothing() )
             glEnable( GL_POLYGON_SMOOTH );
+#endif
         
 #ifndef USE_ANDROID_GLES2
         glColor4ub( penColor.Red(), penColor.Green(), penColor.Blue(), transparency );
@@ -12049,17 +12051,20 @@ void RenderFromHPGL::DrawPolygon( int n, wxPoint points[], wxCoord xoffset, wxCo
  //       else
         {
             
- #ifdef __WXQT__        
+#ifdef __WXQT__
             glDisable( GL_LINE_SMOOTH );
+#ifdef GL_POLYGON_SMOOTH
             glDisable( GL_POLYGON_SMOOTH );
+#endif
             glDisable( GL_BLEND );
             
- #else
+#else   // WXQT
             glEnable( GL_LINE_SMOOTH );
+#ifdef GL_POLYGON_SMOOTH
             glEnable( GL_POLYGON_SMOOTH );
+#endif
             glEnable( GL_BLEND );
-            
-  #endif        
+#endif  // WXQT
             
  #ifdef USE_ANDROID_GLES2
             
@@ -12165,14 +12170,16 @@ void RenderFromHPGL::DrawPolygon( int n, wxPoint points[], wxCoord xoffset, wxCo
             
             wxColour c = brush->GetColour();
             glColor4ub( c.Red(), c.Green(), c.Blue(), c.Alpha() );
-            
+#ifdef GL_POLYGON_SMOOTH
             glEnable( GL_POLYGON_SMOOTH );
+#endif
             glBegin( GL_POLYGON );
             for( int i = 0; i < n; i++ )
                 glVertex2f( (points[i].x * scale) + xoffset, (points[i].y * scale) + yoffset );
             glEnd();
+#ifdef GL_POLYGON_SMOOTH
             glDisable( GL_POLYGON_SMOOTH );
-
+#endif
             int width = pen->GetWidth();
             glLineWidth( width );
             
@@ -12185,7 +12192,9 @@ void RenderFromHPGL::DrawPolygon( int n, wxPoint points[], wxCoord xoffset, wxCo
 #endif
             
             glDisable( GL_LINE_SMOOTH );
+#ifdef GL_POLYGON_SMOOTH
             glDisable( GL_POLYGON_SMOOTH );
+#endif
             glDisable( GL_BLEND );
             
         }
