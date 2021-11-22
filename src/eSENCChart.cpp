@@ -53,20 +53,25 @@
 #include "tinyxml.h"
 
 #ifdef __WXOSX__
-#include "GL/gl.h"
-#include "GL/glu.h"
-#else
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#include <OpenGL/glext.h>
 
-#ifndef __OCPN__ANDROID__
+typedef void (*PFNGLGENBUFFERSPROC) (GLsizei n, GLuint *buffers);
+typedef void (*PFNGLBINDBUFFERPROC) (GLenum target, GLuint buffer);
+typedef void (*PFNGLBUFFERDATAPROC) (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
+typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
+
+#elif defined(__OCPN__ANDROID__)
+#include <qopengl.h>
+#include <GL/gl.h>
+
+#else
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glext.h>
-#else
-#include <qopengl.h>
-#include <GL/gl.h>
 #endif
 
-#endif
 
 #ifdef __OCPN__ANDROID__
 #include "qdebug.h"

@@ -31,14 +31,16 @@
 #include "GLES2/gl2.h"
 #include "linmath.h"
 #include "shaders.h"
+#include "qdebug.h"
+#elif defined (__WXOSX__)
+#include <OpenGL/gl.h>
+#include <OpenGL/glext.h>
+#include <OpenGL/glu.h>
 #else
- #include <GL/gl.h>
- #include <GL/glu.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #endif
 
-#ifdef USE_ANDROID_GLES2    
-#include "qdebug.h"
-#endif
 
 TexFont::TexFont( )
 {

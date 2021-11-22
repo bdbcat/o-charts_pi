@@ -31,9 +31,13 @@
 #include "GLES2/gl2.h"
 #include "linmath.h"
 #include "shaders.h"
+#elif defined(__WXOSX__)
+#include <OpenGL/gl.h>
+#include <OpenGL/glext.h>
+#include <OpenGL/glu.h>
 #else
- #include <GL/gl.h>
- #include <GL/glu.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
 #endif
 
 #if 0

@@ -53,8 +53,9 @@ typedef khronos_intptr_t GLintptr;
 typedef khronos_ssize_t GLsizeiptr;
 #endif
 #ifdef __WXOSX__
-#include "GL/gl.h"
-#include "GL/glu.h"
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#include <OpenGL/glext.h>
 #else
 #include <GL/gl.h>
 #include <GL/glu.h>

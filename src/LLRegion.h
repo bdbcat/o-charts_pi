@@ -37,6 +37,11 @@
     #include <GLES/gl.h>
     typedef double GLdouble;
     #include <GL/glu.h>
+#elif defined(__WXOSX__)
+    #include <OpenGL/gl.h>
+    #include <OpenGL/glu.h>
+    #include <OpenGL/glext.h>
+    typedef void (*_GLUfuncptr)(void);
 #else
     #include <GL/gl.h>
     #include <GL/glu.h>
