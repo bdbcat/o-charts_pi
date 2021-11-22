@@ -4222,10 +4222,11 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         }
         ls_list = ls_list->next;
     }
-    
-     if(b_useVBO) 
+#ifdef GL_ARRAY_BUFFER_ARB
+     if(b_useVBO)
          glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-    
+#endif
+
 
 #ifndef USE_ANDROID_GLES2
     glDisableClientState(GL_VERTEX_ARRAY);            // deactivate vertex array
@@ -9146,9 +9147,10 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                 p_tp = p_tp->p_next; 
             
         } // while
-        
+#ifdef GL_ARRAY_BUFFER_ARB
         if(b_useVBO)
             glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+#endif
         
         
 #ifndef USE_ANDROID_GLES2
@@ -9971,9 +9973,10 @@ int s52plib::RenderToGLAP_GLSL( ObjRazRules *rzRules, Rules *rules, ViewPort *vp
                     p_tp = p_tp->p_next;
 
             } // while
-
+#ifdef GL_ARRAY_BUFFER_ARB
             if(b_useVBO)
                 glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+#endif
 
 #ifndef USE_ANDROID_GLES2
             glDisableClientState(GL_VERTEX_ARRAY);            // deactivate vertex array
