@@ -132,9 +132,10 @@ macro(add_plugin_libraries)
   add_subdirectory("libs/zlib")
   target_link_libraries(${PACKAGE_NAME} ocpn::zlib)
   
-  add_subdirectory("libs/libglu")
-  target_link_libraries(${PACKAGE_NAME} ocpn::glu)
-  
+  add_subdirectory("libs/opencpn-glu")
+  target_link_libraries(${PACKAGE_NAME} opencpn::glu)
+
+
   if (NOT QT_ANDROID)
     if( "${plugin_target}" STREQUAL  "msvc" )  
       add_subdirectory("libs/wxcurl")
