@@ -13,7 +13,7 @@ add_library(_glu INTERFACE)
 add_library(opencpn::glu ALIAS _glu)
 
 if (DEFINED ENV{FLATPAK_ID})
-  target_include_directories(_glu INTERFACE  include-flatpak)
+  target_include_directories(_glu INTERFACE include-flatpak)
 elseif (QT_ANDROID)
   target_include_directories(_glu INTERFACE include-android)
 else ()

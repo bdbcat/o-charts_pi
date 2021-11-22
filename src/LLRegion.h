@@ -30,18 +30,17 @@
 #include <list>
 
 #ifdef __WXMSW__
-    #include "GL/gl.h"            // local copy for Windows
+    #include "GL/gl.h" 
     #include "GL/glu.h"
+#elif defined __OCPN__ANDROID__
+    #include <qopengl.h>
+    #include <GLES/gl.h>
+    typedef double GLdouble;
+    #include <GL/glu.h>
 #else
-    #ifndef __OCPN__ANDROID__
-        #include <GL/gl.h>
-        #include <GL/glu.h>
-        #include <GL/glext.h>
-    #else
-        #include <qopengl.h>
-        #include <GL/gl.h>
-        #include <GL/glu.h>
-    #endif
+    #include <GL/gl.h>
+    #include <GL/glu.h>
+    #include <GL/glext.h>
 #endif
 
 #include "bbox.h"

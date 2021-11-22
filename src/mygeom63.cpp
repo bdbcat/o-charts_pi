@@ -47,6 +47,11 @@
 #ifdef ocpnUSE_GL
 
 //#ifdef USE_GLU_TESS
+#ifdef __OCPN__ANDROID__
+#include <KHR/khrplatform.h>
+typedef khronos_intptr_t GLintptr;
+typedef khronos_ssize_t GLsizeiptr;
+#endif
 #ifdef __WXOSX__
 #include "GL/gl.h"
 #include "GL/glu.h"
