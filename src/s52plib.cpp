@@ -61,12 +61,20 @@
 
 typedef void (*PFNGLGENBUFFERSPROC) (GLsizei n, GLuint *buffers);
 typedef void (*PFNGLBINDBUFFERPROC) (GLenum target, GLuint buffer);
-typedef void (*PFNGLBUFFERDATAPROC) (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
+typedef void (*PFNGLBUFFERDATAPROC) (GLenum target, GLsizeiptr size,
+                                     const void *data, GLenum usage);
 typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
 
 #elif defined(__OCPN__ANDROID__)
 #include <qopengl.h>
 #include <GL/gl.h>
+
+#elif defined(_WIN32)
+#include <windows.h>
+#include <GL/gl.h>
+#include <GL/glext.h>
+#include <GL/glu.h>
+typedef void (__stdcall *_GLUfuncptr)(void);
 
 #else
 #include <GL/gl.h>

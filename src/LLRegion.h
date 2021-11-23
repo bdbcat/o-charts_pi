@@ -29,9 +29,12 @@
 
 #include <list>
 
-#ifdef __WXMSW__
-    #include "GL/gl.h" 
-    #include "GL/glu.h"
+#ifdef _WIN32
+    typedef void (__stdcall * _GLUfuncptr)(void);
+    #include <windows.h>
+    #include <GL/gl.h>
+    #include <GL/glext.h>
+    #include <GL/glu.h>
 #elif defined __OCPN__ANDROID__
     #include <qopengl.h>
     #include <GLES/gl.h>
