@@ -67,7 +67,7 @@ typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
 
 #elif defined(__OCPN__ANDROID__)
 #include <qopengl.h>
-#include <GL/gl.h>
+#include <GLES/gl.h>
 
 #elif defined(_WIN32)
 #include <windows.h>

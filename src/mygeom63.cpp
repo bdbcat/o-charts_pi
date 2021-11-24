@@ -46,16 +46,18 @@
 
 #ifdef ocpnUSE_GL
 
-//#ifdef USE_GLU_TESS
-#ifdef __OCPN__ANDROID__
-#include <KHR/khrplatform.h>
-typedef khronos_intptr_t GLintptr;
-typedef khronos_ssize_t GLsizeiptr;
-#endif
 #ifdef __WXOSX__
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #include <OpenGL/glext.h>
+
+#elif defined(__OCPN__ANDROID__)
+#include <KHR/khrplatform.h>
+typedef khronos_intptr_t GLintptr;
+typedef khronos_ssize_t GLsizeiptr;
+#include <GLES/gl.h>
+#include <GL/glu.h>
+
 #else
 #include <GL/gl.h>
 #include <GL/glu.h>
