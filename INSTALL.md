@@ -1,69 +1,44 @@
 ## INSTALL: Building Plugins generic README.
 
-Install build dependencies as described in the
-[wiki](https://github.com/Rasbats/managed_plugins/wiki/Local-Build)
+Install build dependencies as described in the 
+[manual](https://opencpn-manuals.github.io/main/AlternativeWorkflow/Local-Build.html)
 Then clone this repository, enter it and make
 `rm -rf build; mkdir build; cd build`.
 
-A "normal" (not flatpak) tar.gz tarball which can be imported directly
-into opencpn:
+A "normal" (not flatpak) tar.gz tarball which can be used by the new plugin
+installer available from OpenCPN 5.2.0 is built using:
 
     $ cmake ..
     $ make tarball
 
-To build the flatpak tarball which also can be imported:
+To build the flatpak tarball:
 
     $ cmake ..
     $ make flatpak
 
+Historically, it has been possible to build legacy packages like
+an NSIS installer on Windows and .deb packages on Linux. This ability
+has been removed in the 5.6.0 cycle.
 
-On most platforms besides flatpak: build a platform-dependent legacy
-installer like a NSIS .exe on Windows, a Debian .deb package on Linux
-and a .dmg image for MacOS:
+#### Building for Android
 
-    $ cmake ..
-    $ make pkg
+Builds for android requires an ndk installation and an updated cmake,
+see manual (above).
 
-#### Building on windows (MSVC command line)
+To build an android aarch64 tarball:
+
+    $ cmake -DCMAKE_TOOLCHAIN_FILE=cmake/android-aarch64-toolchain.cmake ..
+    $ make
+
+To build an android armhf tarball
+
+    $ cmake -DCMAKE_TOOLCHAIN_FILE=cmake/android-armhf-toolchain.cmake ..
+    $ make
+
+#### Building on windows (MSVC)
 On windows, a different workflow is used:
 
-    > cmake -T v141_xp -G "Visual Studio 15 2017" --config RelWithDebInfo  ..
+    > ..\buildwin\win_deps.bat
+    > cmake -T v141_xp -G "Visual Studio 15 2017" ^
+           -DCMAKE_BUILD_TYPE=RelWithDebInfo  ..
     > cmake --build . --target tarball --config RelWithDebInfo
-
-This is to build the installer tarball. Use _--target pkg_ to build the
-legacy NSIS installer.
-
-#### NMake package
-  1. Open the *x86 Native Tools Command Prompt for VS 2017*, and navigate
-     to the Builds directory e.g. `C:\Builds\`.
-  2. Clone the source code:
-
-          git clone https://github.com/bdbcat/oesenc_pi.git
-
-  3. CD into the new directory `C:\Builds\oesenc_pi\` and create a new
-     directory \build\ `mkdir build`
-  4. CD into the \build\ directory and enter: (Mind the dots!)
-
-            > cmake -T v141_xp ..
-
-  5. Open the oesenc\_pi.sln in VS2017 to build for Release and make a
-     package or build by cmake from the command line:
-
-            > cmake --build .
-
-     Build release version from the command line
-
-            > cmake --build . --config release
-
-     Build installer metadata/tarball from the command line:
-
-           > cmake --build . --config release --target tarball
-
-     Build legacy .deb package using
-
-           > cmake --build . --config release --target pkg
-
-     The Windows install package and the tarballs will given names like
-     `oesenc_pi-X.X.xxxx-ov50-win32.exe` or `oesenc_pi-X.X.xxxx-ov50-win32.xml` 
-
-
