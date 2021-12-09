@@ -95,6 +95,11 @@ typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
 
 #endif  //__WXOSX
 
+// Here are a few OpenGL definitions that may be missing from some official platform includes
+#ifndef GL_SMOOTH_LINE_WIDTH_GRANULARITY
+ #define GL_SMOOTH_LINE_WIDTH_GRANULARITY  0x0B23
+#endif
+
 #ifdef _WIN32
 #include <windows.h>
 #include <shlobj.h>
