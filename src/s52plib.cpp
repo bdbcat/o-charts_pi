@@ -163,7 +163,7 @@ WX_DEFINE_OBJARRAY(ArrayOfNoshow);
 
 //  S52_TextC Implementation
 S52_TextC::S52_TextC()
-{ 
+{
     pcol = NULL;
     pFont = NULL;
     texobj = 0;
@@ -191,74 +191,74 @@ const char *MyPLIBCSVGetField( const char * pszFilename, const char * pszKeyFiel
 {
     char **papszRecord;
     int iTargetField;
-    
+
     /* -------------------------------------------------------------------- */
     /*      Find the correct record.                                        */
     /* -------------------------------------------------------------------- */
     papszRecord = CSVScanFileByName( pszFilename, pszKeyFieldName, pszKeyFieldValue, eCriteria );
-    
+
     if( papszRecord == NULL ) return "";
-    
+
     /* -------------------------------------------------------------------- */
     /*      Figure out which field we want out of this.                     */
     /* -------------------------------------------------------------------- */
     iTargetField = CSVGetFileFieldId( pszFilename, pszTargetField );
     if( iTargetField < 0 ) return "";
-    
+
     if( iTargetField >= CSLCount( papszRecord ) ) return "";
-    
+
     return ( papszRecord[iTargetField] );
 }
 
 wxString GetS57AttributeDecode( wxString& att, int ival )
 {
     wxString ret_val = _T("");
-    
+
     wxString s57data_dir = *GetpSharedDataLocation();
     s57data_dir += _T("s57data");
-    
+
     if( !s57data_dir.Len() )
         return ret_val;
 
 //  Get the attribute code from the acronym
     const char *att_code;
-    
+
     wxString file = s57data_dir;
     file.Append( _T("/s57attributes.csv") );
-    
+
     if( !wxFileName::FileExists( file ) ) {
         wxString msg( _T("   Could not open ") );
         msg.Append( file );
         wxLogMessage( msg );
-        
+
         return ret_val;
     }
-    
+
     att_code = MyPLIBCSVGetField( file.mb_str(), "Acronym",                  // match field
                               att.mb_str(),               // match value
                               CC_ExactString, "Code" );             // return field
-    
+
     // Now, get a nice description from s57expectedinput.csv
     //  This will have to be a 2-d search, using ID field and Code field
-    
+
     // Ingest, and get a pointer to the ingested table for "Expected Input" file
     wxString ei_file = s57data_dir;
     ei_file.Append( _T("/s57expectedinput.csv") );
-    
+
     if( !wxFileName::FileExists( ei_file ) ) {
         wxString msg( _T("   Could not open ") );
         msg.Append( ei_file );
         wxLogMessage( msg );
-        
+
         return ret_val;
     }
-    
+
     CSVTable *psTable = CSVAccess( ei_file.mb_str() );
     CSVIngest( ei_file.mb_str() );
-    
+
     char **papszFields = NULL;
     int bSelected = FALSE;
-    
+
     /* -------------------------------------------------------------------- */
     /*      Scan from in-core lines.                                        */
     /* -------------------------------------------------------------------- */
@@ -266,19 +266,19 @@ wxString GetS57AttributeDecode( wxString& att, int ival )
     while( !bSelected && iline + 1 < psTable->nLineCount ) {
         iline++;
         papszFields = CSVSplitLine( psTable->papszLines[iline] );
-        
+
         if( !strcmp( papszFields[0], att_code ) ) {
             if( atoi( papszFields[1] ) == ival ) {
                 ret_val = wxString( papszFields[2], wxConvUTF8 );
                 bSelected = TRUE;
             }
         }
-        
+
         CSLDestroy( papszFields );
     }
-    
+
     return ret_val;
-    
+
 }
 
 
@@ -293,7 +293,7 @@ int CompareLUPObjects( LUPrec *item1, LUPrec *item2 )
 {
     // sort the items by their name...
     int ir = strcmp( item1->OBCL, item2->OBCL );
-    
+
     if( ir != 0 )
         return ir;
     int c1 = 0;
@@ -302,7 +302,7 @@ int CompareLUPObjects( LUPrec *item1, LUPrec *item2 )
         c1 = item1->ATTCArray->Count();
     if( item2->ATTCArray )
         c2 = item2->ATTCArray->Count();
-    
+
     if( c1 != c2 )
         return c2 - c1;
     return item1->nSequence - item2->nSequence;
@@ -338,11 +338,11 @@ LUPArrayContainer::~LUPArrayContainer()
     if( LUPArray ) {
         for( unsigned int il = 0; il < LUPArray->GetCount(); il++ )
             s52plib::DestroyLUP( LUPArray->Item( il ) );
-        
+
         LUPArray->Clear();
         delete LUPArray;
     }
-    
+
     LUPArrayIndexHash::iterator it;
     for( it = IndexHash.begin(); it != IndexHash.end(); ++it ){
         free( it->second );
@@ -354,25 +354,25 @@ LUPHashIndex *LUPArrayContainer::GetArrayIndexHelper( const char *objectName )
     // Look for the key
     wxString key(objectName, wxConvUTF8);
     LUPArrayIndexHash::iterator it = IndexHash.find( key );
-    
-    if( it == IndexHash.end() ){             
+
+    if( it == IndexHash.end() ){
         //      Key not found, needs to be added
         LUPHashIndex *pindex = (LUPHashIndex *)malloc(sizeof(LUPHashIndex));
         pindex->n_start = -1;
         pindex->count = 0;
         IndexHash[key] = pindex;
-        
+
         //      Find the first matching entry in the LUP Array
         int index = 0;
         int index_max = LUPArray->GetCount();
         int first_match = 0;
         int ocnt = 0;
         LUPrec *LUPCandidate;
-        
+
         //        This technique of extracting proper LUPs depends on the fact that
         //        the LUPs have been sorted in their array, by OBCL.
         //        Thus, all the LUPS with the same OBCL will be grouped together
-        
+
         while( !first_match && ( index < index_max ) ) {
             LUPCandidate = LUPArray->Item( index );
             if( !strcmp( objectName, LUPCandidate->OBCL ) ) {
@@ -384,7 +384,7 @@ LUPHashIndex *LUPArrayContainer::GetArrayIndexHelper( const char *objectName )
             }
             index++;
         }
-        
+
         while( first_match && ( index < index_max ) ) {
             LUPCandidate = LUPArray->Item( index );
             if( !strcmp( objectName, LUPCandidate->OBCL ) ) {
@@ -392,18 +392,18 @@ LUPHashIndex *LUPArrayContainer::GetArrayIndexHelper( const char *objectName )
             } else {
                 break;
             }
-            
+
             index++;
         }
-        
+
         pindex->count = ocnt;
-        
+
         return pindex;
     }
     else
         return it->second;              // return a pointer to the found record
-        
-    
+
+
 }
 
 
@@ -440,7 +440,7 @@ s52plib::s52plib( const wxString& PLib, bool b_forceLegacy )
     m_nBoundaryStyle = PLAIN_BOUNDARIES;
     m_nDisplayCategory = OTHER;
     m_nDepthUnitDisplay = 1; // metres
-    
+
     UpdateMarinerParams();
 
     ledge = new int[2000];
@@ -452,7 +452,7 @@ s52plib::s52plib( const wxString& PLib, bool b_forceLegacy )
 
     canvas_pix_per_mm = 3.;
     m_rv_scale_factor = 1.0;
-    
+
     //        Set up some default flags
     m_bDeClutterText = false;
     m_bShowAtonText = true;
@@ -472,7 +472,7 @@ s52plib::s52plib( const wxString& PLib, bool b_forceLegacy )
     GenerateStateHash();
 
     HPGL = new RenderFromHPGL( this );
-    
+
 #ifdef USE_ANDROID_GLES2
     loadS52Shaders();
 #endif
@@ -483,7 +483,7 @@ s52plib::s52plib( const wxString& PLib, bool b_forceLegacy )
     m_coreVersionMajor = 4;
     m_coreVersionMinor = 6;
     m_coreVersionPatch = 0;
-    
+
     m_myConfig = PI_GetPLIBStateHash();
 
     // GL Options/capabilities
@@ -495,7 +495,7 @@ s52plib::s52plib( const wxString& PLib, bool b_forceLegacy )
     m_TextureFormat = -1;
     SetGLPolygonSmoothing( true );
     SetGLLineSmoothing( true );
-    
+
     m_display_size_mm = 300;
 }
 
@@ -506,10 +506,10 @@ s52plib::~s52plib()
     delete areaSymbol_LAC;
     delete pointSimple_LAC;
     delete pointPaper_LAC;
-    
+
     S52_flush_Plib();
 
-   
+
 //      Free the OBJL Array Elements
     for( unsigned int iPtr = 0; iPtr < pOBJLArray->GetCount(); iPtr++ )
         free( pOBJLArray->Item( iPtr ) );
@@ -548,29 +548,29 @@ void s52plib::SetGLOptions(bool b_useStencil,
 }
 
 void s52plib::SetPPMM( float ppmm )
-{ 
+{
     canvas_pix_per_mm = ppmm;
-    
+
     // We need a supplemental scale factor for HPGL vector symbol rendering.
     //  This will cause raster and vector symbols to be rendered harmoniously
-    
+
     //  We do this by making an arbitrary measurement and declaration:
     // We declare that the nominal size of a "flare" light rendered as HPGL vector should be roughly twice the
     // size of a simplified lateral bouy rendered as raster.
-    
-    // Referring to the chartsymbols.xml file, we find that the dimension of a flare light is 810 units, 
+
+    // Referring to the chartsymbols.xml file, we find that the dimension of a flare light is 810 units,
     // and a raster BOYLAT is 16 pix.
-    
+
     m_rv_scale_factor = 2.0 * (1600. / (810 * ppmm));
-    
+
     // Estimate the display size
-    
+
     int ww, hh;
     ::wxDisplaySize( &ww, &hh);
     m_display_size_mm = wxMax(ww, hh) / GetPPMM();        // accurate enough for internal use
-    
 
-}    
+
+}
 
 //      Various static helper methods
 
@@ -578,7 +578,7 @@ void s52plib::DestroyLUP( LUPrec *pLUP )
 {
     Rules *top = pLUP->ruleList;
     DestroyRulesChain(top);
-    
+
     delete pLUP->ATTCArray;
     delete pLUP->INST;
 }
@@ -587,7 +587,7 @@ void s52plib::DestroyRulesChain( Rules *top )
 {
     while( top != NULL ) {
         Rules *Rtmp = top->next;
-        
+
         if( top->INST0 )
         free( top->INST0 ); // free the Instruction string head
 
@@ -595,22 +595,22 @@ void s52plib::DestroyRulesChain( Rules *top )
         {
             Rule *pR = top->razRule;
             if( pR->exposition.LXPO ) delete pR->exposition.LXPO;
-            
+
             free( pR->vector.LVCT );
-            
+
             if( pR->bitmap.SBTM ) delete pR->bitmap.SBTM;
-            
+
             free( pR->colRef.SCRF );
-            
+
             ClearRulesCache( pR );
-            
+
             free( pR );
         }
-        
+
         free( top );
         top = Rtmp;
     }
-    
+
 }
 
 
@@ -618,16 +618,16 @@ void s52plib::DestroyRulesChain( Rules *top )
 DisCat s52plib::findLUPDisCat(const char *objectName, LUPname TNAM)
 {
     LUPArrayContainer *plac = SelectLUPArrayContainer( TNAM );
-    
+
     wxArrayOfLUPrec *LUPArray = SelectLUPARRAY( TNAM  );
-    
-    
+
+
     //      Find the first matching entry in the LUP Array
     int index = 0;
     int index_max = LUPArray->GetCount();
     LUPrec *LUPCandidate;
-    
-    
+
+
     while(  index < index_max  ) {
         LUPCandidate = LUPArray->Item( index );
         if( !strcmp( objectName, LUPCandidate->OBCL ) ) {
@@ -635,10 +635,10 @@ DisCat s52plib::findLUPDisCat(const char *objectName, LUPname TNAM)
         }
         index++;
     }
-    
+
     return (DisCat)(-1);
 }
-    
+
 
 
 
@@ -647,17 +647,17 @@ DisCat s52plib::findLUPDisCat(const char *objectName, LUPname TNAM)
 bool s52plib::GetAnchorOn()
 {
     //  Investigate and report the logical condition that "Anchoring Condition" is shown
-    
+
     int old_vis =  0;
     OBJLElement *pOLE = NULL;
-        
+
     if(  MARINERS_STANDARD == GetDisplayCategory()){
         old_vis = m_anchorOn;
     }
     else if(OTHER == GetDisplayCategory())
         old_vis = true;
 
-    //other cat  
+    //other cat
     //const char * categories[] = { "ACHBRT", "ACHARE", "CBLSUB", "PIPARE", "PIPSOL", "TUNNEL", "SBDARE" };
 
     old_vis &= !IsObjNoshow("SBDARE");
@@ -668,10 +668,10 @@ bool s52plib::GetAnchorOn()
 bool s52plib::GetQualityOfData()
 {
     //  Investigate and report the logical condition that "Quality of Data Condition" is shown
-    
+
     int old_vis =  0;
     OBJLElement *pOLE = NULL;
-        
+
     if(  MARINERS_STANDARD == GetDisplayCategory()){
             for( unsigned int iPtr = 0; iPtr < pOBJLArray->GetCount(); iPtr++ ) {
                 OBJLElement *pOLE = (OBJLElement *) ( pOBJLArray->Item( iPtr ) );
@@ -688,7 +688,7 @@ bool s52plib::GetQualityOfData()
 
     return (old_vis != 0);
 }
-        
+
 
 void s52plib::SetGLRendererString(const wxString &renderer)
 {
@@ -719,12 +719,12 @@ void s52plib::GenerateStateHash()
 {
     unsigned char state_buffer[512];  // Needs to be at least this big...
     memset(state_buffer, 0, sizeof(state_buffer));
-    
+
     int time = ::wxGetUTCTime();
     memcpy(state_buffer, &time, sizeof(int));
-    
+
     size_t offset = sizeof(int);           // skipping the time int, first element
-    
+
     for(int i=0 ; i < S52_MAR_NUM ; i++){
         if( (offset + sizeof(double)) < sizeof(state_buffer)){
             double t = S52_getMarinerParam((S52_MAR_param_t) i);
@@ -732,35 +732,35 @@ void s52plib::GenerateStateHash()
 	    offset += sizeof(double);
         }
     }
-    
+
     for(unsigned int i=0 ; i < m_noshow_array.GetCount() ; i++){
         if( (offset + 6) < sizeof(state_buffer)){
             memcpy(&state_buffer[offset], m_noshow_array[i].obj, 6) ;
             offset += 6;
         }
     }
-    
+
     if(offset + sizeof(bool) < sizeof(state_buffer))
         { memcpy(&state_buffer[offset], &m_bShowSoundg, sizeof(bool));  offset += sizeof(bool); }
-    
+
     if(offset + sizeof(bool) < sizeof(state_buffer))
         { memcpy(&state_buffer[offset], &m_bShowS57Text, sizeof(bool));  offset += sizeof(bool); }
-    
+
     if(offset + sizeof(bool) < sizeof(state_buffer))
         { memcpy(&state_buffer[offset], &m_bShowS57ImportantTextOnly, sizeof(bool));  offset += sizeof(bool); }
-    
+
     if(offset + sizeof(bool) < sizeof(state_buffer))
         { memcpy(&state_buffer[offset], &m_bDeClutterText, sizeof(bool)); offset += sizeof(bool); }
-    
+
     if(offset + sizeof(bool) < sizeof(state_buffer))
         { memcpy(&state_buffer[offset], &m_bShowNationalTexts, sizeof(bool));  offset += sizeof(bool); }
-    
+
     if(offset + sizeof(bool) < sizeof(state_buffer))
         { memcpy(&state_buffer[offset], &m_bShowAtonText, sizeof(bool));  offset += sizeof(bool); }
 
     if(offset + sizeof(bool) < sizeof(state_buffer))
         { memcpy(&state_buffer[offset], &m_bShowLdisText, sizeof(bool));  offset += sizeof(bool); }
-    
+
     if(offset + sizeof(bool) < sizeof(state_buffer))
         { memcpy(&state_buffer[offset], &m_bExtendLightSectors, sizeof(bool));  offset += sizeof(bool); }
 
@@ -768,7 +768,7 @@ void s52plib::GenerateStateHash()
         { memcpy(&state_buffer[offset], &m_nSoundingFactor, sizeof(int));  offset += sizeof(int); }
 
     m_state_hash = crc32buf(state_buffer, offset );
-    
+
 }
 
 wxArrayOfLUPrec* s52plib::SelectLUPARRAY( LUPname TNAM  )
@@ -817,7 +817,7 @@ LUPrec *s52plib::FindBestLUP( wxArrayOfLUPrec *LUPArray, unsigned int startIndex
         return NULL;
     if( startIndex >= LUPArray->GetCount() )
         return NULL;
-    
+
     // setup default return to the first LUP that matches Feature name.
     LUPrec *LUP = LUPArray->Item( startIndex );
 
@@ -827,10 +827,10 @@ LUPrec *s52plib::FindBestLUP( wxArrayOfLUPrec *LUPArray, unsigned int startIndex
 
     if( pObj->att_array == NULL )
         goto check_LUP;       // object has no attributes to compare, so return "best" LUP
-        
+
     for( unsigned int i = 0; i < count; ++i ) {
         LUPrec *LUPCandidate = LUPArray->Item( startIndex + i );
-        
+
         if( !LUPCandidate->ATTCArray )
             continue;        // this LUP has no attributes coded
 
@@ -846,7 +846,7 @@ LUPrec *s52plib::FindBestLUP( wxArrayOfLUPrec *LUPArray, unsigned int startIndex
             wxCharBuffer buffer=LATTC.ToUTF8();
             slatc = buffer.data();
             //  Get the LUP attribute value as a string
-                        
+
             if( slatc && (strlen(slatc) < 6) )
                 goto next_LUP_Attr;         // LUP attribute value not UTF8 convertible (never seen in PLIB 3.x)
 
@@ -855,16 +855,16 @@ LUPrec *s52plib::FindBestLUP( wxArrayOfLUPrec *LUPArray, unsigned int startIndex
                 while( attIdx < pObj->n_attr ) {
                     if( 0 == strncmp( slatc, currATT, 6 ) ) {
                         //OK we have an attribute name match
-                        
-                        
+
+
                         bool attValMatch = false;
-                        
+
                         // special case (i)
                         if( !strncmp( slatv, " ", 1 ) ) {        // any object value will match wild card (S52 para 8.3.3.4)
                             ++countATT;
                             goto next_LUP_Attr;
                         }
-                        
+
                         // special case (ii)
                         //TODO  Find an ENC with "UNKNOWN" DRVAL1 or DRVAL2 and debug this code
                         if( !strncmp( slatv, "?", 1) ){          // if LUP attribute value is "undefined"
@@ -872,11 +872,11 @@ LUPrec *s52plib::FindBestLUP( wxArrayOfLUPrec *LUPArray, unsigned int startIndex
                         //  Match if the object does NOT contain this attribute
                             goto next_LUP_Attr;
                         }
-                        
-                        
+
+
                         //checking against object attribute value
                         S57attVal *v = ( pObj->attVal->Item( attIdx ) );
-                        
+
                         switch( v->valType ){
                             case OGR_INT: // S57 attribute type 'E' enumerated, 'I' integer
                             {
@@ -885,7 +885,7 @@ LUPrec *s52plib::FindBestLUP( wxArrayOfLUPrec *LUPArray, unsigned int startIndex
                                     attValMatch = true;
                                 break;
                             }
-                            
+
                             case OGR_INT_LST: // S57 attribute type 'L' list: comma separated integer
                             {
                                 int a;
@@ -893,16 +893,16 @@ LUPrec *s52plib::FindBestLUP( wxArrayOfLUPrec *LUPArray, unsigned int startIndex
                                 strncpy( ss, slatv, 39 );
                                 ss[40] = '\0';
                                 char *s = &ss[0];
-                                
+
                                 int *b = (int*) v->value;
                                 sscanf( s, "%d", &a );
-                                
+
                                 while( *s != '\0' ) {
                                     if( a == *b ) {
                                         sscanf( ++s, "%d", &a );
                                         b++;
                                         attValMatch = true;
-                                        
+
                                     } else
                                         attValMatch = false;
                                 }
@@ -917,52 +917,52 @@ LUPrec *s52plib::FindBestLUP( wxArrayOfLUPrec *LUPArray, unsigned int startIndex
                                         attValMatch = true;
                                 break;
                             }
-                            
+
                             case OGR_STR: // S57 attribute type'A' code string, 'S' free text
                             {
                                 //    Strings must be exact match
                                 //    n.b. OGR_STR is used for S-57 attribute type 'L', comma-separated list
-                                
+
                                 //wxString cs( (char *) v->value, wxConvUTF8 ); // Attribute from object
                                 //if( LATTC.Mid( 6 ) == cs )
                                 if( !strcmp((char *) v->value, slatv))
                                     attValMatch = true;
                                 break;
                             }
-                            
+
                             default:
                                 break;
                         } //switch
-                        
+
                         // value match
                         if( attValMatch )
                             ++countATT;
-                                                
+
                         goto next_LUP_Attr;
                     } // if attribute name match
-                    
+
                     //  Advance to the next S57obj attribute
                     currATT += 6;
                     ++attIdx;
-                    
+
                 } //while
             } //if
-            
+
 next_LUP_Attr:
-         
+
             currATT = pObj->att_array; // restart the object attribute list
             attIdx = 0;
         } // for iLUPAtt
-        
+
         //      Create a "match score", defined as fraction of candidate LUP attributes
         //      actually matched by feature.
         //      Used later for resolving "ties"
-        
+
         int nattr_matching_on_candidate = countATT;
         int nattrs_on_candidate = LUPCandidate->ATTCArray->GetCount();
         double candidate_score = ( 1. * nattr_matching_on_candidate )
         / ( 1. * nattrs_on_candidate );
-        
+
         //       According to S52 specs, match must be perfect,
         //         and the first 100% match is selected
         if( candidate_score == 1.0 ) {
@@ -970,13 +970,13 @@ next_LUP_Attr:
             bmatch_found = true;
             break; // selects the first 100% match
         }
-        
+
     } //for loop
-    
+
 
 check_LUP:
 //  In strict mode, we require at least one attribute to match exactly
-    
+
     if( bStrict ) {
         if( nATTMatch == 0 ) // nothing matched
             LUP = NULL;
@@ -985,7 +985,7 @@ check_LUP:
         if( !bmatch_found ) {
             for( unsigned int j = 0; j < count; ++j ) {
                 LUPrec *LUPtmp = NULL;
-                
+
                 LUPtmp = LUPArray->Item( startIndex + j );
                 if( LUPtmp->ATTCArray == NULL ) {
                     return LUPtmp;
@@ -993,7 +993,7 @@ check_LUP:
             }
         }
     }
-    
+
     return LUP;
 }
 
@@ -1200,7 +1200,7 @@ int s52plib::S52_load_Plib( const wxString& PLib, bool b_forceLegacy )
     areaSymbol_LAC= new LUPArrayContainer;
     pointSimple_LAC= new LUPArrayContainer;
     pointPaper_LAC= new LUPArrayContainer;
-    
+
     condSymbolLUPArray = new wxArrayOfLUPrec( CompareLUPObjects ); // dynamic Cond Sym LUPs
 
     m_unused_color.R = 2;
@@ -1246,7 +1246,7 @@ int s52plib::S52_load_Plib( const wxString& PLib, bool b_forceLegacy )
 
     wxString s57data_dir = *GetpSharedDataLocation();
     s57data_dir += _T("s57data");
-    
+
     wxString oc_file( s57data_dir );
     oc_file.Append( _T("/s57objectclasses.csv") );
 
@@ -1376,7 +1376,7 @@ void s52plib::FlushSymbolCaches( bool bFlushRaster )
     }
     m_CARC_hashmap.clear();
 
-#ifdef ocpnUSE_GL    
+#ifdef ocpnUSE_GL
 #ifndef USE_ANDROID_GLES2
     CARC_DL_Hash::iterator itd;
     for( itd = m_CARC_DL_hashmap.begin(); itd != m_CARC_DL_hashmap.end(); ++itd ) {
@@ -1398,7 +1398,7 @@ void s52plib::FlushSymbolCaches( bool bFlushRaster )
             s_txf[i].key = 0;
         }
     }
-    
+
 }
 
 void s52plib::DestroyPattRules( RuleHash *rh )
@@ -1451,9 +1451,9 @@ bool s52plib::S52_flush_Plib()
     }
     m_CARC_DL_hashmap.clear();
 #endif
-    
+
 #endif
-    
+
     DestroyLUPArray( condSymbolLUPArray );
 
 //      Destroy Rules
@@ -1483,13 +1483,13 @@ LUPrec *s52plib::S52_LUPLookup( LUPname LUP_Name, const char * objectName, S57Ob
     LUPrec *LUP = NULL;
 
     LUPArrayContainer *plac = SelectLUPArrayContainer( LUP_Name );
-    
+
     LUPHashIndex *hip = plac->GetArrayIndexHelper( objectName );
     int nLUPs = hip->count;
     int nStartIndex = hip->n_start;
-    
+
     LUP = FindBestLUP( plac->GetLUPArray(), nStartIndex, nLUPs, pObj, bStrict );
-    
+
     return LUP;
 }
 
@@ -1511,10 +1511,10 @@ void  s52plib::SetPLIBColorScheme( ColorScheme cs )
             SchemeName = _T("DAY");
             break;
     }
-    
+
     SetPLIBColorScheme( SchemeName );
 }
-    
+
 
 
 void s52plib::SetPLIBColorScheme( wxString scheme )
@@ -1534,7 +1534,7 @@ void s52plib::SetPLIBColorScheme( wxString scheme )
     g_oeChartSymbols->LoadRasterFileForColorTable( m_colortable_index );
 
     g_oeChartSymbols->SetColorTableIndex( m_colortable_index );
-    
+
     m_ColorScheme = scheme;
 }
 
@@ -1669,7 +1669,7 @@ char *s52plib::_getParamVal( ObjRazRules *rzRules, char *str, char *buf, int bsz
                         nat = GetS57AttributeDecode( natsur_att, (int)i );
                         m_natsur_hash[i] = nat;            // cache the entry
                     }
-                        
+
                     if( !nat.IsEmpty() )
                         result += nat; // value from ENC
                     else
@@ -1769,7 +1769,7 @@ S52_TextC *s52plib::S52_PL_parseTX( ObjRazRules *rzRules, Rules *rules, char *cm
 
     //  We check to see if the formatted text has any "special" characters
     wxCharBuffer buf = text->frmtd.ToUTF8();
-    
+
     unsigned int n = text->frmtd.Length();
     for(unsigned int i=0 ; i < n ; ++i){
         unsigned char c =buf.data()[i];
@@ -1778,7 +1778,7 @@ S52_TextC *s52plib::S52_PL_parseTX( ObjRazRules *rzRules, Rules *rules, char *cm
             break;
         }
     }
-    
+
     return text;
 }
 
@@ -1851,10 +1851,10 @@ S52_TextC *s52plib::S52_PL_parseTE( ObjRazRules *rzRules, Rules *rules, char *cm
         text = new S52_TextC;
         str = _parseTEXT( rzRules, text, str );
         if( NULL != text ) text->frmtd = wxString( buf, wxConvUTF8 );
-        
+
         //  We check to see if the formatted text has any "special" characters
         wxCharBuffer buf = text->frmtd.ToUTF8();
-        
+
         unsigned int n = text->frmtd.Length();
         for(unsigned int i=0 ; i < n ; ++i){
             unsigned char c =buf.data()[i];
@@ -1863,7 +1863,7 @@ S52_TextC *s52plib::S52_PL_parseTE( ObjRazRules *rzRules, Rules *rules, char *cm
                 break;
             }
         }
-        
+
     }
 
     return text;
@@ -1889,30 +1889,30 @@ bool s52plib::RenderText( wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRe
     #define FIXIT
     #endif
     bool bdraw = true;
-    
+
     wxFont *scaled_font = ptext->pFont;
     wxCoord w_scaled = 0;
     wxCoord h_scaled = 0;
     wxCoord descent = 0;
     wxCoord exlead = 0;
-    
+
     double sfactor = vp->ref_scale/vp->chart_scale;
     double scale_factor = wxMax((sfactor - g_overzoom_emphasis_base)  / 4., 1.);
-    
+
     if(!g_oz_vector_scale || !vp->b_quilt)
         scale_factor = 1.0;
-    
+
     //  Place an upper bound on the scaled text size
         scale_factor = wxMin(scale_factor, 4);
-        
+
         if( !pdc ) // OpenGL
     {
 #ifdef ocpnUSE_GL
-        
+
         bool b_force_no_texture = false;
         if(scale_factor > 1.){
             b_force_no_texture = true;
-            
+
             int old_size = ptext->pFont->GetPointSize();
             int new_size = old_size * scale_factor;
             scaled_font = wxTheFontList->FindOrCreateFont( new_size, ptext->pFont->GetFamily(),
@@ -1920,27 +1920,27 @@ bool s52plib::RenderText( wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRe
                                                            ptext->pFont->GetFaceName() );
             wxScreenDC sdc;
             sdc.GetTextExtent( ptext->frmtd, &w_scaled, &h_scaled, &descent, &exlead, scaled_font ); // measure the text
-            
-            
+
+
             // Has font size changed?  If so, clear the cached bitmap, and rebuild it
             if( (h_scaled - descent) != ptext->rendered_char_height){
                 glDeleteTextures(1, (GLuint *)&ptext->texobj);
                 ptext->texobj = 0;
             }
-            
+
             // We cannot get the font ascent value to remove the interline spacing from the font "height".
             // So we have to estimate based on conventional Arial metrics
             ptext->rendered_char_height = (h_scaled - descent) * 8 / 10;
-            
+
         }
-        // We render string with "special" characters the old, hard way, since we don't necessarily have the glyphs in our font, 
+        // We render string with "special" characters the old, hard way, since we don't necessarily have the glyphs in our font,
         // or if we do we would need a hashmap to cache and extract them
         // And we also do this if the text is to be scaled up artificially.
-        if( (ptext->bspecial_char) || b_force_no_texture) {       
+        if( (ptext->bspecial_char) || b_force_no_texture) {
             if( !ptext->texobj ) // is texture ready?
             {
                 wxScreenDC sdc;
-                
+
                 if(scale_factor <= 1.){
                     sdc.GetTextExtent( ptext->frmtd, &w_scaled, &h_scaled, &descent, &exlead, scaled_font ); // measure the text
 
@@ -1948,90 +1948,90 @@ bool s52plib::RenderText( wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRe
                     // So we have to estimate based on conventional Arial metrics
                     ptext->rendered_char_height = (h_scaled - descent) * 8 / 10;
                 }
-                
+
                 ptext->text_width = w_scaled;
                 ptext->text_height = h_scaled;
-                
+
                 /* make power of 2 */
                 int tex_w, tex_h;
                 for(tex_w = 1; tex_w < ptext->text_width; tex_w *= 2);
                 for(tex_h = 1; tex_h < ptext->text_height; tex_h *= 2);
-           
+
            wxMemoryDC mdc;
            wxBitmap bmp( tex_w, tex_h );
            mdc.SelectObject( bmp );
            mdc.SetFont( *( scaled_font ) );
-           
+
            if( mdc.IsOk() ) {
                //  Render the text as white on black, so that underlying anti-aliasing of
                //  wxDC text rendering can be extracted and converted to alpha-channel values.
-               
+
                mdc.SetBackground( wxBrush( wxColour( 0, 0, 0 ) ) );
                mdc.SetBackgroundMode( wxTRANSPARENT );
-               
+
                mdc.SetTextForeground( wxColour( 255, 255, 255 ) );
-               
+
                mdc.Clear();
-               
+
                mdc.DrawText( ptext->frmtd, 0, 0 );
                mdc.SelectObject( wxNullBitmap );
-               
+
                wxImage image = bmp.ConvertToImage();
                int ws = image.GetWidth(), hs = image.GetHeight();
-               
+
                ptext->RGBA_width = ws;
                ptext->RGBA_height = hs;
                unsigned char *pRGBA = (unsigned char *) malloc( 4 * ws * hs );
-               
+
                unsigned char *d = image.GetData();
                unsigned char *pdest = pRGBA;
                S52color *ccolor = ptext->pcol;
-               
+
                if(d){
                    for( int y = 0; y < hs; y++ )
                        for( int x = 0; x < ws; x++ ) {
                            unsigned char r, g, b;
                            int off = ( y * ws + x );
-                           
+
                            r = d[off * 3 + 0];
                            g = d[off * 3 + 1];
                            b = d[off * 3 + 2];
-                           
+
                            pdest[off * 4 + 0] = ccolor->R;
                            pdest[off * 4 + 1] = ccolor->G;
                            pdest[off * 4 + 2] = ccolor->B;
-                           
+
                            int alpha = ( r + g + b ) / 3;
                            pdest[off * 4 + 3] = (unsigned char) ( alpha & 0xff );
                        }
                }
-               
-               
+
+
                int draw_width = ptext->RGBA_width;
                int draw_height = ptext->RGBA_height;
-               
+
                glEnable( GL_TEXTURE_2D );
-               
+
                GLuint texobj;
                glGenTextures( 1, &texobj );
-               
+
                glBindTexture( GL_TEXTURE_2D, texobj );
-               
+
                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST/*GL_LINEAR*/ );
                glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-               
+
                glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, draw_width, draw_height, 0,
                              GL_RGBA, GL_UNSIGNED_BYTE, pRGBA );
-               
+
                free( pRGBA );
-               
+
                ptext->texobj = texobj;
-               
+
            } // mdc OK
             } // Building texobj
-            
+
             //    Render the texture
             if( ptext->texobj ) {
                 //  Adjust the y position to account for the convention that S52 text is drawn
@@ -2040,14 +2040,14 @@ bool s52plib::RenderText( wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRe
                 //  Also, allow for full text height in the bitmap/texture, not the estimated "rendered" height.
                 int yadjust = 0;
                 int xadjust = 0;
-                
+
                 yadjust =  -ptext->rendered_char_height * 10 / 8;
-                
+
                 //  Add in the offsets, specified in units of nominal font height
                 yadjust += ptext->yoffs * ( ptext->rendered_char_height );
                 //  X offset specified in units of average char width
                 xadjust += ptext->xoffs * ptext->avgCharWidth;
-                
+
                 // adjust for text justification
                 int w = ptext->text_width;
                 switch ( ptext->hjust){
@@ -2061,7 +2061,7 @@ bool s52plib::RenderText( wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRe
                     default:
                         break;
                 }
-                
+
                 switch ( ptext->vjust){
                     case '3':               // top
                     yadjust += ptext->rendered_char_height;
@@ -2073,7 +2073,7 @@ bool s52plib::RenderText( wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRe
                     default:
                         break;
                 }
-                
+
                 int xp = x;
                 int yp = y;
 
@@ -2084,149 +2084,149 @@ bool s52plib::RenderText( wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRe
                     float y = yadjust;
                     xp += x*c - y*s;
                     yp += x*s + y*c;
-                    
+
                 }
                 else{
                     xp+= xadjust;
                     yp+= yadjust;
                 }
-                
-                
+
+
                 pRectDrawn->SetX( xp );
                 pRectDrawn->SetY( yp );
                 pRectDrawn->SetWidth( ptext->text_width );
                 pRectDrawn->SetHeight( ptext->text_height );
-                
+
                 if( bCheckOverlap ) {
                     if( CheckTextRectList( *pRectDrawn, ptext ) )
                         bdraw = false;
                 }
-                
+
                 if( bdraw ) {
 #ifndef USE_ANDROID_GLES2
-                    
+
                     int draw_width = ptext->text_width;
                     int draw_height = ptext->text_height;
-                    
+
                     glEnable( GL_BLEND );
                     glEnable( GL_TEXTURE_2D );
-                    
+
                     glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-                    
+
                     glBindTexture( GL_TEXTURE_2D, ptext->texobj );
-                    
+
                     glPushMatrix();
                     glTranslatef(xp, yp, 0);
-                    
+
                     /* undo previous rotation to make text level */
                     glRotatef(vp->rotation*180/PI, 0, 0, -1);
-                    
-                    
+
+
                     float tx1 = 0, tx2 = draw_width;
                     float ty1 = 0, ty2 = draw_height;
-                    
+
                     if(g_oe_texture_rectangle_format == GL_TEXTURE_2D) {
-                        
+
                         tx1 /= ptext->RGBA_width, tx2 /= ptext->RGBA_width;
                         ty1 /= ptext->RGBA_height, ty2 /= ptext->RGBA_height;
                     }
-                    
-                    
+
+
                     glBegin( GL_QUADS );
-                    
+
                     glTexCoord2f( tx1, ty1 );  glVertex2i( 0, 0 );
                     glTexCoord2f( tx2, ty1 );  glVertex2i( draw_width, 0 );
                     glTexCoord2f( tx2, ty2 );  glVertex2i( draw_width, draw_height );
                     glTexCoord2f( tx1, ty2 );  glVertex2i( 0, draw_height );
-                    
+
                     glEnd();
-                    
+
                     glPopMatrix();
-                    
+
                     glDisable( g_oe_texture_rectangle_format );
                     glDisable( GL_BLEND );
 #else
                     glEnable( GL_BLEND );
                     glEnable( GL_TEXTURE_2D );
-                    
+
                     float uv[8];
                     float coords[8];
-                    
+
                     // Note swizzle of points to allow TRIANGLE_STRIP drawing
                     //normal uv
                     uv[0] = 0; uv[1] = 0; uv[2] = 1; uv[3] = 0;
                     uv[6] = 1; uv[7] = 1; uv[4] = 0; uv[5] = 1;
-                    
+
                     //w *= scale_factor;
                     //h *= scale_factor;
-                    
+
                     // pixels
                     coords[0] = 0; coords[1] = 0; coords[2] = ptext->RGBA_width; coords[3] = 0;
                     coords[6] = ptext->RGBA_width; coords[7] = ptext->RGBA_height; coords[4] = 0; coords[5] = ptext->RGBA_height;
-                    
+
                     glUseProgram( S52texture_2D_shader_program );
-                    
+
                     // Get pointers to the attributes in the program.
                     GLint mPosAttrib = glGetAttribLocation( S52texture_2D_shader_program, "position" );
                     GLint mUvAttrib  = glGetAttribLocation( S52texture_2D_shader_program, "aUV" );
-                    
+
                     // Select the active texture unit.
                     glActiveTexture( GL_TEXTURE0 );
-                    
+
                     // Bind our texture to the texturing target.
                     glBindTexture( GL_TEXTURE_2D, ptext->texobj );
-                    
+
                     // Set up the texture sampler to texture unit 0
                     GLint texUni = glGetUniformLocation( S52texture_2D_shader_program, "uTex" );
                     glUniform1i( texUni, 0 );
-                    
+
                     // Disable VBO's (vertex buffer objects) for attributes.
                     glBindBuffer( GL_ARRAY_BUFFER, 0 );
                     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
-                    
+
                     // Set the attribute mPosAttrib with the vertices in the screen coordinates...
                     glVertexAttribPointer( mPosAttrib, 2, GL_FLOAT, GL_FALSE, 0, coords );
                     // ... and enable it.
                     glEnableVertexAttribArray( mPosAttrib );
-                    
+
                     // Set the attribute mUvAttrib with the vertices in the GL coordinates...
                     glVertexAttribPointer( mUvAttrib, 2, GL_FLOAT, GL_FALSE, 0, uv );
                     // ... and enable it.
                     glEnableVertexAttribArray( mUvAttrib );
-                    
+
                     // Rotate
                     mat4x4 I, Q;
                     mat4x4_identity(I);
-                    
+
                     mat4x4_translate_in_place(I, x, y, 0);
                     mat4x4_rotate_Z(Q, I, -vp->rotation);
                     mat4x4_translate_in_place(Q, xadjust, yadjust, 0);
-                    
-                    
+
+
                     GLint matloc = glGetUniformLocation(S52texture_2D_shader_program,"TransformMatrix");
                     glUniformMatrix4fv( matloc, 1, GL_FALSE, (const GLfloat*)Q);
-                    
+
                     // Perform the actual drawing.
                     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-                    
+
                     // Restore the per-object transform to Identity Matrix
                     mat4x4 IM;
                     mat4x4_identity(IM);
                     GLint matlocf = glGetUniformLocation(S52texture_2D_shader_program,"TransformMatrix");
                     glUniformMatrix4fv( matlocf, 1, GL_FALSE, (const GLfloat*)IM);
-                    
+
                     glDisable( GL_TEXTURE_2D );
                     glDisable( GL_BLEND );
                     #endif
-                    
-                    
+
+
                 } // bdraw
-                
+
             }
-            
+
             bdraw = true;
         }
-        
+
         else {                                          // render using cached texture glyphs
             // rebuild font if needed
             TexFont *f_cache = 0;
@@ -2246,35 +2246,35 @@ bool s52plib::RenderText( wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRe
                 i = rand() & (TXF_CACHE -1);
 #else
                 i = TXF_CACHE - 1;
-#endif                
+#endif
             }
             if (f_cache == 0) {
                 s_txf[i].key = ptext->pFont;
                 f_cache = &s_txf[i].cache;
                 f_cache->Build(*ptext->pFont);
             }
-            
+
             int w, h;
             f_cache->GetTextExtent(ptext->frmtd, &w, &h);
-            
+
             // We don't store descent/ascent info for font texture cache
             // So we have to estimate based on conventional Arial metrics
             ptext->rendered_char_height = h * 65 / 100;
-            
+
             //  Adjust the y position to account for the convention that S52 text is drawn
             //  with the lower left corner at the specified point, instead of the wx convention
             //  using upper right corner
             int yadjust = 0;
             int xadjust = 0;
-            
+
             yadjust =  -ptext->rendered_char_height;
-            
-            
+
+
             //  Add in the offsets, specified in units of nominal font height
             yadjust += ptext->yoffs * ( ptext->rendered_char_height );
             //  X offset specified in units of average char width
             xadjust += ptext->xoffs * ptext->avgCharWidth;
-            
+
             // adjust for text justification
             switch ( ptext->hjust){
                 case '1':               // centered
@@ -2287,7 +2287,7 @@ bool s52plib::RenderText( wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRe
                 default:
                     break;
             }
-            
+
             switch ( ptext->vjust){
                 case '3':               // top
                     yadjust += ptext->rendered_char_height;
@@ -2302,7 +2302,7 @@ bool s52plib::RenderText( wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRe
 
             int xp = x;
             int yp = y;
-            
+
 #ifdef USE_ANDROID_GLES2
             if(fabs(vp->rotation) > 0.01){
                 float cx = vp->pix_width/2.;
@@ -2314,7 +2314,7 @@ bool s52plib::RenderText( wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRe
                 xp =  xn*c - yn*s + cx;
                 yp =  xn*s + yn*c + cy;
             }
-            
+
 #else
             if(fabs(vp->rotation) > 0.01){
                 float c = cosf(-vp->rotation );
@@ -2323,48 +2323,48 @@ bool s52plib::RenderText( wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRe
                 float y = yadjust;
                 xadjust =  x*c - y*s;
                 yadjust =  x*s + y*c;
-                
+
             }
-#endif            
-            
+#endif
+
             xp+= xadjust;
             yp+= yadjust;
-            
+
             pRectDrawn->SetX( xp );
             pRectDrawn->SetY( yp );
             pRectDrawn->SetWidth( w );
             pRectDrawn->SetHeight( h );
-            
+
             if( bCheckOverlap ) {
                 if(fabs( vp->rotation ) > .01){
                     rotate(pRectDrawn, *vp );
                 }
                 if( CheckTextRectList( *pRectDrawn, ptext ) ) bdraw = false;
             }
-            
+
             if( bdraw ) {
 #ifndef USE_ANDROID_GLES2
                 wxColour wcolor = GetFontColour_PlugIn(_("ChartTexts"));
-                
+
                 // If the user has not changed the color from BLACK, then use the color specified in the S52 LUP
                 if( wcolor == *wxBLACK )
                     glColor3ub( ptext->pcol->R, ptext->pcol->G, ptext->pcol->B );
                 else
                     glColor3ub( wcolor.Red(), wcolor.Green(), wcolor.Blue() );
-                
+
                 glEnable( GL_BLEND );
                 glEnable( GL_TEXTURE_2D );
                 glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-                
+
                 glPushMatrix();
                 glTranslatef(xp, yp, 0);
-                
+
                 /* undo previous rotation to make text level */
                 glRotatef(vp->rotation*180/PI, 0, 0, -1);
-                
+
                 f_cache->RenderString(ptext->frmtd);
                 glPopMatrix();
-                
+
                 glDisable( GL_TEXTURE_2D );
                 glDisable( GL_BLEND );
 #else
@@ -2373,7 +2373,7 @@ bool s52plib::RenderText( wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRe
 
                 wxColour wcolor = GetFontColour_PlugIn(_("ChartTexts"));
                 f_cache->SetColor( wcolor );
-                
+
                 /* undo previous rotation to make text level */
                 //glRotatef(vp->rotation*180/PI, 0, 0, -1);
 
@@ -2384,12 +2384,12 @@ bool s52plib::RenderText( wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRe
 #endif
             }
         }
-        
+
         #endif
     } else {                // Not OpenGL
             wxFont oldfont = pdc->GetFont(); // save current font
-            
-            
+
+
             if(scale_factor > 1){
                 wxFont *pf = ptext->pFont;
                 int old_size = pf->GetPointSize();
@@ -2402,28 +2402,28 @@ bool s52plib::RenderText( wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRe
             else{
                 pdc->SetFont( *( ptext->pFont ) );
             }
-            
+
             wxCoord w, h, descent, exlead;
             pdc->GetTextExtent( ptext->frmtd, &w, &h, &descent, &exlead ); // measure the text
-            
+
             // We cannot get the font ascent value to remove the interline spacing.
             // So we have to estimate based on conventional Arial metrics
             int rendered_text_height = (h - descent) * 8 / 10;
-            
+
             //  Adjust the y position to account for the convention that S52 text is drawn
             //  with the lower left corner at the specified point, instead of the wx convention
             //  using upper right corner
             int yadjust = 0;
             int xadjust = 0;
-            
+
             yadjust =  - ( rendered_text_height );
-            
+
             //  Add in the offsets, specified in units of nominal font height
             yadjust += ptext->yoffs * ( rendered_text_height );
-            
+
             //  X offset specified in units of average char width
             xadjust += ptext->xoffs * ptext->avgCharWidth;
-            
+
             // adjust for text justification
             switch ( ptext->hjust){
                 case '1':               // centered
@@ -2436,7 +2436,7 @@ bool s52plib::RenderText( wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRe
                 default:
                     break;
             }
-            
+
             switch ( ptext->vjust){
                 case '3':               // top
                     yadjust += rendered_text_height;
@@ -2448,11 +2448,11 @@ bool s52plib::RenderText( wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRe
                 default:
                     break;
             }
-            
+
             int xp = x;
             int yp = y;
-            
-            
+
+
             if(fabs(vp->rotation) > 0.01){
                 float cx = vp->pix_width/2.;
                 float cy = vp->pix_height/2.;
@@ -2462,44 +2462,44 @@ bool s52plib::RenderText( wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRe
                 float y = yp -cy;
                 xp =  x*c - y*s +cx + vp->rv_rect.x;
                 yp =  x*s + y*c +cy + vp->rv_rect.y;
-                
+
             }
-            
+
             xp+= xadjust;
             yp+= yadjust;
-            
+
             pRectDrawn->SetX( xp );
             pRectDrawn->SetY( yp );
             pRectDrawn->SetWidth( w );
             pRectDrawn->SetHeight( h );
-            
+
             if( bCheckOverlap ) {
                 if( CheckTextRectList( *pRectDrawn, ptext ) )
                     bdraw = false;
             }
-            
+
             if( bdraw ) {
                 wxColour wcolor = GetFontColour_PlugIn(_("ChartTexts"));
-                
+
                 // If the user has not changed the color from BLACK, then use the color specified in the S52 LUP
                 if( wcolor == *wxBLACK )
                     wcolor = wxColour( ptext->pcol->R, ptext->pcol->G, ptext->pcol->B );
                 pdc->SetTextForeground( wcolor );
-                
+
                 pdc->DrawText( ptext->frmtd, xp, yp );
             }
-            
+
             pdc->SetFont( oldfont ); // restore last font
-            
+
     }
     return bdraw;
-    
-    
+
+
     #ifdef FIXIT
     #undef FIXIT
     #define DrawText DrawTextA
     #endif
-    
+
 }
 
 
@@ -2536,7 +2536,7 @@ bool s52plib::TextRenderCheck( ObjRazRules *rzRules )
                return false;
        }
     }
-        
+
     //    This logic:  if Aton text is off, but "light description" is on, then show light description anyway
 //     if( ( rzRules->obj->bIsAton ) && ( !m_bShowAtonText ) ) {
 //         if( !strncmp( rzRules->obj->FeatureName, "LIGHTS", 6 ) ) {
@@ -2555,7 +2555,7 @@ bool s52plib::TextRenderCheck( ObjRazRules *rzRules )
             lastLightLon = rzRules->obj->m_lon;
         }
     }
-    
+
     //    An optimization for CM93 charts.
     //    Don't show the text associated with some objects, since CM93 database includes _texto objects aplenty
     if( ( (int)rzRules->obj->auxParm3 == (int)PI_CHART_TYPE_CM93 )
@@ -2618,7 +2618,7 @@ int s52plib::RenderT_All( ObjRazRules *rzRules, Rules *rules, ViewPort *vp, bool
 
         //    Establish a font
         if( !text->pFont ) {
-            
+
             // Process the font specifications from the LUP symbolizatio rule
             int spec_weight = text->weight - 0x30;
             wxFontWeight fontweight;
@@ -2630,21 +2630,21 @@ int s52plib::RenderT_All( ObjRazRules *rzRules, Rules *rules, ViewPort *vp, bool
                 else
                     fontweight = wxFONTWEIGHT_BOLD;
             }
-             
+
             wxFont *specFont = wxTheFontList->FindOrCreateFont( text->bsize, wxFONTFAMILY_SWISS,
                                                                wxFONTSTYLE_NORMAL, fontweight );
-            
+
             //Get the width of a single average character in the spec font
             wxScreenDC dc;
             dc.SetFont(*specFont);
             int width;
             dc.GetTextExtent(_T("X"), &width, NULL, NULL, NULL, specFont);
-            text->avgCharWidth = width; 
-            
+            text->avgCharWidth = width;
+
             //    If we have loaded a legacy S52 compliant PLIB,
             //    then we should use the formal font selection as required by S52 specifications.
             //    Otherwise, we have our own plan...
-            
+
             if( useLegacyRaster ) {
                 text->pFont = specFont;
             } else {
@@ -2664,9 +2664,9 @@ int s52plib::RenderT_All( ObjRazRules *rzRules, Rules *rules, ViewPort *vp, bool
 #else
                 default_size += 2;     // default to 2pt larger than system UI font
 #endif
-                
+
                 wxFont *templateFont = GetOCPNScaledFont_PlugIn(_("ChartTexts"), default_size );
-                
+
                 // NOAA ENC fles requests font size up to 20 points, which looks very
                 // disproportioned. Let's scale those sizes down to more reasonable values.
                 int fontSize = text->bsize;
@@ -2677,12 +2677,12 @@ int s52plib::RenderT_All( ObjRazRules *rzRules, Rules *rules, ViewPort *vp, bool
 
                 // Now factor in the users selected font size.
                 fontSize += templateFont->GetPointSize() - 10;
-                
+
                 // In no case should font size be less than 10, since it becomes unreadable
                 fontSize = wxMax(10, fontSize);
 
                 text->pFont = GetOCPNScaledFont_PlugIn(_("ChartTexts"), fontSize );
-                
+
             }
         }
 
@@ -2700,24 +2700,24 @@ int s52plib::RenderT_All( ObjRazRules *rzRules, Rules *rules, ViewPort *vp, bool
         bool b_dupok = false;
         if( b_free_text ) {
             delete text;
-        
+
             if(!bwas_drawn){
                 return 1;
             }
             else{                               // object was drawn
                 text = rzRules->obj->FText;
-                
+
                 wxRect r0 = text->rText;
                 r0 = r0.Union(rect);
                 text->rText = r0;
-            
+
                 b_dupok = true;                 // OK to add a duplicate text structure to the declutter list, just for this case.
             }
         }
         else
             text->rText = rect;
-        
-        
+
+
         //      If this text was actually drawn, add a pointer to its rect to the de-clutter list if it doesn't already exist
         if( m_bDeClutterText ) {
             if( bwas_drawn ) {
@@ -2774,66 +2774,66 @@ bool s52plib::RenderHPGL( ObjRazRules *rzRules, Rule *prule, wxPoint &r, ViewPor
 
 
     float xscale = 1.0;
-    
-#ifdef __OCPN__ANDROID__    
+
+#ifdef __OCPN__ANDROID__
     //  Set the onscreen size of the symbol
     //  Compensate for various display resolutions
     //  Develop empirically, making a flare light about 6 mm long
     double pix_factor = GetPPMM() / 6.0;
     xscale *= pix_factor;
-#endif    
+#endif
 
     if( (!strncmp(rzRules->obj->FeatureName, "TSSLPT", 6))
         || (!strncmp(rzRules->obj->FeatureName, "DWRTPT", 6))
         || (!strncmp(rzRules->obj->FeatureName, "TWRTPT", 6))
         || (!strncmp(rzRules->obj->FeatureName, "RCTLPT", 6))
     ){
-        // assume the symbol length 
+        // assume the symbol length
         float sym_length = 30;
         float scaled_length = sym_length / vp->view_scale_ppm;
-        
+
         double fac1 = scaled_length / fsf;
-        
-        
+
+
         float target_length = 1852;
-        
+
         xscale = target_length / scaled_length;
         xscale = wxMin(xscale, 1.0);
         xscale = wxMax(.4, xscale);
-        
+
         //printf("scaled length: %g   xscale: %g\n", scaled_length, xscale);
-        
-        
+
+
         fsf *= xscale;
     }
-    
+
     xscale *= g_ChartScaleFactorExp;
-    
+
     //  Special case for GEO_AREA objects with centred symbols
     if( rzRules->obj->Primitive_type == GEO_AREA ) {
         wxPoint r;
         GetPointPixSingle( rzRules, rzRules->obj->y, rzRules->obj->x, &r, vp );
-        
+
         double latdraw, londraw;                // position of the drawn symbol with pivot applied
         GetPixPointSingleNoRotate( r.x + ((prule->pos.symb.pivot_x.SYCL - prule->pos.symb.bnbox_x.SBXC) / fsf),
                                    r.y + ((prule->pos.symb.pivot_y.SYRW - prule->pos.symb.bnbox_y.SBXR) / fsf),
                                    &latdraw, &londraw, vp );
-        
+
         if( !rzRules->obj->BBObj.Contains( latdraw, londraw ) ) // Symbol reference point is outside base area object
              return 1;
     }
-    
+
     double render_angle = rot_angle;
-    
+
     //  Very special case for ATON flare lights at 135 degrees, the standard render angle.
     //  We don't want them to rotate with the viewport.
     if(rzRules->obj->bIsAton && (!strncmp(rzRules->obj->FeatureName, "LIGHTS", 6))  && (fabs(rot_angle - 135.0) < 1.) ){
         render_angle -= vp->rotation * 180./PI;
-        
+
         //  And, due to popular request, we make the flare lights a little bit smaller than S52 specifications
         xscale = xscale * 6. / 7.;
     }
-    
+
     int width = prule->pos.symb.bnbox_x.SBXC + prule->pos.symb.bnbox_w.SYHL;
     width *= 4; // Grow the drawing bitmap to allow for rotation of symbols with highly offset pivot points
     width = (int) ( width / fsf );
@@ -2845,11 +2845,11 @@ bool s52plib::RenderHPGL( ObjRazRules *rzRules, Rule *prule, wxPoint &r, ViewPor
     int origin_x = prule->pos.symb.bnbox_x.SBXC;
     int origin_y = prule->pos.symb.bnbox_y.SBXR;
     wxPoint origin(origin_x, origin_y);
-    
+
     int pivot_x = prule->pos.symb.pivot_x.SYCL;
     int pivot_y = prule->pos.symb.pivot_y.SYRW;
     wxPoint pivot( pivot_x, pivot_y );
-    
+
     char *str = prule->vector.LVCT;
     char *col = prule->colRef.LCRF;
     wxPoint r0( (int) ( pivot_x / fsf ), (int) ( pivot_y / fsf ) );
@@ -2866,15 +2866,15 @@ bool s52plib::RenderHPGL( ObjRazRules *rzRules, Rule *prule, wxPoint &r, ViewPor
         int r_height = prule->pos.symb.bnbox_h.SYVL;
         r_height = (int) ( r_height / fsf );
         int maxDim = wxMax(r_height, r_width);
-        
+
         double latmin, lonmin, latmax, lonmax;
         GetPixPointSingleNoRotate( r.x - maxDim, r.y + maxDim, &latmin, &lonmin, vp );
         GetPixPointSingleNoRotate( r.x + maxDim, r.y - maxDim, &latmax,  &lonmax, vp );
         LLBBox symbox;
         symbox.Set( latmin, lonmin, latmax, lonmax );
-        
+
         rzRules->obj->BBObj.Expand( symbox );
-        
+
     } else {
 
 #if (( defined(__WXGTK__) || defined(__WXMAC__) ) && !wxCHECK_VERSION(2,9,4))
@@ -2892,7 +2892,7 @@ bool s52plib::RenderHPGL( ObjRazRules *rzRules, Rule *prule, wxPoint &r, ViewPor
             wxLogMessage(msg);
             return false;
         }
-        
+
 #if wxUSE_GRAPHICS_CONTEXT
         wxGCDC gdc( mdc );
         HPGL->SetTargetGCDC( &gdc );
@@ -2921,7 +2921,7 @@ bool s52plib::RenderHPGL( ObjRazRules *rzRules, Rule *prule, wxPoint &r, ViewPor
         if(!targetDc.IsOk())
             return false;
         targetDc.Blit( 0, 0, bm_width, bm_height, m_pdc, screenOriginX, screenOriginY );
-        
+
 
 #if wxUSE_GRAPHICS_CONTEXT /*&& (( defined(__WXGTK__) || defined(__WXMAC__) ) && !wxCHECK_VERSION(2,9,4))*/
         //  Re-render onto the screen-grab copy, since wxDC::DrawBitmap() for alpha channel bitmaps is broken somehow in wxGCDC
@@ -2933,12 +2933,12 @@ bool s52plib::RenderHPGL( ObjRazRules *rzRules, Rule *prule, wxPoint &r, ViewPor
         //  We can use the bitmap already rendered
         //  Get smallest containing bitmap
         wxBitmap *sbm = new wxBitmap( pbm->GetSubBitmap( wxRect( bm_orgx, bm_orgy, bm_width, bm_height ) ) );
-    
+
         //  render the symbol graphics onto the screen-grab copy, with transparency...
         targetDc.DrawBitmap( *sbm, 0, 0 );
         delete sbm;
 #endif
-        
+
         //  Render the final bitmap onto the screen DC
         m_pdc->Blit( screenOriginX, screenOriginY, bm_width, bm_height, &targetDc, 0, 0 );
 
@@ -3025,43 +3025,43 @@ bool s52plib::RenderRasterSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &r,
                                   float rot_angle )
 {
     double scale_factor = 1.0;
- 
+
     scale_factor *=  g_ChartScaleFactorExp;
     scale_factor *= g_scaminScale;
-    
-#ifdef __OCPN__ANDROID__    
+
+#ifdef __OCPN__ANDROID__
     //  Set the onscreen size of the symbol
     //  Compensate for various display resolutions
     //  Develop empirically, making a buoy about 4 mm tall
     double boyHeight = 21. / GetPPMM();           // from raster symbol definitions, boylat is xx pix high
-    
-    double targetHeight0 = 4.0;  
-    
+
+    double targetHeight0 = 4.0;
+
     // But we want to scale the size for smaller displays
     double displaySize = m_display_size_mm;
     displaySize = wxMax(displaySize, 100);
-    
+
     float targetHeight = wxMin(targetHeight0, displaySize / 30);
-    
+
     double pix_factor = targetHeight / boyHeight;
-    
-    
+
+
     //qDebug() << "scaleing" << m_display_size_mm  << targetHeight0 << targetHeight << GetPPMM() << boyHeight << pix_factor;
-    
-    // for Hubert, and my moto 
+
+    // for Hubert, and my moto
     //scaleing 93.98 93 4 3.33333 12.7312 1.64949 2.02082
-    
+
     // My nvidia tab
     //scaleing 144.78 144 4 4 12.6667 1.65789 2.4127
-    
+
     // judgement: all OK
-    
-    
-    
+
+
+
     scale_factor *= pix_factor;
 #endif
-    
-    
+
+
     if(g_oz_vector_scale && vp->b_quilt){
         double sfactor = vp->ref_scale/vp->chart_scale;
         scale_factor = wxMax((sfactor - g_overzoom_emphasis_base)  / 4., scale_factor);
@@ -3071,32 +3071,32 @@ bool s52plib::RenderRasterSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &r,
     // a few special cases here
     if( !strncmp(rzRules->obj->FeatureName, "notmrk", 6 )
         || !strncmp(rzRules->obj->FeatureName, "NOTMRK", 6)
-        || !strncmp(prule->name.SYNM, "ADDMRK", 6)    
+        || !strncmp(prule->name.SYNM, "ADDMRK", 6)
         )
     {
         // get the symbol size
         wxRect trect;
         g_oeChartSymbols->GetGLTextureRect( trect, prule->name.SYNM );
-        
+
         int scale_dim = wxMax(trect.width, trect.height);
-        
+
         double scaled_size = scale_dim / vp->view_scale_ppm;
-        
+
         double target_size = 100;               // roughly, meters maximum scaled size for these inland signs
-        
+
         double xscale = target_size / scaled_size;
         xscale = wxMin(xscale, 1.0);
         xscale = wxMax(.2, xscale);
-        
+
         scale_factor *= xscale;
     }
-    
+
     int pivot_x = prule->pos.line.pivot_x.SYCL;
     int pivot_y = prule->pos.line.pivot_y.SYRW;
 
     pivot_x *= scale_factor;
     pivot_y *= scale_factor;
-    
+
     // For opengl, hopefully the symbols are loaded in a texture
     unsigned int texture = 0;
     wxRect texrect;
@@ -3107,13 +3107,13 @@ bool s52plib::RenderRasterSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &r,
           prule->parm3 = texrect.height * scale_factor;
       }
     }
-    
+
     if( m_pdc || !texture ) {
 
         //    Check to see if any cached data is valid
         bool b_dump_cache = false;
         if( prule->pixelPtr ) {
-            
+
             // Detect switches between DC and GL modes, flush if switch occurs
             if( m_pdc ) {
                 if( prule->parm0 != ID_wxBitmap ) b_dump_cache = true;
@@ -3122,13 +3122,13 @@ bool s52plib::RenderRasterSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &r,
             }
         }
 
-        // If the requested scaled symbol size is not the same as is currently cached, 
+        // If the requested scaled symbol size is not the same as is currently cached,
         // we have to dump the cache
         wxRect trect;
         g_oeChartSymbols->GetGLTextureRect( trect, prule->name.SYNM );
         if(prule->parm2 != trect.width * scale_factor)
             b_dump_cache = true;
-        
+
         wxBitmap *pbm = NULL;
         wxImage Image;
 
@@ -3144,7 +3144,7 @@ bool s52plib::RenderRasterSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &r,
             int w0 = wxMax(1, Image.GetWidth() * scale_factor);
             int h0 = wxMax(1, Image.GetHeight() * scale_factor);
             Image.Rescale(w0 , h0 , wxIMAGE_QUALITY_HIGH);
-            
+
             int w = Image.GetWidth();
             int h = Image.GetHeight();
 
@@ -3153,13 +3153,13 @@ bool s52plib::RenderRasterSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &r,
                 //    Get the glRGBA format data from the wxImage
                 unsigned char *d = Image.GetData();
                 unsigned char *a = Image.GetAlpha();
-                
+
                 Image.SetMaskColour( m_unused_wxColor.Red(), m_unused_wxColor.Green(),
                                      m_unused_wxColor.Blue() );
                 unsigned char mr, mg, mb;
                 if( !a && !Image.GetOrFindMaskColour( &mr, &mg, &mb ) )
                     printf( "trying to use mask to draw a bitmap without alpha or mask\n" );
-                
+
                 unsigned char *e = (unsigned char *) malloc( w * h * 4 );
                 if( d && a){
                     for( int y = 0; y < h; y++ ) {
@@ -3169,17 +3169,17 @@ bool s52plib::RenderRasterSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &r,
                             r = d[off * 3 + 0];
                             g = d[off * 3 + 1];
                             b = d[off * 3 + 2];
-                            
+
                             e[off * 4 + 0] = r;
                             e[off * 4 + 1] = g;
                             e[off * 4 + 2] = b;
-                            
+
                             e[off * 4 + 3] =
                                 a ? a[off] : ( ( r == mr ) && ( g == mg ) && ( b == mb ) ? 0 : 255 );
                         }
                     }
                 }
-                
+
                 //      Save the bitmap ptr and aux parms in the rule
                 prule->pixelPtr = e;
                 prule->parm0 = ID_RGBA;
@@ -3193,14 +3193,14 @@ bool s52plib::RenderRasterSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &r,
                     wxMask *pmask = new wxMask( *pbm, m_unused_wxColor );
                     pbm->SetMask( pmask );
                 }
-                
+
                 bool b_has_trans = false;
 #if (defined(__WXGTK__) || defined(__WXMAC__))
-                
+
                 //    Blitting of wxBitmap with transparency in wxGTK is broken....
                 //    We can do it the hard way, by manually alpha blending the
                 //    symbol with a clip taken from the current screen DC contents.
-                
+
                 //    Inspect the symbol image, to see if it actually has alpha transparency
                 if(Image.HasAlpha())
                 {
@@ -3221,14 +3221,14 @@ bool s52plib::RenderRasterSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &r,
 #ifdef __WXMAC__
                 b_has_trans = true;
 #endif
-                
+
                 //    If the symbol image has no transparency, then a standard wxDC:Blit() will work
                 if(!b_has_trans) {
                     pbm = new wxBitmap( Image, -1 );
                     wxMask *pmask = new wxMask( *pbm, m_unused_wxColor );
                     pbm->SetMask( pmask );
                 }
-                
+
 #else
                 if( !useLegacyRaster ) {
                     pbm = new wxBitmap( Image, 32 );                // windows
@@ -3236,14 +3236,14 @@ bool s52plib::RenderRasterSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &r,
                     pbm->SetMask( pmask );
                 }
 #endif
-                
+
                 //      Save the bitmap ptr and aux parms in the rule
                 prule->pixelPtr = pbm;
                 prule->parm0 = ID_wxBitmap;
                 prule->parm1 = m_colortable_index;
                 prule->parm2 = w;
                 prule->parm3 = h;
-                
+
             }
         }               // instantiation
     }
@@ -3287,7 +3287,7 @@ bool s52plib::RenderRasterSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &r,
     {
 #ifdef ocpnUSE_GL
         glEnable( GL_BLEND );
-        
+
         if(texture) {
             extern GLenum       g_oe_texture_rectangle_format;
 
@@ -3295,7 +3295,7 @@ bool s52plib::RenderRasterSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &r,
             glBindTexture(g_oe_texture_rectangle_format, texture);
 
             int w = texrect.width, h = texrect.height;
-            
+
             float tx1 = texrect.x, ty1 = texrect.y;
             float tx2 = tx1 + w, ty2 = ty1 + h;
 
@@ -3307,7 +3307,7 @@ bool s52plib::RenderRasterSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &r,
                 tx1 /= size.x, tx2 /= size.x;
                 ty1 /= size.y, ty2 /= size.y;
             }
-            
+
             if(fabs( vp->rotation ) > .01){
                 glPushMatrix();
 
@@ -3315,65 +3315,65 @@ bool s52plib::RenderRasterSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &r,
                 glRotatef(vp->rotation * 180/PI, 0, 0, -1);
                 glTranslatef(-pivot_x, -pivot_y, 0);
                 glScalef(scale_factor, scale_factor, 1);
-                
+
                 glBegin(GL_QUADS);
                     glTexCoord2f(tx1, ty1);    glVertex2i( 0, 0);
                     glTexCoord2f(tx2, ty1);    glVertex2i( w, 0);
                     glTexCoord2f(tx2, ty2);    glVertex2i( w, h);
                     glTexCoord2f(tx1, ty2);    glVertex2i( 0, h);
                 glEnd();
-                
+
                 glPopMatrix();
             }
             else {
-                
+
                 if(1/*scale_factor > 1.0*/){
                     glPushMatrix();
-                    
+
                     glTranslatef(r.x, r.y, 0);
                     glTranslatef(-pivot_x, -pivot_y, 0);
                     glScalef(scale_factor, scale_factor, 1);
-                    
+
                     glBegin(GL_QUADS);
                     glTexCoord2f(tx1, ty1);    glVertex2i( 0, 0);
                     glTexCoord2f(tx2, ty1);    glVertex2i( w, 0);
                     glTexCoord2f(tx2, ty2);    glVertex2i( w, h);
                     glTexCoord2f(tx1, ty2);    glVertex2i( 0, h);
                     glEnd();
-                    
+
                     glPopMatrix();
                 }
                 else {
                     float ddx = pivot_x;
                     float ddy = pivot_y;
-                
+
                     glBegin(GL_QUADS);
                         glTexCoord2f(tx1, ty1);    glVertex2i(  r.x - ddx, r.y - ddy );
                         glTexCoord2f(tx2, ty1);    glVertex2i(  r.x - ddx + w, r.y - ddy );
                         glTexCoord2f(tx2, ty2);    glVertex2i(  r.x - ddx + w, r.y - ddy + h );
                         glTexCoord2f(tx1, ty2);    glVertex2i(  r.x - ddx, r.y - ddy + h);
                     glEnd();
-                }                
+                }
             }
 
-            
+
 #else
-                
-                    
+
+
             if(g_oe_texture_rectangle_format == GL_TEXTURE_2D) {
-                    
+
                 // Normalize the sybmol texture coordinates against the next higher POT size
                 wxSize size = g_oeChartSymbols->GLTextureSize();
 #if 0
                                 int i=1;
                                 while(i < size.x) i <<= 1;
                                 int rb_x = i;
-                    
+
                                 i=1;
                                 while(i < size.y) i <<= 1;
                                 int rb_y = i;
-                
-#else                
+
+#else
                 int rb_x = size.x;
                 int rb_y = size.y;
 #endif
@@ -3461,13 +3461,13 @@ bool s52plib::RenderRasterSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &r,
             //  Since draw pixels is so slow, lets not draw anything we don't have to
             wxRect sym_rect(r.x - ddx, r.y - ddy, b_width, b_height);
             if(vp->rv_rect.Intersects(sym_rect) ) {
-                
+
                 glPushAttrib( GL_SCISSOR_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-                
+
                 glDisable( GL_SCISSOR_TEST );
                 glDisable( GL_STENCIL_TEST );
                 glDisable( GL_DEPTH_TEST );
-                
+
                 glRasterPos2f( r.x - ddx, r.y - ddy );
                 glPixelZoom( 1, -1 );
                 glDrawPixels( b_width, b_height, GL_RGBA, GL_UNSIGNED_BYTE, prule->pixelPtr );
@@ -3487,7 +3487,7 @@ bool s52plib::RenderRasterSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &r,
             //    Don't bother if the symbol is off the true screen,
             //    as for instance when an area-centered symbol is called for.
             if( ( r.x - pivot_x  < vp->pix_width ) && ( r.y - pivot_y < vp->pix_height ) ) {
-                
+
                 // Get the current screen contents to a wxImage
                 wxBitmap b1( b_width, b_height, -1 );
                 wxMemoryDC mdc1( b1 );
@@ -3563,7 +3563,7 @@ bool s52plib::RenderRasterSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &r,
     //  Dump the cache for next time
     if(g_oz_vector_scale && (scale_factor > 1.0))
         ClearRulesCache( prule );
-    
+
     return true;
 }
 
@@ -3618,48 +3618,48 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
                                    wxColor symColor, float rot_angle )
 {
     double scale_factor = 1.0;
- 
+
     scale_factor *=  g_ChartScaleFactorExp;
     scale_factor *= g_scaminScale;
-    
+
     if(m_display_size_mm < 200){                //about 8 inches, implying some sort of smaller mobile device
         //  Set the onscreen size of the symbol
         //  Compensate for various display resolutions
         //  Develop empirically, making a buoy about 4 mm tall
         double boyHeight = 21. / GetPPMM();           // from raster symbol definitions, boylat is xx pix high
-        
-        double targetHeight0 = 4.0;  
-        
+
+        double targetHeight0 = 4.0;
+
         // But we want to scale the size for smaller displays
         double displaySize = m_display_size_mm;
         displaySize = wxMax(displaySize, 100);
-        
+
         float targetHeight = wxMin(targetHeight0, displaySize / 30);
-        
+
         double pix_factor = targetHeight / boyHeight;
-        
+
         //qDebug() << "scaleing" << m_display_size_mm  << targetHeight0 << targetHeight << GetPPMM() << boyHeight << pix_factor;
-        
-        // for Hubert, and my moto 
+
+        // for Hubert, and my moto
         //scaleing 93.98 93 4 3.33333 12.7312 1.64949 2.02082
         // My nvidia tab
         //scaleing 144.78 144 4 4 12.6667 1.65789 2.4127
         // judgement: all OK
-        
-        
+
+
         //scale_factor *= pix_factor;
     }
- 
+
     wxFontWeight fontWeight = wxFONTWEIGHT_NORMAL;
     wxString fontFacename = wxEmptyString;
     double defaultHeight = 3.0;
-    
+
 #ifdef __OCPN__ANDROID__
     fontWeight = wxFONTWEIGHT_BOLD;
     fontFacename = _T("Roboto");
     defaultHeight = 2.2;
 #endif
-    
+
         // calculate the required point size to give specified height
     int point_size = 6;
     bool not_done = true;
@@ -3688,7 +3688,7 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
     if(!m_pdc){                         // OpenGL
         if(!m_texSoundings.IsBuilt() || (fabs(m_texSoundings.GetScale() - scale_factor) > 0.1)){
             m_texSoundings.Delete();
-        
+
             m_soundFont = FindOrCreateFont_PlugIn( point_size, wxFONTFAMILY_SWISS,  wxFONTSTYLE_NORMAL, fontWeight, false, fontFacename );
             m_texSoundings.Build(m_soundFont, scale_factor);        //texSounding owns the font
         }
@@ -3701,9 +3701,9 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
 
     int pivot_x;
     int pivot_y;
-    
+
     // Parse the symbol name
-    
+
     //  The digit
     char symDigit = prule->name.SYNM[7];
     int symIndex = symDigit - 0x30;
@@ -3711,7 +3711,7 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
     //  The pivot point offset group
     char symCPivot = prule->name.SYNM[6];
     int symPivot = symCPivot - 0x30;
-    
+
     int pivotWidth, pivotHeight;
     // For opengl, the symbols are loaded in a texture
     unsigned int texture = 0;
@@ -3719,21 +3719,21 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
     if(!m_pdc) {                // GL
       texture = m_texSoundings.GetTexture();
       m_texSoundings.GetGLTextureRect(texrect, symIndex);
-      
+
       if(texture) {
-          prule->parm2 = texrect.width; 
-          prule->parm3 = texrect.height; 
+          prule->parm2 = texrect.width;
+          prule->parm3 = texrect.height;
       }
-      
+
       pivotWidth = texrect.width;
       pivotHeight = texrect.height;
-      
+
     }
     else{
       pivotWidth = charWidth;
       pivotHeight = charHeight;
     }
-        
+
     if(symPivot < 4){
           pivot_x = (pivotWidth * symPivot) - (pivotWidth / 4);
           pivot_y = pivotHeight / 2;
@@ -3746,7 +3746,7 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
           pivot_x = - (pivotWidth / 4);
           pivot_y = pivotHeight / 5;
     }
-    
+
     //        Get the bounding box for the to-be-drawn symbol
     int b_width, b_height;
     b_width = prule->parm2;
@@ -3780,7 +3780,7 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
     {
 #ifdef ocpnUSE_GL
         glEnable( GL_BLEND );
-        
+
         if(texture) {
 
             glEnable(GL_TEXTURE_2D);
@@ -3788,7 +3788,7 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
             glBindTexture(GL_TEXTURE_2D, texture);
 
             int w = texrect.width, h = texrect.height;
-            
+
             float tx1 = texrect.x, ty1 = texrect.y;
             float tx2 = tx1 + w, ty2 = ty1 + h;
 
@@ -3801,10 +3801,10 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
                 tx1 /= size.x, tx2 /= size.x;
                 ty1 /= size.y, ty2 /= size.y;
             }
-            
+
             glColor3ub( symColor.Red(), symColor.Green(), symColor.Blue() );
- 
-            
+
+
             {
                 glPushMatrix();
 
@@ -3812,21 +3812,21 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
                 glRotatef(vp->rotation * 180/PI, 0, 0, -1);
                 glTranslatef(-pivot_x, -pivot_y, 0);
                 //glScalef(scale_factor, scale_factor, 1);
-                
+
                 glBegin(GL_QUADS);
                     glTexCoord2f(tx1, ty1);    glVertex2i( 0, 0);
                     glTexCoord2f(tx2, ty1);    glVertex2i( w, 0);
                     glTexCoord2f(tx2, ty2);    glVertex2i( w, h);
                     glTexCoord2f(tx1, ty2);    glVertex2i( 0, h);
                 glEnd();
-                
+
                 glPopMatrix();
             }
 #else
 
-                
+
             if(g_oe_texture_rectangle_format == GL_TEXTURE_2D) {
-                    
+
                 // Normalize the sybmol texture coordinates against the next higher POT size
                 wxSize size = m_texSoundings.GLTextureSize();
 
@@ -3836,7 +3836,7 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
                 tx1 /= rb_x , tx2 /= rb_x ;
                 ty1 /= rb_y , ty2 /= rb_y ;
                 }
-                
+
             float uv[8];
             float coords[8];
 
@@ -3924,13 +3924,13 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
             //  Since draw pixels is so slow, lets not draw anything we don't have to
             wxRect sym_rect(r.x - ddx, r.y - ddy, b_width, b_height);
             if(vp->rv_rect.Intersects(sym_rect) ) {
-                
+
                 glPushAttrib( GL_SCISSOR_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-                
+
                 glDisable( GL_SCISSOR_TEST );
                 glDisable( GL_STENCIL_TEST );
                 glDisable( GL_DEPTH_TEST );
-                
+
                 glRasterPos2f( r.x - ddx, r.y - ddy );
                 glPixelZoom( 1, -1 );
                 glDrawPixels( b_width, b_height, GL_RGBA, GL_UNSIGNED_BYTE, prule->pixelPtr );
@@ -3973,35 +3973,35 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
     if( !rzRules->obj->m_chart_context->chart )
         return RenderLS(rzRules, rules, vp);    // this is where S63 PlugIn gets caught
-    
+
     if(( vp->GetBBox().GetMaxLon() >= 180.) || (vp->GetBBox().GetMinLon() <= -180.))
-        return RenderLS(rzRules, rules, vp);    // cm03 has trouble at IDL        
-    
+        return RenderLS(rzRules, rules, vp);    // cm03 has trouble at IDL
+
     bool b_useVBO = false;
     float *vertex_buffer = 0;
-    
-    if(rzRules->obj->auxParm2 > 0)             // Has VBO been defined and uploaded? 
+
+    if(rzRules->obj->auxParm2 > 0)             // Has VBO been defined and uploaded?
         b_useVBO = true;
 
     if( !b_useVBO ){
-#if 0        
+#if 0
         if( rzRules->obj->m_chart_context->chart ){
-            vertex_buffer = rzRules->obj->m_chart_context->chart->GetLineVertexBuffer(); 
+            vertex_buffer = rzRules->obj->m_chart_context->chart->GetLineVertexBuffer();
         }
         else {
-            vertex_buffer = rzRules->obj->m_chart_context->vertex_buffer; 
+            vertex_buffer = rzRules->obj->m_chart_context->vertex_buffer;
         }
-        
-        
+
+
         if(!vertex_buffer)
             return RenderLS(rzRules, rules, vp);    // this is where cm93 gets caught
 #else
-        vertex_buffer = rzRules->obj->m_chart_context->vertex_buffer; 
-            
-#endif            
+        vertex_buffer = rzRules->obj->m_chart_context->vertex_buffer;
+
+#endif
     }
 
-    
+
 #ifdef ocpnUSE_GL
 
     char *str = (char*) rules->INSTstr;
@@ -4022,25 +4022,25 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     //  Try to determine if the feature needs to be drawn in the most efficient way
     //  We need to look at priority and visibility of each segment
     int bdraw = 0;
-    
+
     //  Get the current display priority
     //  Default comes from the LUP, unless overridden
     int priority_current = rzRules->LUP->DPRI - '0';
     if(rzRules->obj->m_DPRI >= 0)
         priority_current = rzRules->obj->m_DPRI;
-    
+
     line_segment_element *ls_list = rzRules->obj->m_ls_list;
-    
+
     S52color *c = getColor( str + 7 ); // Colour
     int w = atoi( str + 5 ); // Width
-    
+
 #ifndef ocpnUSE_GLES // linestipple is emulated poorly
     glColor3ub( c->R, c->G, c->B );
 #endif
-    
+
     //    Set drawing width
     float lineWidth = w;
-    
+
     if( w > 1 ) {
         GLint parms[2];
         glGetIntegerv( GL_ALIASED_LINE_WIDTH_RANGE, &parms[0] );
@@ -4063,20 +4063,20 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
     glDisable( GL_LINE_SMOOTH );
     glDisable( GL_BLEND );
-    
+
 #ifdef __OCPN__ANDROID__
 //     if( w > 1 )
 //         lineWidth = wxMin(lineWidth, parms[1]);
     glLineWidth(lineWidth);
-    
-#else    
+
+#else
     glLineWidth(lineWidth);
     if(lineWidth > 4.0 && m_GLLineSmoothing){
         glEnable( GL_LINE_SMOOTH );
         glEnable( GL_BLEND );
     }
 #endif
-    
+
 #if defined(GL_LINE_STIPPLE) && !defined(ocpnUSE_GLES) // linestipple is emulated poorly
     if( !strncmp( str, "DASH", 4 ) ) {
         glLineStipple( 1, 0x3F3F );
@@ -4089,7 +4089,7 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     else
         glDisable( GL_LINE_STIPPLE );
 #endif
-        
+
     GLuint textureDot = -1;
 
 
@@ -4097,15 +4097,15 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     glColor3ub( c->R, c->G, c->B );
 
     glPushMatrix();
-    
+
     // Set up the OpenGL transform matrix for this object
     //  Transform from Simple Mercator (relative to chart reference point) to screen coordinates.
-    
+
     //  First, the VP transform
     glTranslatef( vp->pix_width / 2, vp->pix_height/2, 0 );
     glScalef( vp->view_scale_ppm, -vp->view_scale_ppm, 0 );
     glTranslatef( -rzRules->sm_transform_parms->easting_vp_center, -rzRules->sm_transform_parms->northing_vp_center, 0 );
-    
+
     //  Next, the per-object transform
     if( rzRules->obj->m_chart_context->chart ){
         glTranslatef( rzRules->obj->x_origin, rzRules->obj->y_origin, 0);
@@ -4121,7 +4121,7 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         glBindBuffer(GL_ARRAY_BUFFER, rzRules->obj->auxParm2);
     }
 
-    
+
 
 #ifdef USE_ANDROID_GLES2
     glUseProgram(S52color_tri_shader_program);
@@ -4186,15 +4186,15 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     }
 
 #endif
-  
+
     // from above ls_list is the first drawable segment
     while( ls_list){
-        
-        if( ls_list->priority == priority_current  )   
+
+        if( ls_list->priority == priority_current  )
         {
             size_t seg_vbo_offset = 0;
             size_t point_count = 0;
-            
+
             //  Check visibility of the segment
             bool b_drawit = false;
             if( (ls_list->ls_type == TYPE_EE) || (ls_list->ls_type == TYPE_EE_REV) ){
@@ -4208,7 +4208,7 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                         seg_vbo_offset = ls_list->pedge->vbo_offset;
                         point_count = ls_list->pedge->nCount;
                  }
-                    
+
             }
             else{
 //                 if((BBView.GetMinLat() < ls_list->pcs->cs_lat_avg && BBView.GetMaxLat() > ls_list->pcs->cs_lat_avg) &&
@@ -4222,14 +4222,14 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                         point_count = 2;
                  }
             }
-            
-            
-            
-            
-            
+
+
+
+
+
             if( b_drawit) {
                 // render the segment
-                
+
 #ifndef USE_ANDROID_GLES2
                 if(b_useVBO){
                     glVertexPointer(2, GL_FLOAT, 2 * sizeof(float), (GLvoid *)(seg_vbo_offset));
@@ -4260,10 +4260,10 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         }
         ls_list = ls_list->next;
     }
-#ifdef GL_ARRAY_BUFFER_ARB
+//#ifdef GL_ARRAY_BUFFER_ARB
      if(b_useVBO)
          glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-#endif
+//#endif
 
 
 #ifndef USE_ANDROID_GLES2
@@ -4281,20 +4281,20 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 #endif
     glDisable( GL_LINE_SMOOTH );
     glDisable( GL_BLEND );
-    
+
 #endif                  // OpenGL
-    
+
     return 1;
 }
-    
+
 
 // Line Simple Style
 int s52plib::RenderLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 {
     // catch cm93 and legacy PlugIns (e.g.s63_pi)
-    if( rzRules->obj->m_n_lsindex  && !rzRules->obj->m_ls_list) 
+    if( rzRules->obj->m_n_lsindex  && !rzRules->obj->m_ls_list)
         return RenderLSLegacy(rzRules, rules, vp);
-    
+
     S52color *c;
     int w;
 
@@ -4306,55 +4306,55 @@ int s52plib::RenderLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     double scale_factor = vp->ref_scale/vp->chart_scale;
     double scaled_line_width = wxMax((scale_factor - g_overzoom_emphasis_base), 1);
     bool b_wide_line = g_oz_vector_scale && vp->b_quilt && (scale_factor > g_overzoom_emphasis_base);
-    
+
     wxPen wide_pen(*wxBLACK_PEN);
     wxDash dashw[2];
     dashw[0] = 3;
-    dashw[1] = 1; 
-    
+    dashw[1] = 1;
+
     if( b_wide_line)
     {
         int w = wxMax(scaled_line_width, 2);            // looks better
         w = wxMin(w, 50);                               // upper bound
         wide_pen.SetWidth( w );
         wide_pen.SetColour(color);
-        
+
         if( !strncmp( str, "DOTT", 4 ) ) {
             dashw[0] = 1;
             wide_pen.SetStyle(wxPENSTYLE_USER_DASH);
             wide_pen.SetDashes( 2, dashw );
-        }        
+        }
         else if( !strncmp( str, "DASH", 4 ) ){
             wide_pen.SetStyle(wxPENSTYLE_USER_DASH);
             if( m_pdc){ //DC mode
                 dashw[0] = 1;
                 dashw[1] = 2;
             }
-                
+
             wide_pen.SetDashes( 2, dashw );
         }
     }
- 
+
     wxPen thispen(color, w, wxPENSTYLE_SOLID);
     wxDash dash1[2];
-    
+
     if( m_pdc) //DC mode
     {
         if( !strncmp( str, "DOTT", 4 ) ) {
             thispen.SetStyle(wxPENSTYLE_USER_DASH);
             dash1[0] = 1;
-            dash1[1] = 2; 
+            dash1[1] = 2;
             thispen.SetDashes( 2, dash1 );
-        }        
+        }
         else if( !strncmp( str, "DASH", 4 ) ){
             thispen.SetStyle(wxPENSTYLE_SHORT_DASH);
         }
-         
+
         if(b_wide_line)
             m_pdc->SetPen( wide_pen );
         else
             m_pdc->SetPen( thispen );
-        
+
     }
 #ifdef ocpnUSE_GL
     else // OpenGL mode
@@ -4363,7 +4363,7 @@ int s52plib::RenderLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         glColor3ub( c->R, c->G, c->B );
 #endif
         glDisable( GL_LINE_SMOOTH );
-        
+
         //    Set drawing width
         if( w > 1 ) {
             GLint parms[2];
@@ -4374,7 +4374,7 @@ int s52plib::RenderLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                 glLineWidth( wxMax(g_GLMinCartographicLineWidth, w) );
         } else
             glLineWidth( wxMax(g_GLMinCartographicLineWidth, 1) );
-        
+
 // linestipple is emulated poorly
 #if defined(GL_LINE_STIPPLE) && !defined(ocpnUSE_GLES)
             if( !strncmp( str, "DASH", 4 ) ) {
@@ -4390,14 +4390,14 @@ int s52plib::RenderLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 #endif
 
 #ifndef __OCPN__ANDROID__
-            if(w >= 2 && m_GLLineSmoothing){    
+            if(w >= 2 && m_GLLineSmoothing){
                 glEnable( GL_LINE_SMOOTH );
                 glEnable( GL_BLEND );
             }
 #endif
     }
 #endif
-    
+
 
     //    Get a true pixel clipping/bounding box from the vp
     wxPoint pbb = vp->GetPixFromLL( vp->clat, vp->clon );
@@ -4413,7 +4413,7 @@ int s52plib::RenderLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     int priority_current = rzRules->LUP->DPRI - '0';
     if(rzRules->obj->m_DPRI >= 0)
         priority_current = rzRules->obj->m_DPRI;
-    
+
     if( rzRules->obj->m_ls_list )
     {
         float *ppt;
@@ -4428,7 +4428,7 @@ int s52plib::RenderLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 #endif
 #endif
         while(ls){
-            if( ls->priority == priority_current  ) {  
+            if( ls->priority == priority_current  ) {
 
                 int nPoints;
             // fetch the first point
@@ -4444,19 +4444,19 @@ int s52plib::RenderLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                 wxPoint l;
                 GetPointPixSingle( rzRules, ppt[1], ppt[0], &l, vp );
                 ppt += 2;
-            
+
                 for(int ip=0 ; ip < nPoints - 1 ; ip++){
                     wxPoint r;
                     GetPointPixSingle( rzRules, ppt[1], ppt[0], &r, vp );
                             //        Draw the edge as point-to-point
                     x0 = l.x, y0 = l.y;
                     x1 = r.x, y1 = r.y;
-                            
+
                         // Do not draw null segments
                     if( ( x0 != x1 ) || ( y0 != y1 ) ){
-                    
+
                         if(m_pdc){
-                        
+
                             if( cohen_sutherland_line_clip_i( &x0, &y0, &x1, &y1, xmin_, xmax_,
                                     ymin_, ymax_ ) != Invisible )
                                     m_pdc->DrawLine( x0, y0, x1, y1 );
@@ -4474,25 +4474,25 @@ int s52plib::RenderLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                                     PLIBDrawGLThickLine( x0, y0, x1, y1, wide_pen, true );
                             }
                         }
-#endif      
+#endif
 #endif
                     }
-                        
+
                     l = r;
                     ppt += 2;
-                }            
+                }
             }
-            
+
             ls = ls->next;
         }
 #ifdef ocpnUSE_GL
 #ifndef USE_ANDROID_GLES2
     if(!m_pdc && !b_wide_line)
             glEnd();
-#endif              
+#endif
 #endif
     }
-    
+
 #ifdef ocpnUSE_GL
     if( !m_pdc ){
 #ifdef GL_LINE_STIPPLE
@@ -4501,7 +4501,7 @@ int s52plib::RenderLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         glDisable( GL_LINE_SMOOTH );
         glDisable( GL_BLEND );
     }
-#endif                
+#endif
     return 1;
 }
 
@@ -4523,55 +4523,55 @@ int s52plib::RenderLSLegacy( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     double scale_factor = vp->ref_scale/vp->chart_scale;
     double scaled_line_width = wxMax((scale_factor - g_overzoom_emphasis_base), 1);
     bool b_wide_line = g_oz_vector_scale && vp->b_quilt && (scale_factor > g_overzoom_emphasis_base);
-    
+
     wxPen wide_pen(*wxBLACK_PEN);
     wxDash dashw[2];
     dashw[0] = 3;
-    dashw[1] = 1; 
-    
+    dashw[1] = 1;
+
     if( b_wide_line)
     {
         int w = wxMax(scaled_line_width, 2);            // looks better
         w = wxMin(w, 50);                               // upper bound
         wide_pen.SetWidth( w );
         wide_pen.SetColour(color);
-        
+
         if( !strncmp( str, "DOTT", 4 ) ) {
             dashw[0] = 1;
             wide_pen.SetStyle(wxPENSTYLE_USER_DASH);
             wide_pen.SetDashes( 2, dashw );
-        }        
+        }
         else if( !strncmp( str, "DASH", 4 ) ){
             wide_pen.SetStyle(wxPENSTYLE_USER_DASH);
             if( m_pdc){ //DC mode
                 dashw[0] = 1;
                 dashw[1] = 2;
             }
-                
+
             wide_pen.SetDashes( 2, dashw );
         }
     }
- 
+
     wxPen thispen(color, w, wxPENSTYLE_SOLID);
     wxDash dash1[2];
-    
+
     if( m_pdc) //DC mode
     {
         if( !strncmp( str, "DOTT", 4 ) ) {
             thispen.SetStyle(wxPENSTYLE_USER_DASH);
             dash1[0] = 1;
-            dash1[1] = 2; 
+            dash1[1] = 2;
             thispen.SetDashes( 2, dash1 );
-        }        
+        }
         else if( !strncmp( str, "DASH", 4 ) ){
             thispen.SetStyle(wxPENSTYLE_SHORT_DASH);
         }
-         
+
         if(b_wide_line)
             m_pdc->SetPen( wide_pen );
         else
             m_pdc->SetPen( thispen );
-        
+
     }
 
 #ifdef ocpnUSE_GL
@@ -4581,7 +4581,7 @@ int s52plib::RenderLSLegacy( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         glColor3ub( c->R, c->G, c->B );
 #endif
         glDisable( GL_LINE_SMOOTH );
-        
+
         //    Set drawing width
         if( w > 1 ) {
             GLint parms[2];
@@ -4624,12 +4624,12 @@ int s52plib::RenderLSLegacy( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
     int x0, y0, x1, y1;
 
-    
+
     if( rzRules->obj->m_n_lsindex ) {
-        VE_Hash *ve_hash; 
-        VC_Hash *vc_hash; 
-        ve_hash = (VE_Hash *)rzRules->obj->m_chart_context->m_pve_hash;             // This is cm93 
-        vc_hash = (VC_Hash *)rzRules->obj->m_chart_context->m_pvc_hash; 
+        VE_Hash *ve_hash;
+        VC_Hash *vc_hash;
+        ve_hash = (VE_Hash *)rzRules->obj->m_chart_context->m_pve_hash;             // This is cm93
+        vc_hash = (VC_Hash *)rzRules->obj->m_chart_context->m_pvc_hash;
 
 
         //  Get the current display priority
@@ -4637,7 +4637,7 @@ int s52plib::RenderLSLegacy( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         int priority_current = rzRules->LUP->DPRI - '0';
         if(rzRules->obj->m_DPRI >= 0)
             priority_current = rzRules->obj->m_DPRI;
-        
+
         int *index_run;
         float *ppt;
 
@@ -4688,7 +4688,7 @@ int s52plib::RenderLSLegacy( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
             if(pedge) {
                 //  Here we decide to draw or not based on the highest priority seen for this segment
                 //  That is, if this segment is going to be drawn at a higher priority later, then "continue", and don't draw it here.
-            
+
                 // This logic is not perfectly right for one case:
                 // If the segment has only two end connected nodes, and no intermediate edge,
                 // then we have no good way to evaluate the priority.
@@ -4718,7 +4718,7 @@ int s52plib::RenderLSLegacy( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                     }
                 } else if(pedge)
                     ppt = pedge->pPoints + 2*(ipc-1);
-                
+
                 if(ppt) {
                     wxPoint r;
                     GetPointPixSingle( rzRules, ppt[1], ppt[0], &r, vp );
@@ -4761,7 +4761,7 @@ int s52plib::RenderLSLegacy( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                                 }
 #endif
                             }
-#endif      
+#endif
                         }
 
                         l = r;
@@ -4776,7 +4776,7 @@ int s52plib::RenderLSLegacy( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 #ifndef USE_ANDROID_GLES2
         if(!b_wide_line)
             glEnd();
-#endif              
+#endif
 #endif
     }
 #ifdef ocpnUSE_GL
@@ -4787,7 +4787,7 @@ int s52plib::RenderLSLegacy( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         glDisable( GL_LINE_SMOOTH );
         glDisable( GL_BLEND );
     }
-#endif                
+#endif
     return 1;
 }
 
@@ -4806,71 +4806,71 @@ int s52plib::RenderLSPlugIn( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 #ifndef USE_ANDROID_GLES2
     S52color *c;
     int w;
-    
+
     char *str = (char*) rules->INSTstr;
     c = getColor( str + 7 ); // Colour
     wxColour color( c->R, c->G, c->B );
     w = atoi( str + 5 ); // Width
-    
+
     double scale_factor = vp->ref_scale/vp->chart_scale;
     double scaled_line_width = wxMax((scale_factor - g_overzoom_emphasis_base), 1);
     bool b_wide_line = g_oz_vector_scale && vp->b_quilt && (scale_factor > g_overzoom_emphasis_base);
-    
+
     wxPen wide_pen(*wxBLACK_PEN);
     wxDash dashw[2];
     dashw[0] = 3;
-    dashw[1] = 1; 
-    
+    dashw[1] = 1;
+
     if( b_wide_line)
     {
         int w = wxMax(scaled_line_width, 2);            // looks better
         w = wxMin(w, 50);                               // upper bound
         wide_pen.SetWidth( w );
         wide_pen.SetColour(color);
-        
+
         if( !strncmp( str, "DOTT", 4 ) ) {
             dashw[0] = 1;
             wide_pen.SetStyle(wxPENSTYLE_USER_DASH);
             wide_pen.SetDashes( 2, dashw );
-        }        
+        }
         else if( !strncmp( str, "DASH", 4 ) ){
             wide_pen.SetStyle(wxPENSTYLE_USER_DASH);
             if( m_pdc){ //DC mode
                 dashw[0] = 1;
                 dashw[1] = 2;
             }
-            
+
             wide_pen.SetDashes( 2, dashw );
         }
     }
-    
+
     wxPen thispen(color, w, wxPENSTYLE_SOLID);
     wxDash dash1[2];
-    
+
     if( m_pdc) //DC mode
     {
         if( !strncmp( str, "DOTT", 4 ) ) {
             thispen.SetStyle(wxPENSTYLE_USER_DASH);
             dash1[0] = 1;
-            dash1[1] = 2; 
+            dash1[1] = 2;
             thispen.SetDashes( 2, dash1 );
-        }        
+        }
         else if( !strncmp( str, "DASH", 4 ) ){
             thispen.SetStyle(wxPENSTYLE_SHORT_DASH);
         }
-        
+
         if(b_wide_line)
             m_pdc->SetPen( wide_pen );
         else
             m_pdc->SetPen( thispen );
-        
+
     }
-    
+
     #ifdef ocpnUSE_GL
     else // OpenGL mode
     {
         glColor3ub( c->R, c->G, c->B );
-        
+
         //    Set drawing width
         if( w > 1 ) {
             GLint parms[2];
@@ -4881,7 +4881,7 @@ int s52plib::RenderLSPlugIn( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                 glLineWidth( wxMax(g_GLMinCartographicLineWidth, w) );
         } else
             glLineWidth( wxMax(g_GLMinCartographicLineWidth, 1) );
-        
+
         #ifndef ocpnUSE_GLES // linestipple is emulated poorly
             if( !strncmp( str, "DASH", 4 ) ) {
                 glLineStipple( 1, 0x3F3F );
@@ -4894,46 +4894,46 @@ int s52plib::RenderLSPlugIn( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
             else
                 glDisable( GL_LINE_STIPPLE );
             #endif
-                
+
     }
     #endif
-    
-    
+
+
     //    Get a true pixel clipping/bounding box from the vp
     wxPoint pbb = vp->GetPixFromLL( vp->clat, vp->clon );
     int xmin_ = pbb.x - (vp->rv_rect.width / 2) - (4 * scaled_line_width);
     int xmax_ = xmin_ + vp->rv_rect.width + (8 * scaled_line_width);
     int ymin_ = pbb.y - (vp->rv_rect.height / 2) - (4 * scaled_line_width) ;
     int ymax_ = ymin_ + vp->rv_rect.height + (8 * scaled_line_width);
-    
+
     int x0, y0, x1, y1;
-    
+
     //  Get the current display priority
     //  Default comes from the LUP, unless overridden
     int priority_current = rzRules->LUP->DPRI - '0';
     if(rzRules->obj->m_DPRI >= 0)
         priority_current = rzRules->obj->m_DPRI;
-    
+
     if( rzRules->obj->m_ls_list_legacy )
     {
                  float *ppt;
-                
+
                 VE_Element *pedge;
-                
-                
+
+
                 PI_connector_segment *pcs;
-               
+
                 unsigned char *vbo_point = (unsigned char *)rzRules->obj->m_chart_context->vertex_buffer;
                 PI_line_segment_element *ls = rzRules->obj->m_ls_list_legacy;
-                
+
                 #ifdef ocpnUSE_GL
                 if(!b_wide_line)
                     glBegin( GL_LINES );
                 #endif
-                    
+
                     while(ls){
-                        if( ls->priority == priority_current  ) {  
-                            
+                        if( ls->priority == priority_current  ) {
+
                             int nPoints;
                             // fetch the first point
                             if(ls->type == TYPE_EE){
@@ -4946,23 +4946,23 @@ int s52plib::RenderLSPlugIn( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                                 ppt = (float *)(vbo_point + pcs->vbo_offset);
                                 nPoints = 2;
                             }
-                            
+
                             wxPoint l;
                             GetPointPixSingle( rzRules, ppt[1], ppt[0], &l, vp );
                             ppt += 2;
-                            
+
                             for(int ip=0 ; ip < nPoints - 1 ; ip++){
                                 wxPoint r;
                                 GetPointPixSingle( rzRules, ppt[1], ppt[0], &r, vp );
                                 //        Draw the edge as point-to-point
                                 x0 = l.x, y0 = l.y;
                                 x1 = r.x, y1 = r.y;
-                                
+
                                 // Do not draw null segments
                                 if( ( x0 != x1 ) || ( y0 != y1 ) ){
-                                    
+
                                     if(m_pdc){
-                                        
+
                                         if( cohen_sutherland_line_clip_i( &x0, &y0, &x1, &y1, xmin_, xmax_,
                                             ymin_, ymax_ ) != Invisible )
                                             m_pdc->DrawLine( x0, y0, x1, y1 );
@@ -4979,23 +4979,23 @@ int s52plib::RenderLSPlugIn( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                                                 PLIBDrawGLThickLine( x0, y0, x1, y1, wide_pen, true );
                                             }
                                     }
-                                    #endif      
-                                    
+                                    #endif
+
                                 }
-                                
+
                                 l = r;
                                 ppt += 2;
-                            }            
+                            }
                         }
-                        
+
                         ls = ls->next;
                     }
                     #ifdef ocpnUSE_GL
                     if(!b_wide_line)
                         glEnd();
-                    #endif              
+                    #endif
     }
-    
+
 #if defined(GL_LINE_STIPPLE) && defined(ocpnUSE_GL)
     if( !m_pdc )
         glDisable( GL_LINE_STIPPLE );
@@ -5341,7 +5341,7 @@ int s52plib::RenderLC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 {
     //     if(rzRules->obj->Index != 7574)
     //         return 0;
-    
+
     // catch cm93 and legacy PlugIns (e.g.s63_pi)
     if( rzRules->obj->m_n_lsindex  && !rzRules->obj->m_ls_list) {
         //return RenderLCLegacy(rzRules, rules, vp);
@@ -5353,16 +5353,16 @@ int s52plib::RenderLC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         wxLogMessage(msg);
         return 0;
     }
-    
+
    // wxPoint *ptp;
     //int npt;
     wxPoint r;
-    
-    
+
+
     int isym_len = rules->razRule->pos.line.bnbox_w.SYHL + (rules->razRule->pos.line.bnbox_x.LBXC - rules->razRule->pos.line.pivot_x.LICL);
     float sym_len = isym_len * canvas_pix_per_mm / 100;
     float sym_factor = 1.0; ///1.50;                        // gives nicer effect
-    
+
     //      Create a color for drawing adjustments outside of HPGL renderer
     char *tcolptr = rules->razRule->colRef.LCRF;
     S52color *c = getColor( tcolptr + 1 ); // +1 skips "n" in HPGL SPn format
@@ -5370,53 +5370,53 @@ int s52plib::RenderLC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     wxColour color( c->R, c->G, c->B );
     double LOD = 2.0 / vp->view_scale_ppm;              // empirical value, by experiment
     LOD = 0; //wxMin(LOD, 10.0);
-    
+
     //  Get the current display priority
     //  Default comes from the LUP, unless overridden
     int priority_current = rzRules->LUP->DPRI - '0';
     if(rzRules->obj->m_DPRI >= 0)
         priority_current = rzRules->obj->m_DPRI;
-    
+
     if( rzRules->obj->m_n_lsindex ) {
-        
-        
+
+
         // Calculate the size of a work buffer
         int max_points = 0;
-        if( rzRules->obj->m_n_edge_max_points > 0 ) 
+        if( rzRules->obj->m_n_edge_max_points > 0 )
             max_points = rzRules->obj->m_n_edge_max_points;
         else{
             line_segment_element *lsa = rzRules->obj->m_ls_list;
-            
+
             while(lsa){
-                
+
                 if( (lsa->ls_type == TYPE_EE) || (lsa->ls_type == TYPE_EE_REV) )
                     max_points += lsa->pedge->nCount;
                 else
                     max_points += 2;
-                
+
                 lsa = lsa->next;
             }
         }
-        
-        
+
+
         //  Allocate some storage for converted points
-        wxPoint *ptp = (wxPoint *) malloc( ( max_points ) * sizeof(wxPoint) ); 
-        double *pdp = (double *)malloc( 2 * ( max_points ) * sizeof(double) ); 
-        int *mask = (int *)malloc(  ( max_points ) * sizeof(int) ); 
-        
+        wxPoint *ptp = (wxPoint *) malloc( ( max_points ) * sizeof(wxPoint) );
+        double *pdp = (double *)malloc( 2 * ( max_points ) * sizeof(double) );
+        int *mask = (int *)malloc(  ( max_points ) * sizeof(int) );
+
         unsigned char *vbo_point = (unsigned char *)rzRules->obj->m_chart_context->vertex_buffer; //chart->GetLineVertexBuffer();
         line_segment_element *ls = rzRules->obj->m_ls_list;
-        
+
         unsigned int index = 0;
         unsigned int idouble = 0;
         int nls = 0;
         wxPoint lp;
         float *ppt;
-        
+
         int ndraw = 0;
         while(ls){
-            if( 1/*ls->priority == priority_current*/  ) {  
- 
+            if( 1/*ls->priority == priority_current*/  ) {
+
                 //transcribe the segment in the proper order into the output buffer
                 int nPoints;
                 int idir = 1;
@@ -5427,22 +5427,22 @@ int s52plib::RenderLC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                     nPoints = ls->pedge->nCount;
                     if(ls->ls_type == TYPE_EE_REV)
                         idir = -1;
-                    
+
                 }
                 else{
                     ppt = (float *)(vbo_point + ls->pcs->vbo_offset_cs);
                     nPoints = 2;
                     bcon = true;
                 }
-                
-                
+
+
                 int vbo_index = 0;
                 int vbo_inc = 2;
                 if( (idir == -1) && !bcon){
                     vbo_index = (nPoints-1) * 2;
                     vbo_inc = -2;
                 }
-                
+
                 double offset = 0;
                 for(int ip=0 ; ip < nPoints ; ip++){
                     wxPoint r;
@@ -5452,23 +5452,23 @@ int s52plib::RenderLC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                         ptp[index++] = r;
                         pdp[idouble++] = ppt[vbo_index];
                         pdp[idouble++] = ppt[vbo_index + 1];
-                        
+
                         nls++;
                     }
                     else{               // sKipping point
                     }
-                    
+
                     lp = r;
                     vbo_index += vbo_inc;
-                }            
-                
+                }
+
             }  // priority
-            
+
             // inspect the next segment to see if it can be connected, or if the chain breaks
             int idir = 1;
             bool bcon = false;
             if(ls->next){
-                
+
                 int nPoints_next;
                 line_segment_element *lsn = ls->next;
                 // fetch the first point
@@ -5477,14 +5477,14 @@ int s52plib::RenderLC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                     nPoints_next = lsn->pedge->nCount;
                     if(lsn->ls_type == TYPE_EE_REV)
                         idir = -1;
-                    
+
                 }
                 else{
                     ppt = (float *)(vbo_point + lsn->pcs->vbo_offset_cs);
                     nPoints_next = 2;
                     bcon = true;
                 }
-                
+
                 wxPoint ptest;
                 if(bcon)
                     GetPointPixSingle( rzRules, ppt[1], ppt[0], &ptest, vp );
@@ -5499,35 +5499,35 @@ int s52plib::RenderLC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                         GetPointPixSingle( rzRules, ppt[index_last_next +1], ppt[index_last_next], &ptest, vp );
                     }
                 }
-                
+
                 // try to match the correct point in this segment with the last point in the previous segment
 
                 if(lp != ptest)         // not connectable?
                 {
-                    
+
                     if(nls){
                         wxPoint2DDouble *pReduced = 0;
                         int *pMaskOut = 0;
                         int nPointReduced = reduceLOD( LOD, nls, pdp, &pReduced, mask, &pMaskOut);
-                    
-                        wxPoint *ptestp = (wxPoint *) malloc( ( max_points ) * sizeof(wxPoint) ); 
+
+                        wxPoint *ptestp = (wxPoint *) malloc( ( max_points ) * sizeof(wxPoint) );
                         GetPointPixArray( rzRules, pReduced, ptestp, nPointReduced, vp );
                         free(pReduced);
-                    
+
                         draw_lc_poly( m_pdc, color, w, ptestp, pMaskOut, nPointReduced, sym_len, sym_factor, rules->razRule, vp );
                         free(ptestp);
                         free(pMaskOut);
-                    
+
                         ndraw++;
                     }
-                    
+
                     nls = 0;
                     index = 0;
                     idouble = 0;
                     lp = wxPoint(0,0);
                 }
-                
-                
+
+
             }
             else{
                 // no more segments, so render what is available
@@ -5535,27 +5535,27 @@ int s52plib::RenderLC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                     wxPoint2DDouble *pReduced = 0;
                     int *pMaskOut = 0;
                     int nPointReduced = reduceLOD( LOD, nls, pdp, &pReduced, mask, &pMaskOut);
-                    
-                    wxPoint *ptestp = (wxPoint *) malloc( ( max_points ) * sizeof(wxPoint) ); 
+
+                    wxPoint *ptestp = (wxPoint *) malloc( ( max_points ) * sizeof(wxPoint) );
                     GetPointPixArray( rzRules, pReduced, ptestp, nPointReduced, vp );
                     free(pReduced);
-                    
+
                     draw_lc_poly( m_pdc, color, w, ptestp, pMaskOut, nPointReduced, sym_len, sym_factor, rules->razRule, vp );
                     free( ptestp );
                     free(pMaskOut);
 
                 }
             }
-            
+
             ls = ls->next;
         }
-        
-        
+
+
         free( ptp );
         free(pdp);
         free(mask);
     }
-    
+
     return 1;
 }
 
@@ -5568,9 +5568,9 @@ int s52plib::reduceLOD( double LOD_meters, int nPoints, double *source, wxPoint2
 	index_keep.push_back(0);
 	index_keep.push_back(nPoints-1);
 	index_keep.push_back(nPoints-2);
-        
+
         DouglasPeucker(source, 1, nPoints-2, LOD_meters, &index_keep);
-        
+
     }
     else {
 	index_keep.resize(nPoints);
@@ -5578,17 +5578,17 @@ int s52plib::reduceLOD( double LOD_meters, int nPoints, double *source, wxPoint2
         for(int i = 0 ; i < nPoints ; i++)
             index_keep[i] = i;
     }
-    
-    wxPoint2DDouble *pReduced = (wxPoint2DDouble *)malloc( ( index_keep.size() ) * sizeof(wxPoint2DDouble) ); 
+
+    wxPoint2DDouble *pReduced = (wxPoint2DDouble *)malloc( ( index_keep.size() ) * sizeof(wxPoint2DDouble) );
     *dest = pReduced;
-    
+
     int *pmaskOut = NULL;
     if(maskIn){
-        *maskOut = (int *)malloc( ( index_keep.size() ) * sizeof(int) ); 
+        *maskOut = (int *)malloc( ( index_keep.size() ) * sizeof(int) );
         pmaskOut = *maskOut;
     }
-    
-    double *ppr = source;  
+
+    double *ppr = source;
     int ir = 0;
     for(int ip = 0 ; ip < nPoints ; ip++)
     {
@@ -5598,7 +5598,7 @@ int s52plib::reduceLOD( double LOD_meters, int nPoints, double *source, wxPoint2
         if(maskIn)
             maskval = maskIn[ip];
         //printf("LOD:  %10g  %10g\n", x, y);
-        
+
         for(unsigned int j=0 ; j < index_keep.size() ; j++){
             if(index_keep[j] == ip){
                 if(pmaskOut) pmaskOut[ir] = maskval;
@@ -5607,19 +5607,19 @@ int s52plib::reduceLOD( double LOD_meters, int nPoints, double *source, wxPoint2
             }
         }
     }
-    
+
     return index_keep.size();
 }
-    
+
 
 // Line Complex
 int s52plib::RenderLCLegacy( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 {
     if( !rzRules->obj->m_chart_context->chart )
         return RenderLCPlugIn( rzRules, rules, vp );
-    
+
     //  Must be cm93
-        
+
     //wxPoint *ptp;
     //int npt;
     wxPoint r;
@@ -5641,10 +5641,10 @@ int s52plib::RenderLCLegacy( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         priority_current = rzRules->obj->m_DPRI;
 
     if( rzRules->obj->m_n_lsindex ) {
-        
-        VE_Hash *ve_hash = (VE_Hash *)rzRules->obj->m_chart_context->m_pve_hash; 
-        VC_Hash *vc_hash = (VC_Hash *)rzRules->obj->m_chart_context->m_pvc_hash; 
-        
+
+        VE_Hash *ve_hash = (VE_Hash *)rzRules->obj->m_chart_context->m_pve_hash;
+        VC_Hash *vc_hash = (VC_Hash *)rzRules->obj->m_chart_context->m_pvc_hash;
+
         unsigned int nls_max;
         if( rzRules->obj->m_n_edge_max_points > 0 ) // size has been precalculated on SENC load
             nls_max = rzRules->obj->m_n_edge_max_points;
@@ -5704,7 +5704,7 @@ int s52plib::RenderLCLegacy( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
             if(pedge){
             //  Here we decide to draw or not based on the highest priority seen for this segment
             //  That is, if this segment is going to be drawn at a higher priority later, then don't draw it here.
-            
+
             // This logic is not perfectly right for one case:
             // If the segment has only two end connected nodes, and no intermediate edge,
             // then we have no good way to evaluate the priority.
@@ -5713,7 +5713,7 @@ int s52plib::RenderLCLegacy( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
             if( pedge->nCount ){
                 if( pedge->max_priority != priority_current ) continue;
             }
-            
+
 //                if( pedge->max_priority != priority_current ) continue;
 
                 nls = pedge->nCount;
@@ -5792,35 +5792,35 @@ int s52plib::RenderLCPlugIn( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 {
     //int npt;
     wxPoint r;
-    
+
     int isym_len = rules->razRule->pos.line.bnbox_w.SYHL;
     float sym_len = isym_len * canvas_pix_per_mm / 100;
     float sym_factor = 1.0; ///1.50;                        // gives nicer effect
-    
+
     //      Create a color for drawing adjustments outside of HPGL renderer
     char *tcolptr = rules->razRule->colRef.LCRF;
     S52color *c = getColor( tcolptr + 1 ); // +1 skips "n" in HPGL SPn format
     int w = 1; // arbitrary width
     wxColour color( c->R, c->G, c->B );
-    
+
     //  Get the current display priority
     //  Default comes from the LUP, unless overridden
     int priority_current = rzRules->LUP->DPRI - '0';
     if(rzRules->obj->m_DPRI >= 0)
         priority_current = rzRules->obj->m_DPRI;
-    
- 
+
+
     //  Calculate max malloc size required
     unsigned int nls_max = 0;
-        
+
     if( rzRules->obj->m_ls_list_legacy )
     {
         //float *ppt;
-        
+
         VE_Element *pedge;
         PI_line_segment_element *ls = rzRules->obj->m_ls_list_legacy;
-        
-            
+
+
         while(ls){
             int nPoints;
                     // fetch the first point
@@ -5831,9 +5831,9 @@ int s52plib::RenderLCPlugIn( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
              else{
                 nPoints = 2;
              }
-                
+
              nls_max = wxMax(nls_max, nPoints);
-                
+
             ls = ls->next;
         }
     }
@@ -5841,7 +5841,7 @@ int s52plib::RenderLCPlugIn( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
         //  Allocate some storage for converted points
         wxPoint *ptp = (wxPoint *) malloc( ( nls_max + 2 ) * sizeof(wxPoint) ); // + 2 allows for end nodes
-    
+
 
     if( rzRules->obj->m_ls_list_legacy )
     {
@@ -5851,13 +5851,13 @@ int s52plib::RenderLCPlugIn( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
 
         PI_connector_segment *pcs;
-        
+
         unsigned char *vbo_point = (unsigned char *)rzRules->obj->m_chart_context->vertex_buffer;
         PI_line_segment_element *ls = rzRules->obj->m_ls_list_legacy;
-        
+
         while(ls){
-                if( ls->priority == priority_current  ) {  
-                    
+                if( ls->priority == priority_current  ) {
+
                     int nPoints;
                     // fetch the first point
                     if(ls->type == TYPE_EE){
@@ -5870,24 +5870,24 @@ int s52plib::RenderLCPlugIn( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                         ppt = (float *)(vbo_point + pcs->vbo_offset);
                         nPoints = 2;
                     }
-                    
+
                     for(int ip=0 ; ip < nPoints ; ip++){
                         wxPoint r;
                         GetPointPixSingle( rzRules, ppt[1], ppt[0], &ptp[ip], vp );
-                        
+
                         ppt += 2;
                     }
-                    
+
                     if(nPoints)
                         draw_lc_poly( m_pdc, color, w, &ptp[0], NULL, nPoints, sym_len, sym_factor, rules->razRule, vp );
                 }
-                
+
                 ls = ls->next;
         }
-        
+
         free(ptp);
     }
-    
+
     return 1;
 }
 
@@ -5898,20 +5898,20 @@ void s52plib::draw_lc_poly( wxDC *pdc, wxColor &color, int width, wxPoint *ptp, 
 {
     if(npt < 2)
         return;
-    
+
     wxPoint r;
 
     //  We calculate the winding direction of the poly
     //  in order to know which side to draw symbol on
     double dfSum = 0.0;
-    
+
     for( int iseg = 0; iseg < npt - 1; iseg++ ) {
         dfSum += ptp[iseg].x * ptp[iseg+1].y - ptp[iseg].y * ptp[iseg+1].x;
     }
     dfSum += ptp[npt-1].x * ptp[0].y - ptp[npt-1].y * ptp[0].x;
-    
+
     bool cw = dfSum < 0.;
-    
+
     //    Get a true pixel clipping/bounding box from the vp
     wxPoint pbb = vp->GetPixFromLL( vp->clat, vp->clon );
     int xmin_ = pbb.x - vp->rv_rect.width / 2;
@@ -5928,21 +5928,21 @@ void s52plib::draw_lc_poly( wxDC *pdc, wxColor &color, int width, wxPoint *ptp, 
         int start_seg = 0;
         int end_seg = npt - 1;
         int inc = 1;
-        
+
         if( cw ){
             start_seg = npt - 1;
             end_seg = 0;
             inc = -1;
         }
-        
+
         float dx, dy, seg_len, theta;
-        
+
         bool done = false;
         int iseg = start_seg;
         ClipResult res;
- 
+
         while( !done ){
-            
+
             // Do not bother with segments that are invisible
 
             x0 = ptp[iseg].x;
@@ -5953,7 +5953,7 @@ void s52plib::draw_lc_poly( wxDC *pdc, wxColor &color, int width, wxPoint *ptp, 
             //  Also, segments marked (by mask) as invisible
             if( mask && !mask[iseg])
                 goto next_seg_dc;
-            
+
             res = cohen_sutherland_line_clip_i( &x0, &y0, &x1, &y1, xmin_, xmax_, ymin_, ymax_ );
             if( res == Invisible )
                 goto next_seg_dc;
@@ -5961,7 +5961,7 @@ void s52plib::draw_lc_poly( wxDC *pdc, wxColor &color, int width, wxPoint *ptp, 
             dx = ptp[iseg + inc].x - ptp[iseg].x;
             dy = ptp[iseg + inc].y - ptp[iseg].y;
             seg_len = sqrt( dx * dx + dy * dy );
-            
+
             if( seg_len >= 1.0 ) {
                 if( seg_len <= sym_len * sym_factor ) {
                     int xst1 = ptp[iseg].x;
@@ -5974,7 +5974,7 @@ void s52plib::draw_lc_poly( wxDC *pdc, wxColor &color, int width, wxPoint *ptp, 
                         xst2 = ptp[iseg + inc].x;
                         yst2 = ptp[iseg + inc].y;
                     }
-                    
+
                     pdc->DrawLine( xst1, yst1, (wxCoord) floor( xst2 ), (wxCoord) floor( yst2 ) );
                 }
 
@@ -6003,14 +6003,14 @@ void s52plib::draw_lc_poly( wxDC *pdc, wxColor &color, int width, wxPoint *ptp, 
                     pdc->DrawLine( (int) xs, (int) ys, ptp[iseg + inc].x, ptp[iseg + inc].y );
                 }
             }
-next_seg_dc:            
+next_seg_dc:
             iseg += inc;
             if(iseg == end_seg)
                 done = true;
-            
+
         } // while
     } // if pdc
-    
+
 #ifdef ocpnUSE_GL
     else // opengl
     {
@@ -6018,24 +6018,24 @@ next_seg_dc:
 #ifndef USE_ANDROID_GLES2
         glColor4ub( color.Red(), color.Green(), color.Blue(), color.Alpha() );
 #endif
-        
+
         // Adjust line width up a bit, to improve render quality for GL_BLEND/GL_LINE_SMOOTH
         float awidth = wxMax(g_GLMinCartographicLineWidth, (float)width * 0.7);
         awidth = wxMax(awidth, 1.5);
         glLineWidth( awidth );
-        
+
         int start_seg = 0;
         int end_seg = npt - 1;
         int inc = 1;
-        
+
         if( cw ){
             start_seg = npt - 1;
             end_seg = 0;
             inc = -1;
         }
-        
+
         float dx, dy, seg_len, theta;
-        
+
         bool done = false;
         int iseg = start_seg;
         while( !done ){
@@ -6055,7 +6055,7 @@ next_seg_dc:
             dx = ptp[iseg + inc].x - ptp[iseg].x;
             dy = ptp[iseg + inc].y - ptp[iseg].y;
             seg_len = sqrt( dx * dx + dy * dy );
-            
+
             if( seg_len >= 1.0 ) {
                 if( seg_len <= sym_len * sym_factor ) {
                     int xst1 = ptp[iseg].x;
@@ -6074,7 +6074,7 @@ next_seg_dc:
 #ifndef __OCPN__ANDROID__
                     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                     glEnable (GL_BLEND);
-                    
+
                     if( m_GLLineSmoothing )
                     {
                         glEnable (GL_LINE_SMOOTH);
@@ -6117,7 +6117,7 @@ next_seg_dc:
                         glEnd();
                     }
 #endif
-                    
+
                     glDisable( GL_LINE_SMOOTH );
                     glDisable( GL_BLEND );
                 } else {
@@ -6192,14 +6192,14 @@ next_seg_dc:
                     glDisable( GL_BLEND );
                 }
             }
-next_seg:            
+next_seg:
             iseg += inc;
             if(iseg == end_seg)
                 done = true;
         } // while
 
     } //opengl
-#endif    
+#endif
 }
 
 // Multipoint Sounding
@@ -6212,8 +6212,8 @@ int s52plib::RenderMPS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         if( vp->chart_scale > rzRules->obj->Scamin )
             return 0;
     }
-    
-    
+
+
     int npt = rzRules->obj->npt;
 
     // this should never happen
@@ -6221,58 +6221,58 @@ int s52plib::RenderMPS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     // So fix it
     if( rzRules->obj->bCS_Added  && !rzRules->mps)
         rzRules->obj->bCS_Added = false;
-        
+
     //  Build the cached rules list if necessary
     if( !rzRules->obj->bCS_Added ) {
 
         ObjRazRules point_rzRules;
         point_rzRules = *rzRules; // take a copy of attributes, etc
-        
+
         S57Obj point_obj;
         point_obj = *( rzRules->obj );
         point_obj.bIsClone = true;
         point_rzRules.obj = &point_obj;
-        
+
         Rules *ru_cs = StringToRules( _T ( "CS(SOUNDG03;" ) );
 
         wxPoint p;
         double *pd = rzRules->obj->geoPtz; // the SM points
         double *pdl = rzRules->obj->geoPtMulti; // and corresponding lat/lon
-        
+
 
         mps_container *pmps = (mps_container *)calloc( sizeof(mps_container), 1);
         pmps->cs_rules = new ArrayOfRules;
         rzRules->mps = pmps;
-        
+
         for( int ip = 0; ip < npt; ip++ ) {
             double east = *pd++;
             double nort = *pd++;
             double depth = *pd++;
-            
+
             point_obj.x = east;
             point_obj.y = nort;
             point_obj.z = depth;
-            
+
             double lon = *pdl++;
             double lat = *pdl++;
             point_obj.BBObj.Set( lat, lon, lat, lon );
             point_obj.BBObj.Invalidate();
-            
+
             char *rule_str1 = RenderCS( &point_rzRules, ru_cs );
             wxString cs_string( rule_str1, wxConvUTF8 );
-            free( rule_str1 ); 
-    
+            free( rule_str1 );
+
             Rules *rule_chain = StringToRules( cs_string );
-            
+
             rzRules->mps->cs_rules->Add( rule_chain );
-            
+
         }
 
         DestroyRulesChain( ru_cs );
         rzRules->obj->bCS_Added = 1; // mark the object
     }
-   
-    
+
+
 
     double *pdl = rzRules->obj->geoPtMulti; // and corresponding lat/lon
 
@@ -6282,40 +6282,40 @@ int s52plib::RenderMPS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
     //  We may be rendering the soundings symbols scaled up, so
     //  adjust the inclusion test bounding box
-    
+
     double scale_factor = vp->ref_scale/vp->chart_scale;
     double box_mult = wxMax((scale_factor - g_overzoom_emphasis_base), 1);
     int box_dim = 100 * box_mult;
-    
+
     // We need a pixel bounding rectangle of the passed ViewPort.
     // Very important for partial screen renders, as with dc mode pans or OpenGL FBO operation.
-   
+
     wxPoint cr0 = vp_local.GetPixFromLL( vp_local.GetBBox().GetMaxLat(), vp_local.GetBBox().GetMinLon());
     wxPoint cr1 = vp_local.GetPixFromLL( vp_local.GetBBox().GetMinLat(), vp_local.GetBBox().GetMaxLon());
     wxRect clip_rect(cr0, cr1);
-    
+
     for( int ip = 0; ip < npt; ip++ ) {
-        
+
         double lon = *pdl++;
         double lat = *pdl++;
 
         wxPoint r = vp_local.GetPixFromLL( lat, lon );
         //      Use estimated symbol size
         wxRect rr(r.x-(box_dim/2), r.y-(box_dim/2), box_dim, box_dim);
-        
+
         //      After all the setup, the render inclusion test is trivial....
         if(!clip_rect.Intersects(rr))
             continue;
-        
+
         double angle = 0;
-        
+
         Rules *rules =  rzRules->mps->cs_rules->Item(ip);
         bool bColorSet = false;
         wxColor symColor;
         GetGlobalColor(_T("SNDG2"), &symColor);  //light
 
         while( rules ){
-            
+
             //  Render a raster or vector symbol, as specified by LUP rules
             if( rules->razRule->definition.SYDF == 'V' ){
                 // On OpenGL, arrange to render the drying height "underline" symbol as un-rotated.
@@ -6325,7 +6325,7 @@ int s52plib::RenderMPS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                 RenderHPGL( rzRules, rules->razRule, r, vp, dryAngle );
             }
             else if( rules->razRule->definition.SYDF == 'R' ){
-                              
+
                 // Parse the first rule to determine the color
                 if(!bColorSet){
                     char symColorT = rules->razRule->name.SYNM[5];
@@ -6333,17 +6333,17 @@ int s52plib::RenderMPS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                         GetGlobalColor(_T("SNDG1"), &symColor);
                     bColorSet = true;
                 }
-                    
+
                 if(!strncmp(rules->razRule->name.SYNM, "SOUNDGC2", 8))
                     RenderRasterSymbol( rzRules, rules->razRule, r, vp, angle );
                 else
                     RenderSoundingSymbol( rzRules, rules->razRule, r, vp, symColor, angle );
             }
-            
+
             rules = rules->next;
         }
     }
-    
+
     return 1;
 }
 
@@ -6355,7 +6355,7 @@ int s52plib::RenderCARC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
     return RenderCARC_VBO(rzRules, rules, vp);
 }
-    
+
 int s52plib::RenderCARC_GLSL( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 {
 #ifdef USE_ANDROID_GLES2
@@ -6433,23 +6433,23 @@ int s52plib::RenderCARC_GLSL( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     float rad =  radius * canvas_pix_per_mm ;
     float arcw = arc_width * canvas_pix_per_mm;
     float sec_rad = sector_radius * canvas_pix_per_mm;
-    
+
     // Adjust size
     //  Some plain lights have no SCAMIN attribute.
     //  This causes display congestion at small viewing scales, since the objects are rendered at fixed pixel dimensions from the LUP rules.
     //  As a correction, the idea is to not allow the rendered symbol to be larger than "X" meters on the chart.
     //   and scale it down when rendered if necessary.
-    
+
     float xscale = 1.0;
     if(1/*rzRules->obj->Scamin > 10000000*/){                        // huge (unset) SCAMIN)
         float radius_meters_target = 200;
-        
+
         float radius_meters = ( radius * canvas_pix_per_mm ) / vp->view_scale_ppm;
-        
+
         xscale = radius_meters_target / radius_meters;
         xscale = wxMin(xscale, 1.0);
         xscale = wxMax(.4, xscale);
-        
+
         rad *= xscale;
         arcw *= xscale;
         arcw =wxMin(arcw, rad/10);
@@ -6547,7 +6547,7 @@ int s52plib::RenderCARC_GLSL( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         sb += 360.;
         se += 360.;
     }
-    
+
     GLint sector1loc = glGetUniformLocation(S52ring_shader_program,"sector_1");
     glUniform1f(sector1loc, (sb * PI / 180.));
     GLint sector2loc = glGetUniformLocation(S52ring_shader_program,"sector_2");
@@ -6584,13 +6584,13 @@ int s52plib::RenderCARC_GLSL( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         thispen.SetDashes( 2, dash1 );
         thispen.SetWidth(3);
         thispen.SetStyle(wxPENSTYLE_USER_DASH);
-        
+
         float a = ( sectr1 - 90 ) * PI / 180;
         a += vp->rotation;
         int x = point.x + (int) ( leg_len * cosf( a ) );
         int y = point.y + (int) ( leg_len * sinf( a ) );
         DrawDashLine(thispen, point.x, point.y, x, y, vp);
-        
+
         a = ( sectr2 - 90 ) * PI / 180.;
         a += vp->rotation;
         x = point.x + (int) ( leg_len * cosf( a ) );
@@ -6611,7 +6611,7 @@ int s52plib::RenderCARC_GLSL( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     rzRules->obj->BBObj.Expand( symbox );
 
 //    glEnable( GL_SCISSOR_TEST );
-    
+
 #endif
 
     return 1;
@@ -6695,20 +6695,20 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     Rule *prule = rules->razRule;
 
     float scale_factor = 1.0;
-    
+
     // The dimensions of the light are presented here as pixels on-screen.
     // We must scale the rendered size based on the device pixel density
     // Let us declare that the width of the arc should be no less than X mm
     float wx = 1.0;
-    
+
     float pd_scale = 1.0;
     float nominal_arc_width_pix = wxMax(1.0, floor(GetPPMM() * wx));             // { wx } mm nominal, but not less than 1 pixel
     pd_scale = nominal_arc_width_pix / arc_width;
-    
+
     //scale_factor *= pd_scale;
     //qDebug() << GetPPMM() << arc_width << nominal_arc_width_pix << pd_scale;
-    
-    
+
+
     // Adjust size
     //  Some plain lights have no SCAMIN attribute.
     //  This causes display congestion at small viewing scales, since the objects are rendered at fixed pixel dimensions from the LUP rules.
@@ -6730,7 +6730,7 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     }
 
     ///scale_factor *= xscale;
-    
+
     carc_hash += _T(".");
     wxString xs;
     xs.Printf( _T("%5g"), xscale );
@@ -6787,9 +6787,9 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         //      This will properly establish the drawing box in the dc
 
         int border_fluff = 4; // by how much should the blit bitmap be "fluffed"
-        
+
         //  wxDC min/max calculations are currently broken in wxQT, so we use the entire circle instead of arcs...
-#ifndef __WXQT__        
+#ifndef __WXQT__
         if( fabs( sectr2 - sectr1 ) != 360 ) // not necessary for all-round lights
                 {
             mdc.ResetBoundingBox();
@@ -6836,8 +6836,8 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         bm_width = rad * 2 + ( border_fluff * 2 );
         bm_height = rad * 2 + ( border_fluff * 2 );
         bm_orgx = -bm_width / 2;
-        bm_orgy = -bm_height / 2; 
-#endif        
+        bm_orgy = -bm_height / 2;
+#endif
 
         wxBitmap *sbm = NULL;
 
@@ -6877,7 +6877,7 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
             // delete any old private data
             ClearRulesCache( rules->razRule );
-            
+
         //      Save the bitmap ptr and aux parms in the rule
         prule->pixelPtr = sbm;
         prule->parm0 = ID_wxBitmap;
@@ -6893,15 +6893,15 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 #ifdef ocpnUSE_GL
     CARC_Buffer buffer;
 
-    
+
     if( !m_pdc ) // opengl
     {
         //    Is there not already an generated vbo the CARC_hashmap for this object?
         rad = (int) ( radius * canvas_pix_per_mm );
         if( m_CARC_hashmap.find( carc_hash ) == m_CARC_hashmap.end() ) {
-            
+
             if( sectr1 > sectr2 ) sectr2 += 360;
-    
+
             /* to ensure that the final segment lands exactly on sectr2 */
 
             //    Draw wide outline arc
@@ -6925,7 +6925,7 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                 buffer.data[s++] = rad * sinf( a );
                 buffer.data[s++] = -rad * cosf( a );
             }
-    
+
             //    Draw narrower color arc, overlaying the drawn outline.
             colorb = getwxColour( arc_color );
             buffer.color[1][0] = colorb.Red();
@@ -6933,11 +6933,11 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
             buffer.color[1][2] = colorb.Blue();
             buffer.color[1][3] = 150;
             buffer.line_width[1] = wxMax(g_GLMinSymbolLineWidth, (arc_width  * scale_factor) + .8);
-        
+
             //    Draw the sector legs
             if( sector_radius > 0 ) {
                 int leg_len = (int) ( sector_radius * canvas_pix_per_mm );
-        
+
                 //wxColour c = GetGlobalColor( _T ( "CHBLK" ) );
                 wxColour c; GetGlobalColor( _T ( "CHBLK" ), &c);
 
@@ -6947,7 +6947,7 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                 buffer.color[2][3] = c.Alpha();
                 //buffer.line_width[2] = wxMax(g_GLMinSymbolLineWidth, (float)0.5) * scale_factor;
                 buffer.line_width[2] = wxMax(1.0, floor(GetPPMM() * 0.2));             //0.4 mm nominal, but not less than 1 pixel
-        
+
                 float a = ( sectr1 - 90 ) * PI / 180.;
                 buffer.data[s++] = 0;
                 buffer.data[s++] = 0;
@@ -6966,19 +6966,19 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
         } else
             buffer = m_CARC_hashmap[carc_hash];
-        
+
         int border_fluff = 4; // by how much should the blit bitmap be "fluffed"
         bm_width = rad * 2 + ( border_fluff * 2 );
         bm_height = rad * 2 + ( border_fluff * 2 );
         bm_orgx = -bm_width / 2;
         bm_orgy = -bm_height / 2;
-        
+
         prule->parm2 = bm_orgx;
         prule->parm3 = bm_orgy;
         prule->parm5 = bm_width;
         prule->parm6 = bm_height;
         prule->parm7 = xscale;
-        
+
     } // instantiation
 #endif
 
@@ -6993,7 +6993,7 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 #ifdef ocpnUSE_GL
         glPushMatrix();
         glTranslatef( r.x, r.y, 0 );
-         
+
 //        glScalef(scale_factor, scale_factor, 1);
         glVertexPointer(2, GL_FLOAT, 2 * sizeof(float), buffer.data);
 
@@ -7001,7 +7001,7 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         glEnable( GL_BLEND );
         if( m_GLLineSmoothing )
             glEnable( GL_LINE_SMOOTH );
-#endif        
+#endif
         glEnableClientState(GL_VERTEX_ARRAY);             // activate vertex coords array
 
         glColor3ubv(buffer.color[0]);
@@ -7014,7 +7014,7 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         glDrawArrays(GL_LINE_STRIP, 0, buffer.steps);
 
         //qDebug() << buffer.line_width[0] << buffer.line_width[1] << buffer.line_width[2];
-        
+
         if(buffer.line_width[2]) {
 // linestipple is emulated poorly
 #if defined(GL_LINE_STIPPLE) && defined(ocpnUSE_GLES)
@@ -7034,16 +7034,16 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 #endif
         glDisable( GL_LINE_SMOOTH );
         glDisable( GL_BLEND );
-    
+
         // Debug the symbol bounding box.....
-/*        
+/*
         {
             int x0 = rules->razRule->parm2;
             int y0 = rules->razRule->parm3;
 
             glLineWidth( 2 );
             glColor4f( 0,0,0,0 );
-            
+
             glBegin( GL_LINE_STRIP );
             glVertex2i( x0, y0 );
             glVertex2i( x0 + b_width, y0 );
@@ -7052,15 +7052,15 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
             glVertex2i( x0, y0 );
             glEnd();
         }
-        */ 
+        */
 
 //        glTranslatef( -r.x, -r.y, 0 );
         glPopMatrix();
-#endif        
+#endif
     } else {
         int b_width = prule->parm5;
         int b_height = prule->parm6;
-        
+
         //      Get the bitmap into a memory dc
         wxMemoryDC mdc;
         mdc.SelectObject( (wxBitmap &) ( *( (wxBitmap *) ( rules->razRule->pixelPtr ) ) ) );
@@ -7100,9 +7100,9 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
             y = r.y + (int) ( leg_len * sinf( a ) );
             DrawAALine( m_pdc, r.x, r.y, x, y, c, dash1[0], dash1[1] );
         }
-        
+
         // Debug the symbol bounding box.....
-/*        
+/*
         if(m_pdc){
             m_pdc->SetPen(wxPen(*wxGREEN, 1));
             m_pdc->SetBrush(wxBrush(*wxGREEN, wxTRANSPARENT));
@@ -7121,12 +7121,12 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     LLBBox symbox;
     symbox.Set( latmin, lonmin, latmax, lonmax );
     rzRules->obj->BBObj.Expand( symbox );
-    
+
 #endif                  //#ifndef USE_ANDROID_GLES2
 
     return 1;
 }
-    
+
 // Conditional Symbology
 char *s52plib::RenderCS( ObjRazRules *rzRules, Rules *rules )
 {
@@ -7297,13 +7297,13 @@ int s52plib::DoRenderObjectTextOnly( wxDC *pdcin, ObjRazRules *rzRules, ViewPort
 
 //    if(rzRules->obj->Index == 2766)
 //        int yyp = 4;
-    
+
     if( !ObjectRenderCheckRules( rzRules, vp, true ) )
         return 0;
 
     m_pdc = pdcin; // use this DC
     Rules *rules = rzRules->LUP->ruleList;
-    
+
     while( rules != NULL ) {
         switch( rules->ruleType ){
             case RUL_TXT_TX:
@@ -7319,10 +7319,10 @@ int s52plib::DoRenderObjectTextOnly( wxDC *pdcin, ObjRazRules *rzRules, ViewPort
                     if(strncmp(rzRules->obj->FeatureName, "SOUNDG", 6))
                         rzRules->obj->bCS_Added = 1; // mark the object
                 }
-                
+
                 Rules *rules_last = rules;
                 rules = rzRules->obj->CSrules;
-                
+
                 while( NULL != rules ) {
                     switch( rules->ruleType ){
                         case RUL_TXT_TX:
@@ -7337,19 +7337,19 @@ int s52plib::DoRenderObjectTextOnly( wxDC *pdcin, ObjRazRules *rzRules, ViewPort
                     rules_last = rules;
                     rules = rules->next;
                 }
-                
+
                 rules = rules_last;
                 break;
             }
-            
+
             case RUL_NONE:
             default:
                  break; // no rule type (init)
         } // switch
-        
+
         rules = rules->next;
     }
-    
+
     return 1;
 }
 
@@ -7445,7 +7445,7 @@ int s52plib::SetLineFeaturePriority( ObjRazRules *rzRules, int npriority )
     //      Do Object Type Filtering
     //    If the object s not currently visible (i.e. classed as a not-currently visible category),
     //    then do not set the line segment priorities at all
-    //    
+    //
 
     bool b_catfilter = true;
 
@@ -7462,7 +7462,7 @@ int s52plib::SetLineFeaturePriority( ObjRazRules *rzRules, int npriority )
 
     if( IsObjNoshow( rzRules->LUP->OBCL) )
         b_catfilter = false;
-    
+
     if(!b_catfilter)            // No chance this object is visible
         return 0;
 
@@ -7516,7 +7516,7 @@ int s52plib::SetLineFeaturePriority( ObjRazRules *rzRules, int npriority )
 int s52plib::PrioritizeLineFeature( ObjRazRules *rzRules, int npriority )
 {
     if(rzRules->obj->m_ls_list){
-        
+
         VE_Element *pedge;
         connector_segment *pcs;
         line_segment_element *ls = rzRules->obj->m_ls_list;
@@ -7524,59 +7524,59 @@ int s52plib::PrioritizeLineFeature( ObjRazRules *rzRules, int npriority )
             switch (ls->ls_type){
                 case TYPE_EE:
                 case TYPE_EE_REV:
-                    
+
                     pedge = ls->pedge; //(VE_Element *)ls->private0;
                     if(pedge)
                         pedge->max_priority = npriority;// wxMax(pedge->max_priority, npriority);
                     break;
-                    
+
                 default:
                     pcs = ls->pcs; //(connector_segment *)ls->private0;
                     if(pcs)
                         pcs->max_priority_cs = npriority; //wxMax(pcs->max_priority, npriority);
                     break;
             }
-            
+
             ls = ls->next;
         }
     }
 
     else if(rzRules->obj->m_ls_list_legacy){            // PlugIn (S63)
-        
+
         PI_connector_segment *pcs;
         VE_Element *pedge;
-        
+
         PI_line_segment_element *ls = rzRules->obj->m_ls_list_legacy;
         while( ls ){
             switch (ls->type){
                 case TYPE_EE:
-                    
+
                     pedge = (VE_Element *)ls->private0;
                     if(pedge)
                         pedge->max_priority = npriority;// wxMax(pedge->max_priority, npriority);
                     break;
-                    
+
                 default:
                     pcs = (PI_connector_segment *)ls->private0;
                     if(pcs)
                         pcs->max_priority = npriority; //wxMax(pcs->max_priority, npriority);
                     break;
             }
-            
+
             ls = ls->next;
         }
     }
-#if 0    
+#if 0
     else if( rzRules->obj->m_n_lsindex && rzRules->obj->m_lsindex_array) {
-        VE_Hash *edge_hash; 
-        
+        VE_Hash *edge_hash;
+
         if( rzRules->obj->m_chart_context->chart ){
-            edge_hash = &rzRules->obj->m_chart_context->chart->Get_ve_hash(); 
+            edge_hash = &rzRules->obj->m_chart_context->chart->Get_ve_hash();
         }
         else {
-            edge_hash = (VE_Hash *)rzRules->obj->m_chart_context->m_pve_hash; 
+            edge_hash = (VE_Hash *)rzRules->obj->m_chart_context->m_pve_hash;
         }
-        
+
         int *index_run = rzRules->obj->m_lsindex_array;
 
         for( int iseg = 0; iseg < rzRules->obj->m_n_lsindex; iseg++ ) {
@@ -7600,7 +7600,7 @@ int s52plib::PrioritizeLineFeature( ObjRazRules *rzRules, int npriority )
         }
     }
 #endif
-        
+
     return 1;
 }
 
@@ -8659,7 +8659,7 @@ void s52plib::RenderToBufferFilledPolygon( ObjRazRules *rzRules, S57Obj *obj, S5
             if(!rzRules->obj->m_chart_context->chart) {          // This is a PlugIn Chart
                 LegacyTriPrim *p_ltp = (LegacyTriPrim *)p_tp;
                 box.Set(p_ltp->miny, p_ltp->minx, p_ltp->maxy, p_ltp->maxx);
-            }                
+            }
             else
                 box = p_tp->tri_box;
 
@@ -8680,16 +8680,16 @@ void s52plib::RenderToBufferFilledPolygon( ObjRazRules *rzRules, S57Obj *obj, S5
                 }
                 else {
                     float *pvert_list = (float *)p_tp->p_vertex;
-                    
+
                     for( int iv = 0; iv < p_tp->nVert; iv++ ) {
                         double lon = *pvert_list++;
                         double lat = *pvert_list++;
                         GetPointPixSingle( rzRules, lat, lon, pr, vp );
-                        
+
                         pr++;
                     }
                 }
-                
+
                 switch( p_tp->type ){
                     case PTG_TRIANGLE_FAN: {
                         for( int it = 0; it < p_tp->nVert - 2; it++ ) {
@@ -8740,17 +8740,17 @@ void s52plib::RenderToBufferFilledPolygon( ObjRazRules *rzRules, S57Obj *obj, S5
                     }
                 }
             } // if bbox
-            
+
             // pick up the next in chain
             if(!rzRules->obj->m_chart_context->chart) {          // This is a PlugIn Chart
                 LegacyTriPrim *p_ltp = (LegacyTriPrim *)p_tp;
                 p_tp = (TriPrim *)p_ltp->p_next;
             }
             else
-                p_tp = p_tp->p_next; 
-                
+                p_tp = p_tp->p_next;
+
         } // while
-        
+
         free( ptp );
         free( pp3 );
     } // if pPolyTessGeo
@@ -8758,9 +8758,9 @@ void s52plib::RenderToBufferFilledPolygon( ObjRazRules *rzRules, S57Obj *obj, S5
 
 int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 {
-#ifdef ocpnUSE_GL    
+#ifdef ocpnUSE_GL
     GLenum reset_err = glGetError();
-    
+
     S52color *c;
     char *str = (char*) rules->INSTstr;
 
@@ -8785,12 +8785,12 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     BBView.EnLarge( margin );
 
     bool b_useVBO = m_useVBO && !rzRules->obj->auxParm1 && vp->m_projection_type == PROJECTION_MERCATOR;
-    
+
     if( rzRules->obj->pPolyTessGeo ) {
-        
+
         bool b_temp_vbo = false;
         bool b_transform = false;
-        
+
         // Set up the OpenGL transform matrix for this object
         // We transform from SENC SM vertex data to screen.
 
@@ -8809,7 +8809,7 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
             //  Next, the per-object transform
 
             float x_origin = rzRules->obj->x_origin;
-            
+
             if(rzRules->obj->m_chart_context->chart) {          // not a PlugIn Chart
                 if( ( (int)rzRules->obj->auxParm3 == (int)PI_CHART_TYPE_CM93 )
                     || ( (int)rzRules->obj->auxParm3 == (int)PI_CHART_TYPE_CM93COMP ) )
@@ -8826,12 +8826,12 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                     x_origin -= (float)(mercator_k0 * WGS84_semimajor_axis_meters * 2.0 * PI);
                 }
             }
-            
+
             glTranslatef( x_origin, rzRules->obj->y_origin, 0);
             glScalef( rzRules->obj->x_rate, rzRules->obj->y_rate, 0 );
         }
 #endif
-        
+
         // perform deferred tesselation
         if( !rzRules->obj->pPolyTessGeo->IsOk() ){
             if(rzRules->obj->pPolyTessGeo->m_pxgeom)
@@ -8840,13 +8840,13 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
         //  Get the vertex data
         PolyTriGroup *ppg_vbo = rzRules->obj->pPolyTessGeo->Get_PolyTriGroup_head();
-            
+
             //  Has the input vertex buffer been converted to "single_alloc float" model?
             //  and is it allowed?
         if(!ppg_vbo->bsingle_alloc && (rzRules->obj->auxParm1 >= 0) ){
-                
+
                 int data_size = sizeof(float);
-                
+
                 //  First calculate the required total byte size
                     int total_byte_size = 0;
                     TriPrim *p_tp = ppg_vbo->tri_prim_head;
@@ -8854,10 +8854,10 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                         total_byte_size += p_tp->nVert * 2 * data_size;
                         p_tp = p_tp->p_next; // pick up the next in chain
                     }
-                    
+
                     float *vbuf = (float *)malloc(total_byte_size);
                     p_tp = ppg_vbo->tri_prim_head;
-                    
+
                     if( ppg_vbo->data_type == DATA_TYPE_DOUBLE){  //DOUBLE to FLOAT
                             float *p_run = vbuf;
                             while( p_tp ) {
@@ -8866,10 +8866,10 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                                     float x = (float)(p_tp->p_vertex[i]);
                                     *p_run++ = x;
                                 }
-                                
+
                                 free(p_tp->p_vertex);
                                 p_tp->p_vertex = (double *)pfbuf;
-                                
+
                                 p_tp = p_tp->p_next; // pick up the next in chain
                             }
                     }
@@ -8877,26 +8877,26 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                             float *p_run = vbuf;
                             while( p_tp ) {
                                 memcpy( p_run, p_tp->p_vertex, p_tp->nVert * 2 * sizeof(float) );
-                                
+
                                 free(p_tp->p_vertex);
                                 p_tp->p_vertex = (double *)p_run;
-                                
+
                                 p_run += p_tp->nVert * 2;
-                                
+
                                 p_tp = p_tp->p_next; // pick up the next in chain
                             }
                     }
-                    
-                    
+
+
                     ppg_vbo->bsingle_alloc = true;
                     ppg_vbo->single_buffer = (unsigned char *)vbuf;
                     ppg_vbo->single_buffer_size = total_byte_size;
                     ppg_vbo->data_type = DATA_TYPE_FLOAT;
-                    
-        }
-            
 
-        if( b_useVBO ){        
+        }
+
+
+        if( b_useVBO ){
         //  Has a VBO been built for this object?
             if( 1 ) {
 
@@ -8977,13 +8977,13 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
 #endif
                     b_temp_vbo = (rzRules->obj->auxParm0 == -5);   // Must we use a temporary VBO?  Probably slower than simple glDrawArrays
-                   
+
                     GLuint vboId;
                     // generate a new VBO and get the associated ID
                     glGenBuffers(1, &vboId);
-                    
+
                     rzRules->obj->auxParm0 = vboId;
-                    
+
                     // bind VBO in order to use
                     glBindBuffer(GL_ARRAY_BUFFER, vboId);
                     GLenum err = glGetError();
@@ -8996,10 +8996,10 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                         glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
                         if(b_transform)
                             glPopMatrix();
-#endif                  
+#endif
                         return 0;
                     }
-                    
+
                     // upload data to VBO
 #ifndef USE_ANDROID_GLES2
                     glEnableClientState(GL_VERTEX_ARRAY);             // activate vertex coords array
@@ -9019,7 +9019,7 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
                         return 0;
                     }
-                    
+
                 }
                 else {
                     glBindBuffer(GL_ARRAY_BUFFER, rzRules->obj->auxParm0);
@@ -9037,33 +9037,33 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
                         return 0;
                     }
-                    
+
 #ifndef USE_ANDROID_GLES2
                     glEnableClientState(GL_VERTEX_ARRAY);             // activate vertex coords array
 #endif
-                }                    
+                }
              }
         }
 
-        
+
 
         PolyTriGroup *ppg = rzRules->obj->pPolyTessGeo->Get_PolyTriGroup_head();
 
         TriPrim *p_tp = ppg->tri_prim_head;
         GLintptr vbo_offset = 0;
-        
+
 #ifndef USE_ANDROID_GLES2
         glEnableClientState(GL_VERTEX_ARRAY);             // activate vertex coords array
 #endif
         //      Set up the stride sizes for the array
         int array_data_size = sizeof(float);
         GLint array_gl_type = GL_FLOAT;
-        
+
         if(ppg->data_type == DATA_TYPE_DOUBLE){
             array_data_size = sizeof(double);
             array_gl_type = GL_DOUBLE;
         }
-            
+
         if(ppg->data_type == DATA_TYPE_SHORT){
             array_data_size = sizeof(short);
             array_gl_type = GL_SHORT;
@@ -9126,10 +9126,10 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
             if(!rzRules->obj->m_chart_context->chart) {          // This is a PlugIn Chart
                 LegacyTriPrim *p_ltp = (LegacyTriPrim *)p_tp;
                 box.Set(p_ltp->miny, p_ltp->minx, p_ltp->maxy, p_ltp->maxx);
-            }                
+            }
             else
                 box = p_tp->tri_box;
-            
+
             if(!BBView.IntersectOut(box)) {
 #ifdef USE_ANDROID_GLES2
 
@@ -9180,24 +9180,24 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                 }
 #endif
             }
-            
+
             vbo_offset += p_tp->nVert * 2 * array_data_size;
-            
+
             // pick up the next in chain
             if(!rzRules->obj->m_chart_context->chart) {          // This is a PlugIn Chart
                 LegacyTriPrim *p_ltp = (LegacyTriPrim *)p_tp;
                 p_tp = (TriPrim *)p_ltp->p_next;
             }
             else
-                p_tp = p_tp->p_next; 
-            
+                p_tp = p_tp->p_next;
+
         } // while
-#ifdef GL_ARRAY_BUFFER_ARB
+//#ifdef GL_ARRAY_BUFFER_ARB
         if(b_useVBO)
             glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-#endif
-        
-        
+//#endif
+
+
 #ifndef USE_ANDROID_GLES2
         glDisableClientState(GL_VERTEX_ARRAY);            // deactivate vertex array
         if(b_transform)
@@ -9209,7 +9209,7 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         glUniformMatrix4fv( matlocf, 1, GL_FALSE, (const GLfloat*)IM);
 #endif
 
-        
+
         if( b_useVBO && b_temp_vbo){
             glBufferData(GL_ARRAY_BUFFER, 0, NULL, GL_STATIC_DRAW);
             glDeleteBuffers(1, (unsigned int *)&rzRules->obj->auxParm0);
@@ -9225,10 +9225,10 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
 void s52plib::SetGLClipRect(const ViewPort &vp, const wxRect &rect)
 {
-#ifndef USE_ANDROID_GLES2    
+#ifndef USE_ANDROID_GLES2
     bool b_clear = false;
     bool s_b_useStencil = m_useStencil;
-    
+
     #if 0
     /* for some reason this causes an occasional bug in depth mode, I cannot
      *       seem to solve it yet, so for now: */
@@ -9265,13 +9265,13 @@ return;
 // slower way if there is no scissor support
     if(!b_clear)
         glColorMask( GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE );   // disable color buffer
-    
+
     if( s_b_useStencil ) {
         //    Create a stencil buffer for clipping to the region
         glEnable( GL_STENCIL_TEST );
         glStencilMask( 0x1 );                 // write only into bit 0 of the stencil buffer
         glClear( GL_STENCIL_BUFFER_BIT );
-        
+
         //    We are going to write "1" into the stencil buffer wherever the region is valid
         glStencilFunc( GL_ALWAYS, 1, 1 );
         glStencilOp( GL_KEEP, GL_KEEP, GL_REPLACE );
@@ -9280,29 +9280,29 @@ return;
         glEnable( GL_DEPTH_TEST ); // to enable writing to the depth buffer
         glDepthFunc( GL_ALWAYS );  // to ensure everything you draw passes
         glDepthMask( GL_TRUE );    // to allow writes to the depth buffer
-        
+
         glClear( GL_DEPTH_BUFFER_BIT ); // for a fresh start
-        
+
         //    Decompose the region into rectangles, and draw as quads
         //    With z = 1
         // dep buffer clear = 1
         // 1 makes 0 in dep buffer, works
         // 0 make .5 in depth buffer
         // -1 makes 1 in dep buffer
-        
+
         //    Depth buffer runs from 0 at z = 1 to 1 at z = -1
         //    Draw the clip geometry at z = 0.5, giving a depth buffer value of 0.25
         //    Subsequent drawing at z=0 (depth = 0.5) will pass if using glDepthFunc(GL_GREATER);
         glTranslatef( 0, 0, .5 );
     }
-    
+
     glBegin(GL_QUADS);
     glVertex2i( rect.x, rect.y );
     glVertex2i( rect.x + rect.width, rect.y );
     glVertex2i( rect.x + rect.width, rect.y + rect.height );
     glVertex2i( rect.x, rect.y + rect.height );
     glEnd();
-    
+
     if( s_b_useStencil ) {
         //    Now set the stencil ops to subsequently render only where the stencil bit is "1"
         glStencilFunc( GL_EQUAL, 1, 1 );
@@ -9312,26 +9312,26 @@ return;
         glDepthMask( GL_FALSE );                            // disable depth buffer
         glTranslatef( 0, 0, -.5 ); // reset translation
     }
-    
+
     if(!b_clear)
         glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );  // re-enable color buffer
-#endif        
+#endif
 }
 
 void RotateToViewPort(const ViewPort &vp)
 {
 #ifndef USE_ANDROID_GLES2
     bool g_bskew_comp = true;
-    
+
     float angle = vp.rotation;
     if(g_bskew_comp)
         angle -= vp.skew;
-    
+
     if( fabs( angle ) > 0.0001 )
     {
         //    Rotations occur around 0,0, so translate to rotate around screen center
         float xt = vp.pix_width / 2.0, yt = vp.pix_height / 2.0;
-        
+
         glTranslatef( xt, yt, 0 );
         glRotatef( angle * 180. / PI, 0, 0, 1 );
         glTranslatef( -xt, -yt, 0 );
@@ -9400,7 +9400,7 @@ int s52plib::RenderToGLAP( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         //  If we are using stencil for overall clipping, then we are only
         //  using depth buffer for AreaPattern rendering
         //  So, each AP render can start with a clear depth buffer
-        
+
         if(m_useStencil){
              glClearDepth(.26);
              glClear( GL_DEPTH_BUFFER_BIT ); // for a fresh start
@@ -9421,10 +9421,10 @@ int s52plib::RenderToGLAP( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
             if(!rzRules->obj->m_chart_context->chart) {          // This is a PlugIn Chart
                 LegacyTriPrim *p_ltp = (LegacyTriPrim *)p_tp;
                 box.Set(p_ltp->miny, p_ltp->minx, p_ltp->maxy, p_ltp->maxx);
-            }                
+            }
             else
                 box = p_tp->tri_box;
-            
+
             if(!BBView.IntersectOut(box)) {
                 //      Get and convert the points
 
@@ -9436,7 +9436,7 @@ int s52plib::RenderToGLAP( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                         float lon = *pvert_list++;
                         float lat = *pvert_list++;
                         GetPointPixSingle(rzRules, lat, lon, pr, vp );
-                        
+
                         obj_xmin = wxMin(obj_xmin, pr->x);
                         obj_xmax = wxMax(obj_xmax, pr->x);
                         obj_ymin = wxMin(obj_ymin, pr->y);
@@ -9447,21 +9447,21 @@ int s52plib::RenderToGLAP( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                 }
                 else {
                     double *pvert_list = p_tp->p_vertex;
-                    
+
                     for( int iv = 0; iv < p_tp->nVert; iv++ ) {
                         double lon = *pvert_list++;
                         double lat = *pvert_list++;
                         GetPointPixSingle(rzRules, lat, lon, pr, vp );
-                        
+
                         obj_xmin = wxMin(obj_xmin, pr->x);
                         obj_xmax = wxMax(obj_xmax, pr->x);
                         obj_ymin = wxMin(obj_ymin, pr->y);
                         obj_ymax = wxMax(obj_ymax, pr->y);
-                        
+
                         pr++;
                     }
                 }
-                
+
 
                 switch( p_tp->type ){
                     case PTG_TRIANGLE_FAN: {
@@ -9500,15 +9500,15 @@ int s52plib::RenderToGLAP( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                     }
                 }
             } // if bbox
-            
+
             // pick up the next in chain
             if(!rzRules->obj->m_chart_context->chart) {          // This is a PlugIn Chart
                 LegacyTriPrim *p_ltp = (LegacyTriPrim *)p_tp;
                 p_tp = (TriPrim *)p_ltp->p_next;
             }
             else
-                p_tp = p_tp->p_next; 
-            
+                p_tp = p_tp->p_next;
+
         } // while
 
 //        obj_xmin = 0;
@@ -9553,7 +9553,7 @@ int s52plib::RenderToGLAP( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-            
+
             glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, ppatt_spec->w_pot, ppatt_spec->h_pot, 0,
                           GL_RGBA, GL_UNSIGNED_BYTE, ppatt_spec->pix_buff );
         }
@@ -9568,23 +9568,23 @@ int s52plib::RenderToGLAP( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         int w = ppatt_spec->width;
         int xr = obj_xmin;
         int yr = obj_ymin;
-        
+
         float ww = (float) ppatt_spec->width / (float) ppatt_spec->w_pot;
         float hh = (float) ppatt_spec->height / (float) ppatt_spec->h_pot;
         float x_stagger_off = 0;
         if( ppatt_spec->b_stagger ) x_stagger_off = (float) ppatt_spec->width / 2;
         int yc = 0;
 
-        
+
         if(w>0 && h>0) {
             while( yr < vp->pix_height ) {
                 if( ( (yr + h) >= 0 ) && ( yr <= obj_ymax ) )  {
                     xr = obj_xmin;   //reset
                     while( xr < vp->pix_width ) {
-                    
+
                         int xp = xr;
                         if( yc & 1 ) xp += x_stagger_off;
-                    
+
                     //    Render a quad.
                         if( ( (xr + w) >= 0 ) && ( xr <= obj_xmax ) ){
                             glBegin( GL_QUADS );
@@ -9610,24 +9610,24 @@ int s52plib::RenderToGLAP( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         glDisable( GL_BLEND );
 
         //    Restore the previous state
-        
+
          if( m_useStencilAP ){
              //  Theoretically, it should be sufficient to simply reset the StencilFunc()...
              //  But I found one platform where this does not work, and we need to save and restore
              //  the entire STENCIL state.  I suspect bad GL drivers here, but we do what must needs...
              //glStencilFunc( GL_EQUAL, 1, 1 );
-             
+
              glPopAttrib();
          }
          else {
              // restore clipping region
              glPopMatrix();
              SetGLClipRect( *vp, m_last_clip_rect);
-             
+
              glPushMatrix();
              RotateToViewPort(*vp);
              glDisable( GL_DEPTH_TEST );
-             
+
          }
 
 
@@ -9635,7 +9635,7 @@ int s52plib::RenderToGLAP( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 #endif                  //#ifdef ocpnUSE_GL
 
 #endif                  //#ifdef USE_ANDROID_GLES2
-    
+
     return 1;
 }
 
@@ -9673,7 +9673,7 @@ int s52plib::RenderToGLAP_GLSL( ObjRazRules *rzRules, Rules *rules, ViewPort *vp
 
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-        
+
         glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, ppatt_spec->w_pot, ppatt_spec->h_pot, 0,
                       GL_RGBA, GL_UNSIGNED_BYTE, ppatt_spec->pix_buff );
     }
@@ -9782,7 +9782,7 @@ int s52plib::RenderToGLAP_GLSL( ObjRazRules *rzRules, Rules *rules, ViewPort *vp
                 if( 1 ) {
 
                     if(rzRules->obj->auxParm0 <= 0) {
-#if 0                        
+#if 0
                         if(ppg_vbo->data_type != DATA_TYPE_SHORT){
                             // We convert the vertex data from FLOAT to GL_SHORT to make the VBO smaller, but still keeping enough precision
                             //  This requires a scale factor to reduce the range from existing  data to +/- 32K
@@ -9931,7 +9931,7 @@ int s52plib::RenderToGLAP_GLSL( ObjRazRules *rzRules, Rules *rules, ViewPort *vp
             GLint texPOTHeight  = glGetUniformLocation( program, "texPOTHeight" );
             glUniform1f(texPOTWidth, ppatt_spec->w_pot);
             glUniform1f(texPOTHeight, ppatt_spec->h_pot);
-            
+
             GLint xo  = glGetUniformLocation( program, "xOff" );
             GLint yo  = glGetUniformLocation( program, "yOff" );
 
@@ -9940,7 +9940,7 @@ int s52plib::RenderToGLAP_GLSL( ObjRazRules *rzRules, Rules *rules, ViewPort *vp
 
             GLint yom  = glGetUniformLocation( program, "yOffM" );
             glUniform1f(yom, yOff);
-            
+
 
             if(ppatt_spec->b_stagger){
                 GLint staggerFact  = glGetUniformLocation( program, "staggerFactor" );
@@ -10018,10 +10018,10 @@ int s52plib::RenderToGLAP_GLSL( ObjRazRules *rzRules, Rules *rules, ViewPort *vp
                     p_tp = p_tp->p_next;
 
             } // while
-#ifdef GL_ARRAY_BUFFER_ARB
+//#ifdef GL_ARRAY_BUFFER_ARB
             if(b_useVBO)
                 glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-#endif
+//#endif
 
 #ifndef USE_ANDROID_GLES2
             glDisableClientState(GL_VERTEX_ARRAY);            // deactivate vertex array
@@ -10058,50 +10058,50 @@ void s52plib::RenderPolytessGL(ObjRazRules *rzRules, ViewPort *vp, double z_clip
     int obj_xmax = -10000;
     int obj_ymin = 10000;
     int obj_ymax = -10000;
-    
+
     PolyTriGroup *ppg = rzRules->obj->pPolyTessGeo->Get_PolyTriGroup_head();
-    
+
     TriPrim *p_tp = ppg->tri_prim_head;
     while( p_tp ) {
         if(!BBView.IntersectOut( p_tp->tri_box)) {
             //      Get and convert the points
-            
+
             wxPoint *pr = ptp;
             if( ppg->data_type == DATA_TYPE_FLOAT ){
                 float *pvert_list = (float *)p_tp->p_vertex;
-                
+
                 for( int iv = 0; iv < p_tp->nVert; iv++ ) {
                     float lon = *pvert_list++;
                     float lat = *pvert_list++;
                     GetPointPixSingle(rzRules, lat, lon, pr, vp );
-                    
+
                     obj_xmin = wxMin(obj_xmin, pr->x);
                     obj_xmax = wxMax(obj_xmax, pr->x);
                     obj_ymin = wxMin(obj_ymin, pr->y);
                     obj_ymax = wxMax(obj_ymax, pr->y);
-                    
+
                     pr++;
                 }
             }
             else {
                 double *pvert_list = p_tp->p_vertex;
-                
+
                 for( int iv = 0; iv < p_tp->nVert; iv++ ) {
                     double lon = *pvert_list++;
                     double lat = *pvert_list++;
                     GetPointPixSingle(rzRules, lat, lon, pr, vp );
-                    
+
                     obj_xmin = wxMin(obj_xmin, pr->x);
                     obj_xmax = wxMax(obj_xmax, pr->x);
                     obj_ymin = wxMin(obj_ymin, pr->y);
                     obj_ymax = wxMax(obj_ymax, pr->y);
-                    
+
                     pr++;
                 }
             }
-            
-            
-            
+
+
+
             switch( p_tp->type ){
                 case PTG_TRIANGLE_FAN: {
                     glBegin( GL_TRIANGLE_FAN );
@@ -10110,7 +10110,7 @@ void s52plib::RenderPolytessGL(ObjRazRules *rzRules, ViewPort *vp, double z_clip
                     glEnd();
                     break;
                 }
-                
+
                 case PTG_TRIANGLE_STRIP: {
                     glBegin( GL_TRIANGLE_STRIP );
                     for( int it = 0; it < p_tp->nVert; it++ )
@@ -10125,7 +10125,7 @@ void s52plib::RenderPolytessGL(ObjRazRules *rzRules, ViewPort *vp, double z_clip
                         int xmax = wxMax(ptp[it].x, wxMax(ptp[it+1].x, ptp[it+2].x));
                         int ymin = wxMin(ptp[it].y, wxMin(ptp[it+1].y, ptp[it+2].y));
                         int ymax = wxMax(ptp[it].y, wxMax(ptp[it+1].y, ptp[it+2].y));
-                        
+
                         wxRect rect( xmin, ymin, xmax - xmin, ymax - ymin );
 //                        if( rect.Intersects( m_render_rect ) )
                         {
@@ -10141,8 +10141,8 @@ void s52plib::RenderPolytessGL(ObjRazRules *rzRules, ViewPort *vp, double z_clip
         } // if bbox
         p_tp = p_tp->p_next; // pick up the next in chain
     } // while
-    
-#endif    
+
+#endif
 #endif
 }
 
@@ -10211,48 +10211,48 @@ render_canvas_parms* s52plib::CreatePatternBufferSpec( ObjRazRules *rzRules, Rul
                                                        ViewPort *vp, bool b_revrgb, bool b_pot )
 {
     wxImage Image;
-    
+
     Rule *prule = rules->razRule;
-    
+
     bool bstagger_pattern = ( prule->fillType.PATP == 'S' );
-    
+
     wxColour local_unused_wxColor = m_unused_wxColor;
-    
+
     //      Create a wxImage of the pattern drawn on an "unused_color" field
     if( prule->definition.SYDF == 'R' ) {
         Image = useLegacyRaster ?
         RuleXBMToImage( prule ) : g_oeChartSymbols->GetImage( prule->name.PANM );
     }
-    
+
     else          // Vector
     {
         float fsf = 100 / canvas_pix_per_mm;
-        
+
         // Base bounding box
         wxBoundingBox box( prule->pos.patt.bnbox_x.PBXC, prule->pos.patt.bnbox_y.PBXR,
                            prule->pos.patt.bnbox_x.PBXC + prule->pos.patt.bnbox_w.PAHL,
                            prule->pos.patt.bnbox_y.PBXR + prule->pos.patt.bnbox_h.PAVL );
-        
+
         // Expand to include pivot
         box.Expand( prule->pos.patt.pivot_x.PACL, prule->pos.patt.pivot_y.PARW );
-        
+
         //    Pattern bounding boxes may be offset from origin, to preset the spacing
         //    So, the bitmap must be delta based.
         double dwidth = box.GetWidth();
         double dheight = box.GetHeight();
-        
+
         //  Add in the pattern spacing parameters
         dwidth += prule->pos.patt.minDist.PAMI;
         dheight += prule->pos.patt.minDist.PAMI;
-        
+
         //  Prescale
         dwidth /= fsf;
         dheight /= fsf;
-        
+
         int width = (int) dwidth + 1;
         int height = (int) dheight + 1;
-        
-         
+
+
         float render_scale = 1.0;
 #ifdef sUSE_ANDROID_GLES2
         int width_pot = width;
@@ -10269,7 +10269,7 @@ render_canvas_parms* s52plib::CreatePatternBufferSpec( ObjRazRules *rzRules, Rul
                 }
                 width_pot = 1 << a;
             }
-            
+
             xp = height;
             if(((xp != 0) && !(xp & (xp - 1))))
                 height_pot = xp;
@@ -10286,53 +10286,53 @@ render_canvas_parms* s52plib::CreatePatternBufferSpec( ObjRazRules *rzRules, Rul
         // adjust scaler
         render_scale = (float) height_pot / (float) height;
         qDebug() << "first" << width << width_pot << height << height_pot << render_scale;
-        
+
         width = width_pot;
         height = height_pot;
-#endif        
-        
-        
+#endif
+
+
         //      Instantiate the vector pattern to a wxBitmap
         wxMemoryDC mdc;
-        
+
         //  TODO
         // This ought to work for wxOSX, but DOES NOT.
         // We we do not want anti-aliased lines drawn in the pattern spec, since we used the solid primary color
         // as a mask for manual blitting from the dc to memory buffer.
-        
+
         // Best we can do is set the background color very dark, and hope for the best
         #ifdef __WXOSX__
         #if wxUSE_GRAPHICS_CONTEXT
         wxGraphicsContext* pgc = mdc.GetGraphicsContext();
         if(pgc)
-            pgc->SetAntialiasMode(wxANTIALIAS_NONE); 
+            pgc->SetAntialiasMode(wxANTIALIAS_NONE);
         #endif
             local_unused_wxColor.Set(2,2,2);
             #endif
-            
+
             wxBitmap *pbm = NULL;
-            
+
             if( ( 0 != width ) && ( 0 != height ) ) {
                 pbm = new wxBitmap( width, height );
-                
+
                 mdc.SelectObject( *pbm );
                 mdc.SetBackground( wxBrush( local_unused_wxColor ) );
                 mdc.Clear();
-                
+
                 int pivot_x = prule->pos.patt.pivot_x.PACL;
                 int pivot_y = prule->pos.patt.pivot_y.PARW;
-                
+
                 char *str = prule->vector.LVCT;
                 char *col = prule->colRef.LCRF;
                 wxPoint pivot( pivot_x, pivot_y );
-                
+
                 int origin_x = prule->pos.patt.bnbox_x.PBXC;
                 int origin_y = prule->pos.patt.bnbox_y.PBXR;
                 wxPoint origin(origin_x, origin_y);
-                
+
                 wxPoint r0( (int) ( ( pivot_x - box.GetMinX() ) / fsf ) + 1,
                             (int) ( ( pivot_y - box.GetMinY() ) / fsf ) + 1 );
-                
+
                 HPGL->SetTargetDC( &mdc );
                 HPGL->Render( str, col, r0, pivot, origin, 1.0, 0, false);
             } else {
@@ -10341,23 +10341,23 @@ render_canvas_parms* s52plib::CreatePatternBufferSpec( ObjRazRules *rzRules, Rul
                 mdc.SetBackground( wxBrush( local_unused_wxColor ) );
                 mdc.Clear();
             }
-            
+
             mdc.SelectObject( wxNullBitmap );
-            
+
             //    Build a wxImage from the wxBitmap
             Image = pbm->ConvertToImage();
-            
+
             delete pbm;
     }
-    
+
     //  Convert the wxImage to a populated render_canvas_parms struct
-    
+
     int sizey = Image.GetHeight();
     int sizex = Image.GetWidth();
-    
+
     render_canvas_parms *patt_spec = new render_canvas_parms;
     patt_spec->OGL_tex_name = 0;
-    
+
     if( b_pot ) {
         int xp = sizex;
         if(((xp != 0) && !(xp & (xp - 1))))     // detect POT
@@ -10370,7 +10370,7 @@ render_canvas_parms* s52plib::CreatePatternBufferSpec( ObjRazRules *rzRules, Rul
         }
         patt_spec->w_pot = 1 << a;
         }
-        
+
         xp = sizey;
         if(((xp != 0) && !(xp & (xp - 1))))
             patt_spec->h_pot = sizey;
@@ -10382,19 +10382,19 @@ render_canvas_parms* s52plib::CreatePatternBufferSpec( ObjRazRules *rzRules, Rul
         }
         patt_spec->h_pot = 1 << a;
         }
-        
+
     } else {
         patt_spec->w_pot = sizex;
         patt_spec->h_pot = sizey;
     }
-    
+
     patt_spec->depth = 32;             // set the depth, always 32 bit
-    
+
     patt_spec->pb_pitch = ( ( patt_spec->w_pot * patt_spec->depth / 8 ) );
     patt_spec->lclip = 0;
     patt_spec->rclip = patt_spec->w_pot - 1;
     patt_spec->pix_buff = (unsigned char *) malloc( patt_spec->h_pot * patt_spec->pb_pitch );
-    
+
     // Preset background
     memset( patt_spec->pix_buff, 0, patt_spec->h_pot * patt_spec->pb_pitch );
     patt_spec->width = sizex;
@@ -10402,7 +10402,7 @@ render_canvas_parms* s52plib::CreatePatternBufferSpec( ObjRazRules *rzRules, Rul
     patt_spec->x = 0;
     patt_spec->y = 0;
     patt_spec->b_stagger = bstagger_pattern;
-    
+
     unsigned char *pd0 = patt_spec->pix_buff;
     unsigned char *pd;
     unsigned char *ps0 = Image.GetData();
@@ -10412,20 +10412,20 @@ render_canvas_parms* s52plib::CreatePatternBufferSpec( ObjRazRules *rzRules, Rul
         imgAlpha = Image.GetAlpha();
         b_use_alpha = true;
     }
-    
+
     #if defined(__WXMAC__) || defined(__WXQT__)
-    
+
     if( prule->definition.SYDF == 'V' ) {
         b_use_alpha = true;
         imgAlpha = NULL;
     }
     #endif
-    
+
     unsigned char primary_r = 0;
     unsigned char primary_g = 0;
     unsigned char primary_b = 0;
     double reference_value = 0.5;
-    
+
     bool b_filter = false;
     #if defined(__WXMAC__)
     S52color *primary_color = 0;
@@ -10443,33 +10443,33 @@ render_canvas_parms* s52plib::CreatePatternBufferSpec( ObjRazRules *rzRules, Rul
         }
     }
     #endif
-    
+
     unsigned char *ps;
-    
+
     {
         unsigned char mr = local_unused_wxColor.Red();
         unsigned char mg = local_unused_wxColor.Green();
         unsigned char mb = local_unused_wxColor.Blue();
-        
+
         if( pd0 && ps0 ){
             for( int iy = 0; iy < sizey; iy++ ) {
 #ifdef __OCPN__ANDROID__
                 pd = pd0 + ( (sizey - iy - 1) * patt_spec->pb_pitch );
 #else
                 pd = pd0 + ( iy * patt_spec->pb_pitch );
-#endif                
+#endif
                 ps = ps0 + ( iy * sizex * 3 );
                 for( int ix = 0; ix < sizex; ix++ ) {
                     if( ix < sizex ) {
                         unsigned char r = *ps++;
                         unsigned char g = *ps++;
                         unsigned char b = *ps++;
-                        
+
                         if(b_filter){
                             wxImage::RGBValue rgb(r,g,b);
                             wxImage::HSVValue hsv = wxImage::RGBtoHSV( rgb );
                             double ratio = hsv.value/reference_value;
-                            
+
                             if(ratio > 0.5){
                                 *pd++ = primary_r;
                                 *pd++ = primary_g;
@@ -10494,7 +10494,7 @@ render_canvas_parms* s52plib::CreatePatternBufferSpec( ObjRazRules *rzRules, Rul
                                 *pd++ = g;
                                 *pd++ = b;
                             }
-                            
+
                             #else
                             *pd++ = r;
                             *pd++ = g;
@@ -10511,9 +10511,9 @@ render_canvas_parms* s52plib::CreatePatternBufferSpec( ObjRazRules *rzRules, Rul
             }
         }
     }
-    
+
     return patt_spec;
-    
+
 }
 
 
@@ -10527,7 +10527,7 @@ int s52plib::RenderToBufferAP( ObjRazRules *rzRules, Rules *rules, ViewPort *vp,
 
     if( rules->razRule == NULL )
         return 0;
-    
+
     if( ( rules->razRule->pixelPtr == NULL ) || ( rules->razRule->parm1 != m_colortable_index )
             || ( rules->razRule->parm0 != ID_RGB_PATT_SPEC ) ) {
         render_canvas_parms *patt_spec = CreatePatternBufferSpec( rzRules, rules, vp, true );
@@ -10754,7 +10754,7 @@ bool s52plib::ObjectRenderCheckCS( ObjRazRules *rzRules, ViewPort *vp )
 
 bool s52plib::ObjectRenderCheckPos( ObjRazRules *rzRules, ViewPort *vp )
 {
-    if( rzRules->obj == NULL ) 
+    if( rzRules->obj == NULL )
         return false;
 
     // Of course, the object must be at least partly visible in the viewport
@@ -10778,7 +10778,7 @@ bool s52plib::ObjectRenderCheckPos( ObjRazRules *rzRules, ViewPort *vp )
 bool s52plib::ObjectRenderCheckCat( ObjRazRules *rzRules, ViewPort *vp )
 {
     g_scaminScale = 1.0;
-    
+
     if( rzRules->obj == NULL ) return false;
 
     bool b_catfilter = true;
@@ -10786,8 +10786,8 @@ bool s52plib::ObjectRenderCheckCat( ObjRazRules *rzRules, ViewPort *vp )
 
     //      Do Object Type Filtering
     DisCat obj_cat = rzRules->obj->m_DisplayCat;
-    
-    //  Meta object filter. 
+
+    //  Meta object filter.
     // Applied when showing display category OTHER, and
     // only for objects whose decoded S52 display category (by LUP) is also OTHER
     if( m_nDisplayCategory == OTHER ){
@@ -10843,7 +10843,7 @@ bool s52plib::ObjectRenderCheckCat( ObjRazRules *rzRules, ViewPort *vp )
 //  Lights override
     if( !strncmp( rzRules->LUP->OBCL, "LIGHTS", 6 ) )
         b_catfilter = !m_lightsOff;
-    
+
     if( b_catfilter ) {
         b_visible = true;
 
@@ -10857,7 +10857,7 @@ bool s52plib::ObjectRenderCheckCat( ObjRazRules *rzRules, ViewPort *vp )
 
         if( m_bUseSCAMIN ) {
 
-               
+
             if( ( DISPLAYBASE == rzRules->LUP->DISC ) || ( PRIO_GROUP1 == rzRules->LUP->DPRI ) )
                 b_visible = true;
             else{
@@ -10878,12 +10878,12 @@ bool s52plib::ObjectRenderCheckCat( ObjRazRules *rzRules, ViewPort *vp )
                         //  Theoretically invisible, however...
                         //  In the "zoom modified" scale region,
                         //  we render the symbol at reduced size, scaling down to no less than half normal size.
-                        
+
                         if(vp->chart_scale  > rzRules->obj->Scamin){
                             double xs = vp->chart_scale - rzRules->obj->Scamin;
                             double xl = (rzRules->obj->Scamin * mod) - rzRules->obj->Scamin;
                             g_scaminScale = 1.0 - (0.5 * xs / xl);
-                            
+
                         }
                     }
                 }
@@ -10981,7 +10981,7 @@ bool s52plib::ObjectRenderCheckDates( ObjRazRules *rzRules )
 
 bool s52plib::ObjectRenderCheckRules( ObjRazRules *rzRules, ViewPort *vp, bool check_noshow )
 {
-    if( !ObjectRenderCheckPos( rzRules, vp ) ) 
+    if( !ObjectRenderCheckPos( rzRules, vp ) )
         return false;
 
     if( check_noshow && IsObjNoshow( rzRules->LUP->OBCL) )
@@ -10996,13 +10996,13 @@ bool s52plib::ObjectRenderCheckRules( ObjRazRules *rzRules, ViewPort *vp, bool c
     if(!rzRules->obj->m_bcategory_mutable)
         return false;
 
-    // already added, nothing below can change its display category        
-    if(rzRules->obj->bCS_Added ) 
+    // already added, nothing below can change its display category
+    if(rzRules->obj->bCS_Added )
         return false;
 
     //  Otherwise, make sure the CS, if present, has been evaluated,
-    //  and then check the category again    
-    //  no rules 
+    //  and then check the category again
+    //  no rules
     if( !ObjectRenderCheckCS( rzRules, vp ) )
         return false;
 
@@ -11016,9 +11016,9 @@ bool s52plib::ObjectRenderCheckRules( ObjRazRules *rzRules, ViewPort *vp, bool c
         }
         rules = rules->next;
     }
-    
-    // still not displayable    
-    if( !ObjectRenderCheckCat( rzRules, vp ) ) 
+
+    // still not displayable
+    if( !ObjectRenderCheckCat( rzRules, vp ) )
         return false;
 
     return ObjectRenderCheckDates( rzRules );
@@ -11029,7 +11029,7 @@ void s52plib::SetDisplayCategory(enum _DisCat cat)
 {
     enum _DisCat old = m_nDisplayCategory;
     m_nDisplayCategory = cat;
-    
+
     if(old != cat){
         ClearNoshow();
         SetQualityOfData(m_qualityOfDataOn);
@@ -11075,76 +11075,76 @@ void s52plib::PLIB_LoadS57Config()
 {
     //    Get a pointer to the opencpn configuration object
     wxFileConfig *pconfig = GetOCPNConfigObject();
-    
+
     int read_int;
     double dval;
-    
+
     pconfig->SetPath( _T ( "/Settings" ) );
     //pconfig->Read( _T ( "DebugS57" ), &g_PIbDebugS57, 0 );         // Show LUP and Feature info in object query
-    
+
     pconfig->SetPath( _T ( "/Settings/GlobalState" ) );
-    
+
     pconfig->Read( _T ( "bShowS57Text" ), &read_int, 0 );
     SetShowS57Text( !( read_int == 0 ) );
-    
+
     pconfig->Read( _T ( "bShowS57ImportantTextOnly" ), &read_int, 0 );
     SetShowS57ImportantTextOnly( !( read_int == 0 ) );
-    
+
     pconfig->Read( _T ( "bShowLightDescription" ), &read_int, 0 );
     SetShowLdisText( !( read_int == 0 ) );
-    
+
     pconfig->Read( _T ( "bExtendLightSectors" ), &read_int, 0 );
     SetExtendLightSectors( !( read_int == 0 ) );
-    
+
     pconfig->Read( _T ( "nDisplayCategory" ), &read_int, (enum _DisCat) STANDARD );
     SetDisplayCategory((enum _DisCat) read_int );
-    
+
     pconfig->Read( _T ( "nSymbolStyle" ), &read_int, (enum _LUPname) PAPER_CHART );
     m_nSymbolStyle = (LUPname) read_int;
-    
+
     pconfig->Read( _T ( "nBoundaryStyle" ), &read_int, PLAIN_BOUNDARIES );
     m_nBoundaryStyle = (LUPname) read_int;
-    
+
     pconfig->Read( _T ( "bShowSoundg" ), &read_int, 1 );
     m_bShowSoundg = !( read_int == 0 );
-    
+
     pconfig->Read( _T ( "bShowMeta" ), &read_int, 0 );
     m_bShowMeta = !( read_int == 0 );
-    
+
     pconfig->Read( _T ( "bUseSCAMIN" ), &read_int, 1 );
     m_bUseSCAMIN = !( read_int == 0 );
-    
+
     pconfig->Read( _T ( "bShowAtonText" ), &read_int, 1 );
     m_bShowAtonText = !( read_int == 0 );
-    
+
     pconfig->Read( _T ( "bDeClutterText" ), &read_int, 0 );
     m_bDeClutterText = !( read_int == 0 );
-    
+
     pconfig->Read( _T ( "bShowNationalText" ), &read_int, 0 );
     m_bShowNationalTexts = !( read_int == 0 );
-    
+
     if( pconfig->Read( _T ( "S52_MAR_SAFETY_CONTOUR" ), &dval, 5.0 ) ) {
         S52_setMarinerParam( S52_MAR_SAFETY_CONTOUR, dval );
         S52_setMarinerParam( S52_MAR_SAFETY_DEPTH, dval ); // Set safety_contour and safety_depth the same
     }
-    
+
     if( pconfig->Read( _T ( "S52_MAR_SHALLOW_CONTOUR" ), &dval, 3.0 ) ) S52_setMarinerParam(
         S52_MAR_SHALLOW_CONTOUR, dval );
-    
+
     if( pconfig->Read( _T ( "S52_MAR_DEEP_CONTOUR" ), &dval, 10.0 ) ) S52_setMarinerParam(
         S52_MAR_DEEP_CONTOUR, dval );
-    
+
     if( pconfig->Read( _T ( "S52_MAR_TWO_SHADES" ), &dval, 0.0 ) ) S52_setMarinerParam(
         S52_MAR_TWO_SHADES, dval );
-    
+
     UpdateMarinerParams();
-    
+
     pconfig->SetPath( _T ( "/Settings/GlobalState" ) );
     pconfig->Read( _T ( "S52_DEPTH_UNIT_SHOW" ), &read_int, 1 );   // default is metres
     read_int = wxMax(read_int, 0);                      // qualify value
     read_int = wxMin(read_int, 2);
     m_nDepthUnitDisplay = read_int;
-    
+
 }
 
 
@@ -11152,57 +11152,57 @@ void s52plib::PLIB_LoadS57GlobalConfig()
 {
     //    Get a pointer to the opencpn configuration object
     wxFileConfig *pconfig = GetOCPNConfigObject();
-    
+
     int read_int;
     double dval;
-    
+
     pconfig->SetPath( _T ( "/Settings" ) );
-    
+
     pconfig->SetPath( _T ( "/Settings/GlobalState" ) );
-    
+
     pconfig->Read( _T ( "bShowS57ImportantTextOnly" ), &read_int, 0 );
     SetShowS57ImportantTextOnly( !( read_int == 0 ) );
-    
+
     pconfig->Read( _T ( "nSymbolStyle" ), &read_int, (enum _LUPname) PAPER_CHART );
     m_nSymbolStyle = (LUPname) read_int;
-    
+
     pconfig->Read( _T ( "nBoundaryStyle" ), &read_int, PLAIN_BOUNDARIES );
     m_nBoundaryStyle = (LUPname) read_int;
-    
+
     pconfig->Read( _T ( "bShowMeta" ), &read_int, 0 );
     m_bShowMeta = !( read_int == 0 );
-    
+
     pconfig->Read( _T ( "bUseSCAMIN" ), &read_int, 1 );
     m_bUseSCAMIN = !( read_int == 0 );
-    
+
     pconfig->Read( _T ( "bDeClutterText" ), &read_int, 0 );
     m_bDeClutterText = !( read_int == 0 );
-    
+
     pconfig->Read( _T ( "bShowNationalText" ), &read_int, 0 );
     m_bShowNationalTexts = !( read_int == 0 );
-    
+
     if( pconfig->Read( _T ( "S52_MAR_SAFETY_CONTOUR" ), &dval, 5.0 ) ) {
         S52_setMarinerParam( S52_MAR_SAFETY_CONTOUR, dval );
         S52_setMarinerParam( S52_MAR_SAFETY_DEPTH, dval ); // Set safety_contour and safety_depth the same
     }
-    
+
     if( pconfig->Read( _T ( "S52_MAR_SHALLOW_CONTOUR" ), &dval, 3.0 ) ) S52_setMarinerParam(
         S52_MAR_SHALLOW_CONTOUR, dval );
-    
+
     if( pconfig->Read( _T ( "S52_MAR_DEEP_CONTOUR" ), &dval, 10.0 ) ) S52_setMarinerParam(
         S52_MAR_DEEP_CONTOUR, dval );
-    
+
     if( pconfig->Read( _T ( "S52_MAR_TWO_SHADES" ), &dval, 0.0 ) ) S52_setMarinerParam(
         S52_MAR_TWO_SHADES, dval );
-    
+
     UpdateMarinerParams();
-    
+
     pconfig->SetPath( _T ( "/Settings/GlobalState" ) );
     pconfig->Read( _T ( "S52_DEPTH_UNIT_SHOW" ), &read_int, 1 );   // default is metres
     read_int = wxMax(read_int, 0);                      // qualify value
     read_int = wxMin(read_int, 2);
     m_nDepthUnitDisplay = read_int;
-    
+
 }
 
 
@@ -11215,26 +11215,26 @@ void s52plib::PLIB_LoadS57ObjectConfig()
     //double dval;
 
     //    S57 Object Class Visibility
-    
+
     OBJLElement *pOLE;
-    
+
     pconfig->SetPath( _T ( "/Settings/ObjectFilter" ) );
-    
+
     int iOBJMax = pconfig->GetNumberOfEntries();
     if( iOBJMax ) {
-        
+
         wxString str;
         long val;
         long dummy;
-        
+
         wxString sObj;
-        
+
         bool bCont = pconfig->GetFirstEntry( str, dummy );
         while( bCont ) {
             pconfig->Read( str, &val );              // Get an Object Viz
-            
+
             bool bNeedNew = true;
-            
+
             if( str.StartsWith( _T ( "viz" ), &sObj ) ) {
                 for( unsigned int iPtr = 0; iPtr < pOBJLArray->GetCount(); iPtr++ ) {
                     pOLE = (OBJLElement *) ( pOBJLArray->Item( iPtr ) );
@@ -11244,12 +11244,12 @@ void s52plib::PLIB_LoadS57ObjectConfig()
                         break;
                     }
                 }
-                
+
                 if( bNeedNew ) {
                     pOLE = (OBJLElement *) calloc( sizeof(OBJLElement), 1 );
                     strncpy( pOLE->OBJLName, sObj.mb_str(), 6 );
                     pOLE->nViz = 1;
-                    
+
                     pOBJLArray->Add( (void *) pOLE );
                 }
             }
@@ -11278,7 +11278,7 @@ void PrepareS52ShaderUniforms(ViewPort *vp);
         PrepareS52ShaderUniforms( vp );
 #endif
 
-#ifdef BUILDING_PLUGIN    
+#ifdef BUILDING_PLUGIN
     // Has the core S52PLIB configuration changed?
     //  If it has, reload from global preferences file, and other dynamic status information.
     //  This additional step is only necessary for Plugin chart rendering, as core directly sets
@@ -11288,28 +11288,28 @@ void PrepareS52ShaderUniforms(ViewPort *vp);
 
         int core_config = PI_GetPLIBStateHash();
         if(core_config != m_myConfig){
-            
+
             g_ChartScaleFactorExp = GetOCPNChartScaleFactor_Plugin();
-            
+
             //  If a modern (> OCPN 4.4) version of the core is active,
             //  we may rely upon having been updated on S52PLIB state by means of PlugIn messaging scheme.
             // Some config items, such as UserStandard display list, must be recovered from the config file, however
             if( ((m_coreVersionMajor == 4) && (m_coreVersionMinor >= 5)) ){
-                
+
                 // Retain compatibility with O4.8.x
                 // First, we capture some temporary values that were set by messaging, but would be overwritten by config read
                 bool bTextOn = m_bShowS57Text;
                 bool bSoundingsOn = m_bShowSoundg;
                 enum _DisCat old = m_nDisplayCategory;
-                
+
                 PLIB_LoadS57Config();
-                
+
                 //  And then reset the temp values that were overwritten by config load
                 m_bShowS57Text = bTextOn;
                 m_bShowSoundg = bSoundingsOn;
                 m_nDisplayCategory = old;
-                
-                
+
+
                 // Pick up any changes in Mariner's Standard object list
                 PLIB_LoadS57ObjectConfig();
 
@@ -11323,12 +11323,12 @@ void PrepareS52ShaderUniforms(ViewPort *vp);
 
                 const char * categories[] = { "ACHBRT", "ACHARE", "CBLSUB", "PIPARE", "PIPSOL", "TUNNEL", "SBDARE" };
                 unsigned int num = sizeof(categories) / sizeof(categories[0]);
-                
+
                 // Handle Anchor area toggle
                 if( (m_nDisplayCategory == OTHER) || (m_nDisplayCategory == MARINERS_STANDARD) ){
                     bool bAnchor = m_anchorOn;
-                    
-                    
+
+
                     if(!bAnchor){
                         for( unsigned int c = 0; c < num; c++ )
                             AddObjNoshow(categories[c]);
@@ -11362,7 +11362,7 @@ void PrepareS52ShaderUniforms(ViewPort *vp);
     // Reset the LIGHTS declutter machine
     lastLightLat = 0;
     lastLightLon = 0;
-    
+
     //Precalulate the ENC Soundings scale factor
     m_SoundingsScaleFactor = exp( m_nSoundingFactor * (log(2.0) / 5.0) );
 
@@ -11371,13 +11371,13 @@ void PrepareS52ShaderUniforms(ViewPort *vp);
 void s52plib::SetAnchorOn(bool val)
 {
     OBJLElement *pOLE = NULL;
-            
+
     const char * categories[] = { "ACHBRT", "ACHARE", "CBLSUB", "PIPARE", "PIPSOL", "TUNNEL", "SBDARE" };
     unsigned int num = sizeof(categories) / sizeof(categories[0]);
-            
+
     if( (m_nDisplayCategory == OTHER) || (m_nDisplayCategory == MARINERS_STANDARD) ){
         bool bAnchor = val;
-                
+
         if(!bAnchor){
             for( unsigned int c = 0; c < num; c++ ) {
                 AddObjNoshow(categories[c]);
@@ -11394,7 +11394,7 @@ void s52plib::SetAnchorOn(bool val)
             RemoveObjNoshow(categories[c]);
         }
     }
-    
+
     m_anchorOn = val;
 }
 
@@ -11403,7 +11403,7 @@ void s52plib::SetQualityOfData(bool val)
     bool old_vis = GetQualityOfData() == 1;
     if(old_vis == val)
         return;
-    
+
     if(old_vis && !val){                            // On, going off
         AddObjNoshow("M_QUAL");
     }
@@ -11420,7 +11420,7 @@ void s52plib::SetQualityOfData(bool val)
     }
 
     m_qualityOfDataOn = val;
-    
+
 }
 
 void s52plib::ClearTextList( void )
@@ -11436,7 +11436,7 @@ bool s52plib::EnableGLLS(bool b_enable)
     m_benableGLLS = b_enable;
     return return_val;
 }
-    
+
 void s52plib::AdjustTextList( int dx, int dy, int screenw, int screenh )
 {
     return;
@@ -11463,19 +11463,19 @@ bool s52plib::GetPointPixArray( ObjRazRules *rzRules, wxPoint2DDouble* pd, wxPoi
         for( int i = 0; i < nv; i++ ) {
             GetPointPixSingle(rzRules, pd[i].m_y, pd[i].m_x, pp + i, vp);
         }
-    
+
     return true;
 }
 
 bool s52plib::GetPointPixSingle( ObjRazRules *rzRules, float north, float east, wxPoint *r, ViewPort *vp )
 {
         if(vp->m_projection_type == PROJECTION_MERCATOR) {
-            
+
             double xr =  rzRules->obj->x_rate;
             double xo =  rzRules->obj->x_origin;
             double yr =  rzRules->obj->y_rate;
             double yo =  rzRules->obj->y_origin;
-            
+
             if(fabs(xo) > 1){                           // cm93 hits this
                 if ( vp->GetBBox().GetMaxLon() >= 180. && rzRules->obj->BBObj.GetMaxLon() < vp->GetBBox().GetMinLon() )
                     xo += mercator_k0 * WGS84_semimajor_axis_meters * 2.0 * PI;
@@ -11498,7 +11498,7 @@ bool s52plib::GetPointPixSingle( ObjRazRules *rzRules, float north, float east, 
 
               *r = vp->GetPixFromLL(north, east);
         }
-    
+
     return true;
 }
 
@@ -11512,19 +11512,19 @@ void s52plib::GetPixPointSingle( int pixx, int pixy, double *plat, double *plon,
     //    Use Mercator estimator
     int dx = pixx - ( vpt->pix_width / 2 );
     int dy = ( vpt->pix_height / 2 ) - pixy;
-    
+
     double xp = ( dx * cos( vpt->skew ) ) - ( dy * sin( vpt->skew ) );
     double yp = ( dy * cos( vpt->skew ) ) + ( dx * sin( vpt->skew ) );
-    
+
     double d_east = xp / vpt->view_scale_ppm;
     double d_north = yp / vpt->view_scale_ppm;
-    
+
     double slat, slon;
     fromSM( d_east, d_north, vpt->clat, vpt->clon, &slat, &slon );
-    
+
     *plat = slat;
     *plon = slon;
-#endif    
+#endif
 }
 
 void s52plib::GetPixPointSingleNoRotate( int pixx, int pixy, double *plat, double *plon, ViewPort *vpt )
@@ -11535,7 +11535,7 @@ void s52plib::GetPixPointSingleNoRotate( int pixx, int pixy, double *plat, doubl
         vpt->GetLLFromPix(wxPoint(pixx, pixy), plat, plon);
         vpt->SetRotationAngle(rotation);
     }
-}    
+}
 
 
 void DrawAALine( wxDC *pDC, int x0, int y0, int x1, int y1, wxColour clrLine, int dash, int space )
@@ -11574,35 +11574,35 @@ void DrawAALine( wxDC *pDC, int x0, int y0, int x1, int y1, wxColour clrLine, in
 
 void s52plib::DrawDashLine( wxPen &pen, wxCoord x1, wxCoord y1, wxCoord x2, wxCoord y2, ViewPort *vp)
 {
-#ifdef USE_ANDROID_GLES2    
+#ifdef USE_ANDROID_GLES2
     glLineWidth( pen.GetWidth() );
 
     glUseProgram(S52color_tri_shader_program);
-    
+
     float fBuf[4];
     GLint pos = glGetAttribLocation(S52color_tri_shader_program, "position");
     glVertexAttribPointer(pos, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), fBuf);
     glEnableVertexAttribArray(pos);
-    
+
  /*   GLint matloc = glGetUniformLocation(S52color_tri_shader_program,"MVMatrix");
-    glUniformMatrix4fv( matloc, 1, GL_FALSE, (const GLfloat*)cc1->GetpVP()->vp_transform); 
- */   
+    glUniformMatrix4fv( matloc, 1, GL_FALSE, (const GLfloat*)cc1->GetpVP()->vp_transform);
+ */
     float colorv[4];
     colorv[0] = pen.GetColour().Red() / float(256);
     colorv[1] = pen.GetColour().Green() / float(256);
     colorv[2] = pen.GetColour().Blue() / float(256);
     colorv[3] = 1.0;
-    
+
     GLint colloc = glGetUniformLocation(S52color_tri_shader_program,"color");
     glUniform4fv(colloc, 1, colorv);
-   
-   
+
+
     if(fabs(vp->rotation) > 0.01){
         float cx = vp->pix_width/2.;
         float cy = vp->pix_height/2.;
         float c = cosf(-vp->rotation );
         float s = sinf(-vp->rotation );
-        
+
         float xn = x1 - cx;
         float yn = y1 - cy;
         x1 =  xn*c - yn*s + cx;
@@ -11612,8 +11612,8 @@ void s52plib::DrawDashLine( wxPen &pen, wxCoord x1, wxCoord y1, wxCoord x2, wxCo
         yn = y2 - cy;
         x2 =  xn*c - yn*s + cx;
         y2 =  xn*s + yn*c + cy;
-    }    
-        
+    }
+
     wxDash *dashes;
     int n_dashes = pen.GetDashes( &dashes );
     if( n_dashes ) {
@@ -11621,50 +11621,50 @@ void s52plib::DrawDashLine( wxPen &pen, wxCoord x1, wxCoord y1, wxCoord x2, wxCo
         float cosa = cosf( angle );
         float sina = sinf( angle );
         float t1 = pen.GetWidth();
-        
+
         float lpix = sqrtf( powf(x1 - x2, 2) + powf(y1 - y2, 2) );
         float lrun = 0.;
         float xa = x1;
         float ya = y1;
         float ldraw = t1 * dashes[0];
         float lspace = t1 * dashes[1];
-        
+
         ldraw = wxMax(ldraw, 4.0);
         lspace = wxMax(lspace, 4.0);
         lpix = wxMin(lpix, 2000.0);
-        
+
         while( lrun < lpix ) {
             //    Dash
             float xb = xa + ldraw * cosa;
             float yb = ya + ldraw * sina;
-            
+
             if( ( lrun + ldraw ) >= lpix )         // last segment is partial draw
             {
                 xb = x2;
                 yb = y2;
             }
-                    
+
             fBuf[0] = xa;
             fBuf[1] = ya;
             fBuf[2] = xb;
             fBuf[3] = yb;
-            
+
             glDrawArrays(GL_LINES, 0, 2);
-            
+
             xa = xa + ( lspace + ldraw ) * cosa;
             ya = ya + ( lspace + ldraw ) * sina;
             lrun += lspace + ldraw;
-            
+
         }
     } else {                    // not dashed
         fBuf[0] = x1;
         fBuf[1] = y1;
         fBuf[2] = x2;
         fBuf[3] = y2;
-                
+
         glDrawArrays(GL_LINES, 0, 2);
     }
-#endif    
+#endif
 }
 
 
@@ -11685,12 +11685,12 @@ RenderFromHPGL::RenderFromHPGL( s52plib* plibarg )
     workBufSize = 0;
     workBufIndex = 0;
     workBuf = NULL;
-    
+
     s_odc_tess_work_buf = NULL;
     s_odc_tess_vertex_idx = 0;
     s_odc_tess_vertex_idx_this = 0;
     s_odc_tess_buf_len = 0;
-    
+
     transparency = 255;
 }
 
@@ -11700,13 +11700,13 @@ RenderFromHPGL::~RenderFromHPGL( )
     if( renderToOpenGl ) {
         glDisable (GL_BLEND );
     }
-    
+
     free(workBuf);
     free(s_odc_tess_work_buf);
-    
-#endif    
+
+#endif
 }
-    
+
 void RenderFromHPGL::SetTargetDC( wxDC* pdc )
 {
     targetDC = pdc;
@@ -11756,7 +11756,7 @@ void RenderFromHPGL::SetPen()
     if( renderToDC ) {
         float nominal_line_width_pix = wxMax(1.0, floor(plib->GetPPMM() / 5.0));             //0.2 mm nominal, but not less than 1 pixel
         int pen_width_mod =  floor( penWidth * nominal_line_width_pix);
-        
+
         pen = wxThePenList->FindOrCreatePen( penColor, pen_width_mod, wxPENSTYLE_SOLID );
         brush = wxTheBrushList->FindOrCreateBrush( penColor, wxBRUSHSTYLE_SOLID );
         targetDC->SetPen( *pen );
@@ -11768,13 +11768,13 @@ void RenderFromHPGL::SetPen()
         if( plib->GetGLPolygonSmoothing() )
             glEnable( GL_POLYGON_SMOOTH );
 #endif
-        
+
 #ifndef USE_ANDROID_GLES2
         glColor4ub( penColor.Red(), penColor.Green(), penColor.Blue(), transparency );
 #endif
         int line_width = wxMax(g_GLMinSymbolLineWidth, (float) penWidth * 0.7);
         glLineWidth( line_width );
-        
+
 #ifdef __OCPN__ANDROID__
         //  Scale the pen width dependent on the platform display resolution
         float nominal_line_width_pix = wxMax(1.0, floor(plib->GetPPMM() / 5.0));             //0.2 mm nominal, but not less than 1 pixel
@@ -11782,16 +11782,16 @@ void RenderFromHPGL::SetPen()
         line_width =  wxMax(g_GLMinSymbolLineWidth, (float) penWidth * nominal_line_width_pix);
         glLineWidth( line_width );
 #endif
-        
+
 #ifndef __OCPN__ANDROID__
         if( line_width >= 2 && plib->GetGLLineSmoothing() )
             glEnable( GL_LINE_SMOOTH );
         else
             glDisable( GL_LINE_SMOOTH );
         glEnable( GL_BLEND );
-#endif        
+#endif
     }
-#endif    
+#endif
 #if wxUSE_GRAPHICS_CONTEXT
     if( renderToGCDC ) {
         pen = wxThePenList->FindOrCreatePen( penColor, penWidth, wxPENSTYLE_SOLID );
@@ -11858,7 +11858,7 @@ void RenderFromHPGL::Line( wxPoint from, wxPoint to )
 
 void RenderFromHPGL::Circle( wxPoint center, int radius, bool filled )
 {
-#ifndef USE_ANDROID_GLES2    
+#ifndef USE_ANDROID_GLES2
 
     if( renderToDC ) {
         if( filled ) targetDC->SetBrush( *brush );
@@ -11876,7 +11876,7 @@ void RenderFromHPGL::Circle( wxPoint center, int radius, bool filled )
                         center.y + radius * cosf( a ) );
         glEnd();
     }
-#endif    
+#endif
 #if wxUSE_GRAPHICS_CONTEXT
     if( renderToGCDC ) {
         if( filled ) targetGCDC->SetBrush( *brush );
@@ -11914,12 +11914,12 @@ void RenderFromHPGL::Polygon()
 
 #else
         glColor4ub( penColor.Red(), penColor.Green(), penColor.Blue(), transparency );
-        
+
         glBegin( GL_POLYGON );
         for( int ip = 1; ip < noPoints; ip++ )
             glVertex2i( polygon[ip].x, polygon[ip].y );
         glEnd();
-#endif    
+#endif
     }
 #endif  // OpenGL
 
@@ -11948,18 +11948,18 @@ bool RenderFromHPGL::Render( char *str, char *col, wxPoint &r, wxPoint &pivot, w
 #ifdef ocpnUSE_GL
     if( renderToOpenGl )
         glGetFloatv(GL_CURRENT_COLOR,m_currentColor);
-#endif        
-    
+#endif
+
     wxPoint lineStart;
     wxPoint lineEnd;
 
     scaleFactor = 100.0 / plib->GetPPMM();
     scaleFactor /= scale;
     scaleFactor /= g_scaminScale;
-    
+
     if(bSymbol)
         scaleFactor /= plib->GetRVScaleFactor();
-    
+
     // SW is not always defined, cf. US/US4CA17M/US4CA17M.000
     penWidth = 1;
 
@@ -12069,9 +12069,9 @@ bool RenderFromHPGL::Render( char *str, char *col, wxPoint &r, wxPoint &pivot, w
 //        msg += wxString( command );
 //        wxLogWarning( msg );
     }
-    
+
     transparency = 255;
-    
+
 #ifdef ocpnUSE_GL
     if( renderToOpenGl ) {
         glDisable (GL_BLEND );
@@ -12079,7 +12079,7 @@ bool RenderFromHPGL::Render( char *str, char *col, wxPoint &r, wxPoint &pivot, w
         glColor4fv( m_currentColor );
 #endif
     }
-#endif    
+#endif
 
     return true;
 }
@@ -12095,14 +12095,14 @@ void RenderFromHPGL::DrawPolygon( int n, wxPoint points[], wxCoord xoffset, wxCo
     #ifdef ocpnUSE_GL
  //       else
         {
-            
+
 #ifdef __WXQT__
             glDisable( GL_LINE_SMOOTH );
 #ifdef GL_POLYGON_SMOOTH
             glDisable( GL_POLYGON_SMOOTH );
 #endif
             glDisable( GL_BLEND );
-            
+
 #else   // WXQT
             glEnable( GL_LINE_SMOOTH );
 #ifdef GL_POLYGON_SMOOTH
@@ -12110,89 +12110,89 @@ void RenderFromHPGL::DrawPolygon( int n, wxPoint points[], wxCoord xoffset, wxCo
 #endif
             glEnable( GL_BLEND );
 #endif  // WXQT
-            
+
  #ifdef USE_ANDROID_GLES2
-            
+
             //ConfigurePen();
             glLineWidth( pen->GetWidth() );
-            
+
             glEnable( GL_BLEND );
-            
+
              if(n > 4)
                  DrawPolygonTessellated( n, points, xoffset, yoffset);
              else
             {           // n = 3 or 4, most common case for pre-tesselated shapes
-        
-        
+
+
             //  Grow the work buffer as necessary
             if( workBufSize < (size_t)n*2 ){
                 workBuf = (float *)realloc(workBuf, (n*4) * sizeof(float));
                 workBufSize = n*4;
             }
-            
+
             for( int i = 0; i < n; i++ ){
                 workBuf[i*2] = (points[i].x * scale); // + xoffset;
                 workBuf[i*2 + 1] = (points[i].y * scale); // + yoffset;
             }
-            
+
             glUseProgram( S52color_tri_shader_program );
-            
+
             // Get pointers to the attributes in the program.
             GLint mPosAttrib = glGetAttribLocation( S52color_tri_shader_program, "position" );
-            
+
             // Disable VBO's (vertex buffer objects) for attributes.
             glBindBuffer( GL_ARRAY_BUFFER, 0 );
             glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
-            
+
             glVertexAttribPointer( mPosAttrib, 2, GL_FLOAT, GL_FALSE, 0, workBuf );
             glEnableVertexAttribArray( mPosAttrib );
-            
-            
+
+
             //  Border color
             float bcolorv[4];
             bcolorv[0] = pen->GetColour().Red() / float(256);
             bcolorv[1] = pen->GetColour().Green() / float(256);
             bcolorv[2] = pen->GetColour().Blue() / float(256);
             bcolorv[3] = pen->GetColour().Alpha() / float(256);
-            
+
             GLint bcolloc = glGetUniformLocation(S52color_tri_shader_program,"color");
             glUniform4fv(bcolloc, 1, bcolorv);
 
-/// 
-#if 0            
+///
+#if 0
             wxWindow *win = GetOCPNCanvasWindow();
             ChartCanvas *canvas = wxDynamicCast( win, ChartCanvas); //classname * wxDynamicCast(ptr, classname)
-            
+
             //ViewPort *pvp = (ViewPort *)&vp;
             ViewPort *pvp = canvas->GetpVP();
-            
-            // Rotate 
+
+            // Rotate
             mat4x4 I, Q;
             mat4x4_identity(I);
             mat4x4_rotate_Z(Q, I, angle);
-            
+
             // Translate
             Q[3][0] = xoffset;
             Q[3][1] = yoffset;
-            
+
             mat4x4 X;
             mat4x4_mul(X, (float (*)[4])pvp->vp_transform, Q);
-            
+
             GLint matloc = glGetUniformLocation(S52color_tri_shader_program,"MVMatrix");
-            glUniformMatrix4fv( matloc, 1, GL_FALSE, (const GLfloat*)X ); 
-///  
-#endif 
+            glUniformMatrix4fv( matloc, 1, GL_FALSE, (const GLfloat*)X );
+///
+#endif
             // Perform the actual drawing.
             glDrawArrays(GL_LINE_LOOP, 0, n);
-            
+
             //  Fill color
             bcolorv[0] = brush->GetColour().Red() / float(256);
             bcolorv[1] = brush->GetColour().Green() / float(256);
             bcolorv[2] = brush->GetColour().Blue() / float(256);
             bcolorv[3] = brush->GetColour().Alpha() / float(256);
-            
+
             glUniform4fv(bcolloc, 1, bcolorv);
-            
+
             // For the simple common case of a convex rectangle...
             //  swizzle the array points to enable GL_TRIANGLE_STRIP
             if(n == 4){
@@ -12202,17 +12202,17 @@ void RenderFromHPGL::DrawPolygon( int n, wxPoint points[], wxCoord xoffset, wxCo
                 workBuf[5] = workBuf[7];
                 workBuf[6] = x1;
                 workBuf[7] = y1;
-                
+
                 glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
             }
             else if(n == 3){
                 glDrawArrays(GL_TRIANGLES, 0, 3);
             }
-            }    
-            
-            
-#else        
-            
+            }
+
+
+#else
+
             wxColour c = brush->GetColour();
             glColor4ub( c.Red(), c.Green(), c.Blue(), c.Alpha() );
 #ifdef GL_POLYGON_SMOOTH
@@ -12227,7 +12227,7 @@ void RenderFromHPGL::DrawPolygon( int n, wxPoint points[], wxCoord xoffset, wxCo
 #endif
             int width = pen->GetWidth();
             glLineWidth( width );
-            
+
             glEnable( GL_LINE_SMOOTH );
             glBegin( GL_LINE_LOOP );
             for( int i = 0; i < n; i++ )
@@ -12235,15 +12235,15 @@ void RenderFromHPGL::DrawPolygon( int n, wxPoint points[], wxCoord xoffset, wxCo
             glEnd();
             glDisable( GL_LINE_SMOOTH );
 #endif
-            
+
             glDisable( GL_LINE_SMOOTH );
 #ifdef GL_POLYGON_SMOOTH
             glDisable( GL_POLYGON_SMOOTH );
 #endif
             glDisable( GL_BLEND );
-            
+
         }
-        #endif    
+        #endif
 }
 
 #ifdef ocpnUSE_GL
@@ -12267,18 +12267,18 @@ void APIENTRY s52DCcombineCallback( GLdouble coords[3], GLdouble *vertex_data[4]
                                      GLdouble **dataOut )
 {
     GLvertex *vertex;
-    
+
     vertex = new GLvertex();
     s52gTesselatorVertices.Add(vertex );
-    
+
     vertex->info.x = coords[0];
     vertex->info.y = coords[1];
     vertex->info.z = coords[2];
-    
+
     for( int i = 3; i < 6; i++ ) {
         vertex->data[i] = weight[0] * vertex_data[0][i] + weight[1] * vertex_data[1][i];
     }
-    
+
     *dataOut = &(vertex->data[0]);
 }
 
@@ -12320,20 +12320,20 @@ static void s52_combineCallbackD(GLdouble coords[3],
 {
     //     double *vertex = new double[3];
     //     odc_combine_work_data.push_back(vertex);
-    //     memcpy(vertex, coords, 3*(sizeof *coords)); 
+    //     memcpy(vertex, coords, 3*(sizeof *coords));
     //     *dataOut = vertex;
 }
 
 void s52_vertexCallbackD_GLSL(GLvoid *vertex, void *data)
 {
     RenderFromHPGL* plib = (RenderFromHPGL*)data;
-    
+
     // Grow the work buffer if necessary
     if(plib->s_odc_tess_vertex_idx > plib->s_odc_tess_buf_len - 8)
     {
         int new_buf_len = plib->s_odc_tess_buf_len + 100;
         GLfloat * tmp = plib->s_odc_tess_work_buf;
-        
+
         plib->s_odc_tess_work_buf = (GLfloat *)realloc(plib->s_odc_tess_work_buf, new_buf_len * sizeof(GLfloat));
         if (NULL == plib->s_odc_tess_work_buf)
         {
@@ -12343,12 +12343,12 @@ void s52_vertexCallbackD_GLSL(GLvoid *vertex, void *data)
         else
             plib->s_odc_tess_buf_len = new_buf_len;
     }
-    
+
     GLdouble *pointer = (GLdouble *) vertex;
-    
+
     plib->s_odc_tess_work_buf[plib->s_odc_tess_vertex_idx++] = (float)pointer[0];
     plib->s_odc_tess_work_buf[plib->s_odc_tess_vertex_idx++] = (float)pointer[1];
-    
+
     plib->s_odc_nvertex++;
 }
 
@@ -12364,36 +12364,36 @@ void s52_endCallbackD_GLSL(void *data)
 {
     //qDebug() << "End" << s_odc_nvertex << s_odc_tess_buf_len << s_odc_tess_vertex_idx << s_odc_tess_vertex_idx_this;
     //End 5 100 10 0
-    #if 1    
+    #if 1
     RenderFromHPGL* plib = (RenderFromHPGL*)data;
-    
+
     glUseProgram(S52color_tri_shader_program);
-    
+
     // Disable VBO's (vertex buffer objects) for attributes.
     glBindBuffer( GL_ARRAY_BUFFER, 0 );
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
-    
+
     float *bufPt = &(plib->s_odc_tess_work_buf[plib->s_odc_tess_vertex_idx_this]);
     GLint pos = glGetAttribLocation(S52color_tri_shader_program, "position");
     glVertexAttribPointer(pos, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), bufPt);
     glEnableVertexAttribArray(pos);
-    
+
     ///GLint matloc = glGetUniformLocation(color_tri_shader_program,"MVMatrix");
-    ///glUniformMatrix4fv( matloc, 1, GL_FALSE, (const GLfloat*)s_tessVP.vp_transform); 
-    
+    ///glUniformMatrix4fv( matloc, 1, GL_FALSE, (const GLfloat*)s_tessVP.vp_transform);
+
     float colorv[4];
     wxColour c = plib->getBrush()->GetColour();
-    
+
     colorv[0] = c.Red() / float(256);
     colorv[1] = c.Green() / float(256);
     colorv[2] = c.Blue() / float(256);
     colorv[3] = c.Alpha() / float(256);
-    
+
     GLint colloc = glGetUniformLocation(S52color_tri_shader_program,"color");
     glUniform4fv(colloc, 1, colorv);
-    
+
     glDrawArrays(plib->s_odc_tess_mode, 0, plib->s_odc_nvertex);
-    #endif    
+    #endif
 }
 #endif
 
@@ -12414,29 +12414,29 @@ void RenderFromHPGL::DrawPolygonTessellated( int n, wxPoint points[], wxCoord xo
                  DrawPolygon( n, points, xoffset, yoffset, 1.0, 0 );
                  return;
              }
-            
-            
-            
+
+
+
  #ifdef USE_ANDROID_GLES2
             m_tobj = gluNewTess();
             s_odc_tess_vertex_idx = 0;
-            
+
             gluTessCallback( m_tobj, GLU_TESS_VERTEX_DATA, (_GLUfuncptr) &s52_vertexCallbackD_GLSL  );
             gluTessCallback( m_tobj, GLU_TESS_BEGIN_DATA, (_GLUfuncptr) &s52_beginCallbackD_GLSL  );
             gluTessCallback( m_tobj, GLU_TESS_END_DATA, (_GLUfuncptr) &s52_endCallbackD_GLSL  );
             gluTessCallback( m_tobj, GLU_TESS_COMBINE_DATA, (_GLUfuncptr) &s52_combineCallbackD );
-            
+
             gluTessNormal( m_tobj, 0, 0, 1);
             gluTessProperty( m_tobj, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NONZERO );
-            
+
                 gluTessBeginPolygon( m_tobj, this );
                 gluTessBeginContour( m_tobj );
-                
+
  //               ViewPort *pvp = cc1->GetpVP();
-                
+
                 for( int i = 0; i < n; i++ ) {
                     double *p = new double[6];
-                    
+
 //                     if(fabs(pvp->rotation) > 0.01){
 //                         float cx = pvp->pix_width/2.;
 //                         float cy = pvp->pix_height/2.;
@@ -12450,41 +12450,41 @@ void RenderFromHPGL::DrawPolygonTessellated( int n, wxPoint points[], wxCoord xo
 //                     }
 //                     else
                         p[0] = points[i].x, p[1] = points[i].y, p[2] = 0;
-                    
+
                     gluTessVertex(m_tobj, p, p);
                 }
-                
+
                 gluTessEndContour( m_tobj );
                 gluTessEndPolygon( m_tobj );
             //}
-            
+
             gluDeleteTess(m_tobj);
-            
-            
+
+
             //         for(std::list<double*>::iterator i = odc_combine_work_data.begin(); i!=odc_combine_work_data.end(); i++)
             //             delete [] *i;
             //         odc_combine_work_data.clear();
-            
-        }  
- #else    
+
+        }
+ #else
         static GLUtesselator *tobj = NULL;
         if( ! tobj ) tobj = gluNewTess();
-        
+
                         gluTessCallback( tobj, GLU_TESS_VERTEX, (_GLUfuncptr) &s52DCvertexCallback );
         gluTessCallback( tobj, GLU_TESS_BEGIN, (_GLUfuncptr) &s52DCbeginCallback );
         gluTessCallback( tobj, GLU_TESS_END, (_GLUfuncptr) &s52DCendCallback );
         gluTessCallback( tobj, GLU_TESS_COMBINE, (_GLUfuncptr) &s52DCcombineCallback );
         gluTessCallback( tobj, GLU_TESS_ERROR, (_GLUfuncptr) &s52DCerrorCallback );
-        
+
         gluTessNormal( tobj, 0, 0, 1);
         gluTessProperty( tobj, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NONZERO );
-        
+
             wxColour c = brush->GetColour();
             glColor4ub( c.Red(), c.Green(), c.Blue(), c.Alpha() );
-            
+
             gluTessBeginPolygon( tobj, NULL );
             gluTessBeginContour( tobj );
-            
+
             for( int i = 0; i < n; i++ ) {
                 GLvertex* vertex = new GLvertex();
                 s52gTesselatorVertices.Add( vertex );
@@ -12498,16 +12498,16 @@ void RenderFromHPGL::DrawPolygonTessellated( int n, wxPoint points[], wxCoord xo
             }
             gluTessEndContour( tobj );
             gluTessEndPolygon( tobj );
-        
+
             for( unsigned int i=0; i<s52gTesselatorVertices.Count(); i++ )
                 delete (GLvertex*)s52gTesselatorVertices.Item(i);
             s52gTesselatorVertices.Clear();
-        
+
         gluDeleteTess(tobj);
-        
+
 }
-#endif    
-#endif    
+#endif
+#endif
 }
 
 
@@ -12523,7 +12523,7 @@ void PLIBDrawEndCap(float x1, float y1, float t1, float angle)
     bool first = true;
     for(int i = 0; i <= steps; i++) {
         float a = angle + M_PI/2 + M_PI/steps*i;
-        
+
         float xb = x1 + t1 / 2 * cos( a );
         float yb = y1 + t1 / 2 * sin( a );
         if(first)
@@ -12535,7 +12535,7 @@ void PLIBDrawEndCap(float x1, float y1, float t1, float angle)
         }
         xa = xb, ya = yb;
     }
-#endif    
+#endif
 }
 #endif
 
@@ -12548,9 +12548,9 @@ void PLIBDrawGLThickLine( float x1, float y1, float x2, float y2, wxPen pen, boo
     float t1 = pen.GetWidth();
     float t2sina1 = t1 / 2 * sinf( angle );
     float t2cosa1 = t1 / 2 * cosf( angle );
-    
+
     glBegin( GL_TRIANGLES );
-    
+
     //    n.b.  The dwxDash interpretation for GL only allows for 2 elements in the dash table.
     //    The first is assumed drawn, second is assumed space
     wxDash *dashes;
@@ -12562,39 +12562,39 @@ void PLIBDrawGLThickLine( float x1, float y1, float x2, float y2, wxPen pen, boo
         float ya = y1;
         float ldraw = t1 * (unsigned char)dashes[0];
         float lspace = t1 * (unsigned char)dashes[1];
-        
+
         if((ldraw < 0) || (lspace < 0)){
             glEnd();
             return;
         }
-        
+
         while( lrun < lpix ) {
             //    Dash
             float xb = xa + ldraw * cosf( angle );
             float yb = ya + ldraw * sinf( angle );
-            
+
             if( ( lrun + ldraw ) >= lpix )         // last segment is partial draw
             {
                 xb = x2;
                 yb = y2;
             }
-            
+
             glVertex2f( xa + t2sina1, ya - t2cosa1 );
             glVertex2f( xb + t2sina1, yb - t2cosa1 );
             glVertex2f( xb - t2sina1, yb + t2cosa1 );
-            
+
             glVertex2f( xb - t2sina1, yb + t2cosa1 );
             glVertex2f( xa - t2sina1, ya + t2cosa1 );
             glVertex2f( xa + t2sina1, ya - t2cosa1 );
-            
+
             xa = xb;
             ya = yb;
             lrun += ldraw;
-            
+
             //    Space
             xb = xa + lspace * cos( angle );
             yb = ya + lspace * sin( angle );
-            
+
             xa = xb;
             ya = yb;
             lrun += lspace;
@@ -12603,23 +12603,23 @@ void PLIBDrawGLThickLine( float x1, float y1, float x2, float y2, wxPen pen, boo
         glVertex2f( x1 + t2sina1, y1 - t2cosa1 );
         glVertex2f( x2 + t2sina1, y2 - t2cosa1 );
         glVertex2f( x2 - t2sina1, y2 + t2cosa1 );
-        
+
         glVertex2f( x2 - t2sina1, y2 + t2cosa1 );
         glVertex2f( x1 - t2sina1, y1 + t2cosa1 );
         glVertex2f( x1 + t2sina1, y1 - t2cosa1 );
-        
+
         /* wx draws a nice rounded end in dc mode, so replicate
          *           this for opengl mode, should this be done for the dashed mode case? */
         if(pen.GetCap() == wxCAP_ROUND) {
             PLIBDrawEndCap( x1, y1, t1, angle);
             PLIBDrawEndCap( x2, y2, t1, angle + M_PI);
         }
-        
+
     }
-    
+
     glEnd();
-#endif    
-#endif    
+#endif
+#endif
 }
 
 #ifdef USE_ANDROID_GLES2
@@ -13212,11 +13212,11 @@ void PrepareS52ShaderUniforms(ViewPort *vp)
     mat4x4 Q;
     mat4x4_rotate_Z(Q, (float (*)[4])vp_transform, vp->rotation);
     mat4x4_translate_in_place(Q, -vp->pix_width / 2.0, -vp->pix_height / 2.0, 0);
-    
+
 
     mat4x4 I;
     mat4x4_identity(I);
-    
+
     glUseProgram(S52color_tri_shader_program);
     GLint matloc = glGetUniformLocation(S52color_tri_shader_program,"MVMatrix");
     glUniformMatrix4fv( matloc, 1, GL_FALSE, (const GLfloat*)Q);
@@ -13234,7 +13234,7 @@ void PrepareS52ShaderUniforms(ViewPort *vp)
     glUniformMatrix4fv( matloc, 1, GL_FALSE, (const GLfloat*)Q);
     transloc = glGetUniformLocation(S52texture_2D_ColorMod_shader_program,"TransformMatrix");
     glUniformMatrix4fv( transloc, 1, GL_FALSE, (const GLfloat*)I);
-    
+
     glUseProgram(S52circle_filled_shader_program);
     matloc = glGetUniformLocation(S52circle_filled_shader_program,"MVMatrix");
     glUniformMatrix4fv( matloc, 1, GL_FALSE, (const GLfloat*)Q);
