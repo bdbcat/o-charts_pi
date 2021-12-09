@@ -101,6 +101,10 @@ typedef void (__stdcall *_GLUfuncptr)(void);
  #define GL_POLYGON_SMOOTH 0x0B41
 #endif
 
+#ifndef GL_LINE_STIPPLE
+  #define GL_LINE_STIPPLE 0x0B24
+#endif
+
 #endif
 
 extern float g_GLMinCartographicLineWidth;
@@ -4081,7 +4085,7 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     }
 #endif
 
-#if defined(GL_LINE_STIPPLE) && !defined(ocpnUSE_GLES) // linestipple is emulated poorly
+#if !defined(ocpnUSE_GLES) // linestipple is emulated poorly
     if( !strncmp( str, "DASH", 4 ) ) {
         glLineStipple( 1, 0x3F3F );
         glEnable( GL_LINE_STIPPLE );
@@ -4278,9 +4282,7 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     glUniformMatrix4fv( matlocf, 1, GL_FALSE, (const GLfloat*)IM);
 #endif
 
-#ifdef GL_LINE_STIPPLE
     glDisable( GL_LINE_STIPPLE );
-#endif
     glDisable( GL_LINE_SMOOTH );
     glDisable( GL_BLEND );
 
@@ -4378,7 +4380,7 @@ int s52plib::RenderLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
             glLineWidth( wxMax(g_GLMinCartographicLineWidth, 1) );
 
 // linestipple is emulated poorly
-#if defined(GL_LINE_STIPPLE) && !defined(ocpnUSE_GLES)
+#if !defined(ocpnUSE_GLES)
             if( !strncmp( str, "DASH", 4 ) ) {
                 glLineStipple( 1, 0x3F3F );
                 glEnable( GL_LINE_STIPPLE );
@@ -4497,9 +4499,7 @@ int s52plib::RenderLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
 #ifdef ocpnUSE_GL
     if( !m_pdc ){
-#ifdef GL_LINE_STIPPLE
         glDisable( GL_LINE_STIPPLE );
-#endif
         glDisable( GL_LINE_SMOOTH );
         glDisable( GL_BLEND );
     }
@@ -4783,9 +4783,7 @@ int s52plib::RenderLSLegacy( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     }
 #ifdef ocpnUSE_GL
     if( !m_pdc ){
-#ifdef GL_LINE_STIPPLE
         glDisable( GL_LINE_STIPPLE );
-#endif
         glDisable( GL_LINE_SMOOTH );
         glDisable( GL_BLEND );
     }
@@ -4998,7 +4996,7 @@ int s52plib::RenderLSPlugIn( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                     #endif
     }
 
-#if defined(GL_LINE_STIPPLE) && defined(ocpnUSE_GL)
+#if defined(ocpnUSE_GL)
     if( !m_pdc )
         glDisable( GL_LINE_STIPPLE );
 #endif
@@ -7019,7 +7017,7 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
         if(buffer.line_width[2]) {
 // linestipple is emulated poorly
-#if defined(GL_LINE_STIPPLE) && defined(ocpnUSE_GLES)
+#if defined(ocpnUSE_GLES)
             glLineStipple( 1, 0x3F3F );
             glEnable( GL_LINE_STIPPLE );
 #endif
