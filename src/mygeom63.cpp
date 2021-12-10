@@ -55,6 +55,7 @@
 #include <KHR/khrplatform.h>
 typedef khronos_intptr_t GLintptr;
 typedef khronos_ssize_t GLsizeiptr;
+typedef double GLdouble;
 #include <GLES/gl.h>
 #include <GL/glu.h>
 
@@ -242,16 +243,16 @@ bool isRingClockwise(wxPoint2DDouble *pp, int nPointCount)
 
 {
     double dfSum = 0.0;
-    
+
     for( int iVert = 0; iVert < nPointCount-1; iVert++ )
     {
         dfSum += pp[iVert].m_x * pp[iVert+1].m_y
         - pp[iVert].m_y * pp[iVert+1].m_x;
     }
-    
+
     dfSum += pp[nPointCount-1].m_x * pp[0].m_y
     - pp[nPointCount-1].m_y * pp[0].m_x;
-    
+
     return dfSum < 0.0;
 }
 
@@ -852,7 +853,7 @@ int PolyTessGeo::PolyTessGeoGL(OGRPolygon *poly, bool bSENC_SM, double ref_lat, 
 
 int PolyTessGeo::BuildTessGLFromXG(void)
 {
-    
+
 #ifdef ocpnUSE_GL
 
       int iir, ip;
@@ -986,9 +987,9 @@ int PolyTessGeo::BuildTessGLFromXG(void)
 
 //  Check and account for winding direction of ring
       wxPoint2DDouble *pp = m_pxgeom->vertex_array;
-      
+
       bool cw = isRingClockwise(pp, npte);
-      
+
 
       double x0, y0, x, y;
 
@@ -1059,7 +1060,7 @@ int PolyTessGeo::BuildTessGLFromXG(void)
 
       //  Check and account for winding direction of ring
             bool cw = isRingClockwise(&pp[index_offset], npti);
-            
+
             if(!cw)
             {
                   x0 = pp[index_offset].m_x;
@@ -1123,7 +1124,7 @@ int PolyTessGeo::BuildTessGLFromXG(void)
 
       s_ref_lat = m_ref_lat;
       s_ref_lon = m_ref_lon;
-      
+
 
     //      Ready to kick off the tesselator
 
@@ -1324,7 +1325,7 @@ void __CALL_CONVENTION endCallback(void)
 
                 double lat, lon;
                 fromSM_Plugin(xd, yd, s_ref_lat, s_ref_lon, &lat, &lon);
-                
+
                 sxmax = fmax(lon, sxmax);
                 sxmin = fmin(lon, sxmin);
                 symax = fmax(lat, symax);
@@ -1332,7 +1333,7 @@ void __CALL_CONVENTION endCallback(void)
             }
 
             pTPG->tri_box.Set(symin, sxmin, symax, sxmax);
-            
+
 
             //  Transcribe this geometry to TriPrim
 
@@ -1573,7 +1574,7 @@ PolyTriGroup::PolyTriGroup()
     data_type = DATA_TYPE_DOUBLE;
     sfactor = 1.0;
     soffset = 0.0;
-    
+
 
 }
 
