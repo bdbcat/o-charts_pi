@@ -13,12 +13,12 @@ set(OCPN_TEST_REPO
 )
 set(OCPN_BETA_REPO
     "david-register/ocpn-plugins-unstable"
-    CACHE STRING 
+    CACHE STRING
     "Default repository for tagged builds matching 'beta'"
 )
 set(OCPN_RELEASE_REPO
     "david-register/ocpn-plugins-stable"
-    CACHE STRING 
+    CACHE STRING
     "Default repository for tagged builds not matching 'beta'"
 )
 
@@ -42,12 +42,12 @@ set(PKG_SUMMARY
 )
 set(PKG_DESCRIPTION [=[
 OpenCPN  Vector Charts licensed and sourced from chart providers like
-Hydrographic Offices.  
+Hydrographic Offices.
 
 While the charts are not officially approved official ENC charts they
 are based on the same data -- the legal conditions are described in the
 EULA. The charts has world-wide coverage and provides a cost-effective
-way to access the national chart databases. Charts are encrypted and 
+way to access the national chart databases. Charts are encrypted and
 can only be used after purchasing decryption keys from o-charts.org.
 
 o-charts can handle all charts previously handled by the oesenc and
@@ -99,7 +99,7 @@ set(SRC
 )
 
 if(QT_ANDROID)
-  set(SRC ${SRC} src/androidSupport.cpp)   
+  set(SRC ${SRC} src/androidSupport.cpp)
 endif(QT_ANDROID)
 
 set(PKG_API_LIB api-16)  #  A directory in libs/ e. g., api-17 or api-16
@@ -109,7 +109,7 @@ macro(late_init)
   # and ocpn::api is available.
   if (ARCH STREQUAL "armhf")
     add_definitions(-DOCPN_ARMHF)
-  endif ()      
+  endif ()
   target_include_directories(${PACKAGE_NAME} PRIVATE libs/gdal/src src)
 endmacro ()
 
@@ -131,12 +131,16 @@ macro(add_plugin_libraries)
 
   add_subdirectory("libs/zlib")
   target_link_libraries(${PACKAGE_NAME} ocpn::zlib)
-  
+
   add_subdirectory("libs/opencpn-glu")
   target_link_libraries(${PACKAGE_NAME} opencpn::glu)
 
-  add_subdirectory("libs/wxcurl")
-  target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
+  if (WIN32)
+    add_subdirectory("libs/wxcurl")
+    target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
+  else (WIN32)
+    INCLUDE_DIRECTORIES("libs/wxcurl/src")
+  endif (WIN32)
 
   add_subdirectory("libs/oeserverd")
 
