@@ -1,10 +1,10 @@
 #
 # Ensure that glu libraries and headers are present.
 # - On Linux and Macos do nothing, the OS provides glu.
-# - On Flatpak, bundle the header which corresponds the the libglu
+# - On Flatpak, bundle the header which corresponds the libglu
 #   which comes with main OpenCPN
 # - On Windows: Link to utility library and use WindowsHeaders.
-# - On Android: build the glues libtess library and provide header.
+# - On Android: Provide a header, qt libraries provide the functions.
 
 cmake_minimum_required(VERSION 3.1)
 
@@ -23,8 +23,6 @@ elseif (WIN32)
   target_link_libraries(_glu_if INTERFACE windows::headers)
 elseif (QT_ANDROID)
   target_include_directories(_glu_if INTERFACE include-android)
-  #add_subdirectory("glues")
-  #target_link_libraries(_glu_if INTERFACE glues::glu)
 else ()
   message(STATUS "Using system GL/glu.h and libraries")
 endif ()
