@@ -33,7 +33,7 @@ if (OCPN_USE_PREBUILT_WXCURL)
   )
   set(CURL_LIBRARIES ${CMAKE_CURRENT_LIST_DIR}/win/libcurl.lib)
   set(CURL_INCLUDE_DIRS ${CMAKE_CURRENT_LIST_DIR}/include)
-else ()  
+else ()
   find_package(CURL REQUIRED)
   target_link_libraries(WXCURL_IF INTERFACE CURL::libcurl)
 endif ()
@@ -77,15 +77,20 @@ set(SRC
   src/thread.cpp
   src/ftptool.cpp
   src/dav.cpp
-)   
+)
 
 add_library(WXCURL_SRC STATIC ${SRC})
 target_include_directories(WXCURL_SRC
   PUBLIC ${CURL_INCLUDE_DIRS} ${CMAKE_CURRENT_LIST_DIR}/src
 )
+target_include_directories(WXCURL_IF
+  INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src
+)
 target_link_libraries(WXCURL_SRC PUBLIC ${CURL_LIBRARIES})
 
-target_link_libraries(WXCURL_IF INTERFACE WXCURL_SRC)
+if (WIN32)
+  target_link_libraries(WXCURL_IF INTERFACE WXCURL_SRC)
+endif (WIN32)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
   set_property(TARGET WXCURL_SRC PROPERTY COMPILE_FLAGS "-fvisibility=hidden")
