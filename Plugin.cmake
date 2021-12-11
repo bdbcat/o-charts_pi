@@ -135,14 +135,8 @@ macro(add_plugin_libraries)
   add_subdirectory("libs/opencpn-glu")
   target_link_libraries(${PACKAGE_NAME} opencpn::glu)
 
-#  if (WIN32)
-#    add_subdirectory("libs/wxcurl")
-#    target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
-#  else (WIN32)
-#    INCLUDE_DIRECTORIES("libs/wxcurl/src")
-#  endif (WIN32)
-   add_subdirectory("libs/wxcurl")
-   target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
+  add_subdirectory("libs/wxcurl")
+  target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
 
   add_subdirectory("libs/oeserverd")
 
