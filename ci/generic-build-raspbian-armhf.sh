@@ -43,13 +43,11 @@ wget $url/pool/bullseye/main/c/cm/cmake_3.20.5-0.1/cmake_3.20.5-0.1_armhf.deb
 sudo apt install ./cmake_3.*-0.1_armhf.deb ./cmake-data_3.*-0.1_all.deb
 
 cd /ci-source
-rm -rf build-raspbian; mkdir build-raspbian;
-chmod 0777 build-raspbian
-cd build-raspbian
+rm -rf build-raspbian; mkdir build-raspbian; cd build-raspbian
 cmake -DCMAKE_BUILD_TYPE=debug ..
 make -j $(nproc) VERBOSE=1 tarball
 ldd  app/*/lib/opencpn/*.so
-sudo chmod --reference=.. .
+sudo chown --reference=.. .
 EOF
 
 
