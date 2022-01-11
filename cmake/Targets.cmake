@@ -182,17 +182,9 @@ function (flatpak_target manifest)
   set(_fp_script "
     execute_process(
       COMMAND
-        flatpak-builder --force-clean --keep-build-dirs
+        flatpak-builder
+          --state-dir ${CMAKE_SOURCE_DIR}/flatpak/cache --force-clean
           ${CMAKE_CURRENT_BINARY_DIR}/app ${manifest}
-    )
-    # Copy the data out of the sandbox to installation directory
-    execute_process(
-      COMMAND
-        flatpak-builder  --run app ${manifest}  bash -c \"
-          set -x\; stable_link=$(find /run/build -maxdepth 1 -type l)\; \
-          cp -ar $stable_link/app/files/*           \
-              ${CMAKE_CURRENT_BINARY_DIR}/app/files
-        \"
     )
     execute_process(
       COMMAND bash -c \"sed -e '/@checksum@/d' \
