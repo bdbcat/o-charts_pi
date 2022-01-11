@@ -3,7 +3,7 @@
 # License:      GPLv3+
 # Copyright (c) 2021 Alec Leamas
 #
-# Set up variables for configuration of xml metadata and upload scripts, 
+# Set up variables for configuration of xml metadata and upload scripts,
 # all of which with a pkg_ prefix.
 # ~~~
 
@@ -110,7 +110,7 @@ if (NOT "${_pre_rel}" STREQUAL "" AND _pre_rel MATCHES "^[^-]")
   string(PREPEND _pre_rel "-")
 endif ()
 if ("${_git_tag}" STREQUAL "")
-  set(pkg_semver "${PROJECT_VERSION}${_pre_rel}+${_build_id}.${_gitversion}")
+  set(pkg_semver "${PROJECT_VERSION}${_pre_rel}.${_gitversion}")
 else ()
   set(pkg_semver "${_git_tag}")
 endif ()
