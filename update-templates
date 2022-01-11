@@ -128,7 +128,7 @@ EOT
 fi
 
 # Updating  standard directories
-for dir in cmake ci scripts buildwin libs; do
+for dir in cmake ci scripts buildwin ; do
     update_dir $dir $source_treeish
 done
 
