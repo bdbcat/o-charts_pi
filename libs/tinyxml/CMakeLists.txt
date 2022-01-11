@@ -1,3 +1,9 @@
+# ~~~
+# Summary:      tinyxml library cmake setup
+# License:      GPLv3+
+# Copyright (c) 2021 Alec Leamas
+# ~~~
+
 cmake_minimum_required(VERSION 3.1.0)
 
 if (TARGET ocpn::tinyxml)
@@ -28,7 +34,9 @@ else ()
   target_compile_definitions(TINYXML PUBLIC -DTIXML_USE_STL)
   target_include_directories(TINYXML
                              PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-  set_property(TARGET TINYXML PROPERTY COMPILE_FLAGS "${OBJ_VISIBILITY}")
+  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+    set_property(TARGET TINYXML PROPERTY COMPILE_FLAGS "-fvisibility=hidden")
+  endif ()
   target_link_libraries(TINYXML_IF INTERFACE TINYXML)
   message(STATUS "Using bundled tinyxml")
 endif ()
