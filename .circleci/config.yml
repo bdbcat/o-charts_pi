@@ -24,6 +24,23 @@ flatpak-steps: &flatpak-steps
 
 jobs:
 
+  build-bionic-armhf:
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
+    environment:
+      - OCPN_TARGET: ubuntu-armhf
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    parameters:
+      cache-key:
+        type: string
+        default: "fp-arm20-v2"
+    steps:
+      - checkout
+      - run: ci/circleci-build-bionic-armhf.sh
+      - run: cd build-bionic; /bin/bash < upload.sh
+      - run: ci/git-push.sh build-bionic
+
   build-raspbian-bullseye:
     machine:
       image: ubuntu-2004:202101-01
@@ -191,3 +208,7 @@ workflows:
 
       - build-raspbian-bullseye:
           <<: *std-filters
+
+      - build-bionic-armhf:
+          <<: *std-filters
+
