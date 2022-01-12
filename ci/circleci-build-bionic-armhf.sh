@@ -50,7 +50,7 @@ sudo chown --reference=.. .
 EOF
 
 
-cat /ci-source/build.sh
+cat $ci_source/build.sh
 
 # Run script in docker image
 #
