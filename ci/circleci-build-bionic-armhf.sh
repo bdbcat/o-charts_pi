@@ -50,6 +50,8 @@ sudo chown --reference=.. .
 EOF
 
 
+cat /ci-source/build.sh
+
 # Run script in docker image
 #
 if [ -n "$CI" ]; then
