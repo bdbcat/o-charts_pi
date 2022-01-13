@@ -32,21 +32,19 @@ cat > $ci_source/build.sh << "EOF"
 
 #sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 74A941BA219EC810
 #sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68980A0EA10B4DE8
-#F6ECB3762474EDA9D21B 7022871920D1991BC93C
 
 #sudo apt -y update
-sudo apt-get update
 
-sudo apt -y install devscripts equivs wget git lsb-release
+#sudo apt -y install devscripts equivs wget git lsb-release
 sudo mk-build-deps -ir /ci-source/build-deps/control
 sudo apt-get -q --allow-unauthenticated install -f
 
 # Temporary fix until 3.19 is available as a pypi package
 # 3.19 is needed: https://gitlab.kitware.com/cmake/cmake/-/issues/20568
-url='https://dl.cloudsmith.io/public/alec-leamas/opencpn-plugins-stable/deb/debian'
-wget $url/pool/bullseye/main/c/cm/cmake-data_3.20.5-0.1/cmake-data_3.20.5-0.1_all.deb
-wget $url/pool/bullseye/main/c/cm/cmake_3.20.5-0.1/cmake_3.20.5-0.1_armhf.deb
-sudo apt install ./cmake_3.*-0.1_armhf.deb ./cmake-data_3.*-0.1_all.deb
+#url='https://dl.cloudsmith.io/public/alec-leamas/opencpn-plugins-stable/deb/debian'
+#wget $url/pool/bullseye/main/c/cm/cmake-data_3.20.5-0.1/cmake-data_3.20.5-0.1_all.deb
+#wget $url/pool/bullseye/main/c/cm/cmake_3.20.5-0.1/cmake_3.20.5-0.1_armhf.deb
+#sudo apt install ./cmake_3.*-0.1_armhf.deb ./cmake-data_3.*-0.1_all.deb
 
 
 cd /ci-source
@@ -75,7 +73,7 @@ docker run --platform linux/arm/v7 --privileged \
     -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
     -e "TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER" \
     -v "$ci_source:/ci-source:rw" \
-    balenalib/raspberrypi3-ubuntu:bionic /bin/bash -xe /ci-source/build.sh
+    opencpn/ubuntu-bionic-armhf /bin/bash -xe /ci-source/build.sh
 rm -f $ci_source/build.sh
 
 #docker run -it --platform linux/arm/v7 --privileged balenalib/raspberrypi3-ubuntu:bionic /bin/bash
