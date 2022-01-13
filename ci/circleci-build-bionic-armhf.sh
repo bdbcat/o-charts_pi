@@ -34,9 +34,9 @@ cat > $ci_source/build.sh << "EOF"
 #sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68980A0EA10B4DE8
 #F6ECB3762474EDA9D21B 7022871920D1991BC93C
 
-sudo apt -q update
+sudo apt -y update
 
-sudo apt install devscripts equivs wget git lsb-release
+sudo apt -y install devscripts equivs wget git lsb-release
 sudo mk-build-deps -ir /ci-source/build-deps/control
 sudo apt-get -q --allow-unauthenticated install -f
 
@@ -66,7 +66,7 @@ if [ -n "$CI" ]; then
     sudo apt install qemu-user-static
 fi
 docker run --rm --privileged multiarch/qemu-user-static:register --reset || :
-docker run --privileged \
+docker run --platform linux/arm/v7 --privileged \
     -e "OCPN_TARGET=$OCPN_TARGET" \
     -e "CLOUDSMITH_STABLE_REPO=$CLOUDSMITH_STABLE_REPO" \
     -e "CLOUDSMITH_BETA_REPO=$OCPN_BETA_REPO" \
@@ -74,10 +74,8 @@ docker run --privileged \
     -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
     -e "TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER" \
     -v "$ci_source:/ci-source:rw" \
-    -it balenalib/raspberrypi3-ubuntu:bionic /bin/bash -xe /ci-source/build.sh
+    balenalib/raspberrypi3-ubuntu:bionic /bin/bash -xe /ci-source/build.sh
 rm -f $ci_source/build.sh
-
-#balenalib/raspberrypi3-ubuntu:bionic /bin/bash -xe /ci-source/build.sh
 
 # Install cloudsmith-cli (for upload) and cryptography (for git-push).
 #
