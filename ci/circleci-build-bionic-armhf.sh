@@ -36,7 +36,8 @@ cat > $ci_source/build.sh << "EOF"
 #sudo apt -y update
 
 #sudo apt -y install devscripts equivs wget git lsb-release
-sudo mk-build-deps -ir /ci-source/build-deps/control
+#sudo mk-build-deps -ir /ci-source/build-deps/control
+sudo mk-build-deps  /ci-source/build-deps/control
 sudo apt-get -q --allow-unauthenticated install -f
 
 # Temporary fix until 3.19 is available as a pypi package
