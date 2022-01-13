@@ -36,7 +36,6 @@ cat > $ci_source/build.sh << "EOF"
 #sudo apt -y update
 
 #sudo apt -y install devscripts equivs wget git lsb-release
-#sudo mk-build-deps -ir /ci-source/build-deps/control
 sudo mk-build-deps  /ci-source/build-deps/control
 sudo apt -y install ./opencpn-build-deps_1.0_all.deb
 sudo apt-get -q --allow-unauthenticated install -f
@@ -78,7 +77,6 @@ docker run --platform linux/arm/v7 --privileged \
     opencpn/ubuntu-bionic-armhf /bin/bash -xe /ci-source/build.sh
 rm -f $ci_source/build.sh
 
-#docker run -it --platform linux/arm/v7 --privileged balenalib/raspberrypi3-ubuntu:bionic /bin/bash
 
 # Install cloudsmith-cli (for upload) and cryptography (for git-push).
 #
