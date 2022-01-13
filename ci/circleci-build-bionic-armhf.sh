@@ -34,7 +34,8 @@ cat > $ci_source/build.sh << "EOF"
 #sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68980A0EA10B4DE8
 #F6ECB3762474EDA9D21B 7022871920D1991BC93C
 
-sudo apt -y update
+#sudo apt -y update
+sudo apt-get update
 
 sudo apt -y install devscripts equivs wget git lsb-release
 sudo mk-build-deps -ir /ci-source/build-deps/control
@@ -76,6 +77,8 @@ docker run --platform linux/arm/v7 --privileged \
     -v "$ci_source:/ci-source:rw" \
     balenalib/raspberrypi3-ubuntu:bionic /bin/bash -xe /ci-source/build.sh
 rm -f $ci_source/build.sh
+
+#docker run -it --platform linux/arm/v7 --privileged balenalib/raspberrypi3-ubuntu:bionic /bin/bash
 
 # Install cloudsmith-cli (for upload) and cryptography (for git-push).
 #
