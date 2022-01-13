@@ -33,6 +33,7 @@ cat > $ci_source/build.sh << "EOF"
 #sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 74A941BA219EC810
 #sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68980A0EA10B4DE8
 #F6ECB3762474EDA9D21B 7022871920D1991BC93C
+
 sudo apt -q update
 
 sudo apt install devscripts equivs wget git lsb-release
@@ -73,7 +74,7 @@ docker run --privileged \
     -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
     -e "TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER" \
     -v "$ci_source:/ci-source:rw" \
-    -it balenalib/raspberrypi3-ubuntu:bionic /bin/bash
+    -it balenalib/raspberrypi3-ubuntu:bionic /bin/bash -xe /ci-source/build.sh
 rm -f $ci_source/build.sh
 
 #balenalib/raspberrypi3-ubuntu:bionic /bin/bash -xe /ci-source/build.sh
