@@ -129,7 +129,7 @@ string(APPEND pkg_displayname
 )
 
 # pkg_xmlname: XML metadata basename
-set(pkg_xmlname ${pkg_displayname})
+set(pkg_xmlname ${pkg_displayname}-${_pkg_arch})
 
 # pkg_tarname: Tarball basename
 string(CONCAT pkg_tarname
