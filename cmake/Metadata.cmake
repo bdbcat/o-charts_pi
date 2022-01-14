@@ -131,6 +131,8 @@ string(APPEND pkg_displayname
 # pkg_xmlname: XML metadata basename
 set(pkg_xmlname ${pkg_displayname})
 
+message(STATUS "##############Metadata:: ${plugin_target}.")
+
 if ("${plugin_target}" MATCHES "ubuntu-armhf")
   set(pkg_xmlname ${pkg_displayname}-${_pkg_arch})
 endif()
