@@ -129,7 +129,12 @@ string(APPEND pkg_displayname
 )
 
 # pkg_xmlname: XML metadata basename
-set(pkg_xmlname ${pkg_displayname}-${_pkg_arch})
+set(pkg_xmlname ${pkg_displayname})
+
+if ("${plugin_target}" MATCHES "ubuntu-armhf")
+  set(pkg_xmlname ${pkg_displayname}-${_pkg_arch})
+endif()
+
 
 # pkg_tarname: Tarball basename
 string(CONCAT pkg_tarname
