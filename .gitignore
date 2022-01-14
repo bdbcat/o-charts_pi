@@ -1,15 +1,8 @@
 build
 build-*
-build_*
 !build-deps
 po/*.pot
 .DS_Store
 *humbs.db
 cache
 plugins
-.*
-crowdin*
-Notes*
-*.kdev4
-*.dummy
-
