@@ -27,21 +27,20 @@ else
 fi
 
 cat > $ci_source/build.sh << "EOF"
-#curl http://mirrordirector.raspbian.org/raspbian.public.key  | apt-key add -
-#curl http://archive.raspbian.org/raspbian.public.key  | apt-key add -
 
-#sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 74A941BA219EC810
-#sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68980A0EA10B4DE8
-
+# The following two lines have already been executed in the docker image
 #sudo apt -y update
-
 #sudo apt -y install devscripts equivs wget git lsb-release
+
+
 sudo mk-build-deps  /ci-source/build-deps/control
 sudo apt -y install ./opencpn-build-deps_1.0_all.deb
 sudo apt-get -q --allow-unauthenticated install -f
 
 # Temporary fix until 3.19 is available as a pypi package
 # 3.19 is needed: https://gitlab.kitware.com/cmake/cmake/-/issues/20568
+#  Update:  cmake 3.22 was built in this docker image, and installed before uploading to dockerhub
+
 #url='https://dl.cloudsmith.io/public/alec-leamas/opencpn-plugins-stable/deb/debian'
 #wget $url/pool/bullseye/main/c/cm/cmake-data_3.20.5-0.1/cmake-data_3.20.5-0.1_all.deb
 #wget $url/pool/bullseye/main/c/cm/cmake_3.20.5-0.1/cmake_3.20.5-0.1_armhf.deb
@@ -74,7 +73,7 @@ docker run --platform linux/arm/v7 --privileged \
     -e "CIRCLE_BUILD_NUM=$CIRCLE_BUILD_NUM" \
     -e "TRAVIS_BUILD_NUMBER=$TRAVIS_BUILD_NUMBER" \
     -v "$ci_source:/ci-source:rw" \
-    opencpn/ubuntu-bionic-armhf /bin/bash -xe /ci-source/build.sh
+    opencpn/ubuntu-bionic-armhf:v1 /bin/bash -xe /ci-source/build.sh
 rm -f $ci_source/build.sh
 
 
