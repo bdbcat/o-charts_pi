@@ -32,6 +32,9 @@ cat > $ci_source/build.sh << "EOF"
 #sudo apt -y update
 #sudo apt -y install devscripts equivs wget git lsb-release
 
+echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+apt-get -qq update && DEBIAN_FRONTEND='noninteractive' TZ='America/New_York' apt-get -y --no-install-recommends install tzdata
+
 sudo mk-build-deps  /ci-source/build-deps/control
 sudo apt -y install ./opencpn-build-deps_1.0_all.deb
 sudo apt-get -q --allow-unauthenticated install -f
