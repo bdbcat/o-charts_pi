@@ -133,9 +133,11 @@ set(pkg_xmlname ${pkg_displayname})
 
 message(STATUS "##############Metadata:: ${plugin_target}.")
 
-if ("${plugin_target}" MATCHES "ubuntu-armhf")
+if ("${plugin_target}" MATCHES "ubuntu" AND "${_pkg_arch}" MATCHES "armhf")
   set(pkg_xmlname ${pkg_displayname}-${_pkg_arch})
 endif()
+
+message(STATUS "########################Metadata:: ${pkg_xmlname}.")
 
 
 # pkg_tarname: Tarball basename
