@@ -119,6 +119,11 @@ endif ()
 if (ARCH MATCHES "arm64|aarch64")
   set(_display_arch "-A64")
 endif()
+
+if ("${plugin_target}" MATCHES "ubuntu" AND "${_pkg_arch}" MATCHES "armhf")
+  set(_display_arch "-armhf")
+endif()
+
 if ("${_git_tag}" STREQUAL "")
   set(pkg_displayname "${PLUGIN_API_NAME}-${VERSION_MAJOR}.${VERSION_MINOR}")
 else ()
@@ -128,12 +133,14 @@ string(APPEND pkg_displayname
   "-${plugin_target}${_display_arch}-${plugin_target_version}"
 )
 
+message(STATUS "##########pkg_displayname: ${pkg_displayname}")
+
 # pkg_xmlname: XML metadata basename
 set(pkg_xmlname ${pkg_displayname})
 
-if ("${plugin_target}" MATCHES "ubuntu" AND "${_pkg_arch}" MATCHES "armhf")
-  set(pkg_xmlname ${pkg_displayname}-${_pkg_arch})
-endif()
+#if ("${plugin_target}" MATCHES "ubuntu" AND "${_pkg_arch}" MATCHES "armhf")
+#  set(pkg_xmlname ${pkg_displayname}-${_pkg_arch})
+#endif()
 
 
 # pkg_tarname: Tarball basename
