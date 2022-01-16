@@ -6775,6 +6775,7 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
     wxString positionString;
     std::vector<PI_S57Light*> lights;
     PI_S57Light* curLight = NULL;
+    wxFileName file ;
     
     for( ListOfPI_S57Obj::Node *node = obj_list->GetLast(); node; node = node->GetPrevious() ) {
         PI_S57Obj *current = node->GetData();
@@ -6914,6 +6915,78 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
                     
                     value = GetObjectAttributeValueAsString( current, attrCounter, curAttrName );
                     
+                    wxString AttrNamesFiles = _T("PICREP,TXTDSC,NTXTDS"); //AttrNames that might have a filename as value
+                    if ( AttrNamesFiles.Find( curAttrName) != wxNOT_FOUND )
+                        if ( value.Find(_T(".XML")) == wxNOT_FOUND ){ // Don't show xml files 
+                            wxFileName fn = GetFullPath();
+                            wxString suppPath = fn.GetPath();
+                            suppPath += wxFileName::GetPathSeparator();
+                            suppPath += fn.GetName();
+                            suppPath += wxFileName::GetPathSeparator();
+                            suppPath += value;
+                            file.Assign( suppPath );   
+                            file.Assign( file.GetPath(), value );
+                            file.Normalize();
+                            if( file.IsOk() ){
+                                if( file.Exists() )
+                                    value = wxString::Format( _T("<a href=\"%s\">%s</a>"), file.GetFullPath(), file.GetFullName() );
+                                else
+                                    value = value + _T("&nbsp;&nbsp;<font color=\"red\">[ ") + _("this file is not available") + _T(" ]</font>");
+                            }
+                        }
+                        
+                    AttrNamesFiles = _T("DATEND,DATSTA,PEREND,PERSTA"); //AttrNames with date info
+                    if ( AttrNamesFiles.Find( curAttrName) != wxNOT_FOUND ) {
+                        bool d = true;
+                        bool m = true;
+                        wxString ts = value;
+
+                        ts.Replace(wxT("--"),wxT("0000"));//make a valid year entry if not available
+                        if( ts.Length() < 5){ //(no month set)
+                            m = false;
+                            ts.Append(wxT("01") ); // so we add a fictive month to get a valid date
+                        }
+                        if( ts.Length() < 7){ //(no day set)
+                            d=false;
+                            ts.Append(wxT("01") ); // so we add a fictive day to get a valid date
+                        }
+                        wxString::const_iterator end;
+                        wxDateTime dt;
+                        if( dt.ParseFormat( ts, "%Y%m%d", &end ) ){
+                            ts.Empty();                        
+                            if ( m ) ts =  wxDateTime::GetMonthName(dt.GetMonth());                        
+                            if ( d ) ts.Append( wxString::Format(wxT(" %d"), dt.GetDay()) );
+                            if( dt.GetYear()>0 ) ts.Append( wxString::Format(wxT(",  %i"), dt.GetYear() ) );
+                            if ( curAttrName == _T("PEREND")) ts = _("Period ends: ") + ts + wxT("  (")+ value + wxT(")");
+                            if ( curAttrName == _T("PERSTA")) ts = _("Period starts: ") + ts + wxT("  (")+ value + wxT(")");
+                            if ( curAttrName == _T("DATEND")) ts = _("Date ending: ") + ts + wxT("  (")+ value + wxT(")");
+                            if ( curAttrName == _T("DATSTA")) ts = _("Date starting: ") + ts + wxT("  (")+ value + wxT(")");
+                            value= ts;
+                        }    
+                    }
+                    
+                    if ( curAttrName == _T("TS_TSP")){ //Tidal current applet
+                        wxArrayString as;
+                        wxString ts;
+                        //int i = -6;                    
+                        wxStringTokenizer tk(value,  wxT(","));
+                        while ( tk.HasMoreTokens() ){ // read table values in array
+                            as.Add(tk.GetNextToken());
+                            if (as.Count() > 28) as.RemoveAt(0); // remove not needed info from front
+                        }
+                        ts =  _T("Tidal Streams referred to<br><b>");
+                        ts.Append(as.Item(0)).Append(_T("</b>  at  <b>")).Append(as.Item(1));
+                        ts.Append(/*tk.GetNextToken()).Append(*/_T("</b><br><table >"))  ;
+                        
+                        for (size_t j=2; j < as.Count()-1 ; j=j+2){  // fill the html current table
+                            ts.Append(_T("<tr><td>")).Append( wxString::Format(wxT("%i"),(j-14)/2)).Append(_T("</td><td>"))
+                                .Append(as.Item(j)).Append(_T("&#176</td><td>")).Append(as.Item(j+1)).Append(_T("</td></tr>")); 
+                            //i++;
+                        }   
+                        ts.Append(_T("</table>"));
+                        value = ts;
+                    }
+                    
                     if( isLight ) {
                         curLight->attributeValues.Add( value );
                     } else {
@@ -6965,8 +7038,7 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
             }
     } // Object for loop
     
-    // Add the additional info files
-    wxFileName file;       
+    // Add the additional info files      
     wxArrayString files;
     file.Assign( GetFullPath() );
     
