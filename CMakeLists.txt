@@ -87,6 +87,10 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
     target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
   endif ()
 
+  if (${ARCH} MATCHES "armhf")
+    add_definitions(-DOCPN_ARMHF)
+  endif()
+
 endif ()
 
 configure_file(
