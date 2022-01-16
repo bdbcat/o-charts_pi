@@ -50,7 +50,7 @@ python3 -m pip install --user -q cmake
 cd $builddir
 
 sudo ln -sf /opt/android/android-ndk-* /opt/android/ndk
-cmake -DCMAKE_TOOLCHAIN_FILE=cmake/$OCPN_TARGET-toolchain.cmake -DOCPN_ARMHF=1 ..
+cmake -DCMAKE_TOOLCHAIN_FILE=cmake/$OCPN_TARGET-toolchain.cmake ..
 make VERBOSE=1
 
 if [ -d /ci-source ]; then sudo chown --reference=/ci-source -R . ../cache; fi

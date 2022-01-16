@@ -112,3 +112,9 @@ configure_file(
   ${CMAKE_BINARY_DIR}/${pkg_displayname}.xml.in
   @ONLY
 )
+
+message(STATUS "################ ARCH ${ARCH} ")
+if (${ARCH} MATCHES "armhf")
+  add_definitions(-DOCPN_ARMHF)
+endif()
+
