@@ -12,11 +12,9 @@
 //    #pragma implementation "jsonval.cpp"
 //#endif
 
-#ifdef NDEBUG
-// make wxLogTrace a noop if no debug set, it's really slow
+// make wxLogTrace a noop, it's really slow
 // must be defined before including debug.h
 #define wxDEBUG_LEVEL 0
-#endif
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -25,12 +23,11 @@
 #pragma hdrstop
 #endif
 
+
 #include <wx/log.h>
-#include <wx/debug.h>
 #include <wx/arrimpl.cpp>
 
 #include <wx/jsonval.h>
-
 
 
 WX_DEFINE_OBJARRAY( wxJSONInternalArray );
@@ -41,9 +38,9 @@ WX_DEFINE_OBJARRAY( wxJSONInternalArray );
 #define compatibleLongLongFmtSpec wxLongLongFmtSpec
 #endif
 
+#if wxDEBUG_LEVEL > 0
 // the trace mask used in wxLogTrace() function
 // static const wxChar* traceMask = _T("jsonval");
-#if wxDEBUG_LEVEL > 0
 static const wxChar* traceMask = _T("jsonval");
 static const wxChar* compareTraceMask = _T("sameas");
 static const wxChar* cowTraceMask = _T("traceCOW" );
@@ -1458,12 +1455,12 @@ wxJSONValue::HasMember( const wxString& key ) const
     wxJSONRefData* data = GetRefData();
     wxJSON_ASSERT( data );
 
-//     if ( data && data->m_type == wxJSONTYPE_OBJECT )  {
-//         wxJSONInternalMap::iterator it = data->m_valMap.find( key );
-//         if ( it != data->m_valMap.end() )  {
-//             r = true;
-//         }
-//     }
+    if ( data && data->m_type == wxJSONTYPE_OBJECT )  {
+        wxJSONInternalMap::iterator it = data->m_valMap.find( key );
+        if ( it != data->m_valMap.end() )  {
+            r = true;
+        }
+    }
     return r;
 }
 
@@ -1509,12 +1506,12 @@ wxJSONValue::GetMemberNames() const
     wxJSON_ASSERT( data->m_type == wxJSONTYPE_OBJECT );
 
     wxArrayString arr;
-//     if ( data->m_type == wxJSONTYPE_OBJECT )   {
-//         wxJSONInternalMap::iterator it;
-//         for ( it = data->m_valMap.begin(); it != data->m_valMap.end(); it++ )  {
-//             arr.Add( it->first );
-//         }
-//     }
+    if ( data->m_type == wxJSONTYPE_OBJECT )   {
+        wxJSONInternalMap::iterator it;
+        for ( it = data->m_valMap.begin(); it != data->m_valMap.end(); it++ )  {
+            arr.Add( it->first );
+        }
+    }
     return arr;
 }
 
@@ -1757,12 +1754,12 @@ wxJSONValue::Remove( const wxString& key )
     wxJSON_ASSERT( data );
 
     bool r = false;
-//     if ( data->m_type == wxJSONTYPE_OBJECT )  {
-//         wxJSONInternalMap::size_type count = data->m_valMap.erase( key );
-//         if ( count > 0 )  {
-//             r = true;
-//         }
-//     }
+    if ( data->m_type == wxJSONTYPE_OBJECT )  {
+        wxJSONInternalMap::size_type count = data->m_valMap.erase( key );
+        if ( count > 0 )  {
+            r = true;
+        }
+    }
     return r;
 }
 
@@ -1886,12 +1883,12 @@ wxJSONValue::ItemAt( const wxString& key ) const
     wxJSON_ASSERT( data );
 
     wxJSONValue v( wxJSONTYPE_INVALID );
-//     if ( data->m_type == wxJSONTYPE_OBJECT )  {
-//         wxJSONInternalMap::const_iterator it = data->m_valMap.find( key );
-//         if ( it != data->m_valMap.end() )  {
-//             v = it->second;
-//         }
-//     }
+    if ( data->m_type == wxJSONTYPE_OBJECT )  {
+        wxJSONInternalMap::const_iterator it = data->m_valMap.find( key );
+        if ( it != data->m_valMap.end() )  {
+            v = it->second;
+        }
+    }
     return v;
 }
 
@@ -2125,12 +2122,12 @@ wxJSONValue::Get( const wxString& key, const wxJSONValue& defaultValue ) const
 
     wxJSONRefData* data = GetRefData();
     wxJSON_ASSERT( data );
-//     if ( data->m_type == wxJSONTYPE_OBJECT )  {
-//         wxJSONInternalMap::iterator it = data->m_valMap.find( key );
-//         if ( it != data->m_valMap.end() )  {
-//             v = it->second;
-//         }
-//     }
+    if ( data->m_type == wxJSONTYPE_OBJECT )  {
+        wxJSONInternalMap::iterator it = data->m_valMap.find( key );
+        if ( it != data->m_valMap.end() )  {
+            v = it->second;
+        }
+    }
     return v;
 }
 
@@ -2176,12 +2173,12 @@ wxJSONValue::Find( const wxString& key ) const
 
     wxJSONValue* vp = 0;
 
-//     if ( data->m_type == wxJSONTYPE_OBJECT )  {
-//         wxJSONInternalMap::iterator it = data->m_valMap.find( key );
-//         if ( it != data->m_valMap.end() )  {
-//             vp = &(it->second);
-//         }
-//     }
+    if ( data->m_type == wxJSONTYPE_OBJECT )  {
+        wxJSONInternalMap::iterator it = data->m_valMap.find( key );
+        if ( it != data->m_valMap.end() )  {
+            vp = &(it->second);
+        }
+    }
     return vp;
 }
 
@@ -2252,7 +2249,6 @@ time the Dump() function is called recursively.
 wxString
 wxJSONValue::Dump( bool deep, int indent ) const
 {
-#if 0
     wxJSONRefData* data = GetRefData();
     wxJSON_ASSERT( data );
 
@@ -2320,8 +2316,6 @@ wxJSONValue::Dump( bool deep, int indent ) const
         }
     }
     return s;
-#endif
-    return _T("");
 }
 
 //! Returns informations about the object
