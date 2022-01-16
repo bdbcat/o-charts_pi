@@ -88,7 +88,7 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
   endif ()
 
   if (${ARCH} MATCHES "armhf")
-    add_definitions(-DOCPN_ARMHF)
+#    add_definitions(-DOCPN_ARMHF)
   endif()
 
 endif ()
