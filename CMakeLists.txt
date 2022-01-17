@@ -48,6 +48,10 @@ set(PACKAGE_NAME ${CMAKE_PROJECT_NAME})
 string(REGEX REPLACE "\([0-9]\)\.\([0-9]\).*" "ov\\1\\2"
        OCPN_MIN_VERSION ${API_OCPN_MIN_VERSION})
 
+if (COMMAND late_init)
+  late_init()
+endif ()
+
 # Set up targets. Targets sets up new targets with BUILD_TYPE set to
 # 'flatpak', 'android' or 'tarball'. The initial call without BUILD_TYPE ends
 # here.
@@ -59,10 +63,6 @@ include(Targets)
 create_targets(${FLATPAK_MANIFEST})
 if ("${BUILD_TYPE}" STREQUAL "")
   return ()
-endif ()
-
-if (COMMAND late_init)
-  late_init()
 endif ()
 
 if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
