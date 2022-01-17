@@ -43,6 +43,7 @@
 #include "eSENCChart.h"
 #include "mygeom.h"
 #include "cpl_csv.h"
+#include "georef.h"
 
 #include "pi_s52s57.h"
 #include "Osenc.h"
@@ -75,7 +76,7 @@ typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
 
 #ifdef __OCPN__ANDROID__
 #include "qdebug.h"
-#include "androidSupport.h" 
+#include "androidSupport.h"
 #endif
 
 
@@ -108,7 +109,7 @@ extern bool             g_brendered_expired;
 
 extern bool             g_b_validated;
 extern bool             g_bSENCutil_valid;
- 
+
 extern wxString         g_UserKey;
 extern bool             g_PIbDebugS57;
 extern bool             g_bEULA_OK;
@@ -149,7 +150,7 @@ WX_DEFINE_LIST(ListOfPI_S57Obj);                // Implement a list of PI_S57 Ob
 WX_DEFINE_LIST(ListOfS57Obj);                // Implement a list of S57 Objects
 WX_DEFINE_LIST(ListOfObjRazRules);
 
-#ifdef ocpnUSE_GL                         
+#ifdef ocpnUSE_GL
 extern PFNGLGENBUFFERSPROC                 s_glGenBuffers;
 extern PFNGLBINDBUFFERPROC                 s_glBindBuffer;
 extern PFNGLBUFFERDATAPROC                 s_glBufferData;
@@ -209,13 +210,13 @@ class OCPNStopWatch
 public:
     OCPNStopWatch() { Reset(); }
     void Reset() { clock_gettime(CLOCK_REALTIME, &tp); }
-    
+
     double GetTime() {
         timespec tp_end;
         clock_gettime(CLOCK_REALTIME, &tp_end);
         return (tp_end.tv_sec - tp.tv_sec) * 1.e3 + (tp_end.tv_nsec - tp.tv_nsec) / 1.e6;
     }
-    
+
 private:
     timespec tp;
 };
@@ -233,43 +234,43 @@ wxArrayString exec_SENCutil_sync( wxString cmd, bool bshowlog )
 {
     wxArrayString ret_array;
     return ret_array;
-#if 0    
+#if 0
     ret_array.Alloc(1000);
-    
+
     if(!g_b_validated && !g_bSENCutil_valid){
         validate_SENC_server();
         g_b_validated = true;
     }
-    
+
     if(!g_sencutil_bin.Length()){
         ret_array.Add(_T("ERROR: s63_pi could not execute OCPNsenc utility\n"));
-        
+
         return ret_array;
     }
-    
+
     cmd.Prepend(g_sencutil_bin + _T(" "));
- 
+
     wxLogMessage( cmd );
-    
+
     if( bshowlog ){
         ScreenLogMessage(_T("\n"));
     }
 
     bool bsuppress_last = g_bsuppress_log;
     g_bsuppress_log = !bshowlog;
-    
+
     long rv = wxExecute(cmd, ret_array, ret_array );
-    
+
     g_bsuppress_log = bsuppress_last;
-    
+
     if(-1 == rv) {
         ret_array.Add(_T("ERROR: s63_pi could not execute OCPNsenc utility\n"));
         ret_array.Add(cmd.Mid(0, 60) + _T("...") + _T("\n"));
         s_last_sync_error = _T("NOEXEC");
     }
-        
+
     return ret_array;
-#endif    
+#endif
 }
 
 bool exec_results_check( wxArrayString &array )
@@ -281,7 +282,7 @@ bool exec_results_check( wxArrayString &array )
             return false;
         }
     }
-        
+
     return true;
 }
 
@@ -291,11 +292,11 @@ class UtilProcess: public wxProcess
 public:
     UtilProcess();
     ~UtilProcess();
-    
+
     void OnTerminate(int pid, int status);
     wxString    m_outstring;
     bool        term_happened;
-    
+
 };
 
 UtilProcess::UtilProcess()
@@ -318,9 +319,9 @@ void UtilProcess::OnTerminate(int pid, int status)
             m_outstring += c;
         }
     }
-    
+
     term_happened = true;
-    
+
     wxPrintf(_T("%s"), m_outstring.c_str());
 //     if( s_plogtc )
 //         ScreenLogMessage(m_outstring);
@@ -329,35 +330,35 @@ void UtilProcess::OnTerminate(int pid, int status)
 #if 0
 unsigned char *eSENCChart::GetSENCCryptKeyBuffer( const wxString& FullPath, size_t* bufsize )
 {
-    
+
     unsigned char *cb = (unsigned char *)malloc(1024);
 
     if(bufsize)
         *bufsize = 1024;
 
-    
+
     wxString tmp_file = wxFileName::CreateTempFileName( _T("") );
-    
+
     //  Get the one-time pad key
     wxString cmd;
-    cmd += _T(" -n ");          
-    
+    cmd += _T(" -n ");
+
     cmd += _T(" -i ");
     cmd += _T("\"");
     cmd += FullPath;
     cmd += _T("\"");
-    
+
     cmd += _T(" -o ");
     cmd += _T("\"");
     cmd += tmp_file;
     cmd += _T("\"");
-    
+
     cmd += _T(" -u ");
     cmd += GetUserpermit();
-    
+
     cmd += _T(" -e ");
     //cmd += GetInstallpermit();
-    
+
     if(g_benable_screenlog && (g_pPanelScreenLog || g_pScreenLog) ) {
         cmd += _T(" -b ");
         wxString port;
@@ -367,15 +368,15 @@ unsigned char *eSENCChart::GetSENCCryptKeyBuffer( const wxString& FullPath, size
 
     cmd += _T(" -p ");
     cmd += m_cell_permit;
-    
+
     cmd += _T(" -z ");
     cmd += _T("\"");
     cmd += g_pi_filename;
     cmd += _T("\"");
-    
-    
+
+
     wxArrayString ehdr_result = exec_SENCutil_sync( cmd, false);
-    
+
     //  Read the key
     wxFileInputStream *ifs = new wxFileInputStream(tmp_file);
     if ( !ifs->IsOk() ){
@@ -389,11 +390,11 @@ unsigned char *eSENCChart::GetSENCCryptKeyBuffer( const wxString& FullPath, size
         wxRemoveFile(tmp_file);
         return cb;
     }
-    
+
     delete ifs;
     wxRemoveFile(tmp_file);
     return cb;
-    
+
 }
 
 #endif
@@ -423,7 +424,7 @@ CryptInputStream::~CryptInputStream ( )
 {
     if (m_owns)
         delete m_parent_stream;
-    
+
     delete m_outbuf;
 }
 
@@ -441,9 +442,9 @@ void CryptInputStream::SetCryptBuffer( unsigned char *buffer, size_t cbsize )
 wxInputStream &CryptInputStream::Read(void *buffer, size_t bufsize)
 {
     if(m_cbuf){
-        
+
         m_parent_stream->Read(buffer, bufsize);
-        
+
         size_t ibuf_count = 0;
         char *buf_crypt = (char *)buffer;
         size_t buf_left = bufsize;
@@ -457,18 +458,18 @@ wxInputStream &CryptInputStream::Read(void *buffer, size_t bufsize)
                 if(++c_idx >= m_cbuf_size)
                     c_idx = 0;
             }
-            
+
             m_cb_offset = c_idx;
-            
+
             buf_left -= ibuf_count;
         }
-        
+
     }
     else
         m_parent_stream->Read(buffer, bufsize);
-    
+
     return *m_parent_stream;
-    
+
 }
 
 char CryptInputStream::GetC()
@@ -476,9 +477,9 @@ char CryptInputStream::GetC()
     unsigned char c;
     Read(&c, sizeof(c));
     return m_parent_stream->LastRead() ? c : wxEOF;
-    
+
 }
-   
+
 bool CryptInputStream::Eof()
 {
     return m_parent_stream->Eof();
@@ -561,7 +562,7 @@ int oeuSENCChart::Init( const wxString& name, int init_flags )
     if(chartFailCount[sname] > 2){
         return PI_INIT_FAIL_REMOVE;
     }
-            
+
     //  Basic existence check...
     if( !wxFileName::FileExists( name ) )
         return PI_INIT_FAIL_REMOVE;
@@ -569,15 +570,15 @@ int oeuSENCChart::Init( const wxString& name, int init_flags )
     if(!processChartinfo( name )){
         return PI_INIT_FAIL_REMOVE;
     }
-    
+
     //    Use a static semaphore flag to prevent recursion
     if( s_PI_bInS57 ) {
         return PI_INIT_FAIL_NOERROR;
     }
     s_PI_bInS57++;
-    
+
     PI_InitReturn ret_val = PI_INIT_FAIL_NOERROR;
-    
+
     m_FullPath = name;
     m_Description = m_FullPath;
 
@@ -585,24 +586,24 @@ int oeuSENCChart::Init( const wxString& name, int init_flags )
     m_ChartFamily = PI_CHART_FAMILY_VECTOR;
     m_projection = PI_PROJECTION_MERCATOR;
 
-    
+
     if(!g_bUserKeyHintTaken)
         processUserKeyHint(name);
-    
+
     validate_SENC_server();
-       
+
     if( PI_HEADER_ONLY == init_flags ){
-       
+
         m_SENCFileName = name;
-        ret_val = CreateHeaderDataFromeSENC(); 
+        ret_val = CreateHeaderDataFromeSENC();
     }
-        
+
     else if( PI_FULL_INIT == init_flags ){
 
         m_SENCFileName = name;
         ret_val = PostInit( init_flags, global_color_scheme );
     }
-    
+
     // On any error, allow a new reload of UserKey from ChartInfo files
     // presumably coming from another directory.
     if(ret_val != PI_INIT_OK){
@@ -647,7 +648,7 @@ int oeuEVCChart::Init( const wxString& name, int init_flags )
     if(chartFailCount[sname] > 2){
         return PI_INIT_FAIL_REMOVE;
     }
-            
+
     //  Basic existence check...
     if( !wxFileName::FileExists( name ) )
         return PI_INIT_FAIL_REMOVE;
@@ -655,15 +656,15 @@ int oeuEVCChart::Init( const wxString& name, int init_flags )
     if(!processChartinfo( name )){
         return PI_INIT_FAIL_REMOVE;
     }
-    
+
     //    Use a static semaphore flag to prevent recursion
     if( s_PI_bInS57 ) {
         return PI_INIT_FAIL_NOERROR;
     }
     s_PI_bInS57++;
-    
+
     PI_InitReturn ret_val = PI_INIT_FAIL_NOERROR;
-    
+
     m_FullPath = name;
     m_Description = m_FullPath;
 
@@ -671,24 +672,24 @@ int oeuEVCChart::Init( const wxString& name, int init_flags )
     m_ChartFamily = PI_CHART_FAMILY_VECTOR;
     m_projection = PI_PROJECTION_MERCATOR;
 
-    
+
     if(!g_bUserKeyHintTaken)
         processUserKeyHint(name);
-    
+
     validate_SENC_server();
-       
+
     if( PI_HEADER_ONLY == init_flags ){
-       
+
         m_SENCFileName = name;
-        ret_val = CreateHeaderDataFromeSENC(); 
+        ret_val = CreateHeaderDataFromeSENC();
     }
-        
+
     else if( PI_FULL_INIT == init_flags ){
 
         m_SENCFileName = name;
         ret_val = PostInit( init_flags, global_color_scheme );
     }
-    
+
     // On any error, allow a new reload of UserKey from ChartInfo files
     // presumably coming from another directory.
     if(ret_val != PI_INIT_OK){
@@ -733,27 +734,27 @@ int oesuChart::Init( const wxString& name, int init_flags )
     if(chartFailCount[sname] > 2){
         return PI_INIT_FAIL_REMOVE;
     }
-            
+
     //  Basic existence check...
     if( !wxFileName::FileExists( name ) )
         return PI_INIT_FAIL_REMOVE;
 
-    
+
     CreateChartInfoFile( name );
-    
+
     if(!processChartinfo( name, _T("KEEP") )){
         return PI_INIT_FAIL_REMOVE;
     }
- 
+
     //    Use a static semaphore flag to prevent recursion
     if( s_PI_bInS57 ) {
         return PI_INIT_FAIL_NOERROR;
     }
     s_PI_bInS57++;
 
-    
+
     PI_InitReturn ret_val = PI_INIT_FAIL_NOERROR;
-    
+
     m_FullPath = name;
     m_Description = m_FullPath;
 
@@ -768,7 +769,7 @@ int oesuChart::Init( const wxString& name, int init_flags )
             wxString msg(_T("   OERNC_PI: chart RInstallKey not found: "));
             msg.Append(m_FullPath);
             wxLogMessage(msg);
-          
+
             s_PI_bInS57--;
             return INIT_FAIL_REMOVE;
           }
@@ -776,7 +777,7 @@ int oesuChart::Init( const wxString& name, int init_flags )
     }
 
     m_rKey = key;
-    
+
 #if 0
     wxString getExpDate( wxString rkey);
     wxString ddate = getExpDate( m_rKey);
@@ -785,15 +786,15 @@ int oesuChart::Init( const wxString& name, int init_flags )
     msg.Append(_T(" Expiry dates: "));
     msg.Append(ddate);
     wxLogMessage(msg);
-#endif   
+#endif
     validate_SENC_server();
-       
+
     if( PI_HEADER_ONLY == init_flags ){
-       
+
         m_SENCFileName = name;
         ret_val = CreateHeaderDataFromeSENC();
     }
-        
+
     else if( PI_FULL_INIT == init_flags ){
 
         m_SENCFileName = name;
@@ -801,7 +802,7 @@ int oesuChart::Init( const wxString& name, int init_flags )
     }
 
     // Process any expiration information, only found on oesu chart types
-    
+
     if((int)ret_val == ERROR_SENC_EXPIRED){
         // Hard expiration, show the message and quit.
         ShowExpiredErrorMessage(m_FullPath, m_uSENCExpireDaysRemaining, m_uSENCGraceDaysRemaining, m_uSENCGraceDaysAllowed);
@@ -827,10 +828,10 @@ bool oesuChart::CreateChartInfoFile( wxString chartName, bool forceCreate )
 
     if(::wxFileExists( chartInfo ) && !forceCreate)
         return true;
-    
+
     // Find and parse the Keyfile
     wxString installBase = getChartInstallBase( chartName );
-    
+
     // Make a list of all XML or xml files found in the installBase directory of the chart itself.
     if(installBase.IsEmpty()){
         wxFileName fn(chartName);
@@ -840,45 +841,45 @@ bool oesuChart::CreateChartInfoFile( wxString chartName, bool forceCreate )
     wxArrayString xmlFiles;
     int nFiles = wxDir::GetAllFiles(installBase, &xmlFiles, _T("*.XML"));
     nFiles += wxDir::GetAllFiles(installBase, &xmlFiles, _T("*.xml"));
-        
+
     //  Read and parse them all
     for(unsigned int i=0; i < xmlFiles.GetCount(); i++){
         wxString xmlFile = xmlFiles.Item(i);
         if(xmlFile.Find(_T("ChartList")) != wxNOT_FOUND)
             continue;
-        
+
         FILE *iFile = fopen(xmlFile.mb_str(), "rb");
         if (iFile <= (void *) 0)
             continue;            // file error
-        
-        // compute the file length    
+
+        // compute the file length
         fseek(iFile, 0, SEEK_END);
         size_t iLength = ftell(iFile);
-    
+
         char *iText = (char *)calloc(iLength + 1, sizeof(char));
-    
+
         // Read the file
         fseek(iFile, 0, SEEK_SET);
         size_t nread = 0;
         while (nread < iLength){
             nread += fread(iText + nread, 1, iLength - nread, iFile);
-        }           
+        }
         fclose(iFile);
 
-    
+
         //  Parse the XML
         TiXmlDocument * doc = new TiXmlDocument();
         doc->Parse( iText);
-    
+
         TiXmlElement * root = doc->RootElement();
         if(!root){
             free( iText );
             continue;
         }
-            
+
         wxString rootName = wxString::FromUTF8( root->Value() );
         if(rootName.IsSameAs(_T("keyList"))){
-            
+
             TiXmlNode *child;
             for ( child = root->FirstChild(); child != 0; child = child->NextSibling()){
                 if(!strcmp(child->Value(), "Chart")){
@@ -934,7 +935,7 @@ bool oesuChart::CreateChartInfoFile( wxString chartName, bool forceCreate )
             }
         }
         free( iText );
-                
+
 //  <ChartInfo>xxx</ChartInfo>
 //  <>2021/1-4</Edition>
 //  <>1619084536</ExpirationDate>
@@ -947,7 +948,7 @@ bool oesuChart::CreateChartInfoFile( wxString chartName, bool forceCreate )
     wxArrayString htmlFiles;
     int nhtmlFiles = wxDir::GetAllFiles(installBase, &htmlFiles, _T("*.HTML"));
     nhtmlFiles += wxDir::GetAllFiles(installBase, &htmlFiles, _T("*.html"));
-    
+
     wxString EULAfileName;
     wxArrayString EULALines;
     for(int i=0 ; i < nhtmlFiles ; i++){
@@ -965,14 +966,14 @@ bool oesuChart::CreateChartInfoFile( wxString chartName, bool forceCreate )
 
     wxString l2 = _T("ochartsEULAShow:");
     l2 += wxString(m_chartInfoEULAShow.c_str());
-    
+
     wxString l3 = _T("ChartInfo:");
     l3 += wxString::FromUTF8(m_chartInfo.c_str());
     l3 += _T(";");
     l3 += wxString(m_chartInfoEdition.c_str());
     l3 += _T(";");
     l3 += wxString(m_chartInfoExpirationDate.c_str());
-    
+
     wxString l4 = _T("ChartInfoShow:");
     l4 += wxString(m_chartInfoShow.c_str());
 
@@ -981,21 +982,21 @@ bool oesuChart::CreateChartInfoFile( wxString chartName, bool forceCreate )
     wxString ciPath = installBase;
     ciPath += wxFileName::GetPathSeparator();
     ciPath += _T("Chartinfo.txt");
-        
+
     wxRemoveFile(ciPath);
     wxTextFile file( ciPath );
     file.Create();
 
     for(unsigned int i=0 ; i < EULALines.GetCount() ; i++)
         file.AddLine(EULALines[i]);
-    
+
     file.AddLine( l2 );
     file.AddLine( l3 );
     file.AddLine( l4 );
 
     file.Write();
     file.Close();
- 
+
 #else
     // Create a  temporary Chartinfo.txt file in the OCPN cache directory
     wxString ciPath = AndroidGetCacheDir();
@@ -1008,7 +1009,7 @@ bool oesuChart::CreateChartInfoFile( wxString chartName, bool forceCreate )
 
     for(unsigned int i=0 ; i < EULALines.GetCount() ; i++)
         file.AddLine(EULALines[i]);
-    
+
     file.AddLine( l2 );
     file.AddLine( l3 );
     file.AddLine( l4 );
@@ -1020,12 +1021,12 @@ bool oesuChart::CreateChartInfoFile( wxString chartName, bool forceCreate )
     wxString dest = installBase;
     dest += wxFileName::GetPathSeparator();
     dest += _T("Chartinfo.txt");
-    
+
     AndroidSecureCopyFile(ciPath, dest);
-    
+
     wxRemoveFile(ciPath);
 
-#endif    
+#endif
     return true;
 }
 
@@ -1039,22 +1040,22 @@ PI_InitReturn oesuChart::CreateHeaderDataFromeSENC()
     senc.setKey(m_rKey);
 
     int retCode = senc.ingestHeader( m_SENCFileName.GetFullPath() );
-    
+
     // For uSENC charts, capture the expiration info
     m_uSENCExpireDaysRemaining = senc.m_expireDaysRemaining;
     m_uSENCGraceDaysAllowed = senc.m_graceDaysAllowed;
     m_uSENCGraceDaysRemaining = senc.m_graceDaysRemining;
-    
+
     if(retCode != SENC_NO_ERROR){
-            
+
           wxString msg( _T("   Cannot load SENC file ") );
           msg.Append( m_SENCFileName.GetFullPath() );
           wxLogMessage( msg );
- 
+
           wxLogMessage(_T("Retry..."));
-          
+
           validate_SENC_server();               // reset the server...
-          
+
           retCode = senc.ingestHeader( m_SENCFileName.GetFullPath() );
           if(retCode != SENC_NO_ERROR){
               wxString msg( _T("   Again, cannot load SENC file ") );
@@ -1062,11 +1063,11 @@ PI_InitReturn oesuChart::CreateHeaderDataFromeSENC()
               wxLogMessage( msg );
               return (PI_InitReturn)retCode;
           }
-         
+
     }
-    
+
     ProcessHeader( senc );
-    
+
     return (PI_InitReturn)retCode;
 }
 
@@ -1074,9 +1075,9 @@ PI_InitReturn oesuChart::PostInit( int flags, int cs )
 {
     //    Build the RAZ structure
     int retCode = BuildRAZFromSENCFile( m_SENCFileName.GetFullPath(), m_rKey, CTYPE_OESU );
-    
+
     if(retCode != SENC_NO_ERROR){
-    
+
         //
 //         if(( ERROR_SIGNATURE_FAILURE == retCode )  || ( ERROR_SENC_CORRUPT == retCode ) ){
 //             wxString permit = GetUserKey( LEGEND_FIRST, false );
@@ -1087,25 +1088,25 @@ PI_InitReturn oesuChart::PostInit( int flags, int cs )
             wxString msg( _T("   Cannot load SENC file ") );
             msg.Append( m_SENCFileName.GetFullPath() );
             wxLogMessage( msg );
-        
+
             return (PI_InitReturn)retCode;
         }
     }
-    
+
     //      Check for and if necessary rebuild Thumbnail
     //      Going to be in the global (user) SENC file directory
-    
+
     #if 0
     wxString SENCdir = m_senc_dir;
     if( SENCdir.Last() != m_SENCFileName.GetPathSeparator() )
         SENCdir.Append( m_SENCFileName.GetPathSeparator() );
-    
+
     wxFileName ThumbFileName( SENCdir, m_SENCFileName.GetName(), _T("BMP") );
-    
+
     if( !ThumbFileName.FileExists() || m_bneed_new_thumbnail ) BuildThumbnail(
         ThumbFileName.GetFullPath() );
     #endif
-    
+
     //  Update the member thumbdata structure
     #if 0
     if( ThumbFileName.FileExists() ) {
@@ -1143,26 +1144,26 @@ PI_InitReturn oesuChart::PostInit( int flags, int cs )
 eSENCChart::eSENCChart()
 {
     m_senc_dir =  g_SENCdir;
-    
+
     // Create ATON arrays, needed by S52PLIB
     pFloatingATONArray = new wxArrayPtrVoid;
     pRigidATONArray = new wxArrayPtrVoid;
-    
+
     m_ChartType = PI_CHART_TYPE_PLUGIN;
     m_ChartFamily = PI_CHART_FAMILY_VECTOR;
-    
+
     for( int i = 0; i < PI_PRIO_NUM; i++ )
         for( int j = 0; j < PI_LUPNAME_NUM; j++ )
             razRules[i][j] = NULL;
-        
+
     m_Chart_Scale = 1;                              // Will be fetched during Init()
     m_Chart_Skew = 0.0;
     pDIB = NULL;
     m_pCloneBM = NULL;
-    
+
     m_bLinePrioritySet = false;
     m_this_chart_context = NULL;
-    
+
     m_nCOVREntries = 0;
     m_pCOVRTable = NULL;
     m_pCOVRTablePoints = NULL;
@@ -1170,21 +1171,21 @@ eSENCChart::eSENCChart()
     m_nNoCOVREntries = 0;
     m_pNoCOVRTable = NULL;
     m_pNoCOVRTablePoints = NULL;
-    
+
     m_latest_update = 0;
     //m_pcontour_array = new ArrayOfSortedDoubles;
-    
+
     m_next_safe_contour = 1e6;
     m_LineVBO_name = -1;
-    
+
     m_plib_state_hash = 0;
-    
+
     m_line_vertex_buffer = 0;
-    
+
     m_nvaldco = 0;
     m_nvaldco_alloc = 0;
     m_pvaldco_array = NULL;
-    
+
     // from viewport, should be in plugin_viewport CTOR
     m_last_vp.bValid = false;
     m_last_vp.skew = 0.;
@@ -1193,7 +1194,7 @@ eSENCChart::eSENCChart()
     m_last_vp.b_quilt = false;
     m_last_vp.pix_height = m_last_vp.pix_width = 0;
     m_last_vp.m_projection_type = PROJECTION_MERCATOR;
-    
+
 }
 
 eSENCChart::~eSENCChart()
@@ -1210,7 +1211,7 @@ eSENCChart::~eSENCChart()
           free( m_pNoCOVRTable[j] );
       free( m_pNoCOVRTable );
       free( m_pNoCOVRTablePoints );
-      
+
       //      free(m_ppartial_bytes);
 
 //      delete m_pBMPThumb;
@@ -1219,12 +1220,12 @@ eSENCChart::~eSENCChart()
       FreeObjectsAndRules();
 
       delete pDIB;
-      
+
       delete pFloatingATONArray;
       delete pRigidATONArray;
-      
+
       free( m_this_chart_context );
-      
+
       VE_Hash::iterator it;
       for( it = m_ve_hash.begin(); it != m_ve_hash.end(); ++it ) {
           VE_Element *value = it->second;
@@ -1234,7 +1235,7 @@ eSENCChart::~eSENCChart()
           }
       }
       m_ve_hash.clear();
-      
+
       VC_Hash::iterator itc;
       for( itc = m_vc_hash.begin(); itc != m_vc_hash.end(); ++itc ) {
           VC_Element *value = itc->second;
@@ -1249,23 +1250,23 @@ eSENCChart::~eSENCChart()
       if(s_glDeleteBuffers && (m_LineVBO_name > 0))
           s_glDeleteBuffers(1, (GLuint *)&m_LineVBO_name);
 #endif
-          
+
       for(unsigned int i=0 ; i < m_pcs_vector.size() ; i++)
           delete m_pcs_vector.at(i);                    // destroy the connector segments
-          
+
       m_pcs_vector.clear();
 
       for(unsigned int i=0 ; i < m_pve_vector.size() ; i++)
           delete m_pve_vector.at(i);                    // destroy the edges segments
-          
+
       m_pve_vector.clear();
-      
+
       //m_pcontour_array->Clear();
       //delete m_pcontour_array;
       free(m_pvaldco_array);
-      
+
       free(m_line_vertex_buffer);
-      
+
       delete m_pCloneBM;
 }
 
@@ -1289,43 +1290,43 @@ void eSENCChart::FreeObjectsAndRules()
     //      and any child lists
     //      The LUPs of base elements are deleted elsewhere ( void s52plib::DestroyLUPArray ( wxArrayOfLUPrec *pLUPArray ))
     //      But we need to manually destroy any LUPS related to children
-    
+
     ObjRazRules *top;
     ObjRazRules *nxx;
     for( int i = 0; i < PRIO_NUM; ++i ) {
         for( int j = 0; j < LUPNAME_NUM; j++ ) {
-            
+
             top = razRules[i][j];
             while( top != NULL ) {
                 top->obj->nRef--;
                 if( 0 == top->obj->nRef )
                     delete top->obj;
-                
+
                 if( top->child ) {
                     ObjRazRules *ctop = top->child;
                     while( ctop ) {
                         delete ctop->obj;
-                        
+
                         if( ps52plib ) ps52plib->DestroyLUP( ctop->LUP );
                         delete ctop->LUP;
-                        
+
                         ObjRazRules *cnxx = ctop->next;
                         delete ctop;
                         ctop = cnxx;
                     }
                 }
-                
+
                 if( top->mps ){
                     if( ps52plib && top->mps->cs_rules ){
                         for(unsigned int i=0 ; i < top->mps->cs_rules->GetCount() ; i++){
                             Rules *rule_chain_top = top->mps->cs_rules->Item(i);
                             ps52plib->DestroyRulesChain( rule_chain_top );
                         }
-                        delete top->mps->cs_rules; 
+                        delete top->mps->cs_rules;
                     }
                     free( top->mps );
                 }
-                
+
                 nxx = top->next;
                 free( top );
                 top = nxx;
@@ -1338,26 +1339,26 @@ void eSENCChart::FreeObjectsAndRules()
 {
     //      Delete the created PI_S57Obj array
     //      and any child lists
-    
+
     ObjRazRules *top;
     ObjRazRules *nxx;
     for( int i = 0; i < PRIO_NUM; ++i ) {
         for( int j = 0; j < LUPNAME_NUM; j++ ) {
-            
+
             top = razRules[i][j];
             while( top != NULL ) {
 
-//  Needs 3.3.1618 ++                
+//  Needs 3.3.1618 ++
                 if( top->S52_Context )
                     PI_PLIBFreeContext( top->S52_Context );
-                
- 
+
+
                 nxx = top->next;
-                
+
                 top->nRef--;
                 if( 0 == top->nRef )
                     delete top;
-                
+
                 top = nxx;
             }
         }
@@ -1375,12 +1376,12 @@ wxString eSENCChart::Get_eHDR_Name( const wxString& name000 )
 {
     wxFileName tfn(name000);
     wxString base_name = tfn.GetName();
-    
+
     wxString efn = m_senc_dir;
     efn += wxFileName::GetPathSeparator();
     efn += base_name;
     efn += _T(".ehdr");
-    
+
     return efn;
 }
 
@@ -1392,7 +1393,7 @@ int nInit;
 int eSENCChart::Init( const wxString& name, int init_flags )
 {
     return PI_INIT_FAIL_NOERROR;                // always implemented by derived chart classes
-    
+
 }
 
 
@@ -1463,7 +1464,7 @@ void eSENCChart::SetColorScheme(int cs, bool bApplyImmediate)
 
     //  Force a reload of text caches
     m_plib_state_hash = 0;
-    
+
 
 }
 
@@ -1577,23 +1578,23 @@ PI_InitReturn eSENCChart::CreateHeaderDataFromeSENC( void )
         wxLogMessage( msg );
         return PI_INIT_FAIL_REMOVE;
     }
-    
-    
+
+
     Osenc senc;
     senc.setKey(g_UserKey);
 
     int retCode = senc.ingestHeader( m_SENCFileName.GetFullPath() );
-        
+
     if(retCode != SENC_NO_ERROR){
-            
+
           wxString msg( _T("   Cannot load SENC file ") );
           msg.Append( m_SENCFileName.GetFullPath() );
           wxLogMessage( msg );
- 
+
           wxLogMessage(_T("Retry..."));
-          
+
           validate_SENC_server();               // reset the server...
-          
+
           retCode = senc.ingestHeader( m_SENCFileName.GetFullPath() );
           if(retCode != SENC_NO_ERROR){
               wxString msg( _T("   Again, cannot load SENC file ") );
@@ -1601,60 +1602,60 @@ PI_InitReturn eSENCChart::CreateHeaderDataFromeSENC( void )
               wxLogMessage( msg );
               return (PI_InitReturn) retCode;
           }
-         
+
     }
-    
+
     //  Header has loaded OK
     {
-        
+
         // Get Chartbase member elements from the oSENC file records in the header
-        
+
         // Scale
         m_Chart_Scale = senc.getSENCReadScale();
-        
+
         // Nice Name
         m_Name = senc.getReadName();
-        
+
         // ID
         m_ID = senc.getReadID();
-        
+
         // Extents
         Extent &ext = senc.getReadExtent();
-        
+
         m_FullExtent.ELON = ext.ELON;
         m_FullExtent.WLON = ext.WLON;
         m_FullExtent.NLAT = ext.NLAT;
         m_FullExtent.SLAT = ext.SLAT;
         m_bExtentSet = true;
-        
-        
+
+
         //Coverage areas
         SENCFloatPtrArray &AuxPtrArray = senc.getSENCReadAuxPointArray();
         wxArrayInt &AuxCntArray = senc.getSENCReadAuxPointCountArray();
-        
+
         m_nCOVREntries = AuxCntArray.GetCount();
-        
+
         m_pCOVRTablePoints = (int *) malloc( m_nCOVREntries * sizeof(int) );
         m_pCOVRTable = (float **) malloc( m_nCOVREntries * sizeof(float *) );
-        
+
         for( unsigned int j = 0; j < (unsigned int) m_nCOVREntries; j++ ) {
             m_pCOVRTablePoints[j] = AuxCntArray.Item( j );
             m_pCOVRTable[j] = (float *) malloc( AuxCntArray.Item( j ) * 2 * sizeof(float) );
             memcpy( m_pCOVRTable[j], AuxPtrArray.Item( j ),
                     AuxCntArray.Item( j ) * 2 * sizeof(float) );
         }
-        
+
         // NoCoverage areas
         SENCFloatPtrArray &NoCovrPtrArray = senc.getSENCReadNOCOVRPointArray();
         wxArrayInt &NoCovrCntArray = senc.getSENCReadNOCOVRPointCountArray();
 
         m_nNoCOVREntries = NoCovrCntArray.GetCount();
-        
+
         if( m_nNoCOVREntries ) {
             //    Create new NoCOVR entries
             m_pNoCOVRTablePoints = (int *) malloc( m_nNoCOVREntries * sizeof(int) );
             m_pNoCOVRTable = (float **) malloc( m_nNoCOVREntries * sizeof(float *) );
-            
+
             for( unsigned int j = 0; j < (unsigned int) m_nNoCOVREntries; j++ ) {
                 int npoints = NoCovrCntArray.Item( j );
                 m_pNoCOVRTablePoints[j] = npoints;
@@ -1663,27 +1664,27 @@ PI_InitReturn eSENCChart::CreateHeaderDataFromeSENC( void )
                         npoints * 2 * sizeof(float) );
             }
         }
-        
-        
+
+
         //  Misc
         m_SE = m_edtn000;
         m_datum_str = _T("WGS84");
         m_SoundingsDatum = senc.getSoundingsDatumString();
         m_DepthUnits = _T("Meters"); //senc.getSoundingsDatumString();
-        
+
         // TODO ?? int senc_file_version = senc.getSencReadVersion();
-        
+
         // TODO ?? int last_update = senc.getSENCReadLastUpdate();
-        
+
         wxString str = senc.getSENCFileCreateDate();
         wxDateTime SENCCreateDate;
         SENCCreateDate.ParseFormat( str, _T("%Y%m%d"));
-        
+
         if( SENCCreateDate.IsValid() )
             SENCCreateDate.ResetTime();                   // to midnight
-            
+
          wxString senc_base_edtn = senc.getSENCReadBaseEdition();
-        
+
         wxDateTime updt;
         updt.ParseFormat( senc.getUpdateDate(), _T("%Y%m%d") );
         if( !updt.IsValid() )
@@ -1691,9 +1692,9 @@ PI_InitReturn eSENCChart::CreateHeaderDataFromeSENC( void )
 
 //        if( !updt.IsValid() )
 //            int yyp = 4;
-        
+
         m_EdDate = updt;
-        
+
     }
 
     return (PI_InitReturn) retCode;
@@ -1702,53 +1703,53 @@ PI_InitReturn eSENCChart::CreateHeaderDataFromeSENC( void )
 bool eSENCChart::ProcessHeader(Osenc &senc)
 {
          // Get Chartbase member elements from the already loaded oSENC file records in the header
-        
+
         // Scale
         m_Chart_Scale = senc.getSENCReadScale();
-        
+
         // Nice Name
         m_Name = senc.getReadName();
-        
+
         // ID
         m_ID = senc.getReadID();
-        
+
         // Extents
         Extent &ext = senc.getReadExtent();
-        
+
         m_FullExtent.ELON = ext.ELON;
         m_FullExtent.WLON = ext.WLON;
         m_FullExtent.NLAT = ext.NLAT;
         m_FullExtent.SLAT = ext.SLAT;
         m_bExtentSet = true;
-        
-        
+
+
         //Coverage areas
         SENCFloatPtrArray &AuxPtrArray = senc.getSENCReadAuxPointArray();
         wxArrayInt &AuxCntArray = senc.getSENCReadAuxPointCountArray();
-        
+
         m_nCOVREntries = AuxCntArray.GetCount();
-        
+
         m_pCOVRTablePoints = (int *) malloc( m_nCOVREntries * sizeof(int) );
         m_pCOVRTable = (float **) malloc( m_nCOVREntries * sizeof(float *) );
-        
+
         for( unsigned int j = 0; j < (unsigned int) m_nCOVREntries; j++ ) {
             m_pCOVRTablePoints[j] = AuxCntArray.Item( j );
             m_pCOVRTable[j] = (float *) malloc( AuxCntArray.Item( j ) * 2 * sizeof(float) );
             memcpy( m_pCOVRTable[j], AuxPtrArray.Item( j ),
                     AuxCntArray.Item( j ) * 2 * sizeof(float) );
         }
-        
+
         // NoCoverage areas
         SENCFloatPtrArray &NoCovrPtrArray = senc.getSENCReadNOCOVRPointArray();
         wxArrayInt &NoCovrCntArray = senc.getSENCReadNOCOVRPointCountArray();
 
         m_nNoCOVREntries = NoCovrCntArray.GetCount();
-        
+
         if( m_nNoCOVREntries ) {
             //    Create new NoCOVR entries
             m_pNoCOVRTablePoints = (int *) malloc( m_nNoCOVREntries * sizeof(int) );
             m_pNoCOVRTable = (float **) malloc( m_nNoCOVREntries * sizeof(float *) );
-            
+
             for( unsigned int j = 0; j < (unsigned int) m_nNoCOVREntries; j++ ) {
                 int npoints = NoCovrCntArray.Item( j );
                 m_pNoCOVRTablePoints[j] = npoints;
@@ -1757,27 +1758,27 @@ bool eSENCChart::ProcessHeader(Osenc &senc)
                         npoints * 2 * sizeof(float) );
             }
         }
-        
-        
+
+
         //  Misc
         m_SE = m_edtn000;
         m_datum_str = _T("WGS84");
         m_SoundingsDatum = senc.getSoundingsDatumString();
         m_DepthUnits = _T("Meters"); //senc.getSoundingsDatumString();
-        
+
         // TODO ?? int senc_file_version = senc.getSencReadVersion();
-        
+
         // TODO ?? int last_update = senc.getSENCReadLastUpdate();
-        
+
         wxString str = senc.getSENCFileCreateDate();
         wxDateTime SENCCreateDate;
         SENCCreateDate.ParseFormat( str, _T("%Y%m%d"));
-        
+
         if( SENCCreateDate.IsValid() )
             SENCCreateDate.ResetTime();                   // to midnight
-            
+
          wxString senc_base_edtn = senc.getSENCReadBaseEdition();
-        
+
         wxDateTime updt;
         updt.ParseFormat( senc.getUpdateDate(), _T("%Y%m%d") );
         if( !updt.IsValid() )
@@ -1792,10 +1793,10 @@ wxBitmap &eSENCChart::RenderRegionViewOnDCNoText(const PlugIn_ViewPort& VPoint, 
 {
     bool b_text = ps52plib->GetShowS57Text();
     ps52plib->SetShowS57Text( false );
-    
+
     wxBitmap & ret_val = RenderRegionView(VPoint, Region);
     ps52plib->SetShowS57Text( b_text );
-    
+
     return ret_val;
 }
 
@@ -1803,9 +1804,9 @@ bool eSENCChart::RenderRegionViewOnDCTextOnly(wxMemoryDC& dc, const PlugIn_ViewP
 {
     if(!dc.IsOk())
         return false;
-    
+
     SetVPParms( VPoint );
-   
+
     //  If the viewport is rotated, there will only be one rectangle in the region
     //  so we can take a shortcut...
     if(fabs(VPoint.rotation) > .01){
@@ -1815,14 +1816,14 @@ bool eSENCChart::RenderRegionViewOnDCTextOnly(wxMemoryDC& dc, const PlugIn_ViewP
         wxRegionIterator upd( Region ); // get the Region rect list
         while( upd.HaveRects() ) {
             wxRect rect = upd.GetRect();
-        
+
             wxDCClipper clip(dc, rect);
             DCRenderText( dc, VPoint );
-        
+
             upd++;
         }  //while
     }
-    
+
     return true;
 }
 
@@ -1832,22 +1833,22 @@ void eSENCChart::ClearPLIBTextList()
     //        Clear the text declutter list
     if(ps52plib)
         ps52plib->ClearTextList();
-    
+
 }
 
 wxBitmap &eSENCChart::RenderRegionView(const PlugIn_ViewPort& VPoint, const wxRegion &Region)
 {
     #if 1
     SetVPParms( VPoint );
-    
+
     m_cvp = CreateCompatibleViewport( VPoint );
-    
+
     bool force_new_view = false;
-    
+
     if( Region != m_last_Region ) force_new_view = true;
-    
+
     ps52plib->PrepareForRender(&m_cvp);
-    
+
     if( m_plib_state_hash != PI_GetPLIBStateHash() ) {
         m_bLinePrioritySet = false;                     // need to reset line priorities
         UpdateLUPs( this );                               // and update the LUPs
@@ -1857,28 +1858,28 @@ wxBitmap &eSENCChart::RenderRegionView(const PlugIn_ViewPort& VPoint, const wxRe
         SetSafetyContour();
         ps52plib->FlushSymbolCaches();
         m_last_vp.bValid = 0;
-        
+
         m_plib_state_hash = PI_GetPLIBStateHash();
     }
-    
+
     if( VPoint.view_scale_ppm != m_last_vp.view_scale_ppm ) {
         ResetPointBBoxes( m_last_vp, VPoint );
     }
-    
+
     SetLinePriorities();
 
     wxMemoryDC dc;
     DoRenderViewOnDC( dc, VPoint, force_new_view );
 
     m_last_Region = Region;
-    
+
     m_pCloneBM = GetCloneBitmap();
-    
+
     m_last_Region = Region;
-    
+
     return *m_pCloneBM;
-    
-#if 0    
+
+#if 0
     //    If quilting, we need to return a cloned bitmap instead of the original golden item
     if( VPoint.b_quilt ) {
         if( m_pCloneBM ) {
@@ -1890,18 +1891,18 @@ wxBitmap &eSENCChart::RenderRegionView(const PlugIn_ViewPort& VPoint, const wxRe
         }
         if( NULL == m_pCloneBM ) m_pCloneBM = new wxBitmap( VPoint.pix_width, VPoint.pix_height,
             -1 );
-        
+
         wxMemoryDC dc_clone;
         dc_clone.SelectObject( *m_pCloneBM );
-        
+
         #ifdef ocpnUSE_DIBSECTION
         ocpnMemDC memdc, dc_org;
         #else
         wxMemoryDC memdc, dc_org;
         #endif
-        
+
         pDIB->SelectIntoDC( dc_org );
-        
+
         //    Decompose the region into rectangles, and fetch them into the target dc
         OCPNRegionIterator upd( Region ); // get the requested rect list
         while( upd.HaveRects() ) {
@@ -1909,59 +1910,59 @@ wxBitmap &eSENCChart::RenderRegionView(const PlugIn_ViewPort& VPoint, const wxRe
             dc_clone.Blit( rect.x, rect.y, rect.width, rect.height, &dc_org, rect.x, rect.y );
             upd.NextRect();
         }
-        
+
         dc_clone.SelectObject( wxNullBitmap );
         dc_org.SelectObject( wxNullBitmap );
-        
+
         //    Create a mask
         if( b_overlay ) {
             wxColour nodat = GetGlobalColor( _T ( "NODTA" ) );
             wxColour nodat_sub = nodat;
-            
+
             #ifdef ocpnUSE_ocpnBitmap
             nodat_sub = wxColour( nodat.Blue(), nodat.Green(), nodat.Red() );
             #endif
             m_pMask = new wxMask( *m_pCloneBM, nodat_sub );
             m_pCloneBM->SetMask( m_pMask );
         }
-        
+
         dc.SelectObject( *m_pCloneBM );
     } else
         pDIB->SelectIntoDC( dc );
-    
+
     m_last_Region = Region;
-    
+
     return bnew_view;
 #endif
     #endif
-    
-    
-    
-#if 0   
+
+
+
+#if 0
     if(m_bexpired)
         g_brendered_expired = true;
-    
+
     SetVPParms( VPoint );
 
     PI_PLIBSetRenderCaps( PLIB_CAPS_LINE_BUFFER | PLIB_CAPS_SINGLEGEO_BUFFER | PLIB_CAPS_OBJSEGLIST | PLIB_CAPS_OBJCATMUTATE);
     PI_PLIBPrepareForNewRender();
-    
+
     if( m_plib_state_hash != PI_GetPLIBStateHash() ) {
         m_bLinePrioritySet = false;                     // need to reset line priorities
         UpdateLUPsOnStateChange( );                     // and update the LUPs
         ResetPointBBoxes( m_last_vp, VPoint );
         SetSafetyContour();
         m_plib_state_hash = PI_GetPLIBStateHash();
-        
+
     }
-    
-    
+
+
     if( VPoint.view_scale_ppm != m_last_vp.view_scale_ppm ) {
         ResetPointBBoxes( m_last_vp, VPoint );
     }
-    
+
     SetLinePriorities();
-    
+
     bool force_new_view = false;
 
     if( Region != m_last_Region )
@@ -1977,7 +1978,7 @@ wxBitmap &eSENCChart::RenderRegionView(const PlugIn_ViewPort& VPoint, const wxRe
     m_last_Region = Region;
 
     return *m_pCloneBM;
-#endif    
+#endif
 }
 
 int eSENCChart::RenderRegionViewOnGLNoText( const wxGLContext &glc, const PlugIn_ViewPort& VPoint,
@@ -1988,11 +1989,11 @@ int eSENCChart::RenderRegionViewOnGLNoText( const wxGLContext &glc, const PlugIn
 
     bool b_text = ps52plib->GetShowS57Text();
     ps52plib->SetShowS57Text( false );
-    
+
     int ret_val = RenderRegionViewOnGL(glc, VPoint, Region, b_use_stencil);
 
     ps52plib->SetShowS57Text( b_text );
-    
+
     return ret_val;
 }
 
@@ -2003,22 +2004,22 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
 {
 
 #ifdef ocpnUSE_GL
- 
+
     if(!g_GLOptionsSet)
         return 0;
-    
+
     //OCPNStopWatch sw;
- 
+
     m_cvp = CreateCompatibleViewport( VPoint );
-        
+
     SetVPParms( VPoint );
-    
+
     //qDebug() << "PI RenderTime1" << sw.GetTime();
-    
+
     ps52plib->PrepareForRender(&m_cvp);
 
     //qDebug() << "PI RenderTime2" << sw.GetTime();
-    
+
     if( m_plib_state_hash != PI_GetPLIBStateHash() ) {
         m_bLinePrioritySet = false;                     // need to reset line priorities
         UpdateLUPs( this );                             // and update the LUPs
@@ -2026,7 +2027,7 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
         ResetPointBBoxes( m_last_vp, VPoint );
         SetSafetyContour();
         ps52plib->FlushSymbolCaches();
-        
+
         m_plib_state_hash = PI_GetPLIBStateHash();
 
     }
@@ -2040,21 +2041,21 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
     SetLinePriorities();
 
     //qDebug() << "PI RenderTime3" << sw.GetTime();
-    
+
     //        Clear the text declutter list
     ps52plib->ClearTextList();
 
     //qDebug() << "PI RenderTime3a" << sw.GetTime();
-    
+
 ///    glPushMatrix();
 
     wxRegionIterator upd( Region ); // get the Region rect list
         while( upd.HaveRects() ) {
             wxRect rect = upd.GetRect();
 //            printf("  wSENCChart::RRVGL:  rect: %d %d %d %d \n", rect.x, rect.y, rect.width, rect.height);
-            
+
             //qDebug() << "Rect" << rect.x << rect.y << rect.width << rect.height;
-            
+
 
             //  Build synthetic ViewPort on this rectangle
             //  Especially, we want the BBox to be accurate in order to
@@ -2062,7 +2063,7 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
 
             ViewPort temp_vp = m_cvp;
             double temp_lon_left, temp_lat_bot, temp_lon_right, temp_lat_top;
-            
+
             //TODO
             //  This is much slower on rotated cases.  We can do better
             //  It is slow because the inclusion test on geo location is very broad, covers the whole rotated screen
@@ -2070,11 +2071,11 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
                 wxPoint p;
                 p.x = VPoint.rv_rect.x;
                 p.y = VPoint.rv_rect.y;
-            
+
                 PlugIn_ViewPort vpbox = VPoint;
                 vpbox.rotation = 0;
                 GetCanvasLLPix( &vpbox, p, &temp_lat_top, &temp_lon_left);
-            
+
                 p.x += VPoint.rv_rect.width;
                 p.y += VPoint.rv_rect.height;
                 GetCanvasLLPix( &vpbox, p, &temp_lat_bot, &temp_lon_right);
@@ -2083,38 +2084,38 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
                 wxPoint p;
                 p.x = rect.x;
                 p.y = rect.y;
-                
+
                 GetCanvasLLPix( (PlugIn_ViewPort *)&VPoint, p, &temp_lat_top, &temp_lon_left);
-                
+
                 p.x += rect.width;
                 p.y += rect.height;
                 GetCanvasLLPix( (PlugIn_ViewPort *)&VPoint, p, &temp_lat_bot, &temp_lon_right);
             }
-            
+
             if( temp_lon_right < temp_lon_left )        // presumably crossing Greenwich
                 temp_lon_right += 360.;
 
 
             temp_vp.GetBBox().Set(temp_lat_bot, temp_lon_left, temp_lat_top, temp_lon_right);
-            
+
             //SetClipRegionGL( glc, temp_vp, rect, true /*!b_overlay*/, b_use_stencil );
             ps52plib->m_last_clip_rect = rect;
 
-#ifdef USE_ANDROID_GLES2            
+#ifdef USE_ANDROID_GLES2
              glEnable(GL_SCISSOR_TEST);
              glScissor(rect.x, m_cvp.pix_height-rect.height-rect.y, rect.width, rect.height);
              //qDebug() << "Scissor" << rect.x << m_cvp.pix_height-rect.height-rect.y << rect.width << rect.height;
-            
-#endif            
 
-             
+#endif
+
+
             DoRenderRectOnGL( glc, temp_vp, rect, b_use_stencil);
             //qDebug() << "PI RenderTime4" << sw.GetTime();
-            
-#ifdef USE_ANDROID_GLES2            
+
+#ifdef USE_ANDROID_GLES2
              glDisable( GL_SCISSOR_TEST );
 #endif
-            
+
             upd++;
         }  //while
 
@@ -2126,35 +2127,35 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
 
 #endif
     //qDebug() << "PI RenderTime5" << sw.GetTime();
-    
+
     return true;
 }
 
 int eSENCChart::RenderRegionViewOnGLTextOnly( const wxGLContext &glc, const PlugIn_ViewPort& VPoint,
                                       const wxRegion &Region, bool b_use_stencil )
 {
-    
+
 #ifdef ocpnUSE_GL
-    
+
     m_cvp = CreateCompatibleViewport( VPoint );
-    
+
     SetVPParms( VPoint );
-    
+
     ps52plib->PrepareForRender(&m_cvp);
-    
+
     //    Adjust for rotation
 ///    glPushMatrix();
-    
-    
+
+
     {
         wxRegionIterator upd( Region ); // get the Region rect list
         while( upd.HaveRects() ) {
             wxRect rect = upd.GetRect();
-            
+
             //  Build synthetic ViewPort on this rectangle
             //  Especially, we want the BBox to be accurate in order to
             //  render only those objects actually visible in this region
-            
+
             ViewPort temp_vp = m_cvp;
             double temp_lon_left, temp_lat_bot, temp_lon_right, temp_lat_top;
 
@@ -2165,11 +2166,11 @@ int eSENCChart::RenderRegionViewOnGLTextOnly( const wxGLContext &glc, const Plug
                 wxPoint p;
                 p.x = VPoint.rv_rect.x;
                 p.y = VPoint.rv_rect.y;
-                
+
                 PlugIn_ViewPort vpbox = VPoint;
                 vpbox.rotation = 0;
                 GetCanvasLLPix( &vpbox, p, &temp_lat_top, &temp_lon_left);
-                
+
                 p.x += VPoint.rv_rect.width;
                 p.y += VPoint.rv_rect.height;
                 GetCanvasLLPix( &vpbox, p, &temp_lat_bot, &temp_lon_right);
@@ -2178,27 +2179,27 @@ int eSENCChart::RenderRegionViewOnGLTextOnly( const wxGLContext &glc, const Plug
                 wxPoint p;
                 p.x = rect.x;
                 p.y = rect.y;
-                
+
                 GetCanvasLLPix( (PlugIn_ViewPort *)&VPoint, p, &temp_lat_top, &temp_lon_left);
-                
+
                 p.x += rect.width;
                 p.y += rect.height;
                 GetCanvasLLPix( (PlugIn_ViewPort *)&VPoint, p, &temp_lat_bot, &temp_lon_right);
             }
-            
+
             if( temp_lon_right < temp_lon_left )        // presumably crossing Greenwich
                 temp_lon_right += 360.;
-            
+
             temp_vp.GetBBox().Set(temp_lat_bot, temp_lon_left, temp_lat_top, temp_lon_right);
-                
+
             DoRenderRectOnGLTextOnly( glc, temp_vp, rect, b_use_stencil);
-                
+
             upd++;
         }
     }
-    
+
 ///    glPopMatrix();
-    
+
 #endif
     return true;
 }
@@ -2208,7 +2209,7 @@ void eSENCChart::SetClipRegionGL( const wxGLContext &glc, const PlugIn_ViewPort&
         const wxRegion &Region, bool b_render_nodta, bool b_useStencil )
 {
 #ifdef ocpnUSE_GL
-    
+
     if( b_useStencil ) {
         //    Create a stencil buffer for clipping to the region
         glEnable( GL_STENCIL_TEST );
@@ -2220,7 +2221,7 @@ void eSENCChart::SetClipRegionGL( const wxGLContext &glc, const PlugIn_ViewPort&
         glStencilOp( GL_KEEP, GL_KEEP, GL_REPLACE );
     }
 #ifndef USE_ANDROID_GLES2
-    
+
     else              //  Use depth buffer for clipping
     {
         glEnable( GL_DEPTH_TEST ); // to enable writing to the depth buffer
@@ -2302,7 +2303,7 @@ void eSENCChart::SetClipRegionGL( const wxGLContext &glc, const PlugIn_ViewPort&
                                 bool b_render_nodta, bool b_useStencil )
 {
 #ifdef ocpnUSE_GL
-    
+
     if( b_useStencil ) {
         //    Create a stencil buffer for clipping to the region
         glEnable( GL_STENCIL_TEST );
@@ -2384,7 +2385,7 @@ void eSENCChart::SetClipRegionGL( const wxGLContext &glc, const PlugIn_ViewPort&
 
 bool eSENCChart::DoRenderRectOnGL( const wxGLContext &glc, const ViewPort& VPoint, wxRect &rect, bool b_useStencil )
 {
-    
+
     int i;
     ObjRazRules *top;
     ObjRazRules *crnt;
@@ -2409,18 +2410,18 @@ bool eSENCChart::DoRenderRectOnGL( const wxGLContext &glc, const ViewPort& VPoin
     else
         glEnable( GL_DEPTH_TEST );
 
-//#ifndef USE_ANDROID_GLES2    
+//#ifndef USE_ANDROID_GLES2
     glDisable( GL_DEPTH_TEST );
     glDisable( GL_STENCIL_TEST );
-//#endif    
-    
+//#endif
+
     //OCPNStopWatch sw;
-    
-    
-    
+
+
+
     //      Render the areas quickly
     for( i = 0; i < PRIO_NUM; ++i ) {
-        if( PI_GetPLIBBoundaryStyle() == SYMBOLIZED_BOUNDARIES ) 
+        if( PI_GetPLIBBoundaryStyle() == SYMBOLIZED_BOUNDARIES )
             top = razRules[i][4]; // Area Symbolized Boundaries
         else
             top = razRules[i][3];           // Area Plain Boundaries
@@ -2432,7 +2433,7 @@ bool eSENCChart::DoRenderRectOnGL( const wxGLContext &glc, const ViewPort& VPoin
 
             // This may be a deferred tesselation
             // Don't pre-process the geometry unless the object is to be actually rendered
-            if(!crnt->obj->pPolyTessGeo->IsOk() ){ 
+            if(!crnt->obj->pPolyTessGeo->IsOk() ){
                 if(ps52plib->ObjectRenderCheckRules( crnt, &tvp, true )){
                    if(!crnt->obj->pPolyTessGeo->m_pxgeom)
                         crnt->obj->pPolyTessGeo->m_pxgeom = buildExtendedGeom( crnt->obj );
@@ -2443,10 +2444,10 @@ bool eSENCChart::DoRenderRectOnGL( const wxGLContext &glc, const ViewPort& VPoin
     }
 
     //qDebug() << "PI RenderTimeD1" << sw.GetTime();
-    
-    // TODO WHY is this necessary? 
+
+    // TODO WHY is this necessary?
     glDisable( GL_DEPTH_TEST );
-    
+
     //    Render the lines and points
     for( i = 0; i < PRIO_NUM; ++i ) {
         if( ps52plib->m_nBoundaryStyle == SYMBOLIZED_BOUNDARIES )
@@ -2460,9 +2461,9 @@ bool eSENCChart::DoRenderRectOnGL( const wxGLContext &glc, const ViewPort& VPoin
             ps52plib->RenderObjectToGL( glc, crnt, &tvp );
         }
     }
-    
+
     //qDebug() << "PI RenderTimeD2" << sw.GetTime();
-    
+
     for( i = 0; i < PRIO_NUM; ++i ) {
 
         top = razRules[i][2];           //LINES
@@ -2490,18 +2491,18 @@ bool eSENCChart::DoRenderRectOnGL( const wxGLContext &glc, const ViewPort& VPoin
     }
 
     //qDebug() << "PI RenderTimeD4" << sw.GetTime();
-    
+
     glDisable( GL_STENCIL_TEST );
     glDisable( GL_DEPTH_TEST );
     glDisable( GL_SCISSOR_TEST );
-    
-   
+
+
     return true;
 }
 
 bool eSENCChart::DoRenderRectOnGLTextOnly( const wxGLContext &glc, const ViewPort& VPoint, wxRect &rect, bool b_useStencil )
 {
-    
+
     int i;
     ObjRazRules *top;
     ObjRazRules *crnt;
@@ -2529,9 +2530,9 @@ bool eSENCChart::DoRenderRectOnGLTextOnly( const wxGLContext &glc, const ViewPor
     glDisable( GL_DEPTH_TEST );
     glDisable( GL_STENCIL_TEST );
 
-    // TODO WHY is this necessary? 
+    // TODO WHY is this necessary?
     glDisable( GL_DEPTH_TEST );
-    
+
     //    Render the lines and points
     for( i = 0; i < PRIO_NUM; ++i ) {
         if( PI_GetPLIBBoundaryStyle() == SYMBOLIZED_BOUNDARIES )
@@ -2570,8 +2571,8 @@ bool eSENCChart::DoRenderRectOnGLTextOnly( const wxGLContext &glc, const ViewPor
     glDisable( GL_STENCIL_TEST );
     glDisable( GL_DEPTH_TEST );
     glDisable( GL_SCISSOR_TEST );
-    
-   
+
+
     return true;
 }
 
@@ -2587,7 +2588,7 @@ void eSENCChart::ClearRenderedTextCache()
                     delete top->obj->FText;
                     top->obj->FText = NULL;
                 }
-                
+
                 if( top->child ) {
                     ObjRazRules *ctop = top->child;
                     while( ctop ) {
@@ -2599,7 +2600,7 @@ void eSENCChart::ClearRenderedTextCache()
                         ctop = ctop->next;
                     }
                 }
-                
+
                 top = top->next;
             }
         }
@@ -2611,10 +2612,10 @@ bool eSENCChart::DCRenderText( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp )
     int i;
     ObjRazRules *top;
     ObjRazRules *crnt;
-    
+
     //    Create a system ViewPort
     ViewPort tvp;
-    
+
     tvp.clat =                   vp.clat;                   // center point
     tvp.clon =                   vp.clon;
     tvp.view_scale_ppm =         vp.view_scale_ppm;
@@ -2626,23 +2627,23 @@ bool eSENCChart::DCRenderText( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp )
     tvp.rv_rect =                vp.rv_rect;
     tvp.b_quilt =                vp.b_quilt;
     tvp.m_projection_type =      vp.m_projection_type;
-    
+
     tvp.ref_scale = vp.chart_scale;
-    
+
     tvp.SetBoxes();
-    
+
     //  If the viewport is rotated, then the VP passed in has already been expanded
     //  to encompass the full rotated space.
     //  So, we need to partially undo the action of SetBoxes() to keep the rv_rect coherent.
     if(fabs(vp.rotation) > .01){
         tvp.rv_rect = vp.rv_rect;
     }
-    
+
     tvp.Validate();                 // This VP is valid
-    
-    
+
+
     for( i = 0; i < PRIO_NUM; ++i ) {
-        
+
         if ( ps52plib->m_nBoundaryStyle == SYMBOLIZED_BOUNDARIES )
             top = razRules[i][4]; // Area Symbolized Boundaries
         else
@@ -2674,7 +2675,7 @@ bool eSENCChart::DCRenderText( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp )
             ps52plib->RenderObjectToDCText( &dcinput, crnt, &tvp );
         }
     }
-    
+
     return true;
 }
 
@@ -2701,7 +2702,7 @@ void eSENCChart::UpdateLUPs( eSENCChart *pOwner )
         if( ( razRules[i][0] ) && ( NULL == razRules[i][1] ) ) {
             m_b2pointLUPS = true;
             top = razRules[i][0];
-            
+
             while( top != NULL ) {
                 LUP = ps52plib->S52_LUPLookup( PAPER_CHART, top->obj->FeatureName, top->obj );
                 if( LUP ) {
@@ -2713,17 +2714,17 @@ void eSENCChart::UpdateLUPs( eSENCChart *pOwner )
                         top->obj->m_DisplayCat = LUP->DISC;
                     }
                 }
-                
+
                 nxx = top->next;
                 top = nxx;
             }
         }
-        
+
         //  PAPER_CHART is set, SIMPLIFIED is bare
         if( ( razRules[i][1] ) && ( NULL == razRules[i][0] ) ) {
             m_b2pointLUPS = true;
             top = razRules[i][1];
-            
+
             while( top != NULL ) {
                 LUP = ps52plib->S52_LUPLookup( SIMPLIFIED, top->obj->FeatureName, top->obj );
                 if( LUP ) {
@@ -2733,17 +2734,17 @@ void eSENCChart::UpdateLUPs( eSENCChart *pOwner )
                         top->obj->m_DisplayCat = LUP->DISC;
                     }
                 }
-                
+
                 nxx = top->next;
                 top = nxx;
             }
         }
-        
+
         //  PLAIN_BOUNDARIES is set, SYMBOLIZED_BOUNDARIES is bare
         if( ( razRules[i][3] ) && ( NULL == razRules[i][4] ) ) {
             m_b2lineLUPS = true;
             top = razRules[i][3];
-            
+
             while( top != NULL ) {
                 LUP = ps52plib->S52_LUPLookup( SYMBOLIZED_BOUNDARIES, top->obj->FeatureName,
                                                top->obj );
@@ -2752,17 +2753,17 @@ void eSENCChart::UpdateLUPs( eSENCChart *pOwner )
                     _insertRules( top->obj, LUP, pOwner );
                     top->obj->m_DisplayCat = LUP->DISC;
                 }
-                
+
                 nxx = top->next;
                 top = nxx;
             }
         }
-        
+
         //  SYMBOLIZED_BOUNDARIES is set, PLAIN_BOUNDARIES is bare
         if( ( razRules[i][4] ) && ( NULL == razRules[i][3] ) ) {
             m_b2lineLUPS = true;
             top = razRules[i][4];
-            
+
             while( top != NULL ) {
                 LUP = ps52plib->S52_LUPLookup( PLAIN_BOUNDARIES, top->obj->FeatureName, top->obj );
                 if( LUP ) {
@@ -2770,16 +2771,16 @@ void eSENCChart::UpdateLUPs( eSENCChart *pOwner )
                     _insertRules( top->obj, LUP, pOwner );
                     top->obj->m_DisplayCat = LUP->DISC;
                 }
-                
+
                 nxx = top->next;
                 top = nxx;
             }
         }
-        
+
         //  Traverse this priority level again,
         //  clearing any object CS rules and flags,
         //  so that the next render operation will re-evaluate the CS
-        
+
         for( int j = 0; j < LUPNAME_NUM; j++ ) {
             top = razRules[i][j];
             while( top != NULL ) {
@@ -2788,7 +2789,7 @@ void eSENCChart::UpdateLUPs( eSENCChart *pOwner )
                 top->mps = 0;
                 if (top->LUP)
                     top->obj->m_DisplayCat = top->LUP->DISC;
-                
+
                 nxx = top->next;
                 top = nxx;
             }
@@ -2798,7 +2799,7 @@ void eSENCChart::UpdateLUPs( eSENCChart *pOwner )
         //  Traverse this priority level again,
         //  clearing any object CS rules and flags of any child list,
         //  so that the next render operation will re-evaluate the CS
-        
+
         for( int j = 0; j < LUPNAME_NUM; j++ ) {
             top = razRules[i][j];
             while( top != NULL ) {
@@ -2817,9 +2818,9 @@ void eSENCChart::UpdateLUPs( eSENCChart *pOwner )
                 top = nxx;
             }
         }
-        
+
     }
-    
+
     //    Clear the dynamically created Conditional Symbology LUP Array
     // This can not be done on a per-chart basis, since the plib services all charts
     // TODO really should make the dynamic LUPs belong to the chart class that created them
@@ -3209,28 +3210,28 @@ int eSENCChart::my_fgets( char *buf, int buf_len_max, CryptInputStream &ifs )
     char chNext;
     int nLineLen = 0;
     char *lbuf;
-    
+
     lbuf = buf;
-    
+
     while( !ifs.Eof() && nLineLen < buf_len_max ) {
         chNext = (char) ifs.GetC();
-        
+
         /* each CR/LF (or LF/CR) as if just "CR" */
         if( chNext == 10 || chNext == 13 ) {
             chNext = '\n';
         }
-        
+
         *lbuf = chNext;
         lbuf++, nLineLen++;
-        
+
         if( chNext == '\n' ) {
             *lbuf = '\0';
             return nLineLen;
         }
     }
-    
+
     *( lbuf ) = '\0';
-    
+
     return nLineLen;
 }
 
@@ -3240,88 +3241,88 @@ bool eSENCChart::InitFrom_ehdr( wxString &efn )
     bool ret_val = true;
 #if 0
     wxString ifs = efn;
-    
+
     wxFileInputStream fpx_u( ifs );
     wxBufferedInputStream fpxb( fpx_u );
     CryptInputStream fpx(fpxb);
     int senc_file_version = 0;
-    
+
     size_t crypt_size;
     unsigned char *cb = GetSENCCryptKeyBuffer( efn, &crypt_size );
     fpx.SetCryptBuffer( cb, crypt_size );
-    
+
     // Verify the first 12 bytes
     char verf[13];
     verf[4] = 12;
-    
+
     fpx.Read(verf, 12);
     fpx.Rewind();
-    
+
     if(strncmp(verf, "SENC Version", 12)){
 //        ScreenLogMessage( _T("   Info: ehdr decrypt failed first chance.\n "));
         free( cb );
         return false;
     }
-    
-    
+
+
     int MAX_LINE = 499999;
     char *buf = (char *) malloc( MAX_LINE + 1 );
-    
+
     int dun = 0;
-    
+
     wxString date_000, date_upd;
- 
+
     m_pCOVRTablePoints = NULL;
     m_pCOVRTable = NULL;
-    
+
     //  Create arrays to hold geometry objects temporarily
     MyFloatPtrArray *pAuxPtrArray = new MyFloatPtrArray;
     wxArrayInt *pAuxCntArray = new wxArrayInt;
-    
+
     MyFloatPtrArray *pNoCovrPtrArray = new MyFloatPtrArray;
     wxArrayInt *pNoCovrCntArray = new wxArrayInt;
-    
-    
-    
+
+
+
     while( !dun ) {
-        
+
         if( my_fgets( buf, MAX_LINE, fpx ) == 0 ) {
             dun = 1;
             break;
         }
-        
+
         else if( !strncmp( buf, "SENC", 4 ) ) {
             sscanf( buf, "SENC Version=%i", &senc_file_version );
             if( senc_file_version != CURRENT_SENC_FORMAT_VERSION ) {
                 wxString msg( _T("   Wrong version on SENC file ") );
                 msg.Append( efn );
                 wxLogMessage( msg );
-                
+
                 dun = 1;
                 ret_val = false;                   // error
                 break;
             }
         }
-        
+
         else if( !strncmp( buf, "DATEUPD", 7 ) ) {
             date_upd.Append( wxString( &buf[8], wxConvUTF8 ).BeforeFirst( '\n' ) );
         }
-        
+
         else if( !strncmp( buf, "DATE000", 7 ) ) {
             date_000.Append( wxString( &buf[8], wxConvUTF8 ).BeforeFirst( '\n' ) );
         }
-        
+
         else if( !strncmp( buf, "SCALE", 5 ) ) {
             int ins;
             sscanf( buf, "SCALE=%d", &ins );
             m_Chart_Scale = ins;
-            
+
         }
-        
+
         else if( !strncmp( buf, "NAME", 4 ) ) {
             m_Name = wxString( &buf[5], wxConvUTF8 ).BeforeFirst( '\n' );
         }
-        
+
         else if( !strncmp( buf, "Chart Extents:", 14 ) ) {
             float elon, wlon, nlat, slat;
             sscanf( buf, "Chart Extents: %g %g %g %g", &elon, &wlon, &nlat, &slat );
@@ -3330,60 +3331,60 @@ bool eSENCChart::InitFrom_ehdr( wxString &efn )
             m_FullExtent.NLAT = nlat;
             m_FullExtent.SLAT = slat;
             m_bExtentSet = true;
-            
+
             //  Establish a common reference point for the chart
             m_ref_lat = ( m_FullExtent.NLAT + m_FullExtent.SLAT ) / 2.;
             m_ref_lon = ( m_FullExtent.WLON + m_FullExtent.ELON ) / 2.;
-            
+
         }
-        
+
         else if( !strncmp( buf, "OGRF", 4 ) ) {
-            
+
             PI_S57ObjX *obj = new PI_S57ObjX( buf, &fpx, senc_file_version);
             if( !strncmp( obj->FeatureName, "M_COVR", 6 ) ){
 
                 wxString catcov_str = obj->GetAttrValueAsString( "CATCOV" );
                 long catcov = 0;
                 catcov_str.ToLong( &catcov );
-    
+
                 double area_ref_lat, area_ref_lon;
                 ((PolyTessGeo *)obj->pPolyTessGeo)->GetRefPos( &area_ref_lat, &area_ref_lon );
-                
+
                 //      Get the raw geometry from the PolyTessGeo
                 PolyTriGroup *pptg = ((PolyTessGeo *)obj->pPolyTessGeo)->Get_PolyTriGroup_head();
-            
+
                 float *ppolygeo = pptg->pgroup_geom;
-            
+
                 int ctr_offset = 0;
-                
+
                 // We use only the first contour, which is by definition the external ring of the M_COVR feature
                 int ic = 0;
                 {
                     int npt = pptg->pn_vertex[ic];
-                    
+
                     if( npt >= 3 ) {
                         float *pf = (float *) malloc( 2 * npt * sizeof(float) );
                         float *pfr = pf;
                        float *pfi = &ppolygeo[ctr_offset];
                         float *pfir = pfi;
-                        
+
                         for( int ip = 0; ip < npt; ip++ ) {
                             float easting = *pfir++;
                             float northing = *pfir++;
-                            
+
                             //      Geom is is SM coords, so convert to lat/lon
                             double xll, yll;
                             fromSM_Plugin( easting, northing, m_ref_lat, m_ref_lon, &yll, &xll );
-                            
+
                             //          Now store in chart cover array members
                             pfr[0] = yll;             // lat
                             pfr[1] = xll;             // lon
-                            
+
                             pfr += 2;
-                                                 
+
                         }
 
-                        
+
                         if( catcov == 1 ) {
                             pAuxPtrArray->Add( pf );
                             pAuxCntArray->Add( npt );
@@ -3395,20 +3396,20 @@ bool eSENCChart::InitFrom_ehdr( wxString &efn )
                     }
                 }
             }
-                
+
         }               //OGRF
-        
-        
+
+
     }                       //while(!dun)
- 
- 
+
+
  //    Allocate the final storage for member coverage arrays
- 
+
     m_nCOVREntries = pAuxCntArray->GetCount();
- 
+
  //    If only one M_COVR,CATCOV=1 object was found,
  //    assign the geometry to the one and only COVR
- 
+
     if( m_nCOVREntries == 1 ) {
         m_pCOVRTablePoints = (int *) malloc( sizeof(int) );
         *m_pCOVRTablePoints = pAuxCntArray->Item( 0 );
@@ -3416,17 +3417,17 @@ bool eSENCChart::InitFrom_ehdr( wxString &efn )
         *m_pCOVRTable = (float *) malloc( pAuxCntArray->Item( 0 ) * 2 * sizeof(float) );
         memcpy( *m_pCOVRTable, pAuxPtrArray->Item( 0 ), pAuxCntArray->Item( 0 ) * 2 * sizeof(float) );
     }
- 
+
     else if( m_nCOVREntries > 1 ) {
      //    Create new COVR entries
         m_pCOVRTablePoints = (int *) malloc( m_nCOVREntries * sizeof(int) );
         m_pCOVRTable = (float **) malloc( m_nCOVREntries * sizeof(float *) );
-     
+
         for( unsigned int j = 0; j < (unsigned int) m_nCOVREntries; j++ ) {
             m_pCOVRTablePoints[j] = pAuxCntArray->Item( j );
             m_pCOVRTable[j] = (float *) malloc( pAuxCntArray->Item( j ) * 2 * sizeof(float) );
             memcpy( m_pCOVRTable[j], pAuxPtrArray->Item( j ), pAuxCntArray->Item( j ) * 2 * sizeof(float) );
-            
+
             float *pf = m_pCOVRTable[j];
             for( int k=0 ; k < pAuxCntArray->Item(j); k++){
                 printf( "%g  %g  \n", *pf, *(pf+1));
@@ -3435,22 +3436,22 @@ bool eSENCChart::InitFrom_ehdr( wxString &efn )
             printf("\n");
         }
     }
- 
+
     else {                                    // strange case, found no CATCOV=1 M_COVR objects
             wxString msg( _T("   ENC contains no useable M_COVR, CATCOV=1 features:  ") );
             msg.Append( m_FullPath );
             wxLogMessage( msg );
     }
-        
-        
+
+
         //      And for the NoCovr regions
     m_nNoCOVREntries = pNoCovrCntArray->GetCount();
- 
+
     if( m_nNoCOVREntries ) {
      //    Create new NoCOVR entries
         m_pNoCOVRTablePoints = (int *) malloc( m_nNoCOVREntries * sizeof(int) );
         m_pNoCOVRTable = (float **) malloc( m_nNoCOVREntries * sizeof(float *) );
-     
+
         for( unsigned int j = 0; j < (unsigned int) m_nNoCOVREntries; j++ ) {
             int npoints = pNoCovrCntArray->Item( j );
             m_pNoCOVRTablePoints[j] = npoints;
@@ -3462,77 +3463,77 @@ bool eSENCChart::InitFrom_ehdr( wxString &efn )
         m_pNoCOVRTablePoints = NULL;
         m_pNoCOVRTable = NULL;
     }
- 
+
     delete pAuxPtrArray;
     delete pAuxCntArray;
     delete pNoCovrPtrArray;
     delete pNoCovrCntArray;
- 
- 
+
+
     if( 0 == m_nCOVREntries ) {                        // fallback
         wxString msg( _T("   ehdr contains no M_COVR features:  ") );
         msg.Append( efn );
         wxLogMessage( msg );
-        
+
         msg =  _T("   Calculating Chart Extents as fallback.");
         wxLogMessage( msg );
- 
+
     //    Populate simplified (exten-based) COVR structures
         if( m_bExtentSet ) {
-            m_nCOVREntries = 1;             
-            
+            m_nCOVREntries = 1;
+
             if( m_nCOVREntries == 1 ) {
                 m_pCOVRTablePoints = (int *) malloc( sizeof(int) );
                 *m_pCOVRTablePoints = 4;
                 m_pCOVRTable = (float **) malloc( sizeof(float *) );
-            
+
                 float *pf = (float *) malloc( 2 * 4 * sizeof(float) );
                 *m_pCOVRTable = pf;
                 float *pfe = pf;
-            
+
                 *pfe++ = m_FullExtent.NLAT;
                 *pfe++ = m_FullExtent.ELON;
-            
+
                 *pfe++ = m_FullExtent.NLAT;
                 *pfe++ = m_FullExtent.WLON;
-            
+
                 *pfe++ = m_FullExtent.SLAT;
                 *pfe++ = m_FullExtent.WLON;
-            
+
                 *pfe++ = m_FullExtent.SLAT;
                 *pfe++ = m_FullExtent.ELON;
             }
         }
     }
-    
+
     free( buf );
-    
+
     free( cb );
-    
+
     //   Decide on pub date to show
-    
+
     int d000 = 0;
     wxString sd000 =date_000.Mid( 0, 4 );
     wxCharBuffer dbuffer=sd000.ToUTF8();
     if(dbuffer.data())
         d000 = atoi(dbuffer.data() );
-    
+
     int dupd = 0;
     wxString sdupd =date_upd.Mid( 0, 4 );
     wxCharBuffer ubuffer = sdupd.ToUTF8();
     if(ubuffer.data())
         dupd = atoi(ubuffer.data() );
-    
+
     if( dupd > d000 )
         m_PubYear = sdupd;
     else
         m_PubYear = sd000;
-    
+
     wxDateTime dt;
     dt.ParseDate( date_000 );
-#endif    
+#endif
     if( !ret_val ) return false;
-    
+
     return true;
 }
 
@@ -3546,67 +3547,67 @@ PI_InitReturn eSENCChart::FindOrCreateSenc( const wxString& name )
     //      Establish location for SENC files
     wxFileName SENCFileName( name );
     SENCFileName.SetExt( _T("es57") );
-    
+
     //      Set the proper directory for the SENC files
     wxString SENCdir = m_senc_dir;
-    
+
     if( !SENCdir.Len() )
         return PI_INIT_FAIL_RETRY;
-    
+
     if( SENCdir.Last() != wxFileName::GetPathSeparator() )
         SENCdir.Append( wxFileName::GetPathSeparator() );
-    
+
     wxFileName tsfn( SENCdir + _T("a") );
     tsfn.SetFullName( SENCFileName.GetFullName() );
     SENCFileName = tsfn;
-    
-    
+
+
     int build_ret_val = 1;
-    
+
     bool bbuild_new_senc = false;
 //    m_bneed_new_thumbnail = false;
-    
+
     wxFileName FileName000( name );
-    
+
     m_bcrypt_buffer_OK = false;
-    
+
     //      Look for SENC file in the target directory
-    
+
     if( wxFileName::FileExists(SENCFileName.GetFullPath()) ) {
 
         int force_make_senc = 0;
-        
+
         //      Open the senc file, and extract some useful information
-        
+
         wxBufferedInputStream *pfpxb;
         wxFileInputStream fpx_u( SENCFileName.GetFullPath() );
-        
+
         CryptInputStream *pfpx;
         if( fpx_u.IsOk()){
             pfpxb = new wxBufferedInputStream( fpx_u );
-            
+
             pfpx = new CryptInputStream( pfpxb );
-        
+
             m_crypt_buffer = GetSENCCryptKeyBuffer( SENCFileName.GetFullPath(), &m_crypt_size );
             pfpx->SetCryptBuffer( m_crypt_buffer, m_crypt_size );
-        
+
             // Verify the first 4 bytes
             char verf[5];
             verf[4] = 0;
-        
+
             pfpx->Read(verf, 4);
             pfpx->Rewind();
-        
+
             int senc_update = 0;
             int senc_file_version = -1;
             long senc_base_edtn = 0;
-            
+
             if(!strncmp(verf, "SENC", 4)) {
                 bool dun = false;
                 char buf[256];
                 char *pbuf = buf;
 //                int force_make_senc = 0;
-                
+
                 while( !dun ) {
                     if( my_fgets( pbuf, 256, *pfpx ) == 0 ) {
                         dun = 1;
@@ -3617,23 +3618,23 @@ PI_InitReturn eSENCChart::FindOrCreateSenc( const wxString& name )
                             dun = 1;
                             break;
                         }
-                        
+
                         wxString str_buf( pbuf, wxConvUTF8 );
                         wxStringTokenizer tkz( str_buf, _T("=") );
                         wxString token = tkz.GetNextToken();
-                        
+
                         if( token.IsSameAs( _T("UPDT"), TRUE ) ) {
                             int i;
                             i = tkz.GetPosition();
                             senc_update = atoi( &pbuf[i] );
                         }
-                        
+
                         else if( token.IsSameAs( _T("SENC Version"), TRUE ) ) {
                             int i;
                             i = tkz.GetPosition();
                             senc_file_version = atoi( &pbuf[i] );
                         }
-                        
+
                         else if( token.IsSameAs( _T("EDTN000"), TRUE ) ) {
                             int i;
                             i = tkz.GetPosition();
@@ -3649,7 +3650,7 @@ PI_InitReturn eSENCChart::FindOrCreateSenc( const wxString& name )
 //                ScreenLogMessage( _T("   Info: Existing eSENC file failed decrypt.\n "));
                 bbuild_new_senc = true;
             }
-            
+
             //  So far so good, check some more stuff
             if(!bbuild_new_senc){
                 //  SENC file version has to be correct for other tests to make sense
@@ -3657,7 +3658,7 @@ PI_InitReturn eSENCChart::FindOrCreateSenc( const wxString& name )
                     ScreenLogMessage( _T("   Info: Existing eSENC SENC format mismatch.\n "));
                     bbuild_new_senc = true;
                 }
-                
+
                 //  Senc EDTN must be the same as .000 file EDTN.
                 //  This test catches the usual case where the .000 file is updated from the web,
                 //  and all updates (.001, .002, etc.)  are subsumed.
@@ -3667,27 +3668,27 @@ PI_InitReturn eSENCChart::FindOrCreateSenc( const wxString& name )
                     ScreenLogMessage( msg );
                     bbuild_new_senc = true;
                 }
-                
+
                 else {
                     //    Check the os63 file parse to see if the update number matches
                     if( senc_update != m_latest_update ) {
                         ScreenLogMessage( _T("   Info: Existing eSENC update mismatch.\n "));
                         bbuild_new_senc = true;
                     }
-                }                
+                }
             }
-                
+
         }
-                
-                
+
+
         if( force_make_senc )
             bbuild_new_senc = true;
-                
+
         if( bbuild_new_senc )
             build_ret_val = BuildSENCFile( name, SENCFileName.GetFullPath() );
-                
-        
-#if 0    
+
+
+#if 0
         wxFile f;
         if( f.Open( m_SENCFileName.GetFullPath() ) ) {
             if( f.Length() == 0 ) {
@@ -3695,7 +3696,7 @@ PI_InitReturn eSENCChart::FindOrCreateSenc( const wxString& name )
                 build_ret_val = BuildSENCFile( name, m_SENCFileName.GetFullPath() );
             } else                                      // file exists, non-zero
             {                                         // so check for new updates
-            
+
             f.Seek( 0 );
             wxFileInputStream *pfpx_u = new wxFileInputStream( f );
             wxBufferedInputStream *pfpx = new wxBufferedInputStream( *pfpx_u );
@@ -3708,7 +3709,7 @@ PI_InitReturn eSENCChart::FindOrCreateSenc( const wxString& name )
             wxDateTime ModTime000;
             int size000 = 0;
             wxString senc_base_edtn;
-            
+
             while( !dun ) {
                 if( my_fgets( pbuf, 256, *pfpx ) == 0 ) {
                     dun = 1;
@@ -3719,23 +3720,23 @@ PI_InitReturn eSENCChart::FindOrCreateSenc( const wxString& name )
                         dun = 1;
                         break;
                     }
-                    
+
                     wxString str_buf( pbuf, wxConvUTF8 );
                     wxStringTokenizer tkz( str_buf, _T("=") );
                     wxString token = tkz.GetNextToken();
-                    
+
                     if( token.IsSameAs( _T("UPDT"), TRUE ) ) {
                         int i;
                         i = tkz.GetPosition();
                         last_update = atoi( &pbuf[i] );
                     }
-                    
+
                     else if( token.IsSameAs( _T("SENC Version"), TRUE ) ) {
                         int i;
                         i = tkz.GetPosition();
                         senc_file_version = atoi( &pbuf[i] );
                     }
-                    
+
                     else if( token.IsSameAs( _T("FILEMOD000"), TRUE ) ) {
                         int i;
                         i = tkz.GetPosition();
@@ -3745,13 +3746,13 @@ PI_InitReturn eSENCChart::FindOrCreateSenc( const wxString& name )
                             _T("%Y%m%d")/*(const wxChar *)"%Y%m%d"*/) ) ModTime000.SetToCurrent();
                         ModTime000.ResetTime();                   // to midnight
                     }
-                    
+
                     else if( token.IsSameAs( _T("FILESIZE000"), TRUE ) ) {
                         int i;
                         i = tkz.GetPosition();
                         size000 = atoi( &pbuf[i] );
                     }
-                    
+
                     else if( token.IsSameAs( _T("EDTN000"), TRUE ) ) {
                         int i;
                         i = tkz.GetPosition();
@@ -3759,10 +3760,10 @@ PI_InitReturn eSENCChart::FindOrCreateSenc( const wxString& name )
                         str.Trim();                               // gets rid of newline, etc...
                         senc_base_edtn = str;
                     }
-                    
+
                 }
             }
-            
+
             delete pfpx;
             delete pfpx_u;
             f.Close();
@@ -3770,18 +3771,18 @@ PI_InitReturn eSENCChart::FindOrCreateSenc( const wxString& name )
             // force_make_senc = 1;
             //  SENC file version has to be correct for other tests to make sense
             if( senc_file_version != CURRENT_SENC_FORMAT_VERSION ) bbuild_new_senc = true;
-                            
+
                             //  Senc EDTN must be the same as .000 file EDTN.
             //  This test catches the usual case where the .000 file is updated from the web,
             //  and all updates (.001, .002, etc.)  are subsumed.
             else if( !senc_base_edtn.IsSameAs( m_edtn000 ) ) bbuild_new_senc = true;
-                            
+
                             else {
                                 //    See if there are any new update files  in the ENC directory
                                 int most_recent_update_file = GetUpdateFileArray( FileName000, NULL );
-                                
+
                                 if( last_update != most_recent_update_file ) bbuild_new_senc = true;
-                            
+
                             //          Make two simple tests to see if the .000 file is "newer" than the SENC file representation
                                 //          These tests may be redundant, since the DSID:EDTN test above should catch new base files
                                 wxDateTime OModTime000;
@@ -3789,35 +3790,35 @@ PI_InitReturn eSENCChart::FindOrCreateSenc( const wxString& name )
                                 OModTime000.ResetTime();                      // to midnight
                                 if( ModTime000.IsValid() ) if( OModTime000.IsLaterThan( ModTime000 ) ) bbuild_new_senc =
                                     true;
-                                
+
                                 int Osize000l = FileName000.GetSize().GetLo();
                                 if( size000 != Osize000l ) bbuild_new_senc = true;
                             }
-                            
+
                             if( force_make_senc ) bbuild_new_senc = true;
-                            
+
                             if( bbuild_new_senc ) build_ret_val = BuildSENCFile( name,
                                 m_SENCFileName.GetFullPath() );
-                            
+
             }
         }
-#endif        
+#endif
 //        build_ret_val = BuildSENCFile( name, SENCFileName.GetFullPath() );
 //        bbuild_new_senc = true;
     }
-    
+
     else                    // SENC file does not exist
     {
         ScreenLogMessage( _T("   Info: eSENC file does not exist.\n "));
-        
+
         build_ret_val = BuildSENCFile( name, SENCFileName.GetFullPath() );
         bbuild_new_senc = true;
     }
- 
- 
+
+
 //    if( bbuild_new_senc )
 //        m_bneed_new_thumbnail = true; // force a new thumbnail to be built in PostInit()
-                        
+
     if( bbuild_new_senc ) {
         if( BUILD_SENC_NOK_PERMANENT == build_ret_val )
             return PI_INIT_FAIL_REMOVE;
@@ -3842,7 +3843,7 @@ int eSENCChart::_insertRules( S57Obj *obj )
     int disPrioIdx = 0;
     int LUPtypeIdx = 0;
 //    int LUPtypeIdxAlt = 0;
-    
+
     PI_DisPrio DPRI = PI_GetObjectDisplayPriority( obj );
     // find display priority index       --talky version
     switch( DPRI ){
@@ -3879,7 +3880,7 @@ int eSENCChart::_insertRules( S57Obj *obj )
         default:
             break;
     }
-    
+
     PI_LUPname TNAM = PI_GetObjectLUPName( obj );
     // find look up type index
     switch( TNAM ){
@@ -3908,14 +3909,14 @@ int eSENCChart::_insertRules( S57Obj *obj )
 //            LUPtypeIdxAlt = 0;
             break;
     }
-    
+
     // insert rules
     obj->nRef++;                         // Increment reference counter for delete check;
 //    obj->next = razRules[disPrioIdx][LUPtypeIdx];
 //    obj->child = NULL;
     razRules[disPrioIdx][LUPtypeIdx] = obj;
 //    razRules[disPrioIdx][LUPtypeIdxAlt] = obj;
-    
+
     return 1;
 }
 
@@ -3926,12 +3927,12 @@ int eSENCChart::_insertRules( S57Obj *obj, LUPrec *LUP, eSENCChart *pOwner )
     ObjRazRules *rzRules = NULL;
     int disPrioIdx = 0;
     int LUPtypeIdx = 0;
-    
+
     if( LUP == NULL ) {
         //      printf("SEQuencer:_insertRules(): ERROR no rules to insert!!\n");
         return 0;
     }
-    
+
     // find display priority index       --talky version
     switch( LUP->DPRI ){
         case PRIO_NODATA:
@@ -3967,7 +3968,7 @@ int eSENCChart::_insertRules( S57Obj *obj, LUPrec *LUP, eSENCChart *pOwner )
         default:
             printf( "SEQuencer:_insertRules():ERROR no display priority!!!\n" );
     }
-    
+
     // find look up type index
     switch( LUP->TNAM ){
         case SIMPLIFIED:
@@ -3988,7 +3989,7 @@ int eSENCChart::_insertRules( S57Obj *obj, LUPrec *LUP, eSENCChart *pOwner )
         default:
             printf( "SEQuencer:_insertRules():ERROR no look up type !!!\n" );
     }
-    
+
     // insert rules
     rzRules = (ObjRazRules *) malloc( sizeof(ObjRazRules) );
     rzRules->obj = obj;
@@ -3996,7 +3997,7 @@ int eSENCChart::_insertRules( S57Obj *obj, LUPrec *LUP, eSENCChart *pOwner )
     rzRules->LUP = LUP;
     rzRules->child = NULL;
     rzRules->mps = NULL;
-    
+
     // Find the end of the list, and append the object
     // This is required to honor the "natural order" priority rules for objects of same Display Priority
     ObjRazRules *rNext = NULL;
@@ -4009,13 +4010,13 @@ int eSENCChart::_insertRules( S57Obj *obj, LUPrec *LUP, eSENCChart *pOwner )
         rPrevious = rNext;
         rNext = rPrevious->next;
     }
-    
+
     rzRules->next = NULL;
     if(rPrevious)
         rPrevious->next = rzRules;
     else
         razRules[disPrioIdx][LUPtypeIdx] = rzRules;
-        
+
 
     return 1;
 }
@@ -4023,8 +4024,8 @@ int eSENCChart::_insertRules( S57Obj *obj, LUPrec *LUP, eSENCChart *pOwner )
 
 void eSENCChart::UpdateLUPsOnStateChange( void )
 {
-#if 0    
- 
+#if 0
+
     PI_S57Obj *top;
     //  Loop trrough all the objects, resetting the context for each
     for( int i = 0; i < PI_PRIO_NUM; ++i ) {
@@ -4039,43 +4040,43 @@ void eSENCChart::UpdateLUPsOnStateChange( void )
             }
         }
     }
-#endif    
+#endif
 }
 
 
 int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, int ctype )
 {
-    
+
     int ret_val = 0;                    // default is OK
-    
+
     Osenc *sencfile = new Osenc();
-    
+
     // Set up the containers for ingestion results.
     // These will be populated by Osenc, and owned by the caller (this).
     S57ObjVector Objects;
     VE_ElementVector VEs;
     VC_ElementVector VCs;
-    
-    
-   
+
+
+
     sencfile->setRegistrarMgr( pi_poRegistrarMgr );
     sencfile->setKey(Key);
     sencfile->setCtype( ctype );
-    
+
     int srv = sencfile->ingest200(FullPath, &Objects, &VEs, &VCs);
-    
+
     if(srv != SENC_NO_ERROR){
         if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile ingest Error"));
-                                         
+
         if(( ERROR_SIGNATURE_FAILURE == srv )  || ( ERROR_SENC_CORRUPT == srv ) ){
 
             if(ctype == CTYPE_OESU){
                 ShowGenericErrorMessage(FullPath);
                 return srv;
             }
-            
+
             if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile Getting new UserKey"));
-                                             
+
             // Give user one chance to fix the key, then bail out..
             if(!validateUserKey( FullPath )){
                 if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile Bad UserKey, return ERROR_SIGNATURE_FAILURE"));
@@ -4090,7 +4091,7 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
                 sencfile = new Osenc();
                 sencfile->setRegistrarMgr( pi_poRegistrarMgr );
                 sencfile->setKey(g_UserKey);            // the new key
-                
+
                 int srvb = sencfile->ingest200(FullPath, &Objects, &VEs, &VCs);
                 if(srvb != SENC_NO_ERROR){
                     if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile ingest Error, second try"));
@@ -4103,16 +4104,16 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
         else if( ERROR_SENC_EXPIRED == srv ){
             if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile ingest Error, expired chart"));
             wxLogMessage( sencfile->getLastError() );
-            
+
             m_uSENCExpireDaysRemaining = sencfile->m_expireDaysRemaining;
             m_uSENCGraceDaysAllowed = sencfile->m_graceDaysAllowed;
             m_uSENCGraceDaysRemaining = sencfile->m_graceDaysRemining;
-            
+
             delete sencfile;
             return srv;
 
         }
-        
+
     }
 
     // For uSENC charts, capture the expiration info
@@ -4121,37 +4122,37 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
         m_uSENCGraceDaysAllowed = sencfile->m_graceDaysAllowed;
         m_uSENCGraceDaysRemaining = sencfile->m_graceDaysRemining;
     }
-        
+
     if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile SENC Loaded OK"));
-                                     
+
     //  Get the cell Ref point
     Extent ext = sencfile->getReadExtent();
-    
+
     m_FullExtent.ELON = ext.ELON;
     m_FullExtent.WLON = ext.WLON;
     m_FullExtent.NLAT = ext.NLAT;
     m_FullExtent.SLAT = ext.SLAT;
     m_bExtentSet = true;
-    
+
     m_ref_lat = (ext.NLAT + ext.SLAT) / 2.;
     m_ref_lon = (ext.ELON + ext.WLON) / 2.;
-    
-    
+
+
     //  Record the SENC file version just read
     m_sencReadVersion = sencfile->getReadVersion();
-    
+
     //  Process the Edge feature arrays.
-   
+
     //    Create a hash map of VE_Element pointers as a chart class member
     int n_ve_elements = VEs.size();
 
     wxString msgs;
     msgs.Printf(_T("%d"), n_ve_elements);
     if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile:  VEs Size: ") + msgs);
-                                     
+
     for( int i = 0; i < n_ve_elements; i++ ) {
         VE_Element *vep = VEs.at( i );
-        
+
         //  The hash key needs to be a reasonable 32 bit int...
         if(vep->index > 0x7FFFFFFF){
             wxString msg;
@@ -4159,22 +4160,22 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
             if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile:  Found bad VE_Element index at i:") + msg);
 //            continue;
         }
-        
+
         //       VE_Element ve_from_array = VEs.at( i );
         vep->max_priority = 0;            // Default
-        
+
         if(vep->nCount){
             //  Get a bounding box for the edge
             double east_max = -1e7; double east_min = 1e7;
             double north_max = -1e7; double north_min = 1e7;
 
-#if 0            
+#if 0
             double *vrun = vep->pPoints;
             for(size_t i=0 ; i < vep->nCount; i++){
                 east_max = wxMax(east_max, *vrun);
                 east_min = wxMin(east_min, *vrun);
                 vrun++;
-                
+
                 north_max = wxMax(north_max, *vrun);
                 north_min = wxMin(north_min, *vrun);
                 vrun++;
@@ -4185,12 +4186,12 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
                 east_max = wxMax(east_max, *vrun);
                 east_min = wxMin(east_min, *vrun);
                 vrun++;
-                
+
                 north_max = wxMax(north_max, *vrun);
                 north_min = wxMin(north_min, *vrun);
                 vrun++;
             }
-#endif           
+#endif
             double lat, lon;
             fromSM_Plugin( east_min, north_min, m_ref_lat, m_ref_lon, &lat, &lon );
             vep->edgeBBox.SetMin( lon, lat);
@@ -4201,66 +4202,66 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
         m_ve_hash[vep->index] = vep;
     }
 
-    
+
 #ifndef __WXMSW__
     wxString msgss;
     msgss.Printf(_T("%zd"), m_ve_hash.size());
     if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile:  VE_hash Size: ") + msgss);
 #endif
-    
+
     if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile:  Process Edge Vectors OK"));
-                                     
+
     //    Create a hash map VC_Element pointers as a chart class member
     int n_vc_elements = VCs.size();
-    
+
     for( int i = 0; i < n_vc_elements; i++ ) {
         VC_Element *vcp = VCs.at( i );
-        
+
         m_vc_hash[vcp->index] = vcp;
     }
 
     if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile:  Process Connect Vectors OK"));
-                                     
+
     VEs.clear();        // destroy contents, no longer needed
     VCs.clear();
-            
+
     //Walk the vector of S57Objs, associating LUPS, instructions, etc...
-    
+
     for(unsigned int i=0 ; i < Objects.size() ; i++){
-        
+
         S57Obj *obj = Objects[i];
-        
+
         //      This is where Simplified or Paper-Type point features are selected
         LUPrec *LUP;
         LUPname LUP_Name = PAPER_CHART;
-        
+
         switch( obj->Primitive_type ){
             case GEO_POINT:
             case GEO_META:
             case GEO_PRIM:
-                
+
                 if( PAPER_CHART == ps52plib->m_nSymbolStyle )
                     LUP_Name = PAPER_CHART;
                 else
                     LUP_Name = SIMPLIFIED;
-                
+
                 break;
-                
+
             case GEO_LINE:
                 LUP_Name = LINES;
                 break;
-                
+
             case GEO_AREA:
                 if( PLAIN_BOUNDARIES == ps52plib->m_nBoundaryStyle )
                     LUP_Name = PLAIN_BOUNDARIES;
                 else
                     LUP_Name = SYMBOLIZED_BOUNDARIES;
-                
+
                 break;
         }
-        
+
         LUP = ps52plib->S52_LUPLookup( LUP_Name, obj->FeatureName, obj );
-        
+
         if( NULL == LUP ) {
 //             if( g_bDebugS57 ) {
 //                 wxString msg( obj->FeatureName, wxConvUTF8 );
@@ -4274,16 +4275,16 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
         } else {
             //              Convert LUP to rules set
             ps52plib->_LUP2rules( LUP, obj );
-            
+
             //              Add linked object/LUP to the working set
             _insertRules( obj, LUP, this );
-            
+
             //              Establish Object's Display Category
             obj->m_DisplayCat = LUP->DISC;
-            
-            //              Establish objects base display priority         
+
+            //              Establish objects base display priority
             obj->m_DPRI = LUP->DPRI - '0';
-            
+
             //  Is this a category-movable object?
             if( !strncmp(obj->FeatureName, "OBSTRN", 6) ||
                 !strncmp(obj->FeatureName, "WRECKS", 6) ||
@@ -4296,23 +4297,23 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
                     obj->m_bcategory_mutable = false;
                 }
         }
-        
+
         //      Build/Maintain the ATON floating/rigid arrays
         if( GEO_POINT == obj->Primitive_type ) {
-            
+
             // set floating platform
             if( ( !strncmp( obj->FeatureName, "LITFLT", 6 ) )
                 || ( !strncmp( obj->FeatureName, "LITVES", 6 ) )
                 || ( !strncasecmp( obj->FeatureName, "BOY", 3 ) ) ) {
                 pFloatingATONArray->Add( obj );
                 }
-                
+
                 // set rigid platform
                 if( !strncasecmp( obj->FeatureName, "BCN", 3 ) ) {
                     pRigidATONArray->Add( obj );
                 }
-                
-                
+
+
                 //    Mark the object as an ATON
                 if( ( !strncmp( obj->FeatureName, "LIT", 3 ) )
                     || ( !strncmp( obj->FeatureName, "LIGHTS", 6 ) )
@@ -4321,80 +4322,80 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
                     obj->bIsAton = true;
                     }
         }
-        
+
     }   // Objects iterator
 
     if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile:  Object tree Walk OK"));
-                                     
+
     //   Decide on pub date to show
-    
+
     wxDateTime d000;
     d000.ParseFormat( sencfile->getBaseDate(), _T("%Y%m%d") );
     if( !d000.IsValid() )
         d000.ParseFormat( _T("20000101"), _T("%Y%m%d") );
-    
+
     wxDateTime updt;
     updt.ParseFormat( sencfile->getUpdateDate(), _T("%Y%m%d") );
     if( !updt.IsValid() )
         updt.ParseFormat( _T("20000101"), _T("%Y%m%d") );
-    
+
     if(updt.IsLaterThan(d000))
         m_PubYear.Printf(_T("%4d"), updt.GetYear());
     else
         m_PubYear.Printf(_T("%4d"), d000.GetYear());
-    
-    
-    
+
+
+
     //    Set some base class values
         // Scale
         m_Chart_Scale = sencfile->getSENCReadScale();
-        
-       
-        
+
+
+
         wxDateTime upd = updt;
         if( !upd.IsValid() )
             upd.ParseFormat( _T("20000101"), _T("%Y%m%d") );
-        
+
         upd.ResetTime();
         m_EdDate = upd;
-        
+
         m_SE = sencfile->getSENCReadBaseEdition();
-        
+
         wxString supdate;
         supdate.Printf(_T(" / %d"), sencfile->getSENCReadLastUpdate());
         m_SE += supdate;
-        
-        
+
+
         m_datum_str = _T("WGS84");
-        
+
         m_SoundingsDatum = sencfile->getSoundingsDatumString();
         m_ID = sencfile->getReadID();
         m_Name = sencfile->getReadName();
         m_DepthUnits = _T("Meters"); //senc.getSoundingsDatumString();
-        
+
         //  Get the hashmap containing any TXTDSC info file records
         m_TXTDSC_map = sencfile->GetTXTDSC_Map();
-        
+
         if(m_sencReadVersion == 200){
             // Validate hash maps....
             //TODO  Do we really need to do this?
             // nedd to fix up the negatives?
             if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile:  Start Validate Hashmaps..."));
-                                            
+
             ObjRazRules *top;
             ObjRazRules *nxx;
-            
+
             for( int i = 0; i < PRIO_NUM; ++i ) {
                 for( int j = 0; j < LUPNAME_NUM; j++ ) {
                     top = razRules[i][j];
                     while( top != NULL ) {
                         S57Obj *obj = top->obj;
-                        
+
                         ///
                         for( int iseg = 0; iseg < obj->m_n_lsindex; iseg++ ) {
                             int seg_index = iseg * 3;
                             int *index_run = &obj->m_lsindex_array[seg_index];
-                            
+
                             //  Get first connected node
                             int inode = *index_run;
                             if( ( inode ) ) {
@@ -4407,7 +4408,7 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
                                 }
                             }
                             index_run++;
-                            
+
                             //  Get the edge
                             int enode = *index_run;
                             if(enode < 0)
@@ -4415,16 +4416,16 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
                             if( ( enode ) ) {
                                 if( m_ve_hash.find( enode ) == m_ve_hash.end() ) {
                                     if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile:  Bad enode 1"));
-                                    
+
                                     //    Must be a bad index in the SENC file
                                     //    Stuff a recognizable flag to indicate invalidity
                                     *index_run = 0;
     //                                m_ve_hash[0] = 0;
                                 }
                             }
-                            
+
                             index_run++;
-                            
+
                             //  Get last connected node
                             int jnode = *index_run;
                             if( ( jnode ) ) {
@@ -4437,7 +4438,7 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
                                 }
                             }
                             index_run++;
-                            
+
                         }
                         ///
                         nxx = top->next;
@@ -4447,11 +4448,11 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
             }
             if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile:  Validate Hashmaps OK"));
         }
-        
+
 //         //  Set up the chart context
 //         m_this_chart_context = (chart_context *)calloc( sizeof(chart_context), 1);
 //         m_this_chart_context->chart = this;
-//         
+//
 //         //  Loop and populate all the objects
 //         for( int i = 0; i < PRIO_NUM; ++i ) {
 //             for( int j = 0; j < LUPNAME_NUM; j++ ) {
@@ -4465,9 +4466,9 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
 //         }
 
         if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile:  Start AssembleLineGeometry"));
-                                         
+
         AssembleLineGeometry();
-        
+
             //  Set up the chart context
         m_this_chart_context = (chart_context *)calloc( sizeof(chart_context), 1);
         m_this_chart_context->chart = this;
@@ -4485,12 +4486,12 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
             }
         }
 
- 
+
         if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile:  AssembleLineGeometry OK"));
-                                         
+
         if(g_debugLevel) wxLogMessage(_T("BuildRAZFromSENCFile Return OK"));
 
-        delete sencfile;                                         
+        delete sencfile;
         return ret_val;
 }
 
@@ -4500,7 +4501,7 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath )
 {
     int ret_val = 0;                    // default is OK
 
-    
+
     //    Sanity check for existence of file
     wxFileName SENCFileName( FullPath );
     if( !SENCFileName.FileExists() ) {
@@ -4509,23 +4510,23 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath )
         wxLogMessage( msg );
         return 1;
     }
-    
+
     wxBufferedInputStream *pfpxb;
     wxFileInputStream fpx_u( FullPath );
 
     CryptInputStream *pfpx;
-    
+
     int senc_file_version = 0;
-    
-#if 0    
+
+#if 0
     SENCclient scli;
-    
+
     if(0){
     //  configure the client
         scli.Attach( FullPath );
         if(!scli.m_OK) {
             scli.Close();
-        
+
         //  Wait for output
             wxString outres;
             for(unsigned int t = 0 ; t < 5 ; t++) {
@@ -4535,29 +4536,29 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath )
                 }
             //            wxSleep(1);
             }
-        
-        
+
+
             wxString msg( _T("   Cannot start SENC server...") );
             msg += outres;
             wxLogMessage( msg );
-        
+
             return 1;
         }
 
         wxBufferedInputStream fpx( scli );
         fpx.GetInputStreamBuffer()->SetBufferIO(200 * 1024);
-        
+
         pfpx = &fpx;
     }
 
      else
-#endif     
+#endif
      {
         if( !fpx_u.IsOk())
             return 1;
         pfpxb = new wxBufferedInputStream( fpx_u );
     }
-    
+
     pfpx = new CryptInputStream( pfpxb );
 
     if(!m_bcrypt_buffer_OK) {
@@ -4566,39 +4567,39 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath )
     }
     else
         pfpx->SetCryptBuffer( m_crypt_buffer, m_crypt_size );
-    
-    
+
+
     // Verify the first 4 bytes
     char verf[5];
     verf[4] = 0;
-    
+
     pfpx->Read(verf, 4);
     pfpx->Rewind();
-    
+
     if(strncmp(verf, "SENC", 4)) {
         ScreenLogMessage( _T("   Error: eSENC decrypt failed.\n "));
-        
+
         free( m_crypt_buffer );
         return 1;
     }
-    
-    
+
+
     int MAX_LINE = 499999;
     char *buf = (char *) malloc( MAX_LINE + 1 );
-    
+
     int nGeoFeature;
-    
+
     int object_count = 0;
-    
+
     int dun = 0;
-    
+
     char *hdr_buf = (char *) malloc( 1 );
     wxString date_000, date_upd;
-    
-    
+
+
     while( !dun ) {
         int err = my_fgets( buf, MAX_LINE, *pfpx );
-        
+
         if( err == 0 ) {
             dun = 1;
             break;
@@ -4609,27 +4610,27 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath )
             //            ret_val = 1;
             break;
         }
-        
+
         if( !strncmp( buf, "OGRF", 4 ) ) {
-            
+
             PI_S57ObjX *obj = new PI_S57ObjX( buf, pfpx, senc_file_version );
             if( obj ) {
-                
+
                 //      Build/Maintain the ATON floating/rigid arrays
                 if( GEO_POINT == obj->Primitive_type ) {
-                    
+
                     // set floating platform
                     if( ( !strncmp( obj->FeatureName, "LITFLT", 6 ) )
                         || ( !strncmp( obj->FeatureName, "LITVES", 6 ) )
                         || ( !strncmp( obj->FeatureName, "BOY", 3 ) ) ) {
                         pFloatingATONArray->Add( obj );
                         }
-                        
+
                         // set rigid platform
                         if( !strncmp( obj->FeatureName, "BCN", 3 ) ) {
                             pRigidATONArray->Add( obj );
                         }
-                        
+
                         //    Mark the object as an ATON
                         if( ( !strncmp( obj->FeatureName, "LIT", 3 ) )
                             || ( !strncmp( obj->FeatureName, "LIGHTS", 6 ) )
@@ -4637,9 +4638,9 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath )
                             || ( !strncmp( obj->FeatureName, "BOY", 3 ) ) ) {
                             obj->bIsAton = true;
                             }
-                            
+
                 }
-                
+
                 //      Ensure that Area objects actually describe a valid object
                 if( GEO_AREA == obj->Primitive_type ) {
                     //                    if( !obj->BBObj.GetValid() ) {
@@ -4647,10 +4648,10 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath )
                         //                        continue;
                         //                    }
                 }
-                
+
                 //      Get an S52PLIB context, and find the initial LUP
                 bool bctx = PI_PLIBSetContext( obj );
-                
+
                 if( !bctx ) {
                     if( 1 /*g_bDebugS57*/ ) {
                         wxString msg( obj->FeatureName, wxConvUTF8 );
@@ -4661,13 +4662,13 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath )
                 } else {
                     //              Add linked object/LUP to the working set
                     _insertRules( obj );
-                    
+
                     //              Establish Object's Display Category
                     obj->m_DisplayCat = PI_GetObjectDisplayCategory( obj );
 
-                    //              Establish objects base display priority         
+                    //              Establish objects base display priority
                     obj->m_DPRI = -1; //LUP->DPRI - '0';
-                    
+
                     //  Is this a catagory-movable object?
                     if( !strncmp(obj->FeatureName, "OBSTRN", 6) ||
                         !strncmp(obj->FeatureName, "WRECKS", 6) ||
@@ -4679,144 +4680,144 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath )
                     else{
                         obj->m_bcategory_mutable = false;
                     }
-                    
+
                     //              Establish chart reference position
                     obj->chart_ref_lat = m_ref_lat;
                     obj->chart_ref_lon = m_ref_lon;
                 }
             }
-            
+
             object_count++;
-            
+
             continue;
-            
+
         }               //OGRF
-        
+
         else if( !strncmp( buf, "VETableStart", 12 ) ) {
             //    Use a wxArray for temp storage
             //    then transfer to a simple linear array
             PI_ArrayOfVE_Elements ve_array;
-            
+
             int index = -1;
             int index_max = -1;
             int count;
-            
+
             pfpx->Read( &index, sizeof(int) );
-            
+
             while( -1 != index ) {
                 pfpx->Read( (char *)&count, sizeof(int) );
-                
+
                 double *pPoints = NULL;
                 if( count ) {
                     pPoints = (double *) malloc( count * 2 * sizeof(double) );
                     pfpx->Read( (char *)pPoints, count * 2 * sizeof(double) );
                 }
-                
+
                 PI_VE_Element vee;
                 vee.index = index;
                 vee.nCount = count;
                 vee.pPoints = pPoints;
                 vee.max_priority = -99;            // Default
-                
+
                 ve_array.Add( vee );
-                
+
                 if( index > index_max ) index_max = index;
-                
+
                 //    Next element
                 pfpx->Read( (char *)&index, sizeof(int) );
             }
-            
+
             //    Create a hash map of VE_Element pointers as a chart class member
             int n_ve_elements = ve_array.GetCount();
-            
+
             for( int i = 0; i < n_ve_elements; i++ ) {
                 PI_VE_Element ve_from_array = ve_array.Item( i );
                 PI_VE_Element *vep = new PI_VE_Element;
                 vep->index = ve_from_array.index;
                 vep->nCount = ve_from_array.nCount;
                 vep->pPoints = ve_from_array.pPoints;
-                
+
                 m_ve_hash[vep->index] = (PI_VE_Element *)vep;
-                
+
             }
-            
+
         }
-        
+
         else if( !strncmp( buf, "VCTableStart", 12 ) ) {
             //    Use a wxArray for temp storage
             //    then transfer to a simple linear array
             PI_ArrayOfVC_Elements vc_array;
-            
+
             int index = -1;
             int index_max = -1;
-            
+
             pfpx->Read( &index, sizeof(int) );
-            
+
             while( -1 != index ) {
-                
+
                 double *pPoint = NULL;
                 pPoint = (double *) malloc( 2 * sizeof(double) );
                 pfpx->Read( pPoint, 2 * sizeof(double) );
-                
+
                 PI_VC_Element vce;
                 vce.index = index;
                 vce.pPoint = pPoint;
-                
+
                 vc_array.Add( vce );
-                
+
                 if( index > index_max ) index_max = index;
-                
+
                 //    Next element
                 pfpx->Read( &index, sizeof(int) );
             }
-            
+
             //    Create a hash map VC_Element pointers as a chart class member
             int n_vc_elements = vc_array.GetCount();
-            
+
             for( int i = 0; i < n_vc_elements; i++ ) {
                 PI_VC_Element vc_from_array = vc_array.Item( i );
                 PI_VC_Element *vcp = new PI_VC_Element;
                 vcp->index = vc_from_array.index;
                 vcp->pPoint = vc_from_array.pPoint;
-                
+
                 m_vc_hash[vcp->index] = (PI_VC_Element *)vcp;
             }
         }
-        
+
         else if( !strncmp( buf, "SENC", 4 ) ) {
             sscanf( buf, "SENC Version=%i", &senc_file_version );
             if( senc_file_version != CURRENT_SENC_FORMAT_VERSION ) {
                 wxString msg( _T("   Wrong version on SENC file ") );
                 msg.Append( FullPath );
                 wxLogMessage( msg );
-                
+
                 dun = 1;
                 ret_val = 1;                   // error
             }
         }
-        
+
         else if( !strncmp( buf, "DATEUPD", 7 ) ) {
             date_upd.Append( wxString( &buf[8], wxConvUTF8 ).BeforeFirst( '\n' ) );
         }
-        
+
         else if( !strncmp( buf, "DATE000", 7 ) ) {
             date_000.Append( wxString( &buf[8], wxConvUTF8 ).BeforeFirst( '\n' ) );
         }
-        
+
         else if( !strncmp( buf, "SCALE", 5 ) ) {
             int ins;
             sscanf( buf, "SCALE=%d", &ins );
             m_Chart_Scale = ins;
         }
-        
+
         else if( !strncmp( buf, "NAME", 4 ) ) {
             m_Name = wxString( &buf[5], wxConvUTF8 ).BeforeFirst( '\n' );
         }
-        
+
         else if( !strncmp( buf, "NOGR", 4 ) ) {
             sscanf( buf, "NOGR=%d", &nGeoFeature );
         }
-        
+
         else if( !strncmp( buf, "Chart Extents:", 14 ) ) {
             float elon, wlon, nlat, slat;
             sscanf( buf, "Chart Extents: %g %g %g %g", &elon, &wlon, &nlat, &slat );
@@ -4825,17 +4826,17 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath )
             m_FullExtent.NLAT = nlat;
             m_FullExtent.SLAT = slat;
             m_bExtentSet = true;
-            
+
             //  Establish a common reference point for the chart
             m_ref_lat = ( m_FullExtent.NLAT + m_FullExtent.SLAT ) / 2.;
             m_ref_lon = ( m_FullExtent.WLON + m_FullExtent.ELON ) / 2.;
-            
+
         }
-        
+
     }                       //while(!dun)
-    
+
     //      fclose(fpx);
-    
+
 
 //    scli.Close();
 #if 0
@@ -4848,62 +4849,62 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath )
         }
         wxSleep(1);
     }
-    
-#endif    
+
+#endif
     free( buf );
-    
+
     free( hdr_buf );
-    
+
     free( m_crypt_buffer );
-    
+
     if(ret_val)
         return ret_val;
-    
-    
+
+
     //   Decide on pub date to show
         int d000 = 0;
         wxString sd000 =date_000.Mid( 0, 4 );
         wxCharBuffer dbuffer=sd000.ToUTF8();
         if(dbuffer.data())
             d000 = atoi(dbuffer.data() );
-        
+
         int dupd = 0;
         wxString sdupd =date_upd.Mid( 0, 4 );
         wxCharBuffer ubuffer = sdupd.ToUTF8();
         if(ubuffer.data())
             dupd = atoi(ubuffer.data() );
-        
+
         if( dupd > d000 )
             m_PubYear = sdupd;
         else
             m_PubYear = sd000;
-        
-        
+
+
         //    Set some base class values
             wxDateTime upd;
             upd.ParseFormat( date_upd, _T("%Y%m%d") );
             if( !upd.IsValid() ) upd.ParseFormat( _T("20000101"), _T("%Y%m%d") );
-            
+
             upd.ResetTime();
             m_EdDate = upd;
-            
+
             m_SE = m_edtn000;
             m_datum_str = _T("WGS84");
-            
+
             m_SoundingsDatum = _T("MEAN LOWER LOW WATER");
             m_ID = SENCFileName.GetName();
-            
+
             // Validate hash maps....
-            
+
             PI_S57Obj *top;
             PI_S57Obj *nxx;
-            
+
             for( int i = 0; i < PI_PRIO_NUM; ++i ) {
                 for( int j = 0; j < PI_LUPNAME_NUM; j++ ) {
                     top = razRules[i][j];
                     while( top != NULL ) {
                         PI_S57Obj *obj = top;
-                        
+
                         ///
                         for( int iseg = 0; iseg < obj->m_n_lsindex; iseg++ ) {
                             int seg_index = iseg * 3;
@@ -4920,7 +4921,7 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath )
                                 }
                             }
                             index_run++;
-                            
+
                             //  Get the edge
                             int enode = *index_run;
                             if( ( enode ) ) {
@@ -4931,9 +4932,9 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath )
                                     m_ve_hash[0] = 0;
                                 }
                             }
-                            
+
                             index_run++;
-                            
+
                             //  Get last connected node
                             int jnode = *index_run;
                             if( ( jnode ) ) {
@@ -4945,21 +4946,21 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath )
                                 }
                             }
                             index_run++;
-                            
+
                         }
                         nxx = top->next;
                         top = nxx;
                     }
                 }
             }
-    
+
     AssembleLineGeometry();
 
     //  Set up the chart context
     m_this_chart_context = (pi_chart_context *)calloc( sizeof(pi_chart_context), 1);
     m_this_chart_context->m_pvc_hash = (void *)&m_vc_hash;
     m_this_chart_context->m_pve_hash = (void *)&m_ve_hash;
-    
+
     m_this_chart_context->ref_lat = m_ref_lat;
     m_this_chart_context->ref_lon = m_ref_lon;
     m_this_chart_context->pFloatingATONArray = pFloatingATONArray;
@@ -4967,7 +4968,7 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath )
     m_this_chart_context->chart = this;
     m_this_chart_context->safety_contour = 1e6;    // to be evaluated later
     m_this_chart_context->vertex_buffer = m_line_vertex_buffer;
-    
+
     //  Loop and populate all the objects
     for( int i = 0; i < PI_PRIO_NUM; ++i ) {
         for( int j = 0; j < PI_LUPNAME_NUM; j++ ) {
@@ -4979,7 +4980,7 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath )
             }
         }
     }
-    
+
     return ret_val;
 }
 #endif
@@ -4989,14 +4990,14 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath )
 PI_InitReturn eSENCChart::PostInit( int flags, int cs )
 {
     //    SetExtentsFromCOVR();
-    
-    
-    
+
+
+
     //    SENC file is ready, so build the RAZ structure
     int retCode = BuildRAZFromSENCFile( m_SENCFileName.GetFullPath(), g_UserKey, CTYPE_OESENC );
-    
+
     if(retCode != SENC_NO_ERROR){
-    
+
         //
 //         if(( ERROR_SIGNATURE_FAILURE == retCode )  || ( ERROR_SENC_CORRUPT == retCode ) ){
 //             wxString permit = GetUserKey( LEGEND_FIRST, false );
@@ -5007,25 +5008,25 @@ PI_InitReturn eSENCChart::PostInit( int flags, int cs )
             wxString msg( _T("   Cannot load SENC file ") );
             msg.Append( m_SENCFileName.GetFullPath() );
             wxLogMessage( msg );
-        
+
             return PI_INIT_FAIL_RETRY;
         }
     }
-    
+
     //      Check for and if necessary rebuild Thumbnail
     //      Going to be in the global (user) SENC file directory
-    
+
     #if 0
     wxString SENCdir = m_senc_dir;
     if( SENCdir.Last() != m_SENCFileName.GetPathSeparator() )
         SENCdir.Append( m_SENCFileName.GetPathSeparator() );
-    
+
     wxFileName ThumbFileName( SENCdir, m_SENCFileName.GetName(), _T("BMP") );
-    
+
     if( !ThumbFileName.FileExists() || m_bneed_new_thumbnail ) BuildThumbnail(
         ThumbFileName.GetFullPath() );
     #endif
-    
+
     //  Update the member thumbdata structure
     #if 0
     if( ThumbFileName.FileExists() ) {
@@ -5057,25 +5058,25 @@ PI_InitReturn eSENCChart::PostInit( int flags, int cs )
 void eSENCChart::BuildDepthContourArray( void )
 {
     //    Build array of contour values for later use by conditional symbology
-    
+
     if( 0 == m_nvaldco_alloc ) {
         m_nvaldco_alloc = 5;
         m_pvaldco_array = (double *) calloc( m_nvaldco_alloc, sizeof(double) );
     }
-    
+
     ObjRazRules *top;
     // some ENC have a lot of DEPCNT objects but they seem to store them
     // in VALDCO order, try to take advantage of that.
     double prev_valdco = 0.0;
-    
+
     for( int i = 0; i < PRIO_NUM; ++i ) {
         for( int j = 0; j < LUPNAME_NUM; j++ ) {
-            
+
             top = razRules[i][j];
             while( top != NULL ) {
                 if( !strncmp( top->obj->FeatureName, "DEPCNT", 6 ) ) {
                     double valdco = 0.0;
-                    if( GetDoubleAttr( top->obj, "VALDCO", valdco ) ) {  
+                    if( GetDoubleAttr( top->obj, "VALDCO", valdco ) ) {
                         if (valdco != prev_valdco) {
                             prev_valdco = valdco;
                             m_nvaldco++;
@@ -5102,37 +5103,37 @@ void eSENCChart::BuildDepthContourArray( void )
 void eSENCChart::BuildDepthContourArray( void )
 {
     //    Build array of contour values for later use by conditional symbology
-    
+
     PI_S57Obj *top;
     for( int i = 0; i < PRIO_NUM; ++i ) {
         for( int j = 0; j < LUPNAME_NUM; j++ ) {
-            
+
             top = razRules[i][j];
             while( top != NULL ) {
                 if( !strncmp( top->FeatureName, "DEPCNT", 6 ) ) {
                     double valdco = 0.0;
-                    
+
                     //  Find the attribute VALDCO
                     char *curr_att = top->att_array;
                     int attrCounter = 0;
                     wxString curAttrName;
-                    
+
                     while( attrCounter < top->n_attr ) {
                         curAttrName = wxString(curr_att, wxConvUTF8, 6);
-                        
+
                         if(curAttrName == _T("VALDCO")){
                             S57attVal *pval = top->attVal->Item( attrCounter );
                             valdco = *( (double *) pval->value );
-                            
+
                             break;
                         }
-                        
+
                         curr_att += 6;
                         attrCounter++;
                     }
-                        
-                    
-                    
+
+
+
                     if( valdco > 0. ) {
                         bool bfound = false;
                         for(unsigned int i = 0 ; i < m_pcontour_array->GetCount() ; i++) {
@@ -5141,7 +5142,7 @@ void eSENCChart::BuildDepthContourArray( void )
                                 break;
                             }
                         }
-                        if(!bfound)    
+                        if(!bfound)
                             m_pcontour_array->Add(valdco);
                     }
                 }
@@ -5150,10 +5151,10 @@ void eSENCChart::BuildDepthContourArray( void )
             }
         }
     }
-    
+
     m_pcontour_array->Sort( DOUBLECMPFUNC );
-    
-       
+
+
 
 }
 #endif
@@ -5162,19 +5163,19 @@ void eSENCChart::SetSafetyContour(void)
 {
     // Iterate through the array of contours in this cell, choosing the best one to
     // render as a bold "safety contour" in the PLIB.
-    
+
     //    This method computes the smallest chart DEPCNT:VALDCO value which
     //    is greater than or equal to the current PLIB mariner parameter S52_MAR_SAFETY_CONTOUR
-    
+
     double mar_safety_contour = S52_getMarinerParam(S52_MAR_SAFETY_CONTOUR);
-    
+
     int i = 0;
     if( NULL != m_pvaldco_array ) {
         for( i = 0; i < m_nvaldco; i++ ) {
             if( m_pvaldco_array[i] >= mar_safety_contour )
                 break;
         }
-        
+
         if( i < m_nvaldco )
             m_next_safe_cnt = m_pvaldco_array[i];
         else
@@ -5182,12 +5183,12 @@ void eSENCChart::SetSafetyContour(void)
     } else {
         m_next_safe_cnt = (double) 1e6;
     }
-    
+
     // A safety contour greater than "Deep Depth" makes no sense...
     // So, declare "no suitable safety depth contour"
     if(m_next_safe_cnt > S52_getMarinerParam(S52_MAR_DEEP_CONTOUR))
         m_next_safe_cnt = (double) 1e6;
-    
+
 }
 
 //      Rendering Support Methods
@@ -5202,52 +5203,52 @@ void eSENCChart::SetVPParms( const PlugIn_ViewPort &vpt )
     m_pixx_vp_center = vpt.pix_width / 2;
     m_pixy_vp_center = vpt.pix_height / 2;
     m_view_scale_ppm = vpt.view_scale_ppm;
-    
+
     toSM_Plugin( vpt.clat, vpt.clon, m_ref_lat, m_ref_lon, &m_easting_vp_center, &m_northing_vp_center );
-    
+
     vp_transform.easting_vp_center = m_easting_vp_center;
     vp_transform.northing_vp_center = m_northing_vp_center;
-    
+
 }
 
 
 bool eSENCChart::AdjustVP( PlugIn_ViewPort &vp_last, PlugIn_ViewPort &vp_proposed )
 {
     if( IsCacheValid() ) {
-        
+
         //      If this viewpoint is same scale as last...
         if( vp_last.view_scale_ppm == vp_proposed.view_scale_ppm ) {
-            
+
             double prev_easting_c, prev_northing_c;
             toSM_Plugin( vp_last.clat, vp_last.clon, m_ref_lat, m_ref_lon, &prev_easting_c, &prev_northing_c );
-            
+
             double easting_c, northing_c;
             toSM_Plugin( vp_proposed.clat, vp_proposed.clon, m_ref_lat, m_ref_lon, &easting_c, &northing_c );
-            
+
             //  then require this viewport to be exact integral pixel difference from last
             //  adjusting clat/clat and SM accordingly
-            
+
             double delta_pix_x = ( easting_c - prev_easting_c ) * vp_proposed.view_scale_ppm;
             int dpix_x = (int) round ( delta_pix_x );
             double dpx = dpix_x;
-            
+
             double delta_pix_y = ( northing_c - prev_northing_c ) * vp_proposed.view_scale_ppm;
             int dpix_y = (int) round ( delta_pix_y );
             double dpy = dpix_y;
-            
+
             double c_east_d = ( dpx / vp_proposed.view_scale_ppm ) + prev_easting_c;
             double c_north_d = ( dpy / vp_proposed.view_scale_ppm ) + prev_northing_c;
-            
+
             double xlat, xlon;
             fromSM_Plugin( c_east_d, c_north_d, m_ref_lat, m_ref_lon, &xlat, &xlon );
-            
+
             vp_proposed.clon = xlon;
             vp_proposed.clat = xlat;
-            
+
             return true;
         }
     }
-    
+
     return false;
 }
 
@@ -5257,10 +5258,10 @@ bool eSENCChart::AdjustVP( PlugIn_ViewPort &vp_last, PlugIn_ViewPort &vp_propose
  * double last_center_easting, last_center_northing, this_center_easting, this_center_northing;
  * toSM ( vp_proposed.clat, vp_proposed.clon, ref_lat, ref_lon, &this_center_easting, &this_center_northing );
  * toSM ( vp_last.clat,     vp_last.clon,     ref_lat, ref_lon, &last_center_easting, &last_center_northing );
- * 
+ *
  * int dx = (int)round((last_center_easting  - this_center_easting)  * vp_proposed.view_scale_ppm);
  * int dy = (int)round((last_center_northing - this_center_northing) * vp_proposed.view_scale_ppm);
- * 
+ *
  * return((dx !=  0) || (dy != 0) || !(IsCacheValid()) || (vp_proposed.view_scale_ppm != vp_last.view_scale_ppm));
  }
  */
@@ -5270,21 +5271,21 @@ void eSENCChart::GetValidCanvasRegion( const PlugIn_ViewPort& VPoint, wxRegion *
     int ryb, ryt;
     double easting, northing;
     double epix, npix;
-    
+
     toSM_Plugin( m_FullExtent.SLAT, m_FullExtent.WLON, VPoint.clat, VPoint.clon, &easting, &northing );
     epix = easting * VPoint.view_scale_ppm;
     npix = northing * VPoint.view_scale_ppm;
-    
+
     rxl = (int) round((VPoint.pix_width / 2) + epix);
     ryb = (int) round((VPoint.pix_height / 2) - npix);
-    
+
     toSM_Plugin( m_FullExtent.NLAT, m_FullExtent.ELON, VPoint.clat, VPoint.clon, &easting, &northing );
     epix = easting * VPoint.view_scale_ppm;
     npix = northing * VPoint.view_scale_ppm;
-    
+
     rxr = (int) round((VPoint.pix_width / 2) + epix);
     ryt = (int) round((VPoint.pix_height / 2) - npix);
-    
+
     pValidRegion->Clear();
     pValidRegion->Union( rxl, ryt, rxr - rxl, ryb - ryt );
 }
@@ -5292,40 +5293,40 @@ void eSENCChart::GetValidCanvasRegion( const PlugIn_ViewPort& VPoint, wxRegion *
 void eSENCChart::SetLinePriorities( void )
 {
     if( !ps52plib ) return;
-    
+
     //      If necessary.....
     //      Establish line feature rendering priorities
-    
+
     if( !m_bLinePrioritySet ) {
         ObjRazRules *top;
         ObjRazRules *crnt;
-        
+
         for( int i = 0; i < PRIO_NUM; ++i ) {
-            
+
             top = razRules[i][2];           //LINES
             while( top != NULL ) {
                 ObjRazRules *crnt = top;
                 top = top->next;
                 ps52plib->SetLineFeaturePriority( crnt, i );
             }
-            
+
             //    In the interest of speed, choose only the one necessary area boundary style index
             int j;
             if( ps52plib->m_nBoundaryStyle == SYMBOLIZED_BOUNDARIES )
                 j = 4;
             else
                 j = 3;
-            
+
             top = razRules[i][j];
             while( top != NULL ) {
                 crnt = top;
                 top = top->next;               // next object
                 ps52plib->SetLineFeaturePriority( crnt, i );
             }
-            
+
         }
-        
-        
+
+
         // Traverse the entire object list again, setting the priority of each line_segment_element
         // to the maximum priority seen for that segment
         for( int i = 0; i < PRIO_NUM; ++i ) {
@@ -5333,7 +5334,7 @@ void eSENCChart::SetLinePriorities( void )
                 ObjRazRules *top = razRules[i][j];
                 while( top != NULL ) {
                     S57Obj *obj = top->obj;
-                    
+
                     VE_Element *pedge;
                     connector_segment *pcs;
                     line_segment_element *list = obj->m_ls_list;
@@ -5341,28 +5342,28 @@ void eSENCChart::SetLinePriorities( void )
                         switch (list->ls_type){
                             case TYPE_EE:
                             case TYPE_EE_REV:
-                                
+
                                 pedge = list->pedge;// (VE_Element *)list->private0;
                                 if(pedge)
                                     list->priority = pedge->max_priority;
                                 break;
-                                
+
                             default:
                                 pcs = list->pcs; //(connector_segment *)list->private0;
                                 if(pcs)
                                     list->priority = pcs->max_priority_cs;
                                 break;
                         }
-                        
+
                         list = list->next;
                     }
-                    
+
                     top = top->next;
                 }
             }
         }
     }
-    
+
     //      Mark the priority as set.
     //      Generally only reset by Options Dialog post processing
     m_bLinePrioritySet = true;
@@ -5371,15 +5372,15 @@ void eSENCChart::SetLinePriorities( void )
 
 void eSENCChart::ResetPointBBoxes( const PlugIn_ViewPort &vp_last, const PlugIn_ViewPort &vp_this )
 {
-#if 0    
+#if 0
     PI_S57Obj *top;
     PI_S57Obj *nxx;
-    
+
     double box_margin = 0.25;
-    
+
     //    Assume a 10x10 pixel box
     box_margin = ( 10. / vp_this.view_scale_ppm ) / ( 1852. * 60. );  //degrees
-    
+
     for( int i = 0; i < PRIO_NUM; ++i ) {
         top = razRules[i][0];
         while( top != NULL ) {
@@ -5406,7 +5407,7 @@ void eSENCChart::ResetPointBBoxes( const PlugIn_ViewPort &vp_last, const PlugIn_
                 top->lat_max = top->m_lat + box_margin;
                 PI_UpdateContext(top);
             }
-            
+
             nxx = top->next;
             top = nxx;
         }
@@ -5419,7 +5420,7 @@ ViewPort CreateCompatibleViewport( const PlugIn_ViewPort &pivp)
 {
     //    Create a system ViewPort
     ViewPort vp;
-    
+
     vp.clat =                   pivp.clat;                   // center point
     vp.clon =                   pivp.clon;
     vp.view_scale_ppm =         pivp.view_scale_ppm;
@@ -5431,15 +5432,15 @@ ViewPort CreateCompatibleViewport( const PlugIn_ViewPort &pivp)
     vp.rv_rect =                pivp.rv_rect;
     vp.b_quilt =                pivp.b_quilt;
     vp.m_projection_type =      pivp.m_projection_type;
-    
+
 //    if(cc1)
 //        vp.ref_scale = cc1->GetVP().ref_scale;
 //    else
         vp.ref_scale = vp.chart_scale;
-    
+
     vp.SetBoxes();
     vp.Validate();                 // This VP is valid
-    
+
     return vp;
 }
 
@@ -5449,25 +5450,25 @@ ViewPort CreateCompatibleViewport( const PlugIn_ViewPort &pivp)
 bool eSENCChart::DoRenderRegionViewOnDC( wxMemoryDC& dc, const PlugIn_ViewPort& VPoint,
                                        const wxRegion &Region, bool b_overlay )
 {
-    
+
     SetVPParms( VPoint );
-    
+
     bool force_new_view = false;
-    
+
     if( Region != m_last_Region ) force_new_view = true;
-    
+
     PI_PLIBSetRenderCaps( PLIB_CAPS_LINE_BUFFER | PLIB_CAPS_SINGLEGEO_BUFFER | PLIB_CAPS_OBJSEGLIST | PLIB_CAPS_OBJCATMUTATE);
     PI_PLIBPrepareForNewRender();
-    
+
     if( m_plib_state_hash != PI_GetPLIBStateHash() ) {
         m_bLinePrioritySet = false;                     // need to reset line priorities
         UpdateLUPs( this );                             // and update the LUPs
         ResetPointBBoxes( m_last_vp, VPoint );
         SetSafetyContour();
         m_plib_state_hash = PI_GetPLIBStateHash();
-        
+
     }
-    
+
 
     if( VPoint.view_scale_ppm != m_last_vp.view_scale_ppm ) {
         ResetPointBBoxes( m_last_vp, VPoint );
@@ -5487,19 +5488,19 @@ bool eSENCChart::DoRenderRegionViewOnDC( wxMemoryDC& dc, const PlugIn_ViewPort& 
         }
         if( NULL == m_pCloneBM )
             m_pCloneBM = new wxBitmap( VPoint.pix_width, VPoint.pix_height, -1 );
-    
+
         wxMemoryDC dc_clone;
         dc_clone.SelectObject( *m_pCloneBM );
-    
+
 //    #ifdef ocpnUSE_DIBSECTION
 //    ocpnMemDC memdc, dc_org;
 //    #else
     wxMemoryDC memdc, dc_org;
 //    #endif
-    
+
 //        pDIB->SelectIntoDC( dc_org );
         dc_org.SelectObject( *pDIB );
-        
+
     //    Decompose the region into rectangles, and fetch them into the target dc
         wxRegionIterator upd( Region ); // get the requested rect list
         while( upd.HaveRects() ) {
@@ -5507,22 +5508,22 @@ bool eSENCChart::DoRenderRegionViewOnDC( wxMemoryDC& dc, const PlugIn_ViewPort& 
             dc_clone.Blit( rect.x, rect.y, rect.width, rect.height, &dc_org, rect.x, rect.y );
             upd++;
         }
-    
+
         dc_clone.SelectObject( wxNullBitmap );
         dc_org.SelectObject( wxNullBitmap );
-    
+
     //    Create a mask
         if( b_overlay ) {
             wxColour nodat = GetBaseGlobalColor( _T ( "NODTA" ) );
             wxColour nodat_sub = nodat;
-        
+
 //        #ifdef ocpnUSE_ocpnBitmap
 //            nodat_sub = wxColour( nodat.Blue(), nodat.Green(), nodat.Red() );
 //        #endif
             m_pMask = new wxMask( *m_pCloneBM, nodat_sub );
             m_pCloneBM->SetMask( m_pMask );
         }
-    
+
         dc.SelectObject( *m_pCloneBM );
     } else {
 //        pDIB->SelectIntoDC( dc );
@@ -5539,7 +5540,7 @@ wxBitmap *eSENCChart::GetCloneBitmap()
 {
     wxRegion Region = m_last_Region;
     PlugIn_ViewPort VPoint = m_last_vp;
-    
+
     if( m_pCloneBM ) {
         if( ( m_pCloneBM->GetWidth() != VPoint.pix_width )
             || ( m_pCloneBM->GetHeight() != VPoint.pix_height ) ) {
@@ -5549,16 +5550,16 @@ wxBitmap *eSENCChart::GetCloneBitmap()
     }
     if( NULL == m_pCloneBM ) m_pCloneBM = new wxBitmap( VPoint.pix_width, VPoint.pix_height,
         -1 );
-    
+
     wxMemoryDC dc_clone;
     dc_clone.SelectObject( *m_pCloneBM );
-    
+
 //    #ifdef ocpnUSE_DIBSECTION
 //    ocpnMemDC memdc, dc_org;
 //    #else
     wxMemoryDC memdc, dc_org;
 //    #endif
-    
+
 //    pDIB->SelectIntoDC( dc_org );
     dc_org.SelectObject( *pDIB );
 
@@ -5569,16 +5570,16 @@ wxBitmap *eSENCChart::GetCloneBitmap()
         dc_clone.Blit( rect.x, rect.y, rect.width, rect.height, &dc_org, rect.x, rect.y );
         upd++;
     }
-    
+
     dc_clone.SelectObject( wxNullBitmap );
     dc_org.SelectObject( wxNullBitmap );
-    
+
     #if 0
     //    Create a mask
     if( b_overlay ) {
             wxColour nodat = GetBaseGlobalColor( _T ( "NODTA" ) );
         wxColour nodat_sub = nodat;
-        
+
         #ifdef ocpnUSE_ocpnBitmap
         nodat_sub = wxColour( nodat.Blue(), nodat.Green(), nodat.Red() );
         #endif
@@ -5593,32 +5594,32 @@ return m_pCloneBM;
 
 bool eSENCChart::RenderViewOnDC( wxMemoryDC& dc, const PlugIn_ViewPort& VPoint )
 {
-  
+
     m_cvp = CreateCompatibleViewport( VPoint );
-    
+
     SetVPParms( VPoint );
-    
+
     PI_PLIBSetRenderCaps( PLIB_CAPS_LINE_BUFFER | PLIB_CAPS_SINGLEGEO_BUFFER | PLIB_CAPS_OBJSEGLIST | PLIB_CAPS_OBJCATMUTATE);
     PI_PLIBPrepareForNewRender();
-    
+
     if( m_plib_state_hash != PI_GetPLIBStateHash() ) {
         m_bLinePrioritySet = false;                     // need to reset line priorities
         UpdateLUPs( this );                             // and update the LUPs
         ResetPointBBoxes( m_last_vp, VPoint );
         SetSafetyContour();
         m_plib_state_hash = PI_GetPLIBStateHash();
-        
+
     }
-    
+
     SetLinePriorities();
-    
+
     bool bnew_view = DoRenderViewOnDC( dc, VPoint, false );
-    
+
 //    pDIB->SelectIntoDC( dc );
-    dc.SelectObject( *pDIB );  
-    
+    dc.SelectObject( *pDIB );
+
     return bnew_view;
-    
+
 }
 
 bool eSENCChart::DoRenderViewOnDC( wxMemoryDC& dc, const PlugIn_ViewPort& VPoint, bool force_new_view )
@@ -5626,65 +5627,65 @@ bool eSENCChart::DoRenderViewOnDC( wxMemoryDC& dc, const PlugIn_ViewPort& VPoint
     bool bnewview = false;
     wxPoint rul, rlr;
     bool bNewVP = false;
-    
+
     bool bReallyNew = false;
-    
+
     double easting_ul, northing_ul;
     double easting_lr, northing_lr;
     double prev_easting_ul = 0., prev_northing_ul = 0.;
     //    double prev_easting_lr, prev_northing_lr;
-    
+
     if( PI_GetPLIBColorScheme() != m_lastColorScheme )
         bReallyNew = true;
     m_lastColorScheme = PI_GetPLIBColorScheme();
-    
+
     if( VPoint.view_scale_ppm != m_last_vp.view_scale_ppm )
         bReallyNew = true;
-    
+
     //      If the scale is very small, do not use the cache to avoid harmonic difficulties...
         if( VPoint.chart_scale > 1e8 )
             bReallyNew = true;
-        
+
         wxRect dest( 0, 0, VPoint.pix_width, VPoint.pix_height );
         if( m_last_vprect != dest )
             bReallyNew = true;
          m_last_vprect = dest;
-        
-                                           
+
+
                                             if( bReallyNew ) {
                                                 bNewVP = true;
                                                 delete pDIB;
                                                 pDIB = NULL;
                                                 bnewview = true;
                                             }
-                                            
+
                                             //      Calculate the desired rectangle in the last cached image space
                                             if( m_last_vp.bValid ) {
                                                 easting_ul = m_easting_vp_center - ( ( VPoint.pix_width / 2 ) / m_view_scale_ppm );
                                                 northing_ul = m_northing_vp_center + ( ( VPoint.pix_height / 2 ) / m_view_scale_ppm );
                                                 easting_lr = easting_ul + ( VPoint.pix_width / m_view_scale_ppm );
                                                 northing_lr = northing_ul - ( VPoint.pix_height / m_view_scale_ppm );
-                                                
+
                                                 double last_easting_vp_center, last_northing_vp_center;
                                                 toSM_Plugin( m_last_vp.clat, m_last_vp.clon, m_ref_lat, m_ref_lon, &last_easting_vp_center,
                                                       &last_northing_vp_center );
-                                                
+
                                                 prev_easting_ul = last_easting_vp_center
                                                 - ( ( m_last_vp.pix_width / 2 ) / m_view_scale_ppm );
                                                 prev_northing_ul = last_northing_vp_center
                                                 + ( ( m_last_vp.pix_height / 2 ) / m_view_scale_ppm );
                                                 //        prev_easting_lr = easting_ul + ( m_last_vp.pix_width / m_view_scale_ppm );
                                                 //        prev_northing_lr = northing_ul - ( m_last_vp.pix_height / m_view_scale_ppm );
-                                                
+
                                                 double dx = ( easting_ul - prev_easting_ul ) * m_view_scale_ppm;
                                                 double dy = ( prev_northing_ul - northing_ul ) * m_view_scale_ppm;
-                                                
+
                                                 rul.x = (int) round((easting_ul - prev_easting_ul) * m_view_scale_ppm);
                                                 rul.y = (int) round((prev_northing_ul - northing_ul) * m_view_scale_ppm);
-                                                
+
                                                 rlr.x = (int) round((easting_lr - prev_easting_ul) * m_view_scale_ppm);
                                                 rlr.y = (int) round((prev_northing_ul - northing_lr) * m_view_scale_ppm);
-                                                
+
                                                 if( ( fabs( dx - wxRound( dx ) ) > 1e-5 ) || ( fabs( dy - wxRound( dy ) ) > 1e-5 ) ) {
                                                     rul.x = 0;
                                                     rul.y = 0;
@@ -5692,7 +5693,7 @@ bool eSENCChart::DoRenderViewOnDC( wxMemoryDC& dc, const PlugIn_ViewPort& VPoint
                                                     rlr.y = 0;
                                                     bNewVP = true;
                                                 }
-                                                
+
                                                 else if( ( rul.x != 0 ) || ( rul.y != 0 ) ) {
                                                     bNewVP = true;
                                                 }
@@ -5703,24 +5704,24 @@ bool eSENCChart::DoRenderViewOnDC( wxMemoryDC& dc, const PlugIn_ViewPort& VPoint
                                                 rlr.y = 0;
                                                 bNewVP = true;
                                             }
-                                            
+
                                             if( force_new_view ) bNewVP = true;
-                                            
+
                                             //      Using regions, calculate re-usable area of pDIB
-                                            
+
                                             wxRegion rgn_last( 0, 0, VPoint.pix_width, VPoint.pix_height );
                                             wxRegion rgn_new( rul.x, rul.y, rlr.x - rul.x, rlr.y - rul.y );
                                             rgn_last.Intersect( rgn_new );            // intersection is reusable portion
-                                            
+
                                             if( bNewVP && ( NULL != pDIB ) && !rgn_last.IsEmpty() ) {
                                                 int xu, yu, wu, hu;
                                                 rgn_last.GetBox( xu, yu, wu, hu );
-                                                
+
                                                 int desx = 0;
                                                 int desy = 0;
                                                 int srcx = xu;
                                                 int srcy = yu;
-                                                
+
                                                 if( rul.x < 0 ) {
                                                     srcx = 0;
                                                     desx = -rul.x;
@@ -5729,129 +5730,129 @@ bool eSENCChart::DoRenderViewOnDC( wxMemoryDC& dc, const PlugIn_ViewPort& VPoint
                                                     srcy = 0;
                                                     desy = -rul.y;
                                                 }
-                                                
+
                                                 wxMemoryDC dc_last;
                                                 dc_last.SelectObject( *pDIB );
                                                 wxMemoryDC dc_new;
                                                 wxBitmap *pDIBNew = new wxBitmap( VPoint.pix_width, VPoint.pix_height, BPP );
                                                 dc_new.SelectObject( *pDIBNew );
-                                                
+
                                                 //printf("reuse blit %d %d %d %d %d %d\n",desx, desy, wu, hu,  srcx, srcy);
                                                 dc_new.Blit( desx, desy, wu, hu, (wxDC *) &dc_last, srcx, srcy, wxCOPY );
-                                                
+
                                                 //        Ask the plib to adjust the persistent text rectangle list for this canvas shift
                                                 //        This ensures that, on pans, the list stays in registration with the new text renders to come
                                                         ps52plib->AdjustTextList( desx - srcx, desy - srcy, VPoint.pix_width, VPoint.pix_height );
-                                                
+
                                                 dc_new.SelectObject( wxNullBitmap );
                                                 dc_last.SelectObject( wxNullBitmap );
-                                                
+
                                                 delete pDIB;
                                                 pDIB = pDIBNew;
-                                                
+
                                                 //              OK, now have the re-useable section in place
                                                 //              Next, build the new sections
-                                                
+
                                                 dc.SelectObject( *pDIB );
                                                 wxRegion rgn_delta( 0, 0, VPoint.pix_width, VPoint.pix_height );
                                                 wxRegion rgn_reused( desx, desy, wu, hu );
                                                 rgn_delta.Subtract( rgn_reused );
-                                                
+
                                                 wxRegionIterator upd( rgn_delta ); // get the update rect list
                                                 while( upd.HaveRects() ) {
                                                     wxRect rect = upd.GetRect();
-                                                    
+
                                                     //      Build temp ViewPort on this region
-                                                    
+
                                                     PlugIn_ViewPort temp_vp = VPoint;
                                                     double temp_lon_left, temp_lat_bot, temp_lon_right, temp_lat_top;
-                                                    
+
                                                     double temp_northing_ul = prev_northing_ul - ( rul.y / m_view_scale_ppm )
                                                     - ( rect.y / m_view_scale_ppm );
                                                     double temp_easting_ul = prev_easting_ul + ( rul.x / m_view_scale_ppm )
                                                     + ( rect.x / m_view_scale_ppm );
                                                     fromSM_Plugin( temp_easting_ul, temp_northing_ul, m_ref_lat, m_ref_lon, &temp_lat_top,
                                                             &temp_lon_left );
-                                                    
+
                                                     double temp_northing_lr = temp_northing_ul - ( rect.height / m_view_scale_ppm );
                                                     double temp_easting_lr = temp_easting_ul + ( rect.width / m_view_scale_ppm );
                                                     fromSM_Plugin( temp_easting_lr, temp_northing_lr, m_ref_lat, m_ref_lon, &temp_lat_bot,
                                                             &temp_lon_right );
-                                                    
+
                                                     //            temp_vp.GetBBox().SetMin( temp_lon_left, temp_lat_bot );
                                                     //            temp_vp.GetBBox().SetMax( temp_lon_right, temp_lat_top );
-                                                    
+
                                                     temp_vp.lat_min = temp_lat_bot;
                                                     temp_vp.lat_max = temp_lat_top;
                                                     temp_vp.lon_min = temp_lon_left;
                                                     temp_vp.lon_max = temp_lon_right;
-                                                    
+
                                                     //      Allow some slop in the viewport
                                                     //    TODO Investigate why this fails if greater than 5 percent
                                                     //            double margin = wxMin(temp_vp.GetBBox().GetWidth(), temp_vp.GetBBox().GetHeight())
                                                     //                    * 0.05;
-                                                    
+
                                                     //            temp_vp.GetBBox().EnLarge( margin );
-                                                    
+
                                                     //      And Render it new piece on the target dc
                                                     //printf("New Render, rendering %d %d %d %d \n", rect.x, rect.y, rect.width, rect.height);
-                                                    
+
                                                     DCRenderRect( dc, temp_vp, &rect );
-                                                    
+
                                                     upd++;
                                                 }
-                                                
+
                                                 dc.SelectObject( wxNullBitmap );
-                                                
+
                                                 bnewview = true;
-                                                
+
                                                 //      Update last_vp to reflect the current cached bitmap
                                                 m_last_vp = VPoint;
-                                                
+
                                             }
-                                            
+
                                             else if( bNewVP || ( NULL == pDIB ) ) {
                                                 delete pDIB;
                                                 pDIB = new wxBitmap( VPoint.pix_width, VPoint.pix_height, BPP );     // destination
-                                                
+
                                                 wxRect full_rect( 0, 0, VPoint.pix_width, VPoint.pix_height );
                                                 dc.SelectObject( *pDIB );
-                                                
+
                                                 //        Clear the text declutter list
                                                 ps52plib->ClearTextList();
-                                                
+
                                                 DCRenderRect( dc, VPoint, &full_rect );
-                                                
+
                                                 dc.SelectObject( wxNullBitmap );
-                                                
+
                                                 bnewview = true;
-                                                
+
                                                 //      Update last_vp to reflect the current cached bitmap
                                                 m_last_vp = VPoint;
-                                                
+
                                             }
-                                            
+
                                             return bnewview;
-                                            
+
 }
 
 int eSENCChart::DCRenderRect( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp, wxRect* rect )
 {
-    
+
 //    ScreenLogMessage(_T("Render\n"));
-    
+
     int i;
     ObjRazRules *top;
     ObjRazRules *crnt;
-    
+
     //PlugIn_ViewPort tvp = vp;                    // undo const  TODO fix this in PLIB
-    
+
     ViewPort cvp = CreateCompatibleViewport( vp );
     cvp.GetBBox().Set(vp.lat_min, vp.lon_min, vp.lat_max, vp.lon_max);
-    
-    
+
+
     render_canvas_parms pb_spec;
-    
+
     pb_spec.depth = BPP;
     pb_spec.pb_pitch = ( ( rect->width * pb_spec.depth / 8 ) );
     pb_spec.lclip = rect->x;
@@ -5862,8 +5863,8 @@ int eSENCChart::DCRenderRect( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp, wx
     pb_spec.x = rect->x;
     pb_spec.y = rect->y;
     pb_spec.b_revrgb = false;
-    
-    
+
+
 //     int depth = BPP;
 //     int pb_pitch = ( ( rect->width * depth / 8 ) );
 //     unsigned char *pixbuf = (unsigned char *) malloc( rect->height * pb_pitch );
@@ -5871,7 +5872,7 @@ int eSENCChart::DCRenderRect( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp, wx
 //     int height = rect->height;
 //     int pbx = rect->x;
 //     int pby = rect->y;
-    
+
     // Preset background
     wxColour color = GetBaseGlobalColor( _T ( "NODTA" ) );
     unsigned char r, g, b;
@@ -5881,7 +5882,7 @@ int eSENCChart::DCRenderRect( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp, wx
         b = color.Blue();
     } else
         r = g = b = 0;
-    
+
     if( pb_spec.depth == 24 ) {
         for( int i = 0; i < pb_spec.height; i++ ) {
             unsigned char *p = pb_spec.pix_buff + ( i * pb_spec.pb_pitch );
@@ -5893,7 +5894,7 @@ int eSENCChart::DCRenderRect( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp, wx
         }
     } else {
         int color_int = ( ( r ) << 16 ) + ( ( g ) << 8 ) + ( b );
-        
+
         for( int i = 0; i < pb_spec.height; i++ ) {
             int *p = (int *) ( pb_spec.pix_buff + ( i * pb_spec.pb_pitch ) );
             for( int j = 0; j < pb_spec.width; j++ ) {
@@ -5902,14 +5903,14 @@ int eSENCChart::DCRenderRect( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp, wx
         }
     }
 
-    
+
     //      Render the areas quickly
     for( i = 0; i < PI_PRIO_NUM; ++i ) {
         if( PI_GetPLIBBoundaryStyle() == PI_SYMBOLIZED_BOUNDARIES )
             top = razRules[i][4]; // Area Symbolized Boundaries
         else
             top = razRules[i][3];           // Area Plain Boundaries
-                
+
                 while( top != NULL ) {
                     crnt = top;
                     top = top->next;               // next object
@@ -5917,18 +5918,18 @@ int eSENCChart::DCRenderRect( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp, wx
 
                     // This may be a deferred tesselation
                     // Don't pre-process the geometry unless the object is to be actually rendered
-                    if(!crnt->obj->pPolyTessGeo->IsOk() ){ 
+                    if(!crnt->obj->pPolyTessGeo->IsOk() ){
                         if(ps52plib->ObjectRenderCheckRules( crnt, &cvp, true )){
                             if(!crnt->obj->pPolyTessGeo->m_pxgeom)
                                 crnt->obj->pPolyTessGeo->m_pxgeom = buildExtendedGeom( crnt->obj );
                         }
                     }
-                    
+
                     ps52plib->RenderAreaToDC( &dcinput, crnt, &cvp, &pb_spec );
 
                 }
     }
-    
+
     //      Convert the Private render canvas into a bitmap
 //    #ifdef ocpnUSE_ocpnBitmap
 //    ocpnBitmap *pREN = new ocpnBitmap( pixbuf, width, height, depth );
@@ -5936,29 +5937,29 @@ int eSENCChart::DCRenderRect( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp, wx
     wxImage *prender_image = new wxImage(pb_spec.width, pb_spec.height, false);
     prender_image->SetData((unsigned char*)pb_spec.pix_buff);
     wxBitmap *pREN = new wxBitmap(*prender_image);
-    
+
 //    #endif
-    
+
     //      Map it into a temporary DC
     wxMemoryDC dc_ren;
     dc_ren.SelectObject( *pREN );
-    
+
     //      Blit it onto the target dc
     dcinput.Blit( pb_spec.x, pb_spec.y, pb_spec.width, pb_spec.height, (wxDC *) &dc_ren, 0, 0 );
-    
+
     //      And clean up the mess
     dc_ren.SelectObject( wxNullBitmap );
-    
+
 //    #ifdef ocpnUSE_ocpnBitmap
 //    free( pixbuf );
 //    #else
     delete prender_image;           // the image owns the data
     // and so will free it in due course
 //    #endif
-    
+
     delete pREN;
 
-    
+
     //      Render the rest of the objects/primitives
     DCRenderLPB( dcinput, vp, rect );
     return 1;
@@ -5966,15 +5967,15 @@ int eSENCChart::DCRenderRect( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp, wx
 
 bool eSENCChart::DCRenderLPB( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp, wxRect* rect )
 {
-    
+
     int i;
     ObjRazRules *top;
     ObjRazRules *crnt;
     //PlugIn_ViewPort tvp = vp;                    // undo const  TODO fix this in PLIB
-    
+
     ViewPort cvp = CreateCompatibleViewport( vp );
     cvp.GetBBox().Set(vp.lat_min, vp.lon_min, vp.lat_max, vp.lon_max);
-    
+
     for( i = 0; i < PI_PRIO_NUM; ++i ) {
         //      Set up a Clipper for Lines
         wxDCClipper *pdcc = NULL;
@@ -5982,7 +5983,7 @@ bool eSENCChart::DCRenderLPB( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp, wx
                         wxRect nr = *rect;
                      pdcc = new wxDCClipper(dcinput, nr);
         }
-        
+
         if( PI_GetPLIBBoundaryStyle() == PI_SYMBOLIZED_BOUNDARIES )
             top = razRules[i][4]; // Area Symbolized Boundaries
         else
@@ -6018,7 +6019,7 @@ bool eSENCChart::DCRenderLPB( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp, wx
         //      Destroy Clipper
         if( pdcc ) delete pdcc;
     }
-    
+
     return true;
 }
 
@@ -6026,19 +6027,19 @@ bool eSENCChart::DCRenderLPB( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp, wx
 ListOfPI_S57Obj *eSENCChart::GetObjRuleListAtLatLon(float lat, float lon, float select_radius,
                                         PlugIn_ViewPort *VPoint)
 {
-    
+
     ListOfPI_S57Obj *ret_ptr = new ListOfPI_S57Obj;
 
     //    Iterate thru the razRules array, by object/rule type
-    
+
     S57Obj *top;
-    
+
     for( int i = 0; i < PRIO_NUM; ++i ) {
         // Points by type, array indices [0..1]
-        
+
         int point_type = 0; //( PI_GetPLIBSymbolStyle() == SIMPLIFIED ) ? 0 : 1;
         top = razRules[i][point_type];
-        
+
         while( top != NULL ) {
             if( top->npt == 1 )       // Do not select Multipoint objects (SOUNDG) yet.
                     {
@@ -6047,7 +6048,7 @@ ListOfPI_S57Obj *eSENCChart::GetObjRuleListAtLatLon(float lat, float lon, float 
                                 ret_ptr->Append( top );
                         }
                     }
-                    
+
                     //    Check the child branch, if any.
                     //    This is where Multipoint soundings are captured individually
                     if( top->child ) {
@@ -6057,16 +6058,16 @@ ListOfPI_S57Obj *eSENCChart::GetObjRuleListAtLatLon(float lat, float lon, float 
                                 if( DoesLatLonSelectObject( lat, lon, select_radius, child_item ) )
                                     ret_ptr->Append( child_item );
                             }
-                            
+
                             child_item = child_item->next;
                         }
                     }
-                    
+
                     top = top->next;
         }
-        
+
         // Areas by boundary type, array indices [3..4]
-        
+
         int area_boundary_type = 3; //( PI_GetPLIBBoundaryStyle() == PLAIN_BOUNDARIES ) ? 3 : 4;
         top = razRules[i][area_boundary_type];           // Area nnn Boundaries
         while( top != NULL ) {
@@ -6074,19 +6075,19 @@ ListOfPI_S57Obj *eSENCChart::GetObjRuleListAtLatLon(float lat, float lon, float 
                 if( DoesLatLonSelectObject( lat, lon, select_radius, top ) )
                     ret_ptr->Append( top );
             }
-            
+
             top = top->next;
         }         // while
-        
+
         // Finally, lines
         top = razRules[i][2];           // Lines
-        
+
         while( top != NULL ) {
             if( PI_PLIBObjectRenderCheck( top, VPoint ) ) {
                 if( DoesLatLonSelectObject( lat, lon, select_radius, top ) )
                     ret_ptr->Append( top );
             }
-            
+
             top = top->next;
         }
     }
@@ -6095,63 +6096,63 @@ ListOfPI_S57Obj *eSENCChart::GetObjRuleListAtLatLon(float lat, float lon, float 
 
 bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radius, PI_S57Obj *obj )
 {
-    
+
     switch( obj->Primitive_type ){
         //  For single Point objects, the integral object bounding box contains the lat/lon of the object,
         //  possibly expanded by text or symbol rendering
         case GEO_POINT: {
             if( 1 == obj->npt ) {
-                
+
                 //  Special case for LIGHTS
                 //  Sector lights have had their BBObj expanded to include the entire drawn sector
                 //  This is too big for pick area, can be confusing....
                 //  So make a temporary box at the light's lat/lon, with select_radius size
                 if( !strncmp( obj->FeatureName, "LIGHTS", 6 ) ) {
-                    
+
                     if (  lon >= (obj->lon_min - select_radius) && lon <= (obj->lon_max + select_radius) &&
                         lat >= (obj->lat_min - select_radius) && lat <= (obj->lat_max + select_radius) )
                             return true;
-                    
-                    
-#if 0                    
+
+
+#if 0
                     double olon, olat;
                     fromSM( ( obj->x * obj->x_rate ) + obj->x_origin,
                             ( obj->y * obj->y_rate ) + obj->y_origin, ref_lat, ref_lon, &olat,
                             &olon );
-                    
+
                     // Double the select radius to adjust for the fact that LIGHTS has
                     // a 0x0 BBox to start with, which makes it smaller than all other
                     // rendered objects.
                     wxBoundingBox sbox( olon - 2*select_radius, olat - 2*select_radius,
                                         olon + 2*select_radius, olat + 2*select_radius );
-                    
+
                     if( sbox.PointInBox( lon, lat, 0 ) )
                         return true;
-#endif                    
+#endif
                 }
-                
+
                 else{
                     double rlat_min, rlat_max, rlon_min, rlon_max;
                     bool box_valid = PI_GetObjectRenderBox(obj, &rlat_min, &rlat_max, &rlon_min, &rlon_max);
-                    
+
                     if(!box_valid)
                         return false;
-                    
+
                    if (  lon >= (rlon_min - select_radius) && lon <= (rlon_max + select_radius) &&
                         lat >= (rlat_min - select_radius) && lat <= (rlat_max + select_radius) )
                         return TRUE;
                  }
             }
-            
+
             //  For MultiPoint objects, make a bounding box from each point's lat/lon
             //  and check it
             else {
-                
+
                 //  Coarse test first
                 if (  lon >= (obj->lon_min - select_radius) && lon <= (obj->lon_max + select_radius) &&
                     lat >= (obj->lat_min - select_radius) && lat <= (obj->lat_max + select_radius) )
                 {
-                
+
                 //  Now decomposed soundings, one by one
                     double *pdl = obj->geoPtMulti;
                     for( int ip = 0; ip < obj->npt; ip++ ) {
@@ -6163,10 +6164,10 @@ bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radi
                         }
                     }
                 }
-            
+
             break;
         }
-        
+
         case GEO_AREA: {
             //  Coarse test first
             if (  lon >= (obj->lon_min - select_radius) && lon <= (obj->lon_max + select_radius) &&
@@ -6174,36 +6175,36 @@ bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radi
             {
                 return IsPointInObjArea( lat, lon, select_radius, obj );
             }
-            
+
         }
-#if 0        
+#if 0
         case GEO_LINE: {
             if( obj->geoPt ) {
                 //  Coarse test first
                 if( !obj->BBObj.PointInBox( lon, lat, select_radius ) ) return false;
-                
+
                 //  Line geometry is carried in SM or CM93 coordinates, so...
                 //  make the hit test using SM coordinates, converting from object points to SM using per-object conversion factors.
-                
+
                 double easting, northing;
                 toSM( lat, lon, ref_lat, ref_lon, &easting, &northing );
-                
+
                 pt *ppt = obj->geoPt;
                 int npt = obj->npt;
-                
+
                 double xr = obj->x_rate;
                 double xo = obj->x_origin;
                 double yr = obj->y_rate;
                 double yo = obj->y_origin;
-                
+
                 double north0 = ( ppt->y * yr ) + yo;
                 double east0 = ( ppt->x * xr ) + xo;
                 ppt++;
-                
+
                 for( int ip = 1; ip < npt; ip++ ) {
                     double north = ( ppt->y * yr ) + yo;
                     double east = ( ppt->x * xr ) + xo;
-                    
+
                     //    A slightly less coarse segment bounding box check
                     if( northing >= ( fmin(north, north0) - select_radius ) ) if( northing
                         <= ( fmax(north, north0) + select_radius ) ) if( easting
@@ -6212,22 +6213,22 @@ bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radi
                             //                                                    index = ip;
                             return true;
                         }
-                        
+
                         north0 = north;
                     east0 = east;
                     ppt++;
                 }
             }
-            
+
             break;
         }
-#endif        
+#endif
         case GEO_META:
         case GEO_PRIM:
-        default:      
+        default:
             break;
     }
-    
+
     return false;
 }
 #endif
@@ -6235,41 +6236,41 @@ bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radi
 bool eSENCChart::IsPointInObjArea( float lat, float lon, float select_radius, S57Obj *obj )
 {
     bool ret = false;
-    
+
     if( obj->pPolyTessGeo && obj->pPolyTessGeo->IsOk()) {               // do not return "deferred tesselation" objects.
-        
+
         PolyTriGroup *ppg = ((PolyTessGeo *)obj->pPolyTessGeo)->Get_PolyTriGroup_head();
-        
+
         TriPrim *pTP = ppg->tri_prim_head;
-        
+
         MyPoint pvert_list[3];
-        
+
         //  Polygon geometry is carried in SM coordinates, so...
         //  make the hit test thus.
         double easting, northing;
         toSM_Plugin( lat, lon, m_ref_lat, m_ref_lon, &easting, &northing );
-        
-       
+
+
         while( pTP ) {
             //  Coarse test
             if( pTP->tri_box.Contains( lat, lon ) ) {
-                
+
                 if(ppg->data_type == DATA_TYPE_DOUBLE) {
-                    
+
                     double *p_vertex = pTP->p_vertex;
-                    
+
                     switch( pTP->type ){
                         case PTG_TRIANGLE_FAN: {
                             for( int it = 0; it < pTP->nVert - 2; it++ ) {
                                 pvert_list[0].x = p_vertex[0];
                                 pvert_list[0].y = p_vertex[1];
-                                
+
                                 pvert_list[1].x = p_vertex[( it * 2 ) + 2];
                                 pvert_list[1].y = p_vertex[( it * 2 ) + 3];
-                                
+
                                 pvert_list[2].x = p_vertex[( it * 2 ) + 4];
                                 pvert_list[2].y = p_vertex[( it * 2 ) + 5];
-                                
+
                                 if( G_PtInPolygon( (MyPoint *) pvert_list, 3, easting, northing ) ) {
                                     ret = true;
                                     break;
@@ -6281,13 +6282,13 @@ bool eSENCChart::IsPointInObjArea( float lat, float lon, float select_radius, S5
                             for( int it = 0; it < pTP->nVert - 2; it++ ) {
                                 pvert_list[0].x = p_vertex[( it * 2 )];
                                 pvert_list[0].y = p_vertex[( it * 2 ) + 1];
-                                
+
                                 pvert_list[1].x = p_vertex[( it * 2 ) + 2];
                                 pvert_list[1].y = p_vertex[( it * 2 ) + 3];
-                                
+
                                 pvert_list[2].x = p_vertex[( it * 2 ) + 4];
                                 pvert_list[2].y = p_vertex[( it * 2 ) + 5];
-                                
+
                                 if( G_PtInPolygon( (MyPoint *) pvert_list, 3, easting, northing ) ) {
                                     ret = true;
                                     break;
@@ -6299,13 +6300,13 @@ bool eSENCChart::IsPointInObjArea( float lat, float lon, float select_radius, S5
                             for( int it = 0; it < pTP->nVert; it += 3 ) {
                                 pvert_list[0].x = p_vertex[( it * 2 )];
                                 pvert_list[0].y = p_vertex[( it * 2 ) + 1];
-                                
+
                                 pvert_list[1].x = p_vertex[( it * 2 ) + 2];
                                 pvert_list[1].y = p_vertex[( it * 2 ) + 3];
-                                
+
                                 pvert_list[2].x = p_vertex[( it * 2 ) + 4];
                                 pvert_list[2].y = p_vertex[( it * 2 ) + 5];
-                                
+
                                 if( G_PtInPolygon( (MyPoint *) pvert_list, 3, easting, northing ) ) {
                                     ret = true;
                                     break;
@@ -6317,19 +6318,19 @@ bool eSENCChart::IsPointInObjArea( float lat, float lon, float select_radius, S5
                 }  // double
                 else{
                     float *p_vertex = (float *)pTP->p_vertex;
-                    
+
                     switch( pTP->type ){
                         case PTG_TRIANGLE_FAN: {
                             for( int it = 0; it < pTP->nVert - 2; it++ ) {
                                 pvert_list[0].x = p_vertex[0];
                                 pvert_list[0].y = p_vertex[1];
-                                
+
                                 pvert_list[1].x = p_vertex[( it * 2 ) + 2];
                                 pvert_list[1].y = p_vertex[( it * 2 ) + 3];
-                                
+
                                 pvert_list[2].x = p_vertex[( it * 2 ) + 4];
                                 pvert_list[2].y = p_vertex[( it * 2 ) + 5];
-                                
+
                                 if( G_PtInPolygon( (MyPoint *) pvert_list, 3, easting, northing ) ) {
                                     ret = true;
                                     break;
@@ -6341,13 +6342,13 @@ bool eSENCChart::IsPointInObjArea( float lat, float lon, float select_radius, S5
                             for( int it = 0; it < pTP->nVert - 2; it++ ) {
                                 pvert_list[0].x = p_vertex[( it * 2 )];
                                 pvert_list[0].y = p_vertex[( it * 2 ) + 1];
-                                
+
                                 pvert_list[1].x = p_vertex[( it * 2 ) + 2];
                                 pvert_list[1].y = p_vertex[( it * 2 ) + 3];
-                                
+
                                 pvert_list[2].x = p_vertex[( it * 2 ) + 4];
                                 pvert_list[2].y = p_vertex[( it * 2 ) + 5];
-                                
+
                                 if( G_PtInPolygon( (MyPoint *) pvert_list, 3, easting, northing ) ) {
                                     ret = true;
                                     break;
@@ -6359,13 +6360,13 @@ bool eSENCChart::IsPointInObjArea( float lat, float lon, float select_radius, S5
                             for( int it = 0; it < pTP->nVert; it += 3 ) {
                                 pvert_list[0].x = p_vertex[( it * 2 )];
                                 pvert_list[0].y = p_vertex[( it * 2 ) + 1];
-                                
+
                                 pvert_list[1].x = p_vertex[( it * 2 ) + 2];
                                 pvert_list[1].y = p_vertex[( it * 2 ) + 3];
-                                
+
                                 pvert_list[2].x = p_vertex[( it * 2 ) + 4];
                                 pvert_list[2].y = p_vertex[( it * 2 ) + 5];
-                                
+
                                 if( G_PtInPolygon( (MyPoint *) pvert_list, 3, easting, northing ) ) {
                                     ret = true;
                                     break;
@@ -6378,9 +6379,9 @@ bool eSENCChart::IsPointInObjArea( float lat, float lon, float select_radius, S5
             }
             pTP = pTP->p_next;
         }
-        
+
     }           // if pPolyTessGeo
- 
+
     return ret;
 }
 
@@ -6392,22 +6393,22 @@ ListOfPI_S57Obj *eSENCChart::GetObjRuleListAtLatLon(float lat, float lon, float 
 
 {
     ViewPort cvp = CreateCompatibleViewport( *VPoint );
-    
-    
+
+
     ListOfObjRazRules *ret_ptr = new ListOfObjRazRules;
-    
+
     //    Iterate thru the razRules array, by object/rule type
-    
+
     ObjRazRules *top;
-    
+
     for( int i = 0; i < PRIO_NUM; ++i ) {
-        
+
         if( 1 /*selection_mask & MASK_POINT*/){
             // Points by type, array indices [0..1]
-            
+
             int point_type = ( ps52plib->m_nSymbolStyle == SIMPLIFIED ) ? 0 : 1;
             top = razRules[i][point_type];
-            
+
             while( top != NULL ) {
                 if( top->obj->npt == 1 )       // Do not select Multipoint objects (SOUNDG) yet.
                         {
@@ -6416,7 +6417,7 @@ ListOfPI_S57Obj *eSENCChart::GetObjRuleListAtLatLon(float lat, float lon, float 
                                     ret_ptr->Append( top );
                             }
                         }
-                        
+
                         //    Check the child branch, if any.
                         //    This is where Multipoint soundings are captured individually
                         if( top->child ) {
@@ -6426,18 +6427,18 @@ ListOfPI_S57Obj *eSENCChart::GetObjRuleListAtLatLon(float lat, float lon, float 
                                     if( DoesLatLonSelectObject( lat, lon, select_radius, child_item->obj ) )
                                         ret_ptr->Append( child_item );
                                 }
-                                
+
                                 child_item = child_item->next;
                             }
                         }
-                        
+
                         top = top->next;
             }
         }
-        
+
         if( 1 /*selection_mask & MASK_AREA*/){
             // Areas by boundary type, array indices [3..4]
-            
+
             int area_boundary_type = ( ps52plib->m_nBoundaryStyle == PLAIN_BOUNDARIES ) ? 3 : 4;
             top = razRules[i][area_boundary_type];           // Area nnn Boundaries
             while( top != NULL ) {
@@ -6445,32 +6446,32 @@ ListOfPI_S57Obj *eSENCChart::GetObjRuleListAtLatLon(float lat, float lon, float 
                     if( DoesLatLonSelectObject( lat, lon, select_radius, top->obj ) )
                         ret_ptr->Append( top );
                 }
-                
+
                 top = top->next;
             }         // while
         }
-        
+
         if( 1 /*selection_mask & MASK_LINE*/){
             // Finally, lines
             top = razRules[i][2];           // Lines
-            
+
             while( top != NULL ) {
                 if( ps52plib->ObjectRenderCheck( top, &cvp ) ) {
                     if( DoesLatLonSelectObject( lat, lon, select_radius, top->obj ) )
                         ret_ptr->Append( top );
                 }
-                
+
                 top = top->next;
             }
         }
     }
-   
+
     ListOfPI_S57Obj* obj_list = new ListOfPI_S57Obj;
-    
+
     for( ListOfObjRazRules::Node *node = ret_ptr->GetFirst(); node; node = node->GetNext() ) {
         ObjRazRules *current = node->GetData();
         S57Obj *pObj = current->obj;
-        
+
         //  Make a minimally compatible PI_S57Obj
         PI_S57Obj *cobj = new PI_S57Obj;
         cobj->bIsClone = true;
@@ -6478,32 +6479,32 @@ ListOfPI_S57Obj *eSENCChart::GetObjRuleListAtLatLon(float lat, float lon, float 
         cobj->Primitive_type = (GeoPrim_t)pObj->Primitive_type;
         cobj->att_array = pObj->att_array;
         cobj->attVal = pObj->attVal;
-        cobj->n_attr = pObj->n_attr;    
-        
+        cobj->n_attr = pObj->n_attr;
+
         cobj->x = pObj->x;
         cobj->y = pObj->y;
         cobj->z = pObj->z;
         cobj->npt = pObj->npt;
-        
+
         cobj->iOBJL = pObj->iOBJL;
         cobj->Index = pObj->Index;
-        
+
         cobj->geoPt = (pt *)pObj->geoPt;
         cobj->geoPtz = pObj->geoPtz;
         cobj->geoPtMulti = pObj->geoPtMulti;
-        
+
         cobj->m_lat = pObj->m_lat;
         cobj->m_lon = pObj->m_lon;
-        
+
         cobj->geoPt = (pt *)pObj->geoPt;
-        
-        
+
+
         obj_list->Append(cobj);
     }
-    
+
     delete ret_ptr;
     // caller must delete objects stored in obj_list or they will leak
-    obj_list->DeleteContents( true );    
+    obj_list->DeleteContents( true );
     return obj_list;
 }
 
@@ -6516,7 +6517,7 @@ bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radi
         //  possibly expanded by text or symbol rendering
         case GEO_POINT: {
             if( !obj->BBObj.GetValid() ) return false;
-            
+
             if( 1 == obj->npt ) {
                 //  Special case for LIGHTS
                 //  Sector lights have had their BBObj expanded to include the entire drawn sector
@@ -6527,23 +6528,23 @@ bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radi
                     fromSM_Plugin( ( obj->x * obj->x_rate ) + obj->x_origin,
                             ( obj->y * obj->y_rate ) + obj->y_origin, m_ref_lat, m_ref_lon, &olat,
                             &olon );
-                    
+
                     // Double the select radius to adjust for the fact that LIGHTS has
                     // a 0x0 BBox to start with, which makes it smaller than all other
                     // rendered objects.
                     wxBoundingBox sbox( olon - 2*select_radius, olat - 2*select_radius,
                                         olon + 2*select_radius, olat + 2*select_radius );
-                    
+
                     if( sbox.PointInBox( lon, lat, 0 ) ) return true;
                 }
-                
+
                 else if( obj->BBObj.ContainsMarge( lat, lon, select_radius ) ) return true;
             }
-            
+
             //  For MultiPoint objects, make a bounding box from each point's lat/lon
             //  and check it
             else {
-                
+
                 //  Coarse test first
                 if( !obj->BBObj.ContainsMarge( lat, lon, select_radius ) ) return false;
                 //  Now decomposed soundings, one by one
@@ -6558,7 +6559,7 @@ bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radi
                     }
                 }
             }
-            
+
             break;
         }
         case GEO_AREA: {
@@ -6578,38 +6579,38 @@ bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radi
                 }
             }
         }
-        
+
         case GEO_LINE: {
             //  Coarse test first
             if( !obj->BBObj.ContainsMarge( lat, lon, select_radius ) )
                 return false;
-            
+
             float sel_rad_meters = select_radius * 1852 * 60;       // approximately
             double easting, northing;
             toSM_Plugin( lat, lon, m_ref_lat, m_ref_lon, &easting, &northing );
-            
+
             if( obj->geoPt ) {
-                
+
                 //  Line geometry is carried in SM or CM93 coordinates, so...
                 //  make the hit test using SM coordinates, converting from object points to SM using per-object conversion factors.
-                
+
                 pt *ppt = obj->geoPt;
                 int npt = obj->npt;
-                
+
                 double xr = obj->x_rate;
                 double xo = obj->x_origin;
                 double yr = obj->y_rate;
                 double yo = obj->y_origin;
-                
+
                 double north0 = ( ppt->y * yr ) + yo;
                 double east0 = ( ppt->x * xr ) + xo;
                 ppt++;
-                
+
                 for( int ip = 1; ip < npt; ip++ ) {
-                    
+
                     double north = ( ppt->y * yr ) + yo;
                     double east = ( ppt->x * xr ) + xo;
-                    
+
                     //    A slightly less coarse segment bounding box check
                     if( northing >= ( fmin(north, north0) - sel_rad_meters ) ) if( northing
                         <= ( fmax(north, north0) + sel_rad_meters ) ) if( easting
@@ -6617,7 +6618,7 @@ bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radi
                         <= ( fmax(east, east0) + sel_rad_meters ) ) {
                             return true;
                         }
-                        
+
                         north0 = north;
                     east0 = east;
                     ppt++;
@@ -6625,11 +6626,11 @@ bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radi
             }
             else{                       // in oSENC V2, Array of points is stored in prearranged VBO array.
                 if( obj->m_ls_list ){
-                    
+
                     float *ppt;
                     unsigned char *vbo_point = (unsigned char *)obj->m_chart_context->chart->GetLineVertexBuffer();
                     line_segment_element *ls = obj->m_ls_list;
-                    
+
                     while(ls && vbo_point){
                         int nPoints;
                         if( (ls->ls_type == TYPE_EE) || (ls->ls_type == TYPE_EE_REV) ){
@@ -6640,44 +6641,44 @@ bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radi
                             ppt = (float *)(vbo_point + ls->pcs->vbo_offset_cs);
                             nPoints = 2;
                         }
-                        
+
                         float north0 = ppt[1];
                         float east0 = ppt[0];
-                        
+
                         ppt += 2;
-                        
+
                         for(int ip=0 ; ip < nPoints - 1 ; ip++){
-                            
+
                             float north = ppt[1];
                             float east = ppt[0];
-                            
+
                             if( northing >= ( fmin(north, north0) - sel_rad_meters ) )
                                 if( northing <= ( fmax(north, north0) + sel_rad_meters ) )
                                     if( easting >= ( fmin(east, east0) - sel_rad_meters ) )
                                         if( easting <= ( fmax(east, east0) + sel_rad_meters ) ) {
                                             return true;
                                         }
-                                        
+
                              north0 = north;
                              east0 = east;
-                                
+
                              ppt += 2;
-                        }            
-                        
+                        }
+
                         ls = ls->next;
                     }
                 }
             }
-            
+
             break;
          }
-        
+
         case GEO_META:
         case GEO_PRIM:
-            
+
             break;
     }
-    
+
     return false;
 }
 
@@ -6696,22 +6697,22 @@ const char *MyCSVGetField( const char * pszFilename, const char * pszKeyFieldNam
 {
     char **papszRecord;
     int iTargetField;
-    
+
     /* -------------------------------------------------------------------- */
     /*      Find the correct record.                                        */
     /* -------------------------------------------------------------------- */
     papszRecord = CSVScanFileByName( pszFilename, pszKeyFieldName, pszKeyFieldValue, eCriteria );
-    
+
     if( papszRecord == NULL ) return "";
-    
+
     /* -------------------------------------------------------------------- */
     /*      Figure out which field we want out of this.                     */
     /* -------------------------------------------------------------------- */
     iTargetField = CSVGetFileFieldId( pszFilename, pszTargetField );
     if( iTargetField < 0 ) return "";
-    
+
     if( iTargetField >= CSLCount( papszRecord ) ) return "";
-    
+
     return ( papszRecord[iTargetField] );
 }
 
@@ -6759,6 +6760,296 @@ static const char *type2str( int type)
     return r;
 }
 
+/*
+ListOfPI_S57Obj *eSENCChart::GetLightsObjRuleListVisibleAtLatLon(float lat, float lon, PlugIn_ViewPort *VPoint)
+{
+  return NULL;
+}
+*/
+wxString eSENCChart::GetAttributeValueAsString(S57attVal *pAttrVal,
+                                             wxString AttrName) {
+  if (NULL == pAttrVal) return _T("");
+
+  wxString value;
+  switch (pAttrVal->valType) {
+    case OGR_STR: {
+      if (pAttrVal->value) {
+        wxString val_str((char *)(pAttrVal->value), wxConvUTF8);
+        long ival;
+        if (val_str.ToLong(&ival)) {
+          if (0 == ival)
+            value = _T("Unknown");
+          else {
+            wxString decode_val = GetAttributeDecode(AttrName, ival);
+            if (!decode_val.IsEmpty()) {
+              value = decode_val;
+              wxString iv;
+              iv.Printf(_T("(%d)"), (int)ival);
+              value.Append(iv);
+            } else
+              value.Printf(_T("%d"), (int)ival);
+          }
+        }
+
+        else if (val_str.IsEmpty())
+          value = _T("Unknown");
+
+        else {
+          value.Clear();
+          wxString value_increment;
+          wxStringTokenizer tk(val_str, wxT(","));
+          int iv = 0;
+          while (tk.HasMoreTokens()) {
+            wxString token = tk.GetNextToken();
+            long ival;
+            if (token.ToLong(&ival)) {
+              wxString decode_val = GetAttributeDecode(AttrName, ival);
+              if (!decode_val.IsEmpty())
+                value_increment = decode_val;
+              else
+                value_increment.Printf(_T(" %d"), (int)ival);
+
+              if (iv) value_increment.Prepend(wxT(", "));
+            }
+            value.Append(value_increment);
+
+            iv++;
+          }
+          value.Append(val_str);
+        }
+      } else
+        value = _T("[NULL VALUE]");
+
+      break;
+    }
+
+    case OGR_INT: {
+      int ival = *((int *)pAttrVal->value);
+      wxString decode_val = GetAttributeDecode(AttrName, ival);
+
+      if (!decode_val.IsEmpty()) {
+        value = decode_val;
+        wxString iv;
+        iv.Printf(_T("(%d)"), ival);
+        value.Append(iv);
+      } else
+        value.Printf(_T("(%d)"), ival);
+
+      break;
+    }
+    case OGR_INT_LST:
+      break;
+
+    case OGR_REAL: {
+      double dval = *((double *)pAttrVal->value);
+      wxString val_suffix = _T(" m");
+
+      //    As a special case, convert some attribute values to feet.....
+      if ((AttrName == _T("VERCLR")) || (AttrName == _T("VERCCL")) ||
+          (AttrName == _T("VERCOP")) || (AttrName == _T("HEIGHT")) ||
+          (AttrName == _T("HORCLR"))) {
+        switch (ps52plib->m_nDepthUnitDisplay) {
+          case 0:                          // feet
+          case 2:                          // fathoms
+            dval = dval * 3 * 39.37 / 36;  // feet
+            val_suffix = _T(" ft");
+            break;
+          default:
+            break;
+        }
+      }
+
+      else if ((AttrName == _T("VALSOU")) || (AttrName == _T("DRVAL1")) ||
+               (AttrName == _T("DRVAL2"))) {
+        switch (ps52plib->m_nDepthUnitDisplay) {
+          case 0:                          // feet
+            dval = dval * 3 * 39.37 / 36;  // feet
+            val_suffix = _T(" ft");
+            break;
+          case 2:                          // fathoms
+            dval = dval * 3 * 39.37 / 36;  // fathoms
+            dval /= 6.0;
+            val_suffix = _T(" fathoms");
+            break;
+          default:
+            break;
+        }
+      }
+
+      else if (AttrName == _T("SECTR1"))
+        val_suffix = _T("&deg;");
+      else if (AttrName == _T("SECTR2"))
+        val_suffix = _T("&deg;");
+      else if (AttrName == _T("ORIENT"))
+        val_suffix = _T("&deg;");
+      else if (AttrName == _T("VALNMR"))
+        val_suffix = _T(" Nm");
+      else if (AttrName == _T("SIGPER"))
+        val_suffix = _T("s");
+      else if (AttrName == _T("VALACM"))
+        val_suffix = _T(" Minutes/year");
+      else if (AttrName == _T("VALMAG"))
+        val_suffix = _T("&deg;");
+      else if (AttrName == _T("CURVEL"))
+        val_suffix = _T(" kt");
+
+      if (dval - floor(dval) < 0.01)
+        value.Printf(_T("%2.0f"), dval);
+      else
+        value.Printf(_T("%4.1f"), dval);
+
+      value << val_suffix;
+
+      break;
+    }
+
+    case OGR_REAL_LST: {
+      break;
+    }
+  }
+  return value;
+}
+
+
+ListOfPI_S57Obj *eSENCChart::GetLightsObjRuleListVisibleAtLatLon(float lat, float lon, PlugIn_ViewPort *VPoint)
+{
+  ListOfObjRazRules *ret_ptr = new ListOfObjRazRules;
+
+  //    Iterate thru the razRules array, by object/rule type
+  ViewPort cvp = CreateCompatibleViewport( *VPoint );
+
+  ObjRazRules *top;
+  char *curr_att = NULL;
+  int n_attr = 0;
+  wxArrayOfS57attVal *attValArray = NULL;
+
+  for (int i = 0; i < PRIO_NUM; ++i) {
+    {
+      // Points by type, array indices [0..1]
+
+      int point_type = (ps52plib->m_nSymbolStyle == SIMPLIFIED) ? 0 : 1;
+      top = razRules[i][point_type];
+
+      while (top != NULL) {
+        if (top->obj->npt == 1) {
+          if (!strncmp(top->obj->FeatureName, "LIGHTS", 6)) {
+            double sectrTest;
+            bool hasSectors = GetDoubleAttr(top->obj, "SECTR1", sectrTest);
+            if (hasSectors) {
+              if (ps52plib->ObjectRenderCheckCat(top, &cvp)) {
+                int attrCounter;
+                double valnmr = -1;
+                wxString curAttrName;
+                curr_att = top->obj->att_array;
+                n_attr = top->obj->n_attr;
+                attValArray = top->obj->attVal;
+
+                if (curr_att) {
+                  bool bviz = true;
+
+                  attrCounter = 0;
+                  int noAttr = 0;
+
+                  while (attrCounter < n_attr) {
+                    curAttrName = wxString(curr_att, wxConvUTF8, 6);
+                    noAttr++;
+
+                    S57attVal *pAttrVal = NULL;
+                    if (attValArray) {
+                      // if(Chs57)
+                      pAttrVal = attValArray->Item(attrCounter);
+                      // else if( target_plugin_chart )
+                      // pAttrVal = attValArray->Item(attrCounter);
+                    }
+                    wxString value = GetAttributeValueAsString(
+                        pAttrVal, curAttrName);
+
+                    if (curAttrName == _T("LITVIS")) {
+                      if (value.StartsWith(_T("obsc"))) bviz = false;
+                    } else if (curAttrName == _T("VALNMR"))
+                      value.ToDouble(&valnmr);
+
+                    attrCounter++;
+                    curr_att += 6;
+                  }
+
+                  if (bviz && (valnmr > 0.1)) {
+                    double olon, olat;
+                    // As a quick check, compare the mercator-manhattan distance
+                    fromSM(
+                        (top->obj->x * top->obj->x_rate) + top->obj->x_origin,
+                        (top->obj->y * top->obj->y_rate) + top->obj->y_origin,
+                        m_ref_lat, m_ref_lon, &olat, &olon);
+
+#if 0
+                    double dlat = lat - olat;
+                    double dy = dlat * 60 / cos(olat * PI / 180.);
+                    double dlon = lon - olon;
+                    double dx = dlon * 60;
+                    double manhat = abs(dy) + abs(dx);
+#endif
+                    if (1 /*(abs(dy) + abs(dx)) < valnmr*/) {
+                      // close...Check precisely
+                      double br, dd;
+                      DistanceBearingMercator(lat, lon, olat, olon, &br, &dd);
+                      if (dd < valnmr) {
+                        ret_ptr->Append(top);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        top = top->next;
+      }
+    }
+  }
+
+  // Cnvert the ListOfObjRazRules into a ListOfPI_S57Obj
+  ListOfPI_S57Obj* obj_list = new ListOfPI_S57Obj;
+
+  for( ListOfObjRazRules::Node *node = ret_ptr->GetFirst(); node; node = node->GetNext() ) {
+        ObjRazRules *current = node->GetData();
+        S57Obj *pObj = current->obj;
+
+        //  Make a minimally compatible PI_S57Obj
+        PI_S57Obj *cobj = new PI_S57Obj;
+        cobj->bIsClone = true;
+        strncpy(cobj->FeatureName, pObj->FeatureName, 8);
+        cobj->Primitive_type = (GeoPrim_t)pObj->Primitive_type;
+        cobj->att_array = pObj->att_array;
+        cobj->attVal = pObj->attVal;
+        cobj->n_attr = pObj->n_attr;
+
+        cobj->x = pObj->x;
+        cobj->y = pObj->y;
+        cobj->z = pObj->z;
+        cobj->npt = pObj->npt;
+
+        cobj->iOBJL = pObj->iOBJL;
+        cobj->Index = pObj->Index;
+
+        cobj->geoPt = (pt *)pObj->geoPt;
+        cobj->geoPtz = pObj->geoPtz;
+        cobj->geoPtMulti = pObj->geoPtMulti;
+
+        cobj->m_lat = pObj->m_lat;
+        cobj->m_lon = pObj->m_lon;
+
+        cobj->geoPt = (pt *)pObj->geoPt;
+
+
+        obj_list->Append(cobj);
+  }
+
+  delete ret_ptr;
+    // caller must delete objects stored in obj_list or they will leak
+  obj_list->DeleteContents( true );
+  return obj_list;
+}
 
 
 wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
@@ -6775,26 +7066,26 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
     wxString positionString;
     std::vector<PI_S57Light*> lights;
     PI_S57Light* curLight = NULL;
-    
+
     for( ListOfPI_S57Obj::Node *node = obj_list->GetLast(); node; node = node->GetPrevious() ) {
         PI_S57Obj *current = node->GetData();
         positionString.Clear();
         objText.Clear();
-        
+
         // Soundings have no information, so don't show them
  //       if( 0 == strncmp( current->LUP->OBCL, "SOUND", 5 ) ) continue;
-        
+
         if( current->Primitive_type == GEO_META ) continue;
         if( current->Primitive_type == GEO_PRIM ) continue;
-        
+
         className = wxString( current->FeatureName, wxConvUTF8 );
-        
+
         // Lights get grouped together to make display look nicer.
         isLight = !strcmp( current->FeatureName, "LIGHTS" );
-        
+
         //    Get the object's nice description from s57objectclasses.csv
         //    using cpl_csv from the gdal library
-        
+
         const char *name_desc;
         if( g_s57data_dir.Len() ) {
             wxString oc_file = g_s57data_dir;
@@ -6804,7 +7095,7 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
                                        CC_ExactString, "ObjectClass" );             // return field
         } else
             name_desc = "";
-        
+
         // In case there is no nice description for this object class, use the 6 char class name
             if( 0 == strlen( name_desc ) ) {
                 name_desc = current->FeatureName;
@@ -6813,73 +7104,73 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
             } else {
                 classDesc = wxString( name_desc, wxConvUTF8 );
             }
-            
-#if 1           
+
+#if 1
             //    Show LUP
             if( g_PIbDebugS57 ) {
                 wxString index;
                 index.Printf( _T("Feature Index: %d\n"), current->Index );
                 classDesc << index;
-            
+
 //             wxString LUPstring;
 //             LUPstring.Printf( _T("LUP RCID:  %d\n"), current->LUP->RCID );
 //             classAttributes << LUPstring;
-//             
+//
 //             LUPstring = _T("    LUP ATTC: ");
 //             if( current->LUP->ATTCArray ) LUPstring += current->LUP->ATTCArray->Item( 0 );
 //             LUPstring += _T("\n");
 //             classAttributes << LUPstring;
-//             
+//
 //             LUPstring = _T("    LUP INST: ");
 //             if( current->LUP->INST ) LUPstring += *( current->LUP->INST );
 //             LUPstring += _T("\n\n");
 //             classAttributes << LUPstring;
-            
+
             }
-#endif            
+#endif
             if( GEO_POINT == current->Primitive_type ) {
                 double lon, lat;
                 fromSM_Plugin( ( current->x * current->x_rate ) + current->x_origin,
                         ( current->y * current->y_rate ) + current->y_origin, m_ref_lat,
                         m_ref_lon, &lat, &lon );
-                
+
                 if( lon > 180.0 ) lon -= 360.;
-                
+
                 positionString.Clear();
                 positionString += toSDMM_PlugIn( 1, lat );
                 positionString << _T(" ");
                 positionString += toSDMM_PlugIn( 2, lon );
-                
-               
+
+
                 if( isLight ) {
                     curLight = new PI_S57Light;
                     curLight->position = positionString;
                     curLight->hasSectors = false;
                     lights.push_back( curLight );
                 }
-                
+
             }
-            
+
             //    Get the Attributes and values, making sure they can be converted from UTF8
             if(current->att_array) {
                 char *curr_att = current->att_array;
-                
+
                 attrCounter = 0;
-                
+
                 wxString attribStr;
                 int noAttr = 0;
                 attribStr << _T("<table border=0 cellspacing=0 cellpadding=0>");
-                
+
                 bool inDepthRange = false;
-                
+
                 while( attrCounter < current->n_attr ) {
                     //    Attribute name
                     curAttrName = wxString(curr_att, wxConvUTF8, 6);
                     noAttr++;
-                    
+
                     // Sort out how some kinds of attibutes are displayed to get a more readable look.
                     // DEPARE gets just its range. Lights are grouped.
-                    
+
                     if( isLight ) {
                         curLight->attributeNames.Add( curAttrName );
                         if( curAttrName.StartsWith( _T("SECTR") ) )
@@ -6901,131 +7192,131 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
                                 attribStr << _T("CATGEO");
                             else
                                 attribStr << curAttrName;
-                            
+
                             attribStr << _T("</font></td><td>&nbsp;&nbsp;</td><td valign=top><font size=-1>");
                         }
                     }
-                    
+
                     // What we need to do...
                     // Change senc format, instead of (S), (I), etc, use the attribute types fetched from the S57attri...csv file
                     // This will be like (E), (L), (I), (F)
                     //  will affect lots of other stuff.  look for S57attVal.valType
                     // need to do this in creatsencrecord above, and update the senc format.
-                    
+
                     value = GetObjectAttributeValueAsString( current, attrCounter, curAttrName );
-                    
+
                     if( isLight ) {
                         curLight->attributeValues.Add( value );
                     } else {
                         if( curAttrName == _T("INFORM") || curAttrName == _T("NINFOM") )
                             value.Replace( _T("|"), _T("<br>") );
                         attribStr << value;
-                        
+
                         if(curAttrName == _T("catgeo"))
                             attribStr << type2str(current->Primitive_type);
-                        
+
                         if( !( curAttrName == _T("DRVAL1") ) ) {
                             attribStr << _T("</font></td></tr>\n");
                         }
                     }
-                    
+
                     if(curAttrName == _T("TXTDSC")){
                         //  This feature contains a TXTDSC attribute
                         //  Is the TXTDSC Info file contents available in the local chart's map of same?
                         if(m_TXTDSC_map.find( value ) != m_TXTDSC_map.end()){
                             wxString content = m_TXTDSC_map[value];
                             content.Replace( _T("\n"), _T("<br>") );
-                            
+
                             attribStr << _T("<br>") << content << _T("<br>");
                         }
                     }
-                    
-                    
+
+
                     attrCounter++;
                     curr_att += 6;
-                    
+
                 }             //while attrCounter < current->obj->n_attr
-                
+
                 if( !isLight ) {
                     attribStr << _T("</table>\n");
-                    
+
                     objText += _T("<b>") + classDesc + _T("</b> <font size=-2>(") + className
                     + _T(")</font>") + _T("<br>");
-                    
+
                     if( positionString.Length() ) objText << _T("<font size=-2>") << positionString
                         << _T("</font><br>\n");
-                    
+
                     if( noAttr > 0 ) objText << attribStr;
-                    
+
                     if( node != obj_list->GetFirst() ) objText += _T("<hr noshade>");
                     objText += _T("<br>");
                     ret_val << objText;
                 }
-                
+
             }
     } // Object for loop
-    
+
     // Add the additional info files
-    wxFileName file;       
+    wxFileName file;
     wxArrayString files;
     file.Assign( GetFullPath() );
-    
+
     wxString suppPath = file.GetPath();
     suppPath += wxFileName::GetPathSeparator();
     suppPath += file.GetName();
-    
+
     wxString AddFiles = wxString::Format(_T("<hr noshade><br><b>Additional info files attached to: </b> <font size=-2>%s</font><br><table border=0 cellspacing=0 cellpadding=3>"), file.GetFullName() );
     wxDir::GetAllFiles( suppPath, &files,  wxT("*.TXT")  );
     wxDir::GetAllFiles( suppPath, &files,  wxT("*.txt")  );
     if ( files.Count() > 0 )
-    {      
+    {
         for ( size_t i=0; i < files.Count(); i++){
             wxString fileToAdd = files.Item(i);
             file.Assign( files.Item(i) );
             AddFiles << wxString::Format( _T("<tr><td valign=top><font size=-2><a href=\"%s\">%s</a></font></td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp</td>"), file.GetFullPath(), file.GetFullName() );
             if ( files.Count() > ++i){
                 file.Assign( files.Item(i) );
-                AddFiles << wxString::Format( _T("<td valign=top><font size=-2><a href=\"%s\">%s</a></font></td>"), file.GetFullPath(), file.GetFullName() );                
-            }                
+                AddFiles << wxString::Format( _T("<td valign=top><font size=-2><a href=\"%s\">%s</a></font></td>"), file.GetFullPath(), file.GetFullName() );
+            }
         }
         ret_val << AddFiles <<_T("</table>");
     }
 
 
 
-#if 1    
+#if 1
     if( !lights.empty()  ) {
-        
+
         // For lights we now have all the info gathered but no HTML output yet, now
         // run through the data and build a merged table for all lights.
-        
+
         std::sort(lights.begin(), lights.end(), CompareLights);
-        
+
         wxString lastPos;
-        
+
         for(auto const& it: lights) {
             PI_S57Light thisLight = *it;
             int attrIndex;
-            
+
             if( thisLight.position != lastPos ) {
-                
+
                 lastPos = thisLight.position;
-                
+
                 if( it != *lights.begin() )
                     lightsHtml << _T("</table>\n<hr noshade>\n");
                 curLight++;
-                
+
                 lightsHtml << _T("<b>Light</b> <font size=-2>(LIGHTS)</font><br>");
                 lightsHtml << _T("<font size=-2>") << thisLight.position << _T("</font><br>\n");
-                
-                if( curLight->hasSectors ) lightsHtml 
-                    <<_T("<font size=-2>") 
-                    << _("Sector angles are True Bearings from Seaward") 
+
+                if( curLight->hasSectors ) lightsHtml
+                    <<_T("<font size=-2>")
+                    << _("Sector angles are True Bearings from Seaward")
                     << _T("</font><br>");
-                
+
                 lightsHtml << _T("<table>");
             }
-            
+
             lightsHtml << _T("<tr>");
             lightsHtml << _T("<td><font size=-1>");
 
@@ -7056,49 +7347,49 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
                     }
                 }
             }
-            
+
             lightsHtml << colorStr;
-            
+
             lightsHtml << _T("</font></td><td><font size=-1><nobr><b>");
-            
+
             attrIndex = thisLight.attributeNames.Index( _T("LITCHR") );
             if( attrIndex != wxNOT_FOUND ) {
                 wxString character = thisLight.attributeValues.Item( attrIndex );
                 lightsHtml << character.BeforeFirst( wxChar( '(' ) ) << _T(" ");
             }
-            
+
             attrIndex = thisLight.attributeNames.Index( _T("COLOUR") );
             if( attrIndex != wxNOT_FOUND ) {
                 lightsHtml << _T(" ") << thisLight.attributeValues.Item( attrIndex ).Upper()[0];
                 lightsHtml << _T(" ");
             }
-            
+
             attrIndex = thisLight.attributeNames.Index( _T("SIGGRP") );
             if( attrIndex != wxNOT_FOUND ) {
                 lightsHtml << thisLight.attributeValues.Item( attrIndex );
                 lightsHtml << _T(" ");
             }
-            
+
             attrIndex = thisLight.attributeNames.Index( _T("SIGPER") );
             if( attrIndex != wxNOT_FOUND ) {
                 lightsHtml << thisLight.attributeValues.Item( attrIndex );
                 lightsHtml << _T(" ");
             }
-            
+
             attrIndex = thisLight.attributeNames.Index( _T("HEIGHT") );
             if( attrIndex != wxNOT_FOUND ) {
                 lightsHtml << thisLight.attributeValues.Item( attrIndex );
                 lightsHtml << _T(" ");
             }
-            
+
             attrIndex = thisLight.attributeNames.Index( _T("VALNMR") );
             if( attrIndex != wxNOT_FOUND ) {
                 lightsHtml << thisLight.attributeValues.Item( attrIndex );
                 lightsHtml << _T(" ");
             }
-            
+
             lightsHtml << _T("</b>");
-            
+
             attrIndex = thisLight.attributeNames.Index( _T("SECTR1") );
             if( attrIndex != wxNOT_FOUND ) {
                 lightsHtml << _T("(") <<thisLight.attributeValues.Item( attrIndex );
@@ -7106,9 +7397,9 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
                 attrIndex = thisLight.attributeNames.Index( _T("SECTR2") );
                 lightsHtml << thisLight.attributeValues.Item( attrIndex ) << _T(") ");
             }
-            
+
             lightsHtml << _T("</nobr>");
-            
+
             attrIndex = thisLight.attributeNames.Index( _T("CATLIT") );
             if( attrIndex != wxNOT_FOUND ) {
                 lightsHtml << _T("<nobr>");
@@ -7117,7 +7408,7 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
                     wxChar( '(' ) );
                     lightsHtml << _T("</nobr> ");
             }
-            
+
             attrIndex = thisLight.attributeNames.Index( _T("EXCLIT") );
             if( attrIndex != wxNOT_FOUND ) {
                 lightsHtml << _T("<nobr>");
@@ -7126,7 +7417,7 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
                     wxChar( '(' ) );
                     lightsHtml << _T("</nobr> ");
             }
-            
+
             attrIndex = thisLight.attributeNames.Index( _T("OBJNAM") );
             if( attrIndex != wxNOT_FOUND ) {
                 lightsHtml << _T("<br><nobr>");
@@ -7134,20 +7425,20 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
                 lightsHtml << thisLight.attributeValues.Item( attrIndex ).Mid( 1 );
                 lightsHtml << _T("</nobr> ");
             }
-            
+
             lightsHtml << _T("</font></td>");
             lightsHtml << _T("</tr>");
-            
+
             thisLight.attributeNames.Clear();
             thisLight.attributeValues.Clear();
 //            delete thisLight;
         }
         lightsHtml << _T("</table><hr noshade>\n");
         ret_val = lightsHtml << ret_val;
-        
+
         lights.clear();
     }
-#endif    
+#endif
     return ret_val;
 }
 
@@ -7158,7 +7449,7 @@ wxString eSENCChart::GetObjectAttributeValueAsString( PI_S57Obj *obj, int iatt, 
 {
     wxString value;
     S57attVal *pval;
-    
+
     pval = obj->attVal->Item( iatt );
     switch( pval->valType ){
         case OGR_STR: {
@@ -7178,9 +7469,9 @@ wxString eSENCChart::GetObjectAttributeValueAsString( PI_S57Obj *obj, int iatt, 
                             value.Printf( _T("%d"), (int) ival );
                     }
                 }
-                
+
                 else if( val_str.IsEmpty() ) value = _T("Unknown");
-                
+
                 else {
                     value.Clear();
                     wxString value_increment;
@@ -7194,25 +7485,25 @@ wxString eSENCChart::GetObjectAttributeValueAsString( PI_S57Obj *obj, int iatt, 
                             if( !decode_val.IsEmpty() ) value_increment = decode_val;
                             else
                                 value_increment.Printf( _T(" %d"), (int) ival );
-                            
+
                             if( iv ) value_increment.Prepend( wxT(", ") );
                         }
                         value.Append( value_increment );
-                        
+
                         iv++;
                     }
                     value.Append( val_str );
                 }
             } else
                 value = _T("[NULL VALUE]");
-            
+
             break;
         }
-        
+
         case OGR_INT: {
             int ival = *( (int *) pval->value );
             wxString decode_val = GetAttributeDecode( curAttrName, ival );
-            
+
             if( !decode_val.IsEmpty() ) {
                 value = decode_val;
                 wxString iv;
@@ -7220,16 +7511,16 @@ wxString eSENCChart::GetObjectAttributeValueAsString( PI_S57Obj *obj, int iatt, 
                 value.Append( iv );
             } else
                 value.Printf( _T("(%d)"), ival );
-            
+
             break;
         }
         case OGR_INT_LST:
             break;
-            
+
         case OGR_REAL: {
             double dval = *( (double *) pval->value );
             wxString val_suffix = _T(" m");
-            
+
             //    As a special case, convert some attribute values to feet.....
             if( ( curAttrName == _T("VERCLR") ) || ( curAttrName == _T("VERCLL") )
                 || ( curAttrName == _T("HEIGHT") ) || ( curAttrName == _T("HORCLR") ) ) {
@@ -7243,7 +7534,7 @@ wxString eSENCChart::GetObjectAttributeValueAsString( PI_S57Obj *obj, int iatt, 
                             break;
                     }
                 }
-                
+
                 else if( ( curAttrName == _T("VALSOU") ) || ( curAttrName == _T("DRVAL1") )
                 || ( curAttrName == _T("DRVAL2") ) ) {
                     switch( PI_GetPLIBDepthUnitInt() ){
@@ -7260,7 +7551,7 @@ wxString eSENCChart::GetObjectAttributeValueAsString( PI_S57Obj *obj, int iatt, 
                             break;
                     }
                 }
-                
+
                 else if( curAttrName == _T("SECTR1") ) val_suffix = _T("&deg;");
                 else if( curAttrName == _T("SECTR2") ) val_suffix = _T("&deg;");
                 else if( curAttrName == _T("ORIENT") ) val_suffix = _T("&deg;");
@@ -7269,16 +7560,16 @@ wxString eSENCChart::GetObjectAttributeValueAsString( PI_S57Obj *obj, int iatt, 
                 else if( curAttrName == _T("VALACM") ) val_suffix = _T(" Minutes/year");
                 else if( curAttrName == _T("VALMAG") ) val_suffix = _T("&deg;");
                 else if( curAttrName == _T("CURVEL") ) val_suffix = _T(" kt");
-                
+
                if( dval - floor( dval ) < 0.01 ) value.Printf( _T("%2.0f"), dval );
                else
                    value.Printf( _T("%4.1f"), dval );
-               
+
                value << val_suffix;
-               
+
                break;
         }
-        
+
                         case OGR_REAL_LST: {
                             break;
                         }
@@ -7290,8 +7581,8 @@ wxString eSENCChart::GetObjectAttributeValueAsString( PI_S57Obj *obj, int iatt, 
 wxString eSENCChart::GetAttributeDecode( wxString& att, int ival )
 {
     wxString ret_val = _T("");
- 
-#if 0    
+
+#if 0
     //    Special case for "NATSUR", cacheing the strings for faster chart rendering
     if( att.IsSameAs( _T("NATSUR") ) ) {
         if( !m_natsur_hash[ival].IsEmpty() )            // entry available?
@@ -7299,49 +7590,49 @@ wxString eSENCChart::GetAttributeDecode( wxString& att, int ival )
             return m_natsur_hash[ival];
         }
     }
-#endif    
+#endif
     if( !g_s57data_dir.Len() )
         return ret_val;
-    
+
     //  Get the attribute code from the acronym
     const char *att_code;
-    
+
     wxString file = g_s57data_dir;
     file.Append( _T("/s57attributes.csv") );
-    
+
     if( !wxFileName::FileExists( file ) ) {
         wxString msg( _T("   Could not open ") );
         msg.Append( file );
         wxLogMessage( msg );
-        
+
         return ret_val;
     }
-    
+
     att_code = MyCSVGetField( file.mb_str(), "Acronym",                  // match field
                               att.mb_str(),               // match value
                               CC_ExactString, "Code" );             // return field
-    
+
     // Now, get a nice description from s57expectedinput.csv
     //  This will have to be a 2-d search, using ID field and Code field
-    
+
     // Ingest, and get a pointer to the ingested table for "Expected Input" file
     wxString ei_file = g_s57data_dir;
     ei_file.Append( _T("/s57expectedinput.csv") );
-    
+
     if( !wxFileName::FileExists( ei_file ) ) {
         wxString msg( _T("   Could not open ") );
         msg.Append( ei_file );
         wxLogMessage( msg );
-        
+
         return ret_val;
     }
-    
+
     CSVTable *psTable = CSVAccess( ei_file.mb_str() );
     CSVIngest( ei_file.mb_str() );
-    
+
     char **papszFields = NULL;
     int bSelected = FALSE;
-    
+
     /* -------------------------------------------------------------------- */
     /*      Scan from in-core lines.                                        */
     /* -------------------------------------------------------------------- */
@@ -7349,27 +7640,27 @@ wxString eSENCChart::GetAttributeDecode( wxString& att, int ival )
     while( !bSelected && iline + 1 < psTable->nLineCount ) {
         iline++;
         papszFields = CSVSplitLine( psTable->papszLines[iline] );
-        
+
         if( !strcmp( papszFields[0], att_code ) ) {
             if( atoi( papszFields[1] ) == ival ) {
                 ret_val = wxString( papszFields[2], wxConvUTF8 );
                 bSelected = TRUE;
             }
         }
-        
+
         CSLDestroy( papszFields );
     }
-    
+
 //    if( att.IsSameAs( _T("NATSUR") ) ) m_natsur_hash[ival] = ret_val;            // cache the entry
 
     return ret_val;
-    
+
 }
 
 int eSENCChart::GetLineFeaturePointArray(S57Obj *obj, void **ret_array)
 {
     //  Walk the line segment list once to get the required array size
-    
+
     int nPoints = 0;
     line_segment_element *ls_list = obj->m_ls_list;
     while( ls_list){
@@ -7379,16 +7670,16 @@ int eSENCChart::GetLineFeaturePointArray(S57Obj *obj, void **ret_array)
             nPoints += 2;
         ls_list = ls_list->next;
     }
-    
+
     if(!nPoints){
         *ret_array = 0;
         return 0;
     }
-    
+
     //  Allocate the buffer
     float *br = (float *)malloc(nPoints * 2 * sizeof(float));
     *ret_array = br;
-    
+
     // populate the buffer
     unsigned char *source_buffer = (unsigned char *)GetLineVertexBuffer();
     ls_list = obj->m_ls_list;
@@ -7403,14 +7694,14 @@ int eSENCChart::GetLineFeaturePointArray(S57Obj *obj, void **ret_array)
             vbo_offset = ls_list->pcs->vbo_offset_cs;
             count = 2;
         }
-        
+
         memcpy(br, source_buffer + vbo_offset, count * 2 * sizeof(float));
         br += count * 2;
         ls_list = ls_list->next;
     }
-    
+
     return nPoints;
-    
+
 }
 
 typedef struct segment_pair{
@@ -7421,17 +7712,17 @@ typedef struct segment_pair{
 void eSENCChart::AssembleLineGeometry( void )
 {
     if(g_debugLevel) wxLogMessage(_T("AssembleLineGeometry:  Start "));
-    
+
 #ifndef __WXMSW__
     wxString msgss;
     msgss.Printf(_T("%zd"), m_ve_hash.size());
     if(g_debugLevel) wxLogMessage(_T("AssembleLineGeometry:  VE_hash Size: ") + msgss);
 #endif
-    
+
 //    OCPNStopWatch sw;
-    
+
     // Walk the hash tables to get the required buffer size
-    
+
     //  Start with the edge hash table
     size_t nPoints = 0;
     VE_Hash::iterator it;
@@ -7448,24 +7739,24 @@ void eSENCChart::AssembleLineGeometry( void )
     msgc.Printf( _T("%zd"), nPoints);
     if(g_debugLevel) wxLogMessage(_T("AssembleLineGeometry:  Got Point count: ") + msgc);
 #endif
-        
+
     std::map<std::string, connector_segment *> ce_connector_hash;
     std::map<std::string, connector_segment *> ec_connector_hash;
     std::map<std::string, connector_segment *> cc_connector_hash;
-    
+
     int ndelta = 0;
-    
+
     //  Define a vector to temporarily hold the geometry for the created pcs elements
-    
+
     std::vector<segment_pair> connector_segment_vector;
     size_t seg_pair_index = 0;
-    
+
     if(g_debugLevel) wxLogMessage(_T("AssembleLineGeometry:  Start Object Walk"));
-                                     
+
     int edge_table_stride = 3;
     if(m_sencReadVersion > 200)
         edge_table_stride = 4;
-    
+
     //  Get the end node connected segments.  To do this, we
     //  walk the Feature array and process each feature that potentially has a LINE type element
     for( int i = 0; i < PRIO_NUM; ++i ) {
@@ -7476,53 +7767,53 @@ void eSENCChart::AssembleLineGeometry( void )
 
                 line_segment_element list_top;
                 list_top.next = 0;
-                
+
                 line_segment_element *le_current = &list_top;
 
                 for( int iseg = 0; iseg < obj->m_n_lsindex; iseg++ ) {
                     int seg_index = iseg * edge_table_stride;
                     int *index_run = &obj->m_lsindex_array[seg_index];
-                    
+
                     //  Get first connected node
                     unsigned int inode = *index_run++;
-                    
+
                     //  Get the edge
                     bool edge_dir = true;
                     int venode = *index_run++;
-                    
+
                     if(m_sencReadVersion < 201){
                         if(venode < 0){
                             venode = -venode;
                             edge_dir = false;
                         }
                     }
-                    
+
                     VE_Element *pedge = 0;
                     pedge = m_ve_hash[venode];
-                    
+
                     //  Get end connected node
                     unsigned int enode = *index_run++;
- 
+
                     if(m_sencReadVersion > 200){
                         unsigned int dir_flag = *index_run++;
                         edge_dir = (dir_flag == 0);             // zero means direction forward
                     }
-                    
+
                     //  Get first connected node
                     VC_Element *ipnode = 0;
                     ipnode = m_vc_hash[inode];
-                    
+
                     //  Get end connected node
                     VC_Element *epnode = 0;
                     epnode = m_vc_hash[enode];
-                    
-                    
+
+
                     if( ipnode ) {
                         if(pedge && pedge->nCount)
                         {
-                            
+
                             //      The initial node exists and connects to the start of an edge
-                            
+
                             char buf[40];
                             snprintf(buf, sizeof(buf), "%d_%d", inode, venode);
                             std::string key(buf);
@@ -7537,7 +7828,7 @@ void eSENCChart::AssembleLineGeometry( void )
 //                                pcs->start = ipnode;
 //                                pcs->end = pedge;
                                 ce_connector_hash[key] = pcs;
-                                
+
                                 // capture and store geometry
                                 segment_pair pair;
                                 float *ppt = ipnode->pPoint;
@@ -7553,35 +7844,35 @@ void eSENCChart::AssembleLineGeometry( void )
                                     pair.e1 = pedge->pPoints[ last_point_index ];
                                     pair.n1 = pedge->pPoints[ last_point_index + 1 ];
                                 }
-                                
+
                                 connector_segment_vector.push_back(pair);
                                 pcs->vbo_offset_cs = seg_pair_index;               // use temporarily
                                 seg_pair_index ++;
-                                
+
                                 // calculate the centroid of this connector segment, used for viz testing
                                 double lat, lon;
                                 fromSM_Plugin( (pair.e0 + pair.e1)/2, (pair.n0 + pair.n1)/2, m_ref_lat, m_ref_lon, &lat, &lon );
                                 pcs->cs_lat_avg = lat;
                                 pcs->cs_lon_avg = lon;
-                                
+
                             }
                             else
                                 pcs = itce->second;
 
-                            
+
                             line_segment_element *pls = new line_segment_element;
                             pls->next = 0;
 //                            pls->n_points = 2;
                             pls->priority = 0;
                             pls->pcs = pcs;
                             pls->ls_type = TYPE_CE;
-                            
+
                             le_current->next = pls;             // hook it up
                             le_current = pls;
-                            
+
                         }
                     }
-                    
+
                     if(pedge && pedge->nCount){
                         line_segment_element *pls = new line_segment_element;
                         pls->next = 0;
@@ -7591,25 +7882,25 @@ void eSENCChart::AssembleLineGeometry( void )
                         pls->ls_type = TYPE_EE;
                         if( !edge_dir )
                             pls->ls_type = TYPE_EE_REV;
- 
-                        
+
+
                         le_current->next = pls;             // hook it up
                         le_current = pls;
-                        
+
                     }   //pedge
-                    
+
                     // end node
                     if( epnode ) {
-                        
+
                         if(ipnode){
                             if(pedge && pedge->nCount){
-                                
+
                                 //wxString key;
                                 //key.Printf(_T("EC%d%d"), venode, enode);
                                 char buf[40];
                                 snprintf(buf, sizeof(buf), "%d_%d", venode, enode);
                                 std::string key(buf);
-                                
+
                                 connector_segment *pcs = NULL;
                                 std::map<std::string, connector_segment *>::iterator itec;
                                 itec = ec_connector_hash.find( key );
@@ -7618,10 +7909,10 @@ void eSENCChart::AssembleLineGeometry( void )
                                     pcs = new connector_segment;
 //                                    pcs->type = TYPE_EC;
                                     ec_connector_hash[key] = pcs;
-                                    
+
                                     // capture and store geometry
                                     segment_pair pair;
-                                    
+
                                     if(!edge_dir){
                                         pair.e0 = pedge->pPoints[ 0 ];
                                         pair.n0 = pedge->pPoints[ 1 ];
@@ -7631,37 +7922,37 @@ void eSENCChart::AssembleLineGeometry( void )
                                         pair.e0 = pedge->pPoints[ last_point_index ];
                                         pair.n0 = pedge->pPoints[ last_point_index + 1 ];
                                     }
-                                    
-                                    
+
+
                                     float *ppt = epnode->pPoint;
                                     pair.e1 = *ppt++;
                                     pair.n1 = *ppt;
-                                    
+
                                     connector_segment_vector.push_back(pair);
                                     pcs->vbo_offset_cs = seg_pair_index;               // use temporarily
                                     seg_pair_index ++;
-                                
+
                                     // calculate the centroid of this connector segment, used for viz testing
                                     double lat, lon;
                                     fromSM_Plugin( (pair.e0 + pair.e1)/2, (pair.n0 + pair.n1)/2, m_ref_lat, m_ref_lon, &lat, &lon );
                                     pcs->cs_lat_avg = lat;
                                     pcs->cs_lon_avg = lon;
-                                    
+
                                 }
                                 else
                                     pcs = itec->second;
-                                
+
                                 line_segment_element *pls = new line_segment_element;
                                 pls->next = 0;
 //                                pls->n_points = 2;
                                 pls->priority = 0;
                                 pls->pcs = pcs;
                                 pls->ls_type = TYPE_EC;
-                                
+
                                 le_current->next = pls;             // hook it up
                                 le_current = pls;
-                                
-                                
+
+
                             }
                             else {
                                 //wxString key;
@@ -7669,8 +7960,8 @@ void eSENCChart::AssembleLineGeometry( void )
                                 char buf[40];
                                 snprintf(buf, sizeof(buf), "%d_%d", inode, enode);
                                 std::string key(buf);
-                                
-                                
+
+
                                 connector_segment *pcs = NULL;
                                 std::map<std::string, connector_segment *>::iterator itcc;
                                 itcc = cc_connector_hash.find( key );
@@ -7681,14 +7972,14 @@ void eSENCChart::AssembleLineGeometry( void )
 //                                    pcs->start = ipnode;
 //                                    pcs->end = epnode;
                                     cc_connector_hash[key] = pcs;
-                                    
+
                                     // capture and store geometry
                                     segment_pair pair;
-                                    
+
                                     float *ppt = ipnode->pPoint;
                                     pair.e0 = *ppt++;
                                     pair.n0 = *ppt;
-                                    
+
                                     ppt = epnode->pPoint;
                                     pair.e1 = *ppt++;
                                     pair.n1 = *ppt;
@@ -7696,55 +7987,55 @@ void eSENCChart::AssembleLineGeometry( void )
                                     connector_segment_vector.push_back(pair);
                                     pcs->vbo_offset_cs = seg_pair_index;               // use temporarily
                                     seg_pair_index ++;
-                                    
+
                                     // calculate the centroid of this connector segment, used for viz testing
                                     double lat, lon;
                                     fromSM_Plugin( (pair.e0 + pair.e1)/2, (pair.n0 + pair.n1)/2, m_ref_lat, m_ref_lon, &lat, &lon );
                                     pcs->cs_lat_avg = lat;
                                     pcs->cs_lon_avg = lon;
-                                    
+
                                 }
                                 else
                                     pcs = itcc->second;
-                                
+
                                 line_segment_element *pls = new line_segment_element;
                                 pls->next = 0;
 //                                pls->n_points = 2;
                                 pls->priority = 0;
                                 pls->pcs = pcs;
                                 pls->ls_type = TYPE_CC;
-                                
+
                                 le_current->next = pls;             // hook it up
                                 le_current = pls;
-                                
-                                
+
+
                             }
                         }
                     }
-                    
-                    
+
+
                 }  // for
-                
+
                 //  All done, so assign the list to the object
                 obj->m_ls_list = list_top.next;    // skipping the empty first placeholder element
 
                 // we are all finished with the line segment index array, per object
                 free(obj->m_lsindex_array);
                 obj->m_lsindex_array = NULL;
-                
+
                 top = top->next;
             }
         }
     }
 //    printf("time1 %f\n", sw.GetTime());
     if(g_debugLevel) wxLogMessage(_T("AssembleLineGeometry:  Finish Object Walk OK"));
-                                 
+
     //  We have the total VBO point count, and a nice hashmap of the connector segments
     nPoints += ndelta;          // allow for the connector segments
-    
+
     size_t vbo_byte_length = 2 * nPoints * sizeof(float);
     m_vbo_byte_length = vbo_byte_length;
-    
+
     m_line_vertex_buffer = (float *)malloc( vbo_byte_length);
     float *lvr = m_line_vertex_buffer;
     size_t offset = 0;
@@ -7756,26 +8047,26 @@ void eSENCChart::AssembleLineGeometry( void )
         if( pedge ) {
             memcpy(lvr, pedge->pPoints, pedge->nCount * 2 * sizeof(float));
             lvr += pedge->nCount * 2;
-            
+
             pedge->vbo_offset = offset;
             offset += pedge->nCount * 2 * sizeof(float);
         }
     }
 //    printf("time2 %f\n", sw.GetTime());
-    
+
     //      Now iterate on the hashmaps, adding the connector segments in the temporary vector to the VBO buffer
     //      At the  same time, populate a vector, storing the pcs pointers to allow destruction at this class dtor.
     //      This will allow us to destroy (automatically) the pcs hashmaps, and save some storage
 
     if(g_debugLevel) wxLogMessage(_T("AssembleLineGeometry:  Begin Hash iteration"));
-                                     
+
     std::map<std::string, connector_segment *>::iterator iter;
-    
+
     for( iter = ce_connector_hash.begin(); iter != ce_connector_hash.end(); ++iter )
     {
         connector_segment *pcs = iter->second;
         m_pcs_vector.push_back(pcs);
-        
+
         segment_pair pair = connector_segment_vector.at(pcs->vbo_offset_cs);
         *lvr++ = pair.e0;
         *lvr++ = pair.n0;
@@ -7790,37 +8081,37 @@ void eSENCChart::AssembleLineGeometry( void )
     {
         connector_segment *pcs = iter->second;
         m_pcs_vector.push_back(pcs);
-        
+
         segment_pair pair = connector_segment_vector.at(pcs->vbo_offset_cs);
         *lvr++ = pair.e0;
         *lvr++ = pair.n0;
         *lvr++ = pair.e1;
         *lvr++ = pair.n1;
-                
+
         pcs->vbo_offset_cs = offset;
         offset += 4 * sizeof(float);
     }
-    
+
     for( iter = cc_connector_hash.begin(); iter != cc_connector_hash.end(); ++iter )
     {
         connector_segment *pcs = iter->second;
         m_pcs_vector.push_back(pcs);
-        
+
         segment_pair pair = connector_segment_vector.at(pcs->vbo_offset_cs);
         *lvr++ = pair.e0;
         *lvr++ = pair.n0;
         *lvr++ = pair.e1;
         *lvr++ = pair.n1;
-                
+
         pcs->vbo_offset_cs = offset;
         offset += 4 * sizeof(float);
     }
-    
+
     // And so we can empty the temp buffer
     connector_segment_vector.clear();
 
     if(g_debugLevel) wxLogMessage(_T("AssembleLineGeometry:  End Hash iteration"));
-                                     
+
     // Wwe can convert the edge hashmap to a vector, to allow  us to destroy the hashmap
     // and at the same time free up the point storage in the VE_Elements, since all the points
     // are now in the VBO buffer
@@ -7834,7 +8125,7 @@ void eSENCChart::AssembleLineGeometry( void )
     m_ve_hash.clear();
 
     if(g_debugLevel) wxLogMessage(_T("AssembleLineGeometry:  End Edge vector convert OK"));
-                                     
+
     // and we can empty the connector hashmap,
     // and at the same time free up the point storage in the VC_Elements, since all the points
     // are now in the VBO buffer
@@ -7846,14 +8137,14 @@ void eSENCChart::AssembleLineGeometry( void )
         }
     }
     m_vc_hash.clear();
-    
+
     if(g_debugLevel) wxLogMessage(_T("AssembleLineGeometry:  End Connector vector convert OK"));
-    
-    
+
+
 //    printf("time3 %f\n", sw.GetTime());
-    
-    
-    
+
+
+
 
 }
 
@@ -7863,36 +8154,36 @@ void eSENCChart::AssembleLineGeometry( void )
 
 void eSENCChart::BuildLineVBO( void )
 {
-    
-//#ifdef BUILD_VBO    
+
+//#ifdef BUILD_VBO
 #ifdef ocpnUSE_GL
-     
+
     if(!g_b_EnableVBO)
         return;
-    
+
     if(!g_GLOptionsSet)
         return;
-        
+
     if(m_LineVBO_name == -1){
-        
+
         //      Create the VBO
         GLuint vboId;
         glGenBuffers(1, &vboId);
-        
+
         // bind VBO in order to use
         glBindBuffer(GL_ARRAY_BUFFER, vboId);
-        
+
         // upload data to VBO
 #ifndef USE_ANDROID_GLES2
         glEnableClientState(GL_VERTEX_ARRAY);             // activate vertex coords array
 #endif
         glBufferData(GL_ARRAY_BUFFER, m_vbo_byte_length, m_line_vertex_buffer, GL_STATIC_DRAW);
-        
+
 #ifndef USE_ANDROID_GLES2
         glDisableClientState(GL_VERTEX_ARRAY);            // deactivate vertex array
 #endif
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-        
+
          //  Loop and populate all the objects
         for( int i = 0; i < PRIO_NUM; ++i ) {
             for( int j = 0; j < LUPNAME_NUM; j++ ) {
@@ -7904,11 +8195,11 @@ void eSENCChart::BuildLineVBO( void )
                 }
             }
         }
-        
+
         m_LineVBO_name = vboId;
-        
+
     }
-#endif    
+#endif
 //#endif
 }
 
@@ -7925,19 +8216,19 @@ void eSENCChart::BuildLineVBO( void )
 
 ListOfS57Obj *eSENCChart::GetAssociatedObjects( S57Obj *obj )
 {
-    
+
     int disPrioIdx;
     bool gotit;
-    
+
     ListOfS57Obj *pobj_list = new ListOfS57Obj;
     pobj_list->Clear();
-    
-#if 1    
+
+#if 1
     double lat, lon;
     fromSM_Plugin( ( obj->x * obj->x_rate ) + obj->x_origin, ( obj->y * obj->y_rate ) + obj->y_origin,
             m_ref_lat, m_ref_lon, &lat, &lon );
     //    What is the entry object geometry type?
-    
+
     switch( obj->Primitive_type ){
         case GEO_POINT:
             //  n.b.  This logic not perfectly right for LINE and AREA features
@@ -7949,7 +8240,7 @@ ListOfS57Obj *eSENCChart::GetAssociatedObjects( S57Obj *obj )
         case GEO_AREA:
             ObjRazRules *top;
             disPrioIdx = 1;         // PRIO_GROUP1:S57 group 1 filled areas
-            
+
             gotit = false;
             top = razRules[disPrioIdx][3];     // PLAIN_BOUNDARIES
             while( top != NULL ) {
@@ -7962,11 +8253,11 @@ ListOfS57Obj *eSENCChart::GetAssociatedObjects( S57Obj *obj )
                         }
                     }
                 }
-                
+
                 ObjRazRules *nxx = top->next;
                 top = nxx;
             }
-            
+
             if( !gotit ) {
                 top = razRules[disPrioIdx][4];     // SYMBOLIZED_BOUNDARIES
                 while( top != NULL ) {
@@ -7978,20 +8269,20 @@ ListOfS57Obj *eSENCChart::GetAssociatedObjects( S57Obj *obj )
                             }
                         }
                     }
-                    
+
                     ObjRazRules *nxx = top->next;
                     top = nxx;
                 }
             }
-            
+
             break;
-            
+
         default:
             break;
     }
-    
+
     return pobj_list;
-#endif    
+#endif
 }
 
 
@@ -8029,9 +8320,9 @@ void ServerProcess::OnTerminate(int pid, int status)
             m_outstring += c;
         }
     }
-    
+
     term_happened = true;
-    
+
     wxPrintf(_T("ServerProcess::OnTerminate\n"));
     wxPrintf(_T("%s"), m_outstring.c_str());
 }
@@ -8056,37 +8347,37 @@ SENCclient::SENCclient(void)
 void SENCclient::Attach(const wxString &senc_file_name)
 {
     m_senc_file = senc_file_name;
-    
+
     g_frontchannel_port++;
-    
+
     if(1){
         //  Start the SENC server
-        
+
         m_sproc = new ServerProcess;
         m_sproc->Redirect();
         wxString cmd = g_sencutil_bin;
-        cmd += _T(" -t -s "); 
+        cmd += _T(" -t -s ");
         cmd += senc_file_name;
-        
+
         cmd += _T(" -b ");
         wxString port;
         port.Printf( _T("%d"), g_backchannel_port );
         cmd += port;
-        
+
         cmd += _T(" -f ");
         port.Printf( _T("%d"), g_frontchannel_port );
         cmd += port;
-        
+
         wxLogMessage(cmd);
-        
+
         wxPrintf(_T(" Starting SENC server...\n") );
         m_server_pid = wxExecute(cmd, wxEXEC_ASYNC, m_sproc);
-        
+
         if(m_server_pid)
             m_OK = true;
-        
+
         //        wxSleep(2);
-            
+
             unsigned int t = 0;
             if(m_OK) {
                 m_OK = false;
@@ -8099,19 +8390,19 @@ void SENCclient::Attach(const wxString &senc_file_name)
                         wxMilliSleep(100);
                 }
             }
-            
+
             if(m_OK){
                 if(reset())
                     m_OK = false;
             }
-            
+
             if( m_OK )
                 wxPrintf(_T(" Open OK\n") );
             else{
                 ScreenLogMessage( _T("   Error: Cannot start eSENC server: ") + g_sencutil_bin +_T("\n") );
             }
-            
-            
+
+
     }
 }
 
@@ -8120,7 +8411,7 @@ SENCclient::~SENCclient()
 {
     if(m_sproc)
         m_sproc->Detach();
-    
+
 }
 
 
@@ -8129,7 +8420,7 @@ wxString SENCclient::GetServerOutput()
     if(m_sproc &&  m_sproc->term_happened) {
         return m_sproc->m_outstring;
     }
-    
+
     return _T("");
 }
 
@@ -8153,31 +8444,31 @@ int SENCclient::Open(void)
 {
     // Create the socket
     m_sock = new wxSocketClient();
-    
+
     // Setup the event handler and subscribe to most events
     //    m_sock->SetEventHandler(*this, SOCKET_ID);
     //    m_sock->SetNotify(wxSOCKET_CONNECTION_FLAG |
     //    wxSOCKET_INPUT_FLAG |
     //    wxSOCKET_LOST_FLAG);
     //    m_sock->Notify(true);
-    
-    
+
+
     wxIPV4address addr;
-    
+
     addr.Hostname( _T("127.0.0.1") );
     addr.Service(g_frontchannel_port);
-    
+
     //          Connect to the server
     m_sock->Connect(addr, false);
-    
+
     if(! m_sock->WaitOnConnect(2, 0) ){
         delete m_sock;
         m_sock = 0;
         return -2;
     }
-    
+
     int ret_val;
-    
+
     if( m_sock->IsConnected() )
         ret_val = 0;
     else{
@@ -8185,7 +8476,7 @@ int SENCclient::Open(void)
         m_sock = 0;
         ret_val = -1;
     }
-    
+
     return ret_val;
 }
 
@@ -8193,7 +8484,7 @@ int SENCclient::Open(void)
 int SENCclient::reset(void)
 {
     int ret_val = 0;
-    
+
     if( m_sock && m_sock->IsConnected() ){
         char c = 'r';
         m_sock->Write(&c, 1);
@@ -8207,9 +8498,9 @@ int SENCclient::reset(void)
     else {
         ret_val = -4;
     }
-    
-    
-    
+
+
+
     return ret_val;
 }
 
@@ -8217,8 +8508,8 @@ int SENCclient::reset(void)
 int SENCclient::NetRead(void *destination, size_t length, size_t *read_actual)
 {
     int retval = 0;
-    size_t lc = 0;   
-    
+    size_t lc = 0;
+
     if( m_sock && m_sock->IsConnected() ){
         char c = 'd';
         m_sock->Write(&c, 1);
@@ -8230,7 +8521,7 @@ int SENCclient::NetRead(void *destination, size_t length, size_t *read_actual)
             retval = -3;
             goto fast_return;
         }
-        
+
         int xlen = length;
         m_sock->Write(&xlen, sizeof(int));
         if( m_sock->Error() ){
@@ -8241,7 +8532,7 @@ int SENCclient::NetRead(void *destination, size_t length, size_t *read_actual)
             retval = -6;
             goto fast_return;
         }
-        
+
         m_sock->ReadMsg( destination, length );
         lc = m_sock->LastCount();
         if(lc != length) {
@@ -8255,12 +8546,12 @@ int SENCclient::NetRead(void *destination, size_t length, size_t *read_actual)
     }
     else
         retval = -4;
-    
+
     fast_return:
-    
+
     if( read_actual )
         *read_actual = lc;
-    
+
     return retval;
 }
 #endif
@@ -8268,50 +8559,50 @@ int SENCclient::NetRead(void *destination, size_t length, size_t *read_actual)
 #if 0
 int SENCclient::UnRead(char *destination, int length)
 {
-    
+
     return 0;
     }
     #endif
-    
+
     #if 0
     int SENCclient::fgets( char *buf, int buf_len_max )
-    
+
     {
         char chNext;
         int nLineLen = 0;
-        
+
         char *lbuf;
-        
+
         lbuf = buf;
-        
+
         while( !Eof() && nLineLen < buf_len_max ) {
             chNext = (char) GetC();
-            
+
             /* each CR/LF (or LF/CR) as if just "CR" */
             if( chNext == 10 || chNext == 13 ) {
                 chNext = '\n';
             }
-            
+
             *lbuf = chNext;
             lbuf++, nLineLen++;
-            
+
             if( chNext == '\n' ) {
                 *lbuf = '\0';
                 return nLineLen;
             }
         }
         *( lbuf ) = '\0';
-        
+
         return nLineLen;
     }
-    
+
     #endif
-    
+
     #if 0
     int SENCclient::fgets( char *destination, int max_length)
     {
         int ret_val = 0;
-        
+
         if( m_sock && m_sock->IsConnected() ){
             char c = 'f';
             m_sock->Write(&c, 1);
@@ -8324,7 +8615,7 @@ int SENCclient::UnRead(char *destination, int length)
                     ret_val = -3;
                     goto fast_return;
                 }
-                
+
                 m_sock->ReadMsg( destination, max_length );
             if( m_sock->Error() ){
                 ret_val = -5;
@@ -8337,8 +8628,8 @@ int SENCclient::UnRead(char *destination, int length)
         else {
             ret_val = -4;
         }
-        
-        
+
+
         fast_return:
         return ret_val;
     }
@@ -8349,30 +8640,30 @@ int SENCclient::UnRead(char *destination, int length)
     {
         size_t read_actual;
         int stat =  NetRead(buffer, size, &read_actual );
-        
+
         //    wxPrintf(_T("OnSysRead %d/%d\n"), read_actual, size );
         if( stat < 0 ){
             if( -8 == stat ) {
                 m_lasterror = wxSTREAM_EOF;
                 m_private_eof = true;
             }
-            else {    
+            else {
                 m_lasterror = wxSTREAM_READ_ERROR;
                 read_actual = 0;
             }
         }
-        
+
         return read_actual;
     }
-#endif    
-    
+#endif
+
 bool SENCclient::Eof() const
 {
     return m_private_eof;
 }
-    
 
-    
+
+
 //------------------------------------------------------------------------------
 //      Local version of fgets for Binary Mode (SENC) file
 //------------------------------------------------------------------------------
@@ -8382,22 +8673,22 @@ int py_fgets( char *buf, int buf_len_max, CryptInputStream *ifs )
     char chNext;
     int nLineLen = 0;
     char *lbuf;
-    
+
     lbuf = buf;
-    
+
     while( !ifs->Eof() && nLineLen < buf_len_max ) {
         int c = ifs->GetC();
-         
+
         if(c != wxEOF ) {
             chNext = (char) c;
             /* each CR/LF (or LF/CR) as if just "CR" */
             if( chNext == 10 || chNext == 13 ) {
                 chNext = '\n';
             }
-        
+
             *lbuf = chNext;
             lbuf++, nLineLen++;
-        
+
             if( chNext == '\n' ) {
                 *lbuf = '\0';
                 return nLineLen;
@@ -8408,14 +8699,14 @@ int py_fgets( char *buf, int buf_len_max, CryptInputStream *ifs )
             return nLineLen;
         }
     }
-    
+
     *( lbuf ) = '\0';
-    
+
     return nLineLen;
 }
 
-    
-    
+
+
 //----------------------------------------------------------------------------------
 //      PI_S57Obj CTOR
 //----------------------------------------------------------------------------------
@@ -8453,7 +8744,7 @@ PI_S57Obj::PI_S57Obj()
 
     S52_Context = NULL;
     m_ls_list = 0;
-    
+
 }
 
 //----------------------------------------------------------------------------------
@@ -8480,11 +8771,11 @@ PI_S57Obj::~PI_S57Obj()
         if( geoPtMulti ) free( geoPtMulti );
 
         if( pPolyTessGeo ) delete (PolyTessGeo*)pPolyTessGeo;
-        
+
 //        if(S52_Context) delete (S52PLIB_Context *)S52_Context;
-        
+
         if( m_lsindex_array ) free( m_lsindex_array );
-        
+
         if(m_ls_list){
             PI_line_segment_element *element = m_ls_list;
             while(element){
@@ -8493,7 +8784,7 @@ PI_S57Obj::~PI_S57Obj()
                 element = next;
             }
         }
-        
+
     }
 }
 
@@ -8514,7 +8805,7 @@ PI_S57ObjX::PI_S57ObjX()
     attVal = NULL;
     n_attr = 0;
     m_bcategory_mutable = false;
-    
+
     geoPtMulti = NULL;
     geoPtz = NULL;
     geoPt = NULL;
@@ -8538,7 +8829,7 @@ PI_S57ObjX::PI_S57ObjX()
     child = NULL;
     next = NULL;
     pPolyTessGeo = NULL;
-    
+
 }
 
 //----------------------------------------------------------------------------------
@@ -8565,7 +8856,7 @@ PI_S57ObjX::~PI_S57ObjX()
         if( geoPtMulti ) free( geoPtMulti );
 
         if( pPolyTessGeo ) delete (PolyTessGeo*)pPolyTessGeo;
-        
+
         if( m_lsindex_array ) free( m_lsindex_array );
     }
 }
@@ -8600,7 +8891,7 @@ PI_S57ObjX::PI_S57ObjX( char *first_line, CryptInputStream *fpx, int senc_file_v
     child = NULL;
     next = NULL;
     m_bcategory_mutable = false;
-    
+
     //        Set default (unity) auxiliary transform coefficients
     x_rate = 1.0;
     y_rate = 1.0;
@@ -8922,8 +9213,8 @@ PI_S57ObjX::PI_S57ObjX( char *first_line, CryptInputStream *fpx, int senc_file_v
                         memcpy(&xmin, pfs++, sizeof(float));
                         memcpy(&ymax, pfs++, sizeof(float));
                         memcpy(&ymin, pfs++, sizeof(float));
-                        
-#else                        
+
+#else
                         xmax = *pfs++;
                         xmin = *pfs++;
                         ymax = *pfs++;
@@ -9043,8 +9334,8 @@ PI_S57ObjX::PI_S57ObjX( char *first_line, CryptInputStream *fpx, int senc_file_v
                     if( !strncmp( FeatureName, "DEPARE", 6 )
                             || !strncmp( FeatureName, "DRGARE", 6 ) ) bIsAssociable = true;
 
- 
-                   
+
+
                     int ll = strlen( buf );
                     if( ll > llmax ) llmax = ll;
 
@@ -9339,8 +9630,8 @@ int CCW(MyPoint, MyPoint, MyPoint) ;
 
 
 /*************************************************************************
- * 
- * 
+ *
+ *
  * FUNCTION:   G_PtInPolygon
  *
  * PURPOSE
@@ -9358,19 +9649,19 @@ int CCW(MyPoint, MyPoint, MyPoint) ;
 
 int  G_PtInPolygon(MyPoint *rgpts, int wnumpts, float x, float y)
 {
-    
+
     MyPoint  *ppt, *ppt1 ;
     int   i ;
     MyPoint  pt1, pt2, pt0 ;
     int   wnumintsct = 0 ;
-    
-    
+
+
     pt0.x = x;
     pt0.y = y;
-    
+
     pt1 = pt2 = pt0 ;
     pt2.x = 1.e8;
-    
+
     // Now go through each of the lines in the polygon and see if it
     // intersects
     for (i = 0, ppt = rgpts ; i < wnumpts-1 ; i++, ppt++)
@@ -9380,18 +9671,18 @@ int  G_PtInPolygon(MyPoint *rgpts, int wnumpts, float x, float y)
         if (Intersect(pt0, pt2, *ppt, *(ppt1)))
             wnumintsct++ ;
     }
-    
+
     // And the last line
     if (Intersect(pt0, pt2, *ppt, *rgpts))
         wnumintsct++ ;
-    
+
     return (wnumintsct&1) ;
-    
+
 }
 
 
 /*************************************************************************
- * 
+ *
  *              0
  * FUNCTION:   Intersect
  *
@@ -9411,11 +9702,11 @@ int Intersect(MyPoint p1, MyPoint p2, MyPoint p3, MyPoint p4) {
 //    i = CCW(p3, p4, p2);
     return ((( CCW(p1, p2, p3) * CCW(p1, p2, p4)) <= 0)
     && (( CCW(p3, p4, p1) * CCW(p3, p4, p2)  <= 0) )) ;
-    
+
 }
 /*************************************************************************
- * 
- * 
+ *
+ *
  * FUNCTION:   CCW (CounterClockWise)
  *
  * PURPOSE
@@ -9431,16 +9722,16 @@ int Intersect(MyPoint p1, MyPoint p2, MyPoint p3, MyPoint p4) {
 int CCW(MyPoint p0, MyPoint p1, MyPoint p2) {
     double dx1, dx2 ;
     double dy1, dy2 ;
-    
+
     dx1 = p1.x - p0.x ; dx2 = p2.x - p0.x ;
     dy1 = p1.y - p0.y ; dy2 = p2.y - p0.y ;
-    
+
     /* This is a slope comparison: we don't do divisions because
      * of divide by zero possibilities with pure horizontal and pure
      * vertical lines.
      */
     return ((dx1 * dy2 > dy1 * dx2) ? 1 : -1) ;
-    
+
 }
 #endif
 
@@ -9467,23 +9758,23 @@ void eSENCChart::GetPixPoint( int pixx, int pixy, double *plat, double *plon, Vi
 {
     if(vpt->m_projection_type != PROJECTION_MERCATOR)
         printf("s57chart unhandled projection\n");
-    
+
     //    Use Mercator estimator
         int dx = pixx - ( vpt->pix_width / 2 );
         int dy = ( vpt->pix_height / 2 ) - pixy;
-        
+
         double xp = ( dx * cos( vpt->skew ) ) - ( dy * sin( vpt->skew ) );
         double yp = ( dy * cos( vpt->skew ) ) + ( dx * sin( vpt->skew ) );
-        
+
         double d_east = xp / vpt->view_scale_ppm;
         double d_north = yp / vpt->view_scale_ppm;
-        
+
         double slat, slon;
         fromSM_Plugin( d_east, d_north, vpt->clat, vpt->clon, &slat, &slon );
-        
+
         *plat = slat;
         *plon = slon;
-        
+
 }
 
 
@@ -9514,11 +9805,11 @@ S57Obj::~S57Obj()
             delete attVal;
         }
         free( att_array );
-        
+
         if( pPolyTessGeo ) {
-#ifdef ocpnUSE_GL 
+#ifdef ocpnUSE_GL
             bool b_useVBO = g_b_EnableVBO  && !auxParm1;    // VBO allowed?
-            
+
             PolyTriGroup *ppg_vbo = pPolyTessGeo->Get_PolyTriGroup_head();
             if (b_useVBO && ppg_vbo && auxParm0 > 0 && ppg_vbo->single_buffer && s_glDeleteBuffers) {
                  s_glDeleteBuffers(1, (GLuint *)&auxParm0);
@@ -9526,17 +9817,17 @@ S57Obj::~S57Obj()
 #endif
             delete pPolyTessGeo;
         }
-        
+
         //if( pPolyTrapGeo ) delete pPolyTrapGeo;
-        
+
         if( FText ) delete FText;
-        
+
         if( geoPt ) free( geoPt );
         if( geoPtz ) free( geoPtz );
         if( geoPtMulti ) free( geoPtMulti );
-        
+
         if( m_lsindex_array ) free( m_lsindex_array );
-        
+
         if(m_ls_list){
             line_segment_element *element = m_ls_list;
             while(element){
@@ -9554,10 +9845,10 @@ void S57Obj::Init()
     att_array = NULL;
     attVal = NULL;
     n_attr = 0;
-    
+
     pPolyTessGeo = NULL;
    // pPolyTrapGeo = NULL;
-    
+
     bCS_Added = 0;
     CSrules = NULL;
     FText = NULL;
@@ -9568,7 +9859,7 @@ void S57Obj::Init()
     bIsClone = false;
     Scamin = 10000000;                              // ten million enough?
     nRef = 0;
-    
+
     bIsAton = false;
     bIsAssociable = false;
     m_n_lsindex = 0;
@@ -9576,16 +9867,16 @@ void S57Obj::Init()
     m_n_edge_max_points = 0;
     m_ls_list = 0;
     m_ls_list_legacy = NULL;
-    
+
     iOBJL = -1; // deferred, done by OBJL filtering in the PLIB as needed
     bBBObj_valid = false;
-    
+
     //        Set default (unity) auxiliary transform coefficients
     x_rate = 1.0;
     y_rate = 1.0;
     x_origin = 0.0;
     y_origin = 0.0;
-    
+
     auxParm0 = 0;
     auxParm1 = 0;
     auxParm2 = 0;
@@ -9598,109 +9889,109 @@ void S57Obj::Init()
 S57Obj::S57Obj( const char* featureName )
 {
     Init();
-    
+
     attVal = new wxArrayOfS57attVal();
-    
+
     strncpy( FeatureName, featureName, 6 );
     FeatureName[6] = 0;
-    
+
     if( !strncmp( FeatureName, "DEPARE", 6 )
         || !strncmp( FeatureName, "DRGARE", 6 ) ) bIsAssociable = true;
-    
+
 }
 
 
 bool S57Obj::AddIntegerAttribute( const char *acronym, int val ){
-    
+
     S57attVal *pattValTmp = new S57attVal;
-    
+
     int *pAVI = (int *) malloc( sizeof(int) );         //new int;
     *pAVI = val;
-    
+
     pattValTmp->valType = OGR_INT;
     pattValTmp->value = pAVI;
-    
+
     att_array = (char *)realloc(att_array, 6*(n_attr + 1));
     strncpy(att_array + (6 * sizeof(char) * n_attr), acronym, 6);
     n_attr++;
-    
+
     attVal->Add( pattValTmp );
 
     //  TODO  This will be a bit slow, do better?
     if(!strncmp(acronym, "SCAMIN", 6))
         Scamin = val;
-    
+
     return true;
 }
 
 bool S57Obj::AddIntegerListAttribute( const char *acronym, int *pval, int nValue ){
-    
+
     return true;
 }
 
 bool S57Obj::AddDoubleAttribute( const char *acronym, double val ){
-    
+
     S57attVal *pattValTmp = new S57attVal;
-    
+
     double *pAVI = (double *) malloc( sizeof(double) );         //new double;
     *pAVI = val;
-    
+
     pattValTmp->valType = OGR_REAL;
     pattValTmp->value = pAVI;
-    
+
     att_array = (char *)realloc(att_array, 6*(n_attr + 1));
     strncpy(att_array + (6 * sizeof(char) * n_attr), acronym, 6);
     n_attr++;
-    
+
     attVal->Add( pattValTmp );
-    
+
     return true;
 }
 
 bool S57Obj::AddDoubleListAttribute( const char *acronym, double *pval, int nValue ){
-    
+
     return true;
 }
 
 bool S57Obj::AddStringAttribute( const char *acronym, char *val ){
-    
+
     S57attVal *pattValTmp = new S57attVal;
-    
+
     char *pAVS = (char *)malloc(strlen(val) + 1);   //new string
     strcpy(pAVS, val);
-    
+
     pattValTmp->valType = OGR_STR;
     pattValTmp->value = pAVS;
-    
+
     att_array = (char *)realloc(att_array, 6*(n_attr + 1));
     strncpy(att_array + (6 * sizeof(char) * n_attr), acronym, 6);
     n_attr++;
-    
+
     attVal->Add( pattValTmp );
-    
+
     return true;
 }
 
 bool S57Obj::SetPointGeometry( double lat, double lon, double ref_lat, double ref_lon)
 {
     Primitive_type = GEO_POINT;
-    
+
     m_lon = lon;
     m_lat = lat;
-    
+
     //  Set initial Point BoundingBox limits quite small...
     BBObj.Set(m_lat - .0001, m_lon - .0001, m_lat + .0001, m_lon + .0001);
     bBBObj_valid = true;
-    
+
     //  Calculate SM from chart common reference point
     double easting, northing;
     toSM_Plugin( lat, lon, ref_lat, ref_lon, &easting, &northing );
-    
+
     x = easting;
     y = northing;
-    
+
     npt = 1;
-    
+
     return true;
 }
 
@@ -9708,100 +9999,100 @@ bool S57Obj::SetPointGeometry( double lat, double lon, double ref_lat, double re
 bool S57Obj::SetLineGeometry( LineGeometryDescriptor *pGeo, GeoPrim_t geoType, double ref_lat, double ref_lon)
 {
     Primitive_type = geoType;
-    
+
     // set s57obj bbox as lat/lon
     ///BBObj.SetMin( pGeo->extent_w_lon, pGeo->extent_s_lat );
     ///BBObj.SetMax( pGeo->extent_e_lon, pGeo->extent_n_lat );
     BBObj.Set(pGeo->extent_s_lat, pGeo->extent_w_lon, pGeo->extent_n_lat, pGeo->extent_e_lon);
     bBBObj_valid = true;
-    
+
     //  and declare x/y of the object to be average east/north of all points
     double e1, e2, n1, n2;
     toSM_Plugin( pGeo->extent_n_lat, pGeo->extent_e_lon, ref_lat, ref_lon, &e1, &n1 );
     toSM_Plugin( pGeo->extent_s_lat, pGeo->extent_w_lon, ref_lat, ref_lon, &e2, &n2 );
-    
+
     x = ( e1 + e2 ) / 2.;
     y = ( n1 + n2 ) / 2.;
-    
+
     //  Set the object base point
     double xll, yll;
     fromSM_Plugin( x, y, ref_lat, ref_lon, &yll, &xll );
     m_lon = xll;
     m_lat = yll;
-    
+
     //  Set the edge and connected node table indices
     m_n_lsindex = pGeo->indexCount;
     m_lsindex_array = pGeo->indexTable;         // object owns this array now.
-    
+
     m_n_edge_max_points = 0; //TODO this could be precalulated and added to next SENC format
-    
+
     return true;
-}    
+}
 
 
 bool S57Obj::SetAreaGeometry( PolyTessGeo *ppg, double ref_lat, double ref_lon)
-{ 
+{
     Primitive_type = GEO_AREA;
     pPolyTessGeo = ppg;
-    
+
     //  Set the s57obj bounding box as lat/lon
     BBObj.Set(ppg->Get_ymin(), ppg->Get_xmin(), ppg->Get_ymax(), ppg->Get_xmax());
-        
+
     bBBObj_valid = true;
-    
+
     //  and declare x/y of the object to be average east/north of all points
     double e1, e2, n1, n2;
     toSM_Plugin( ppg->Get_ymax(), ppg->Get_xmax(), ref_lat, ref_lon, &e1,&n1 );
     toSM_Plugin( ppg->Get_ymin(), ppg->Get_xmin(), ref_lat, ref_lon, &e2,&n2 );
-    
+
     x = ( e1 + e2 ) / 2.;
     y = ( n1 + n2 ) / 2.;
-    
+
     //  Set the object base point
     double xll, yll;
     fromSM_Plugin( x, y, ref_lat, ref_lon, &yll, &xll );
     m_lon = xll;
     m_lat = yll;
-    
-    
+
+
     return true;
 }
 
 bool S57Obj::SetMultipointGeometry( MultipointGeometryDescriptor *pGeo, double ref_lat, double ref_lon)
 {
     Primitive_type = GEO_POINT;
-    
+
     npt = pGeo->pointCount;
-    
+
     geoPtz = (double *) malloc( npt * 3 * sizeof(double) );
     geoPtMulti = (double *) malloc( npt * 2 * sizeof(double) );
-    
+
     double *pdd = geoPtz;
     double *pdl = geoPtMulti;
-    
+
     float *pfs = (float *) ( pGeo->pointTable);                 // start of point data
     for( int ip = 0; ip < npt; ip++ ) {
         float easting, northing;
         easting = *pfs++;
         northing = *pfs++;
         float depth = *pfs++;
-        
+
         *pdd++ = easting;
         *pdd++ = northing;
         *pdd++ = depth;
-        
+
         //  Convert point from SM to lat/lon for later use in decomposed bboxes
         double xll, yll;
         fromSM_Plugin( easting, northing, ref_lat, ref_lon, &yll, &xll );
-        
+
         *pdl++ = xll;
         *pdl++ = yll;
     }
-    
+
     // set s57obj bbox as lat/lon
     BBObj.Set(pGeo->extent_s_lat, pGeo->extent_w_lon, pGeo->extent_n_lat, pGeo->extent_e_lon);
     bBBObj_valid = true;
-    
+
     return true;
 }
 
@@ -9811,26 +10102,26 @@ int Intersect(MyPoint, MyPoint, MyPoint, MyPoint) ;
 bool isPointInObjectBoundary( double east, double north, S57Obj *obj )
 {
     int count = 0;
-    
+
     if( obj->m_ls_list )
     {
-      
+
         float *ppt;
-        
+
         unsigned char *vbo_point = (unsigned char *)obj->m_chart_context->chart->GetLineVertexBuffer();;
         line_segment_element *ls = obj->m_ls_list;
-        
+
         MyPoint rinf;
         rinf.x = 1e8;
         rinf.y = north;
         MyPoint p;
         p.x = east;
         p.y = north;
-        
+
         while(ls){
-                
+
             {
-                    
+
                     int nPoints;
                     // fetch the first point
                     if((ls->ls_type == TYPE_EE) || (ls->ls_type == TYPE_EE_REV)){
@@ -9841,37 +10132,37 @@ bool isPointInObjectBoundary( double east, double north, S57Obj *obj )
                         ppt = (float *)(vbo_point + ls->pcs->vbo_offset_cs);
                         nPoints = 2;
                     }
-                    
+
                     MyPoint l, r;
                     l.x = ppt[0];
                     l.y = ppt[1];
-                    
+
                     ppt += 2;
-                    
+
                     for(int ip=0 ; ip < nPoints - 1 ; ip++){
 
-                        
+
                         r.x = ppt[0], r.y = ppt[1];
-                        
+
                         // test intersect with right-infinite ray
                         int isect = Intersect(l, r, p, rinf);
                         if(isect)
                             count++;
-                            
-                        
-                         
+
+
+
                         l.x = r.x;
                         l.y = r.y;
-                        
+
                         ppt += 2;
                     }
                 }
-                
+
                 ls = ls->next;
             }
     }
-    
-    
+
+
     return( (count&1) == 1);
 }
 
@@ -9887,55 +10178,55 @@ bool isPointInObjectBoundary( double east, double north, S57Obj *obj )
 
 Extended_Geometry *eSENCChart::buildExtendedGeom( S57Obj *obj )
 {
- 
+
     Extended_Geometry *xG = new Extended_Geometry;
-    
+
     //  Get the countours from the line segment arrays already present in the object
-    
+
     // Calculate the size of the resulting contour points buffer
     int max_points = 0;
     if( obj->m_n_edge_max_points > 0 )
         max_points = obj->m_n_edge_max_points;
     else{
         line_segment_element *lsa = obj->m_ls_list;
-        
+
         while(lsa){
-            
+
             if((lsa->ls_type == TYPE_EE) || (lsa->ls_type == TYPE_EE_REV))
                 max_points += lsa->pedge->nCount;
             else
                 max_points += 2;
-            
+
             lsa = lsa->next;
         }
     }
-    
+
     //  Allocate some storage for contour points
     double *ptpf = (double *) malloc( ( max_points *2 ) * sizeof(double) );
     double *pfRun = ptpf;
-    
+
     unsigned char *vbo_point = (unsigned char *)obj->m_chart_context->chart->GetLineVertexBuffer();;
     line_segment_element *ls = obj->m_ls_list;
-    
+
     unsigned int index = 0;
     int nls = 0;
     float lpx = 0;
     float lpy = 0;
     //float fpx, fpy;
-    
+
     float *ppt;
-    
+
     int direction = 1;
     wxArrayInt contourCountArray;
-    
+
     while(ls){
-        
+
         //  We need to get the direction for the first segment
         if(index == 0){
-            
+
             // But we only care if there is another segment following
             if(ls->next){
-                
+
                 int nPoints;
                 // fetch the first point
                 if((ls->ls_type == TYPE_EE) || (ls->ls_type == TYPE_EE_REV)){
@@ -9946,22 +10237,22 @@ Extended_Geometry *eSENCChart::buildExtendedGeom( S57Obj *obj )
                     ppt = (float *)(vbo_point + ls->pcs->vbo_offset_cs);
                     nPoints = 2;
                 }
-                
+
                 //float pfirsty = ppt[0];
                 //float pfirstx = ppt[1];
-                
-                
+
+
                 // fetch the last point
                 int index_last = (nPoints-1) * 2;
-                
+
                 float plastx = ppt[index_last +1];
                 float plasty = ppt[index_last];
-                
+
                 //  Now fetch the first and last point of the following segment
-                
+
                 int nPoints_next;
                 line_segment_element *lsn = ls->next;
-                
+
                 // fetch the first point
 
                 if((lsn->ls_type == TYPE_EE) || (lsn->ls_type == TYPE_EE_REV)){
@@ -9974,23 +10265,23 @@ Extended_Geometry *eSENCChart::buildExtendedGeom( S57Obj *obj )
                 }
                 float pfirsty_next = ppt[0];
                 float pfirstx_next = ppt[1];
-                
+
                 // fetch the last point
                 int index_last_next = (nPoints_next-1) * 2;
                 float plastx_next = ppt[index_last_next +1];
                 float plasty_next = ppt[index_last_next];
-                
-                
+
+
                 // Now find the correct match
                 // That is, what order(direction) of the first segmenta allows direct hookup to the next segment
                 // we don't care about the direction of the next segment, only that it can be connected
-                
+
                 if( (fabs(plastx - pfirstx_next) < .05) && (fabs(plasty - pfirsty_next) < .05) ){
 //                    fpx = pfirstx;
 //                    fpy = pfirsty;
                     direction = 1;
                 }
-                
+
                 else if( (fabs(plastx - plastx_next) < .05) && (fabs(plasty - plasty_next) < .05) ){
                     direction = 1;
 //                    fpx = pfirstx;
@@ -10003,22 +10294,22 @@ Extended_Geometry *eSENCChart::buildExtendedGeom( S57Obj *obj )
                 }
             }
         }
-        
-        
+
+
         //transcribe the segment in the proper order into the output buffer
         int nPoints;
         // fetch the first point
         if((ls->ls_type == TYPE_EE) || (ls->ls_type == TYPE_EE_REV)){
             ppt = (float *)(vbo_point + ls->pedge->vbo_offset);
             nPoints = ls->pedge->nCount;
-            
+
         }
         else{
             ppt = (float *)(vbo_point + ls->pcs->vbo_offset_cs);
             nPoints = 2;
         }
-        
-        
+
+
         if(direction == 1){
             int vbo_index = 0;
             for(int ip=0 ; ip < nPoints ; ip++){
@@ -10026,7 +10317,7 @@ Extended_Geometry *eSENCChart::buildExtendedGeom( S57Obj *obj )
                 *pfRun++ = ppt[vbo_index + 1];
                 nls++;
                 index++;
-                
+
                 lpy = ppt[vbo_index];
                 lpx = ppt[vbo_index + 1];
                 vbo_index += 2;
@@ -10039,18 +10330,18 @@ Extended_Geometry *eSENCChart::buildExtendedGeom( S57Obj *obj )
                 *pfRun++ = ppt[vbo_index + 1];
                 nls++;
                 index++;
-                
+
                 lpy = ppt[vbo_index];
                 lpx = ppt[vbo_index + 1];
                 vbo_index -= 2;
             }
         }
-        
-        
-        
+
+
+
         // inspect the next segment to see if it can be connected, or if the chain breaks
         if(ls->next){
-            
+
             int nPoints_next;
             line_segment_element *lsn = ls->next;
             // fetch the first point
@@ -10062,34 +10353,34 @@ Extended_Geometry *eSENCChart::buildExtendedGeom( S57Obj *obj )
                 ppt = (float *)(vbo_point + lsn->pcs->vbo_offset_cs);
                 nPoints_next = 2;
             }
-            
+
             float pfirstx_next = ppt[1];
             float pfirsty_next = ppt[0];
-            
+
             // fetch the last point
             int index_last_next = (nPoints_next-1) * 2;
             float plastx_next = ppt[index_last_next +1];
             float plasty_next = ppt[index_last_next];
-            
-            
+
+
             // try to match a point in this segment with the last point in the previous segment, and set direction for the next loop
-            
+
             if( (fabs(lpx - pfirstx_next) < 0.05) &&  (fabs(lpy - pfirsty_next) < 0.05) )
                 direction = 1;
-            
+
             else if( (fabs(lpx - plastx_next) < 0.05) &&  (fabs(lpy - plasty_next) < 0.05) )
                 direction = -1;
-            
+
             else{
-                
+
                 // Is the contour closed?
 //                if( (fabs(lpx - fpx) < 0.05) &&  (fabs(lpy - fpy) < 0.05) )
 //                    int yyp = 4;
-                
+
                 // Store the point count for this contour
                 contourCountArray.Add(nls);
-                    
-                    
+
+
                 nls = 0;
                 index = 0;
             }
@@ -10097,29 +10388,29 @@ Extended_Geometry *eSENCChart::buildExtendedGeom( S57Obj *obj )
         else{
             // no more segments, so capture the point count for the last segment,
             // and record this contour
-            
+
             // Is the contour closed?
 //            if( (fabs(lpx - fpx) < 0.05) &&  (fabs(lpy - fpy) < 0.05) )
 //                int yyp = 4;
-            
+
             contourCountArray.Add(nls);
-            
-            
+
+
         }
-        
+
         ls = ls->next;
     }
-    
+
     //  Fill in the Extended_Geometry parameters....
-    
+
     xG->n_contours = contourCountArray.GetCount();
     xG->contour_array = (int *)malloc(xG->n_contours * sizeof(int));
     for(int i=0 ; i < xG->n_contours ; i++){
         xG->contour_array[i] = contourCountArray[i];
     }
-    
+
     xG->vertex_array = (wxPoint2DDouble *)ptpf;
-    
+
     return xG;
 }
 
