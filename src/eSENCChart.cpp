@@ -43,7 +43,6 @@
 #include "eSENCChart.h"
 #include "mygeom.h"
 #include "cpl_csv.h"
-#include "georef.h"
 
 #include "pi_s52s57.h"
 #include "Osenc.h"
@@ -6976,7 +6975,7 @@ ListOfPI_S57Obj *eSENCChart::GetLightsObjRuleListVisibleAtLatLon(float lat, floa
                   if (bviz && (valnmr > 0.1)) {
                     double olon, olat;
                     // As a quick check, compare the mercator-manhattan distance
-                    fromSM(
+                    fromSM_Plugin(
                         (top->obj->x * top->obj->x_rate) + top->obj->x_origin,
                         (top->obj->y * top->obj->y_rate) + top->obj->y_origin,
                         m_ref_lat, m_ref_lon, &olat, &olon);
@@ -6991,7 +6990,7 @@ ListOfPI_S57Obj *eSENCChart::GetLightsObjRuleListVisibleAtLatLon(float lat, floa
                     if (1 /*(abs(dy) + abs(dx)) < valnmr*/) {
                       // close...Check precisely
                       double br, dd;
-                      DistanceBearingMercator(lat, lon, olat, olon, &br, &dd);
+                      DistanceBearingMercator_Plugin(lat, lon, olat, olon, &br, &dd);
                       if (dd < valnmr) {
                         ret_ptr->Append(top);
                       }
