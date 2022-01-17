@@ -126,7 +126,7 @@ public:
 // eSENCChart Definition
 // ----------------------------------------------------------------------------
 
-class  eSENCChart : public PlugInChartBaseExtendedPlus2
+class  eSENCChart : public PlugInChartBaseExtended
 {
 
     public:
