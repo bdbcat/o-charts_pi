@@ -4009,7 +4009,23 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
         bool bsplit_line = false;
 
         int text_x = scaledWidth * 11 / 10;
-        int text_x_val = scaledWidth + ((width - scaledWidth) * 45/ 100);
+
+        // Measure the longest character string in the panel.
+        int maxlegendWidth = 0;
+        int twidth;
+        GetTextExtent( _("Installed Chart Edition:"), &twidth, NULL, NULL, NULL);
+        maxlegendWidth = wxMax(maxlegendWidth, twidth);
+        GetTextExtent( _("Current Chart Edition:"), &twidth, NULL, NULL, NULL);
+        maxlegendWidth = wxMax(maxlegendWidth, twidth);
+        GetTextExtent( _("Status:"), &twidth, NULL, NULL, NULL);
+        maxlegendWidth = wxMax(maxlegendWidth, twidth);
+        GetTextExtent( _("Order Reference:"), &twidth, NULL, NULL, NULL);
+        maxlegendWidth = wxMax(maxlegendWidth, twidth);
+        GetTextExtent( _("Updates available through:"), &twidth, NULL, NULL, NULL);
+        maxlegendWidth = wxMax(maxlegendWidth, twidth);
+
+//        int text_x_val = scaledWidth + ((width - scaledWidth) * 50 / 100);
+        int text_x_val = text_x + maxlegendWidth + GetCharWidth();
         int yPitch = GetCharHeight();
 
         wxFont *dFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
@@ -4169,7 +4185,7 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
                     dc.DrawText( tx, text_x + (2 * GetCharWidth()), yPos);
                 }
                 else{
-                    dc.DrawText( tx, text_x_val, yPos);
+                    dc.DrawText( tx, text_x + (13 * GetCharWidth()), yPos);
                 }
                 yPos += yPitch;
                 nid++;
@@ -4477,8 +4493,8 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     m_buttonCancelOp->Connect(wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler(shopPanel::OnButtonCancelOp), NULL, this);
     gridSizerActionButtons->Add(m_buttonCancelOp, 1, wxTOP | wxBOTTOM, WXC_FROM_DIP(2));
 
-     m_buttonValidate = new wxButton(this, ID_CMD_BUTTON_VALIDATE, _("Validate Installed Chart Set"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
-     gridSizerActionButtons->Add(m_buttonValidate, 1, wxTOP | wxBOTTOM, WXC_FROM_DIP(2));
+    m_buttonValidate = new wxButton(this, ID_CMD_BUTTON_VALIDATE, _("Validate Installed Chart Set"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+    gridSizerActionButtons->Add(m_buttonValidate, 1, wxTOP | wxBOTTOM, WXC_FROM_DIP(2));
 
     wxStaticLine* sLine1 = new wxStaticLine(this, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxLI_HORIZONTAL);
     staticBoxSizerAction->Add(sLine1, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
@@ -4511,7 +4527,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
 //     m_buttonInstall->Hide();
 //     m_buttonCancelOp->Hide();
 //     m_staticTextLEM->Hide();
-//     m_buttonValidate->Hide();
+     m_buttonValidate->Hide();
 
         // Check the dongle
     g_dongleName.Clear();
@@ -6585,7 +6601,7 @@ void shopPanel::UpdateChartList( )
 
 void shopPanel::UpdateActionControls()
 {
-    //  Turn off all buttons.
+    //  Turn off all buttons, provisionally.
     m_buttonInstall->Hide();
     m_buttonValidate->Hide();
     m_buttonCancelOp->Hide();
@@ -6599,9 +6615,6 @@ void shopPanel::UpdateActionControls()
     if(!g_statusOverride.Length()){
         m_buttonInstall->Enable();
     }
-
-    m_buttonValidate->Show();
-    m_buttonValidate->Enable();
 
     itemChart *chart = m_ChartPanelSelected->GetSelectedChart();
 
@@ -6648,7 +6661,14 @@ void shopPanel::UpdateActionControls()
         m_buttonInstall->SetLabel(labelUpdate);
         m_buttonInstall->Show();
     }
-    //gridSizerActionButtons->Layout();
+
+    if(chart->getChartStatus() == STAT_CURRENT){
+        m_buttonValidate->Show();
+        m_buttonValidate->Enable();
+    }
+
+
+ //gridSizerActionButtons->Layout();
 
 #if 0
     else if(chart->getChartStatus() == STAT_READY_DOWNLOAD){
