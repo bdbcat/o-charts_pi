@@ -1307,8 +1307,13 @@ int Osenc::ingest200(const wxString &senc_file_name,
         // On linux type systems, the buffer alloc succeeds, but then the read file fails, as expected, due to EOF on the input file.
         //  Either way, we are finished reading.
 
-        if((unsigned long)(record.record_length)  > 2000000){
+        if((unsigned long)(record.record_length)  > 2000000 ){
             dun = 1;
+            break;
+        }
+        if (record.record_length < sizeof(OSENC_Record_Base)){
+            wxLogMessage(_T("record too small, stop reading"));
+            dun=1;
             break;
         }
 
