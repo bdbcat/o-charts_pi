@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Project:  
+ * Project:
  * Purpose:   Plugin core
  * Author:   David Register
  *
@@ -61,32 +61,32 @@ bool LoadChartList( wxString fileName )
 {
     // If there is a ChartList.XML, read it, parse it and prepare the indicated operations
     if(fileName.Length()){
-            
+
                 FILE *iFile = fopen(fileName.mb_str(), "rb");
                 if (iFile > (void *)0){
-                    // compute the file length    
+                    // compute the file length
                     fseek(iFile, 0, SEEK_END);
                     size_t iLength = ftell(iFile);
-        
+
                     char *iText = (char *)calloc(iLength + 1, sizeof(char));
-    
+
                     // Read the file
                     fseek(iFile, 0, SEEK_SET);
                     size_t nread = 0;
                     while (nread < iLength){
                         nread += fread(iText + nread, 1, iLength - nread, iFile);
-                    }           
+                    }
                     fclose(iFile);
 
                     //  Parse the XML
                     TiXmlDocument * doc = new TiXmlDocument();
                     doc->Parse( iText);
-    
+
                     TiXmlElement * root = doc->RootElement();
                     if(root){
                         //wxString rootName = wxString::FromUTF8( root->Value() );
                         if(!strcmp(root->Value(), "chartList")){    //rootName.IsSameAs(_T("chartList"))){
-            
+
                             TiXmlNode *child;
                             for ( child = root->FirstChild(); child != 0; child = child->NextSibling()){
 
@@ -94,7 +94,7 @@ bool LoadChartList( wxString fileName )
                                     TiXmlNode *childChart = child->FirstChild();
                                     itemChartData *cdata = new itemChartData;
                                     installedChartListData.push_back(cdata);
-                                    
+
                                     for ( childChart = child->FirstChild(); childChart!= 0; childChart = childChart->NextSibling()){
                                         const char *chartVal = childChart->Value();
                                         if(!strcmp(chartVal, "Name")){
@@ -110,7 +110,7 @@ bool LoadChartList( wxString fileName )
                                         else if(!strcmp(chartVal, "SE")){
                                             TiXmlNode *childVal = childChart->FirstChild();
                                             if(childVal)
-                                                cdata->SE = childVal->Value();                                
+                                                cdata->SE = childVal->Value();
                                         }
                                         else if(!strcmp(chartVal, "RE")){
                                             TiXmlNode *childVal = childChart->FirstChild();
@@ -144,31 +144,31 @@ bool LoadKeyFile( wxString fileName )
 {
     // If there is a ChartList.XML, read it, parse it and prepare the indicated operations
     if(fileName.Length()){
-            
+
                 FILE *iFile = fopen(fileName.mb_str(), "rb");
                 if (iFile > (void *)0){
-                    // compute the file length    
+                    // compute the file length
                     fseek(iFile, 0, SEEK_END);
                     size_t iLength = ftell(iFile);
-        
+
                     char *iText = (char *)calloc(iLength + 1, sizeof(char));
-    
+
                     // Read the file
                     fseek(iFile, 0, SEEK_SET);
                     size_t nread = 0;
                     while (nread < iLength){
                         nread += fread(iText + nread, 1, iLength - nread, iFile);
-                    }           
+                    }
                     fclose(iFile);
 
                     //  Parse the XML
                     TiXmlDocument * doc = new TiXmlDocument();
                     doc->Parse( iText);
-    
+
                     TiXmlElement * root = doc->RootElement();
                     if(root){
-                        if(!strcmp(root->Value(), "keyList")){    
-            
+                        if(!strcmp(root->Value(), "keyList")){
+
                             TiXmlNode *child;
                             for ( child = root->FirstChild(); child != 0; child = child->NextSibling()){
 
@@ -176,7 +176,7 @@ bool LoadKeyFile( wxString fileName )
                                     TiXmlNode *childChart = child->FirstChild();
                                     itemChartDataKeys *cdata = new itemChartDataKeys;
                                     installedKeyFileData.push_back(cdata);
-                                    
+
                                     for ( childChart = child->FirstChild(); childChart!= 0; childChart = childChart->NextSibling()){
                                         const char *chartVal = childChart->Value();
                                         if(!strcmp(chartVal, "Name")){
@@ -231,7 +231,7 @@ ocValidator::ocValidator( itemChart *chart, oesu_piScreenLogContainer *log)
 
     m_clog = log;
     m_chart = chart;
-    
+
 }
 
 ocValidator::ocValidator( itemChart *chart, oesu_piScreenLog *log)
@@ -240,7 +240,7 @@ ocValidator::ocValidator( itemChart *chart, oesu_piScreenLog *log)
 
     m_log = log;
     m_chart = chart;
-    
+
 }
 
 ocValidator::~ocValidator()
@@ -270,12 +270,12 @@ void ocValidator::startValidation()
 {
     installedChartListData.clear();
     installedKeyFileData.clear();
-    
+
     if(!m_chart){
         LogMessage(_("No chartset selected.\n"));
         return;
     }
-        
+
     LogMessage(_("Starting chartset validation.\n"));
 
     LogMessage(_("  Checking server installation."));
@@ -283,9 +283,9 @@ void ocValidator::startValidation()
         LogMessage(_("  Server not installed."));
         return;
     }
-        
+
     LogMessage(_("  Server execute command: ") + g_sencutil_bin);
-    
+
     wxString serverVersion = GetServerVersionString();
     if(!serverVersion.Length()){
         LogMessage(_("  Server unavailable."));
@@ -297,7 +297,7 @@ void ocValidator::startValidation()
 
     LogMessage(_T("\n"));
 
-#ifndef __OCPN__ANDROID__    
+#ifndef __OCPN__ANDROID__
     // Check the dongle
     g_dongleName.Clear();
     LogMessage(_("  Checking dongle..."));
@@ -312,12 +312,12 @@ void ocValidator::startValidation()
     else
         LogMessage(_("  dongle not found: ") );
 #endif
-    
+
     LogMessage(_T("\n"));
 
     int nslot, qId;
     bool bAssignedToDongle = false;
-    
+
     // If dongle is available, look for slot assigned
     if(g_dongleName.Len()){
         nslot = m_chart->GetSlotAssignedToInstalledDongle( qId );
@@ -338,19 +338,19 @@ void ocValidator::startValidation()
             LogMessage(_("  Validating chartset assigned to systemName: ") + g_systemName);
         }
     }
-    
+
     if( nslot < 0 ){
         LogMessage(_("  Unable to validate unassigned chartset."));
         return;
     }
-    
+
     // Find the slot
     itemSlot *slot = m_chart->GetSlotPtr( nslot, qId );
     if( !slot ){
         LogMessage(_("  Unable to find slot assignment."));
         return;
     }
-        
+
     //  Extract the installation directory name from the slot
     std::string installLocation = slot->installLocation;
     if(!installLocation.size()){
@@ -358,40 +358,43 @@ void ocValidator::startValidation()
             LogMessage(_("  Selected chartset is not installed for dongle."));
         else
             LogMessage(_("  Selected chartset is not installed."));
-            
+
         return;
     }
-   
+
     wxString installDirectory = wxString(installLocation.c_str());
     LogMessage(_("  Installation directory: ") + installDirectory );
 
     wxString dirType = _T("oeuSENC-");
     if(m_chart->chartType == CHART_TYPE_OERNC)
         dirType = _T("oeuRNC-");
-    wxString chartsetBaseDirectory = installDirectory + wxFileName::GetPathSeparator() + dirType + wxString(m_chart->chartID.c_str()) + wxFileName::GetPathSeparator();
-            
+//    wxString chartsetBaseDirectory = installDirectory + wxFileName::GetPathSeparator() + dirType + wxString(m_chart->chartID.c_str()) + wxFileName::GetPathSeparator();
+
+    wxString chartsetBaseDirectory = installDirectory + wxFileName::GetPathSeparator() \
+          + slot->chartDirName + wxFileName::GetPathSeparator();
+
     LogMessage(_("  ProcessingChartList.XML") );
 
     wxString ChartListFile = chartsetBaseDirectory + _T("ChartList.XML");
-            
+
     LogMessage(_("    Checking for ChartList.XML at: ") + ChartListFile );
-    
+
     //  Verify the existence of ChartList.XML
 
     if(!::wxFileExists(ChartListFile)){
         LogMessage(_("    ChartList.XML not found in installation directory."));
         return;
     }
-        
+
     LogMessage(_("    Loading ChartList.XML") );
-    
+
     if( !LoadChartList( ChartListFile )){
         LogMessage(_("    Error loading ChartList.XML") );
         return;
     }
-    
+
     // Good ChartList, so check for consistency....
-    
+
     // Pass 1
     // For each chart in the ChartList, does an oeRNC file exist?
     LogMessage(_("    Checking ChartList for presence of each chart referenced") );
@@ -399,22 +402,22 @@ void ocValidator::startValidation()
     wxString extension = _T(".oesu");
     if(m_chart->chartType == CHART_TYPE_OERNC)
         extension = _T(".oernc");
-    
+
     for(unsigned int i = 0 ; i < installedChartListData.size() ; i++){
         itemChartData *cData = installedChartListData[i];
-        
+
         wxString targetChartFILE = chartsetBaseDirectory + wxString(cData->ID.c_str()) + extension;
         if(!::wxFileExists(targetChartFILE) ){
             LogMessage(_("    Referenced chart is not present: ") + targetChartFILE );
             return;
         }
-        
+
         if(g_ipGauge)
             g_ipGauge->Pulse();
         wxYield();
 
     }
-    
+
     // Pass 2
     // Is every file found in the base directory referenced in the ChartList.XML file?
     LogMessage(_("    Checking all charts for reference in ChartList") );
@@ -425,7 +428,7 @@ void ocValidator::startValidation()
     for( unsigned int i=0 ; i < fileList.GetCount() ; i++){
         wxFileName fn(fileList.Item(i));
         wxString fileBaseName = fn.GetName();
-        
+
         bool bFoundInList = false;
         for(unsigned int j = 0 ; j < installedChartListData.size() ; j++){
             itemChartData *cData = installedChartListData[j];
@@ -435,7 +438,7 @@ void ocValidator::startValidation()
                 break;
             }
         }
-    
+
         if(bFoundInList)
             continue;
         else{
@@ -443,7 +446,7 @@ void ocValidator::startValidation()
             g_ipGauge->Stop();
             return;
         }
-        
+
         if(g_ipGauge)
             g_ipGauge->Pulse();
         wxYield();
@@ -453,9 +456,9 @@ void ocValidator::startValidation()
     LogMessage(_("    ChartList.XML validates OK.") );
 
     LogMessage(_T("\n"));
-    
+
     LogMessage(_("  Checking chart key files.") );
-    
+
     // For each key file found...
     wxArrayString keyFileList;
     wxDir::GetAllFiles(chartsetBaseDirectory, &keyFileList, _T("*.XML") );
@@ -472,14 +475,14 @@ void ocValidator::startValidation()
             g_ipGauge->Stop();
             return;
         }
-        
+
         // There must be a key for each file found in the ChartList
         for( unsigned int j=0 ; j < fileList.GetCount() ; j++){
             wxFileName fn(fileList.Item(i));
             wxString fileBaseName = fn.GetName();
-        
+
             bool bFoundInList = false;
-        
+
             for(unsigned int k = 0 ; k < installedKeyFileData.size() ; k++){
                 itemChartDataKeys *kData = installedKeyFileData[k];
                 wxString keyListFileName = wxString(kData->fileName.c_str());
@@ -488,8 +491,8 @@ void ocValidator::startValidation()
                     break;
                 }
             }
-    
-        
+
+
             if(bFoundInList)
                 continue;
             else{
@@ -497,7 +500,7 @@ void ocValidator::startValidation()
                 g_ipGauge->Stop();
                 return;
             }
-            
+
             if(g_ipGauge)
                 g_ipGauge->Pulse();
             wxYield();
@@ -509,16 +512,16 @@ void ocValidator::startValidation()
 
     LogMessage(_T("\n"));
 
-        
 
-   
+
+
 
     // Try a read of some charts....
     LogMessage(_("  Starting chart test load.") );
     wxString countMsg;
     countMsg.Printf(_T(" %zu"), fileList.GetCount());
     LogMessage(_("  Chart count: ") + countMsg );
-    
+
     for( unsigned int i=0 ; i < fileList.GetCount() ; i++){
         wxString chartFile = fileList.Item(i);
         //LogMessage(_("  Checking chart: ") + chartFile );
@@ -539,7 +542,7 @@ void ocValidator::startValidation()
             LogMessage(_("  Chart load error ") + "( " + chartFile + " ) : " + errMsg );
             //return;
         }
-        
+
         if(g_ipGauge)
             g_ipGauge->Pulse();
         wxYield();
@@ -548,12 +551,11 @@ void ocValidator::startValidation()
     LogMessage(_("  Chart test load OK.") );
 
     LogMessage(_T("\n"));
-    
+
     LogMessage(_("Chartset installation validates OK.") );
-    
+
     g_ipGauge->Stop();
 
 }
 
 
- 

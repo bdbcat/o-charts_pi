@@ -149,6 +149,7 @@ bool g_bShowExpired;
 // Private function dfinitions/implementations
 
 bool showInstallInfoDialog( wxString newChartDir);
+wxString ChooseInstallDir(wxString wk_installDir);
 
 
 #define ANDROID_DIALOG_BACKGROUND_COLOR    wxColour(_T("#7cb0e9"))
@@ -3876,6 +3877,16 @@ void oeXChartPanel::DoChartSelected( )
         SetSelected( false );
         m_pContainer->SelectChart( (oeXChartPanel*)NULL );
     }
+
+    if(m_pChart && m_bSelected){
+      int status = m_pChart->getChartStatus();
+      //if((status == STAT_CURRENT) || (status == STAT_STALE))
+      {
+        itemSlot *slot = m_pChart->GetActiveSlot();
+        bool bok = m_pContainer->verifyInstallationDirectory(slot, m_pChart);
+      }
+    }
+
 }
 
 void oeXChartPanel::SetSelected( bool selected )
@@ -3898,7 +3909,7 @@ void oeXChartPanel::SetSelected( bool selected )
         }
 
         if(m_pChart){
-        int nAssign = 0;
+          int nAssign = 0;
             for(unsigned int i=0 ; i < m_pChart->quantityList.size() ; i++){
                 itemQuantity Qty = m_pChart->quantityList[i];
                 nAssign += Qty.slotList.size();
@@ -4657,10 +4668,20 @@ void shopPanel::MakeChartVisible(oeXChartPanel *chart)
 
 }
 
+void shopPanel::DeselectAllCharts()
+{
+    if (m_ChartPanelSelected)
+      m_ChartPanelSelected->SetSelected(false);
+    m_ChartPanelSelected = NULL;
+}
+
 
 void shopPanel::OnButtonUpdate( wxCommandEvent& event )
 {
     m_shopLog->ClearLog();
+
+    // Deselect any selected chart
+    DeselectAllCharts();
 
 #ifdef __OCPN__ANDROID__
     if(!g_systemName.Length()){
@@ -5230,6 +5251,54 @@ std::string GetNormalizedChartsetName( std::string rawName)
 #endif
     }
 }
+
+//  Verify that a previously installed chartset actually exists in the recorded directory.
+//  If not, show a dialog allowing user to specify where the chartset actually is.
+//  This accomodates the case where chart direectories have been manually moved,
+//  and is required in order to keep the update record coherent.
+//  Also useful in the chart "Validation" process.
+//
+//  On success, update the config records as necessary
+bool shopPanel::verifyInstallationDirectory(itemSlot *slot, itemChart *chart)
+{
+  int status = chart->getChartStatus();
+
+  //Operate on installed chartset only
+  if ((status == STAT_CURRENT) || (status == STAT_STALE)){
+    wxString oldinstallDir = slot->installLocation + wxFileName::GetPathSeparator() + slot->chartDirName;
+
+    //  Look for file ChartList.XML in the declared directory
+    wxString fileLook = oldinstallDir + wxFileName::GetPathSeparator() + "ChartList.XML";
+    if (!wxFileExists(fileLook)){
+      // Prepare a dialog
+      wxString msg(_("WARNING:\n"));
+      msg += _("This chart set has been previously installed.\n");
+      msg += _("However, the chart files cannot be located.\n\n");
+      msg += _("The original installation directory is: ");
+      msg += oldinstallDir;
+      msg += "\n\n";
+      msg += _("Please select the directory where these chart files may now be found.");
+
+      int ret = ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK | wxCANCEL);
+      if (ret == wxID_OK){
+        wxString newDir = ChooseInstallDir(oldinstallDir);
+        if (newDir.Length()){
+          wxFileName fn(newDir);
+          wxString newChartDirName = fn.GetName();
+          wxString newChartInstallLocation = fn.GetPath();
+
+          slot->chartDirName = newChartDirName;
+          slot->installLocation = newChartInstallLocation;
+          saveShopConfig();
+        }
+      }
+    }
+  }
+
+
+  return true;
+}
+
 
 
 int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *task)

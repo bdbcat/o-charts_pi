@@ -48,13 +48,13 @@
 
 #ifdef __OCPN__ANDROID__
     #define WXC_FROM_DIP(x) x
-#else    
+#else
     #if wxVERSION_NUMBER >= 3100
         #define WXC_FROM_DIP(x) wxWindow::FromDIP(x, NULL)
     #else
         #define WXC_FROM_DIP(x) x
     #endif
-#endif    
+#endif
 
 #include <vector>
 
@@ -100,7 +100,7 @@ class itemChartDataKeys
 public:
     itemChartDataKeys(){}
     ~itemChartDataKeys(){}
-    
+
     std::string  Name;
     std::string  ID;
     std::string  fileName;
@@ -114,7 +114,7 @@ public:
     ChartSetKeys(){ m_bOK = false; }
     ChartSetKeys(std::string fileXML);
     ~ChartSetKeys(){}
-    
+
     bool Load( std::string fileNameKap );
     bool RemoveKey( std::string fileNameKap );
     bool AddKey(itemChartDataKeys *kdata);
@@ -133,7 +133,7 @@ class itemChartData
 public:
     itemChartData(){}
     ~itemChartData(){}
-    
+
     std::string  Name;
     std::string  ID;
     std::string  SE;
@@ -148,7 +148,7 @@ class ChartSetData
 public:
     ChartSetData(std::string fileXML);
     ~ChartSetData(){}
-    
+
     bool RemoveChart( std::string fileNameKap );
     bool AddChart(itemChartData *cdata);
     bool WriteFile( std::string fileName);
@@ -157,16 +157,16 @@ public:
     std::vector < itemChartData *> chartList;
     std::string editionTag;
 
-    
+
 };
 
-    
+
 class itemDLTask
 {
 public:
     itemDLTask(){}
     ~itemDLTask(){}
-    
+
     std::string uuidParentSlot;
     std::string url;
     std::string localFile;
@@ -175,14 +175,14 @@ public:
     std::string SHA256;
     bool        SHA256_Verified;
 };
-    
-    
+
+
 class itemTaskFileInfo
 {
 public:
     itemTaskFileInfo(){ bsubBase = false; }
     ~itemTaskFileInfo(){}
-    
+
     std::string targetEdition;
     std::string resultEdition;
     std::string link;
@@ -204,7 +204,7 @@ class itemSlot
 public:
     itemSlot(){ slotID = -1; }
     ~itemSlot(){}
-    
+
     int GetInstalledEditionInt(){ return GetEditionInt(installedEdition); }
 
     int slotID;
@@ -214,21 +214,21 @@ public:
     std::string installLocation;
     std::string installedEdition;
     std::string chartDirName;
-    
+
     std::vector<itemDLTask> dlQueue;
     std::vector<itemTaskFileInfo *>taskFileList;
-    
+
     unsigned int idlQueue;
 
 };
-                                                
+
 
 class itemQuantity
 {
 public:
     itemQuantity(){ quantityId = -1; }
     ~itemQuantity(){}
-    
+
     int quantityId;
     std::vector<itemSlot *> slotList;
 };
@@ -237,12 +237,12 @@ public:
 //      A single chart(set) container
 class itemChart
 {
-public:    
+public:
     itemChart() { m_downloading = false; m_bEnabled = true; m_assignedSlotIndex = -1; m_activeQtyID = -1; maxSlots = 0; bshopValidated=false; bExpired = false;}
     ~itemChart() {};
 
     void setDownloadPath(int slot, wxString path);
-    wxString getDownloadPath(int slot); 
+    wxString getDownloadPath(int slot);
     bool isChartsetExpired();
     bool isChartsetDontShow();
     bool isChartsetShow();
@@ -259,13 +259,13 @@ public:
     itemSlot *GetActiveSlot();
     bool isUUIDAssigned( wxString UUID);
     wxString GetDisplayedChartEdition();
-    
+
     itemSlot *GetSlotPtr( wxString UUID );
     itemSlot *GetSlotPtr(int slot, int qId);
-    
+
     void Update(itemChart *other);
-    
-public:    
+
+public:
     bool isEnabled(){ return m_bEnabled; }
     wxString getStatusString();
     int getChartStatus();
@@ -274,7 +274,7 @@ public:
     wxString getKeytypeString( std::string slotUUID );
     int GetServerEditionInt();
     int GetChartType(){ return chartType; }
-    
+
     std::string orderRef;
     std::string purchaseDate;
     std::string expDate;
@@ -286,15 +286,15 @@ public:
     std::string thumbLink;
     std::string overrideChartEdition;
     int chartType;
-    
+
     unsigned int maxSlots;
     bool bExpired;
     int m_assignedSlotIndex;
     int m_activeQtyID;
-    
+
     wxArrayString baseChartListArray;
     wxArrayString updateChartListArray;
-    
+
     std::vector<itemQuantity> quantityList;
 
     // Computed update task parameters
@@ -302,46 +302,46 @@ public:
     wxString  taskRequestedEdition;
     wxString  taskCurrentEdition;
     int       taskAction;
-    
+
     bool m_downloading;
     wxString downloadingFile;
-    
+
     long downloadReference;
     bool m_bEnabled;
     wxImage m_ChartImage;
     wxBitmap m_bm;
-    
+
     wxString lastInstall;          // For updates, the full path of installed chartset
     int m_status;
     wxString lastInstalledtlDir;
-    bool bshopValidated;     
+    bool bshopValidated;
 };
 
 
 
-WX_DECLARE_OBJARRAY(itemChart *,      ArrayOfCharts);    
+WX_DECLARE_OBJARRAY(itemChart *,      ArrayOfCharts);
 
 //  The main entry point for ocharts Shop interface
 int doShop();
-    
+
 class oeXChartPanel: public wxPanel
 {
 public:
     oeXChartPanel( wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size, itemChart *p_itemChart, shopPanel *pContainer );
     ~oeXChartPanel();
-    
+
     void DoChartSelected(  );
     void SetSelected( bool selected );
     void OnPaint( wxPaintEvent &event );
     void OnEraseBackground( wxEraseEvent &event );
-    
+
     bool GetSelected(){ return m_bSelected; }
     int GetUnselectedHeight(){ return m_unselectedHeight; }
     int GetRefHeight(){ return m_refHeight; }
     itemChart *GetSelectedChart() { return m_pChart; }
     void OnClickDown( wxMouseEvent &event );
     void OnClickUp( wxMouseEvent &event );
-    
+
 private:
     shopPanel *m_pContainer;
     bool m_bSelected;
@@ -349,12 +349,12 @@ private:
     int m_unselectedHeight;
     itemChart *m_pChart;
     int m_refHeight;
-    
+
     DECLARE_EVENT_TABLE()
 };
 
 
-WX_DECLARE_OBJARRAY(oeXChartPanel *,      ArrayOfChartPanels);    
+WX_DECLARE_OBJARRAY(oeXChartPanel *,      ArrayOfChartPanels);
 
 class chartScroller : public wxScrolledWindow
 {
@@ -365,15 +365,15 @@ public:
     void OnEraseBackground(wxEraseEvent& event);
     void DoPaint(wxDC& dc);
     void OnPaint( wxPaintEvent &event );
-    
-    
+
+
 };
 
 
 class shopPanel : public wxPanel
 {
     DECLARE_EVENT_TABLE()
-    
+
 protected:
     wxScrolledWindow* m_scrollWinChartList;
     wxButton* m_button37;
@@ -396,11 +396,11 @@ protected:
     wxButton* m_buttonValidate;
     wxBoxSizer* boxSizerCharts;
     wxBoxSizer* gridSizerActionButtons;
-    
+
     std::vector<oeXChartPanel *> panelVector;
-    
+
     oeXChartPanel *m_ChartPanelSelected;
-    
+
     wxChoice* m_choiceSystemName;
     wxButton* m_buttonNewSystemName;
     wxTextCtrl*  m_sysName;
@@ -408,13 +408,13 @@ protected:
     wxStaticText *m_staticTextStatus;
     wxStaticText *m_staticTextStatusProgress;
     wxStaticText *m_staticTextLEM;
-    
+
     wxCheckBox   *m_cbShowExpired;
-    
+
 protected:
     void SortChartList();
 
-    
+
 public:
     wxButton* GetButton37() { return m_button37; }
     wxButton* GetButton39() { return m_button39; }
@@ -436,23 +436,25 @@ public:
     wxButton* GetButtonUpdate() { return m_buttonUpdate; }
     void UpdateChartInfoFiles();
     void OnShowExpiredToggle( wxCommandEvent& event );
-    
+    bool verifyInstallationDirectory(itemSlot *slot, itemChart *chart);
+    void DeselectAllCharts();
+
     oesu_piScreenLog *m_shopLog;
-    
+
     oeUniLogin *m_login;
-    
+
     void RefreshSystemName();
     void SetErrorMessage();
-    
+
     shopPanel(wxWindow* parent, wxWindowID id = wxID_ANY, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize(500,600), long style = wxTAB_TRAVERSAL);
     virtual ~shopPanel();
-    
+
     //void SelectChart( oeSencChartPanel *chart );
     void SelectChart( oeXChartPanel *chart );
     void SelectChartByID( std::string id, std::string order);
-    
+
     oeXChartPanel *GetSelectedChartPanel(){ return m_ChartPanelSelected; }
-    
+
     void OnButtonUpdate( wxCommandEvent& event );
     void OnButtonInfo( wxCommandEvent& event );
     void OnButtonDownload( wxCommandEvent& event );
@@ -464,7 +466,7 @@ public:
     void OnPrepareTimer(wxTimerEvent &evt);
     int doPrepareGUI(itemSlot *activeSlot);
     int doDownloadGui( itemChart *targetChart, itemSlot *targetSlot);
-    
+
     void UpdateChartList();
     void OnGetNewSystemName( wxCommandEvent& event );
     void OnChangeSystemName( wxCommandEvent& event );
@@ -498,7 +500,7 @@ public:
     bool m_bTransferSuccess;
     bool m_bconnected;
     int m_scrollRate;
-    
+
     ocValidator *m_validator;
 };
 
@@ -516,7 +518,7 @@ class oeUniGETSystemName: public wxDialog
 {
     DECLARE_DYNAMIC_CLASS( oeUniGETSystemName )
     DECLARE_EVENT_TABLE()
-    
+
 public:
     oeUniGETSystemName( );
     oeUniGETSystemName( wxWindow* parent, wxWindowID id = SYMBOL_GETIP_IDNAME,
@@ -524,28 +526,28 @@ public:
                           const wxPoint& pos = SYMBOL_GETIP_POSITION,
                           const wxSize& size = SYMBOL_GETIP_SIZE,
                           long style = SYMBOL_GETIP_STYLE );
-    
+
     ~oeUniGETSystemName();
-    
+
     bool Create( wxWindow* parent, wxWindowID id = SYMBOL_GETIP_IDNAME,
                  const wxString& caption =  _("OpenCPN o-charts System Name"),
                  const wxPoint& pos = SYMBOL_GETIP_POSITION,
                  const wxSize& size = SYMBOL_GETIP_SIZE, long style = SYMBOL_GETIP_STYLE );
-    
-    
+
+
     void CreateControls(  );
-    
+
     void OnCancelClick( wxCommandEvent& event );
     void OnOkClick( wxCommandEvent& event );
     wxString GetNewName();
-    
+
     static bool ShowToolTips();
-    
+
     wxTextCtrl*   m_SystemNameCtl;
     wxButton*     m_CancelButton;
     wxButton*     m_OKButton;
-    
-    
+
+
 };
 
 
@@ -553,7 +555,7 @@ class oeUniSystemNameSelector: public wxDialog
 {
     DECLARE_DYNAMIC_CLASS( oeUniSystemNameSelector )
     DECLARE_EVENT_TABLE()
-    
+
 public:
     oeUniSystemNameSelector( );
     oeUniSystemNameSelector( wxWindow* parent, bool bShowAll = true, wxWindowID id = SYMBOL_GETIP_IDNAME,
@@ -561,47 +563,47 @@ public:
                          const wxPoint& pos = wxDefaultPosition,
                          const wxSize& size = wxSize(500, 200),
                          long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
-    
+
     ~oeUniSystemNameSelector();
-    
+
     bool Create( wxWindow* parent, bool bshowAll = true, wxWindowID id = SYMBOL_GETIP_IDNAME,
                  const wxString& caption =  _("Select OpenCPN/o-charts System Name"),
                  const wxPoint& pos = wxDefaultPosition,
                  const wxSize& size = wxSize(500, 200), long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
-    
-    
+
+
     void CreateControls( bool bShowAll );
-    
+
     void OnCancelClick( wxCommandEvent& event );
     void OnOkClick( wxCommandEvent& event );
     wxString getRBSelection();
-    
+
     static bool ShowToolTips();
-    
+
     wxButton*     m_CancelButton;
     wxButton*     m_OKButton;
     wxRadioBox*   m_rbSystemNames;
-    
+
 };
 
 
 class InProgressIndicator: public wxGauge
 {
     DECLARE_EVENT_TABLE()
-    
-public:    
+
+public:
     InProgressIndicator();
     InProgressIndicator(wxWindow* parent, wxWindowID id, int range,
                         const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize,
                         long style = wxGA_HORIZONTAL, const wxValidator& validator = wxDefaultValidator, const wxString& name = "inprogress");
-    
+
     ~InProgressIndicator();
-    
+
     void OnTimer(wxTimerEvent &evt);
     void Start();
     void Stop();
-    
-    
+
+
     wxTimer m_timer;
     int msec;
     bool m_bAlive;
@@ -614,12 +616,12 @@ class OESENC_CURL_EvtHandler : public wxEvtHandler
 public:
     OESENC_CURL_EvtHandler();
     ~OESENC_CURL_EvtHandler();
-    
+
     void onBeginEvent(wxCurlBeginPerformEvent &evt);
     void onEndEvent(wxCurlEndPerformEvent &evt);
     void onProgressEvent(wxCurlDownloadEvent &evt);
-    
-    
+
+
 };
 #endif
 
@@ -627,7 +629,7 @@ class oeUniLogin: public wxDialog
 {
     DECLARE_DYNAMIC_CLASS( oeUniLogin )
     DECLARE_EVENT_TABLE()
-    
+
 public:
     oeUniLogin( );
     oeUniLogin( wxWindow* parent, wxWindowID id = wxID_ANY,
@@ -635,30 +637,30 @@ public:
                         const wxPoint& pos = wxDefaultPosition,
                           const wxSize& size = wxSize(500, 200),
                         long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
-    
+
     ~oeUniLogin();
-    
+
     bool Create( wxWindow* parent, wxWindowID id = wxID_ANY,
                  const wxString& caption =  _("OpenCPN Login"),
                  const wxPoint& pos = wxDefaultPosition,
                  const wxSize& size = wxSize(500, 200), long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
-    
-    
+
+
     void CreateControls(  );
-    
+
     void OnCancelClick( wxCommandEvent& event );
     void OnOkClick( wxCommandEvent& event );
     void OnClose( wxCloseEvent& event );
-    
+
     static bool ShowToolTips();
-    
+
     wxTextCtrl*   m_UserNameCtl;
     wxTextCtrl*   m_PasswordCtl;
     wxButton*     m_CancelButton;
     wxButton*     m_OKButton;
     bool          m_bCompact;
-    
-    
+
+
 };
 
 #endif          //_OCHARTSHOP_H_
