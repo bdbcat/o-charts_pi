@@ -548,7 +548,7 @@ double CPLScanDouble( char *pszString, int nMaxLength, char *pszLocale )
 #if defined(HAVE_LOCALE_H) && defined(HAVE_SETLOCALE)
     char        *pszCurLocale = NULL;
 
-    if ( pszLocale || EQUAL( pszLocale, "" ) )
+    sif ( pszLocale || EQUAL( pszLocale, "" ) )
     {
         // Save the current locale
         pszCurLocale = setlocale(LC_ALL, NULL );
