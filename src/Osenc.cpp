@@ -1285,11 +1285,12 @@ int Osenc::ingest200(const wxString &senc_file_name,
     S57Obj *obj = 0;
     int featureID;
 
+    OSENC_Record_Base record;
+
     int dun = 0;
     while( !dun ) {
 
         //      Read a record Header
-        OSENC_Record_Base record;
 
 //        long off = fpx.TellI();
 
@@ -1307,14 +1308,19 @@ int Osenc::ingest200(const wxString &senc_file_name,
         // On linux type systems, the buffer alloc succeeds, but then the read file fails, as expected, due to EOF on the input file.
         //  Either way, we are finished reading.
 
-        if((unsigned long)(record.record_length)  > 2000000 ){
+        if((unsigned long)(record.record_length)  > 4000000 ){
             dun = 1;
             break;
         }
-        if (record.record_length < sizeof(OSENC_Record_Base)){
-            wxLogMessage(_T("record too small, stop reading"));
-            dun=1;
-            break;
+
+        // This is the normal EOF condition
+        if (record.record_type == 0){
+          dun=1;
+          break;
+        }
+        else if (record.record_length < sizeof(OSENC_Record_Base)){
+          dun=1;        // This is an error condition, sometimes found at EOF.
+          break;
         }
 
         switch( record.record_type){
