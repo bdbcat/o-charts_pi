@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: o-charts_pi 0.9.0.60\n"
+"Project-Id-Version: o-charts_pi 0.9.0.62\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-01-24 23:12-0500\n"
+"POT-Creation-Date: 2022-01-27 16:48-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28,9 +28,9 @@ msgstr ""
 #: src/o-charts_pi.cpp:355 src/o-charts_pi.cpp:4126 src/o-charts_pi.cpp:4189
 #: src/o-charts_pi.cpp:4355 src/o-charts_pi.cpp:5132 src/o-charts_pi.cpp:5195
 #: src/o-charts_pi.cpp:5380 src/ochartShop.cpp:351 src/ochartShop.cpp:501
-#: src/ochartShop.cpp:4042 src/ochartShop.cpp:4235 src/ochartShop.cpp:6993
-#: src/ochartShop.cpp:7022 src/ochartShop.cpp:7132 src/ochartShop.cpp:7157
-#: src/ochartShop.cpp:7443
+#: src/ochartShop.cpp:4042 src/ochartShop.cpp:4235 src/ochartShop.cpp:7081
+#: src/ochartShop.cpp:7110 src/ochartShop.cpp:7220 src/ochartShop.cpp:7245
+#: src/ochartShop.cpp:7531
 msgid "Dialog"
 msgstr ""
 
@@ -55,11 +55,11 @@ msgstr ""
 #: src/ochartShop.cpp:2322 src/ochartShop.cpp:2336 src/ochartShop.cpp:2968
 #: src/ochartShop.cpp:2996 src/ochartShop.cpp:3024 src/ochartShop.cpp:3049
 #: src/ochartShop.cpp:3245 src/ochartShop.cpp:3421 src/ochartShop.cpp:4834
-#: src/ochartShop.cpp:4984 src/ochartShop.cpp:5081 src/ochartShop.cpp:5126
-#: src/ochartShop.cpp:5132 src/ochartShop.cpp:5282 src/ochartShop.cpp:5318
-#: src/ochartShop.cpp:5325 src/ochartShop.cpp:5888 src/ochartShop.cpp:5939
-#: src/ochartShop.cpp:6131 src/ochartShop.cpp:6148 src/ochartShop.cpp:6206
-#: src/ochartShop.cpp:6860
+#: src/ochartShop.cpp:4986 src/ochartShop.cpp:5083 src/ochartShop.cpp:5128
+#: src/ochartShop.cpp:5134 src/ochartShop.cpp:5325 src/ochartShop.cpp:5370
+#: src/ochartShop.cpp:5406 src/ochartShop.cpp:5413 src/ochartShop.cpp:5976
+#: src/ochartShop.cpp:6027 src/ochartShop.cpp:6219 src/ochartShop.cpp:6236
+#: src/ochartShop.cpp:6294 src/ochartShop.cpp:6948
 msgid "o-charts_pi Message"
 msgstr ""
 
@@ -205,8 +205,8 @@ msgid "System Name:"
 msgstr ""
 
 #: src/o-charts_pi.cpp:3395 src/ochartShop.cpp:1807 src/ochartShop.cpp:3043
-#: src/ochartShop.cpp:4601 src/ochartShop.cpp:6696 src/ochartShop.cpp:6702
-#: src/ochartShop.cpp:7201 src/ochartShop.cpp:7214
+#: src/ochartShop.cpp:4601 src/ochartShop.cpp:6784 src/ochartShop.cpp:6790
+#: src/ochartShop.cpp:7289 src/ochartShop.cpp:7302
 msgid "USB Key Dongle"
 msgstr ""
 
@@ -658,8 +658,8 @@ msgstr ""
 msgid "Proceed"
 msgstr ""
 
-#: src/ochartShop.cpp:2969 src/ochartShop.cpp:7067 src/ochartShop.cpp:7250
-#: src/ochartShop.cpp:7547 src/ochartShop.cpp:7616
+#: src/ochartShop.cpp:2969 src/ochartShop.cpp:7155 src/ochartShop.cpp:7338
+#: src/ochartShop.cpp:7635 src/ochartShop.cpp:7704
 msgid "Cancel"
 msgstr ""
 
@@ -707,23 +707,23 @@ msgstr ""
 msgid "Proceed?"
 msgstr ""
 
-#: src/ochartShop.cpp:3232 src/ochartShop.cpp:4971
+#: src/ochartShop.cpp:3232 src/ochartShop.cpp:4973
 msgid "  {USB Dongle not found.}"
 msgstr ""
 
-#: src/ochartShop.cpp:3235 src/ochartShop.cpp:4974
+#: src/ochartShop.cpp:3235 src/ochartShop.cpp:4976
 msgid "  {fpr file not found.}"
 msgstr ""
 
-#: src/ochartShop.cpp:3238 src/ochartShop.cpp:4977
+#: src/ochartShop.cpp:3238 src/ochartShop.cpp:4979
 msgid "  {fpr file not created.}"
 msgstr ""
 
-#: src/ochartShop.cpp:3242 src/ochartShop.cpp:3418 src/ochartShop.cpp:4981
+#: src/ochartShop.cpp:3242 src/ochartShop.cpp:3418 src/ochartShop.cpp:4983
 msgid "ERROR Creating Fingerprint file"
 msgstr ""
 
-#: src/ochartShop.cpp:3243 src/ochartShop.cpp:3419 src/ochartShop.cpp:4982
+#: src/ochartShop.cpp:3243 src/ochartShop.cpp:3419 src/ochartShop.cpp:4984
 msgid "Check OpenCPN log file."
 msgstr ""
 
@@ -800,7 +800,7 @@ msgstr ""
 msgid "Actions"
 msgstr ""
 
-#: src/ochartShop.cpp:4500 src/ochartShop.cpp:6713
+#: src/ochartShop.cpp:4500 src/ochartShop.cpp:6801
 msgid "Reinstall Selection"
 msgstr ""
 
@@ -821,9 +821,9 @@ msgid "Last Error Message: "
 msgstr ""
 
 #: src/ochartShop.cpp:4592 src/ochartShop.cpp:4866 src/ochartShop.cpp:4877
-#: src/ochartShop.cpp:4885 src/ochartShop.cpp:6077 src/ochartShop.cpp:6086
-#: src/ochartShop.cpp:6104 src/ochartShop.cpp:6113 src/ochartShop.cpp:6143
-#: src/ochartShop.cpp:6161 src/ochartShop.cpp:6200
+#: src/ochartShop.cpp:4885 src/ochartShop.cpp:6165 src/ochartShop.cpp:6174
+#: src/ochartShop.cpp:6192 src/ochartShop.cpp:6201 src/ochartShop.cpp:6231
+#: src/ochartShop.cpp:6249 src/ochartShop.cpp:6288
 msgid "Status: Ready"
 msgstr ""
 
@@ -845,216 +845,224 @@ msgid ""
 "Please create another System Name"
 msgstr ""
 
-#: src/ochartShop.cpp:5080
+#: src/ochartShop.cpp:5082
 msgid ""
 "The detected System Name has been disabled\n"
 "Please create another System Name"
 msgstr ""
 
-#: src/ochartShop.cpp:5125
+#: src/ochartShop.cpp:5127
 msgid "Invalid System Name"
 msgstr ""
 
-#: src/ochartShop.cpp:5131
+#: src/ochartShop.cpp:5133
 msgid ""
 "This System Name has been disabled\n"
 "Please choose another SystemName"
 msgstr ""
 
-#: src/ochartShop.cpp:5274
+#: src/ochartShop.cpp:5316
+msgid "The o-charts cache directory contains the following unused charts:"
+msgstr ""
+
+#: src/ochartShop.cpp:5324
+msgid "Remove these unused charts now?"
+msgstr ""
+
+#: src/ochartShop.cpp:5362
 msgid "WARNING:\n"
 msgstr ""
 
-#: src/ochartShop.cpp:5275
+#: src/ochartShop.cpp:5363
 msgid "This chart set has been previously installed.\n"
 msgstr ""
 
-#: src/ochartShop.cpp:5276
+#: src/ochartShop.cpp:5364
 msgid ""
 "However, the chart files cannot be located.\n"
 "\n"
 msgstr ""
 
-#: src/ochartShop.cpp:5277
+#: src/ochartShop.cpp:5365
 msgid "The original installation directory is: "
 msgstr ""
 
-#: src/ochartShop.cpp:5280
+#: src/ochartShop.cpp:5368
 msgid "Please select the directory where these chart files may now be found."
 msgstr ""
 
-#: src/ochartShop.cpp:5318
+#: src/ochartShop.cpp:5406
 msgid "Validation error on zip file"
 msgstr ""
 
-#: src/ochartShop.cpp:5325
+#: src/ochartShop.cpp:5413
 msgid "Validation error on key file"
 msgstr ""
 
-#: src/ochartShop.cpp:5641
+#: src/ochartShop.cpp:5729
 msgid "Relocating chart files..."
 msgstr ""
 
-#: src/ochartShop.cpp:5796
+#: src/ochartShop.cpp:5884
 msgid "Status: Validating download file..."
 msgstr ""
 
-#: src/ochartShop.cpp:5872
+#: src/ochartShop.cpp:5960
 msgid "Validate Log"
 msgstr ""
 
-#: src/ochartShop.cpp:5888
+#: src/ochartShop.cpp:5976
 msgid "No chartset selected."
 msgstr ""
 
-#: src/ochartShop.cpp:5910 src/ochartShop.cpp:5920
+#: src/ochartShop.cpp:5998 src/ochartShop.cpp:6008
 msgid "Choose chart install location."
 msgstr ""
 
-#: src/ochartShop.cpp:5939
+#: src/ochartShop.cpp:6027
 msgid "Chart download cancelled."
 msgstr ""
 
-#: src/ochartShop.cpp:6131
+#: src/ochartShop.cpp:6219
 msgid "Proceed with chart installation."
 msgstr ""
 
-#: src/ochartShop.cpp:6144
+#: src/ochartShop.cpp:6232
 msgid "Chart installation ERROR."
 msgstr ""
 
-#: src/ochartShop.cpp:6201
+#: src/ochartShop.cpp:6289
 msgid "Chart installation complete.\n"
 msgstr ""
 
-#: src/ochartShop.cpp:6203
+#: src/ochartShop.cpp:6291
 msgid ""
 "Don't forget to rebuild chart database\n"
 " (See manual)"
 msgstr ""
 
-#: src/ochartShop.cpp:6240
+#: src/ochartShop.cpp:6328
 msgid "Preparing installation..."
 msgstr ""
 
-#: src/ochartShop.cpp:6312
+#: src/ochartShop.cpp:6400
 msgid "Status: Dongle FPR upload error"
 msgstr ""
 
-#: src/ochartShop.cpp:6324
+#: src/ochartShop.cpp:6412
 msgid "Status: System FPR upload error"
 msgstr ""
 
-#: src/ochartShop.cpp:6482
+#: src/ochartShop.cpp:6570
 msgid "Requesting License Keys..."
 msgstr ""
 
-#: src/ochartShop.cpp:6513
+#: src/ochartShop.cpp:6601
 msgid "Status: Downloading..."
 msgstr ""
 
-#: src/ochartShop.cpp:6518
+#: src/ochartShop.cpp:6606
 msgid "Downloading..."
 msgstr ""
 
-#: src/ochartShop.cpp:6556 src/ochartShop.cpp:6901 src/ochartShop.cpp:7359
+#: src/ochartShop.cpp:6644 src/ochartShop.cpp:6989 src/ochartShop.cpp:7447
 msgid "Status: OK"
 msgstr ""
 
-#: src/ochartShop.cpp:6705 src/ochartShop.cpp:6744 src/ochartShop.cpp:6748
+#: src/ochartShop.cpp:6793 src/ochartShop.cpp:6832 src/ochartShop.cpp:6836
 msgid "Download Selected Chart"
 msgstr ""
 
-#: src/ochartShop.cpp:6706
+#: src/ochartShop.cpp:6794
 msgid "Install Selected Chart for "
 msgstr ""
 
-#: src/ochartShop.cpp:6707
+#: src/ochartShop.cpp:6795
 msgid "Reinstall Selected Chart for "
 msgstr ""
 
-#: src/ochartShop.cpp:6708
+#: src/ochartShop.cpp:6796
 msgid "Update Selected Chart for "
 msgstr ""
 
-#: src/ochartShop.cpp:6711
+#: src/ochartShop.cpp:6799
 msgid "Download Selection"
 msgstr ""
 
-#: src/ochartShop.cpp:6712
+#: src/ochartShop.cpp:6800
 msgid "Install Selection"
 msgstr ""
 
-#: src/ochartShop.cpp:6714
+#: src/ochartShop.cpp:6802
 msgid "Update Selection"
 msgstr ""
 
-#: src/ochartShop.cpp:6841 src/ochartShop.cpp:7053
+#: src/ochartShop.cpp:6929 src/ochartShop.cpp:7141
 msgid "A valid System Name is 3 to 15 characters in length."
 msgstr ""
 
-#: src/ochartShop.cpp:6851
+#: src/ochartShop.cpp:6939
 msgid "No symbols or spaces are allowed in System Name."
 msgstr ""
 
-#: src/ochartShop.cpp:6950 src/ochartShop.cpp:7405
+#: src/ochartShop.cpp:7038 src/ochartShop.cpp:7493
 msgid "Downloaded:  "
 msgstr ""
 
-#: src/ochartShop.cpp:7025
+#: src/ochartShop.cpp:7113
 msgid "New OpenCPN o-charts System Name"
 msgstr ""
 
-#: src/ochartShop.cpp:7042
+#: src/ochartShop.cpp:7130
 msgid "Enter New System Name"
 msgstr ""
 
-#: src/ochartShop.cpp:7059
+#: src/ochartShop.cpp:7147
 msgid "No symbols or spaces are allowed."
 msgstr ""
 
-#: src/ochartShop.cpp:7072 src/ochartShop.cpp:7253 src/ochartShop.cpp:7550
-#: src/ochartShop.cpp:7619
+#: src/ochartShop.cpp:7160 src/ochartShop.cpp:7341 src/ochartShop.cpp:7638
+#: src/ochartShop.cpp:7707
 msgid "OK"
 msgstr ""
 
-#: src/ochartShop.cpp:7160 src/ochartShop.h:562 src/ochartShop.h:570
+#: src/ochartShop.cpp:7248 src/ochartShop.h:562 src/ochartShop.h:570
 msgid "Select OpenCPN/o-charts System Name"
 msgstr ""
 
-#: src/ochartShop.cpp:7181
+#: src/ochartShop.cpp:7269
 msgid "Select your System Name from the following list, or "
 msgstr ""
 
-#: src/ochartShop.cpp:7186
+#: src/ochartShop.cpp:7274
 msgid " create a new System Name for this computer."
 msgstr ""
 
-#: src/ochartShop.cpp:7217
+#: src/ochartShop.cpp:7305
 msgid "new..."
 msgstr ""
 
-#: src/ochartShop.cpp:7239
+#: src/ochartShop.cpp:7327
 msgid "System Names"
 msgstr ""
 
-#: src/ochartShop.cpp:7513 src/ochartShop.cpp:7562
+#: src/ochartShop.cpp:7601 src/ochartShop.cpp:7650
 msgid "Login to o-charts.org"
 msgstr ""
 
-#: src/ochartShop.cpp:7530
+#: src/ochartShop.cpp:7618
 msgid "email address:"
 msgstr ""
 
-#: src/ochartShop.cpp:7537
+#: src/ochartShop.cpp:7625
 msgid "Password:"
 msgstr ""
 
-#: src/ochartShop.cpp:7595
+#: src/ochartShop.cpp:7683
 msgid "email:"
 msgstr ""
 
-#: src/ochartShop.cpp:7601
+#: src/ochartShop.cpp:7689
 msgid "pass:"
 msgstr ""
 
