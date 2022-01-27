@@ -413,7 +413,7 @@ protected:
 
 protected:
     void SortChartList();
-
+    bool scrubCache();
 
 public:
     wxButton* GetButton37() { return m_button37; }

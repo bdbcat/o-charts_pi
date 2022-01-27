@@ -2861,7 +2861,7 @@ int getChartList( bool bShowErrorDialogs = true){
     std::string c = post.GetResponseBody();
 
     responseBody = post.GetResponseBody();
-    printf("%s", post.GetResponseBody().c_str());
+    //printf("%s", post.GetResponseBody().c_str());
 
     //wxString tt(post.GetResponseBody().data(), wxConvUTF8);
     //wxLogMessage(tt);
@@ -3879,11 +3879,11 @@ void oeXChartPanel::DoChartSelected( )
     }
 
     if(m_pChart && m_bSelected){
-      int status = m_pChart->getChartStatus();
+      //int status = m_pChart->getChartStatus();
       //if((status == STAT_CURRENT) || (status == STAT_STALE))
       {
         itemSlot *slot = m_pChart->GetActiveSlot();
-        bool bok = m_pContainer->verifyInstallationDirectory(slot, m_pChart);
+        m_pContainer->verifyInstallationDirectory(slot, m_pChart);
       }
     }
 
@@ -4891,6 +4891,8 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
 
     saveShopConfig();
 
+    scrubCache();
+
 }
 
 void shopPanel::UpdateChartInfoFiles()
@@ -5251,6 +5253,92 @@ std::string GetNormalizedChartsetName( std::string rawName)
 #endif
     }
 }
+
+bool shopPanel::scrubCache()
+{
+  // Get a list of all the directories in the o-charts_pi download cache
+  wxString cacheDir(g_PrivateDataDir + "DownloadCache");
+  wxArrayString dirArray;
+
+  wxDir dir(cacheDir);
+  if(!dir.IsOpened())
+    return false;;
+
+  wxString dirname;
+  bool cont = dir.GetFirst(&dirname, wxEmptyString, wxDIR_DIRS);
+  while(cont){
+    dirArray.Add(dirname);
+    cont = dir.GetNext(&dirname);
+  }
+
+  // Iterate over the directory list,
+  // looking for a match in the current (in-core) std::vector<itemChart *> ChartVector
+
+  itemChart *pChart;
+  wxArrayString orphanArray;
+
+  for (unsigned int i=0 ; i < dirArray.GetCount(); i++){
+    wxString candidate = dirArray[i];
+    wxString target = candidate.AfterFirst('-');
+
+    bool bfound = false;
+    for (unsigned int j=0 ; j < ChartVector.size(); j++){
+      pChart = ChartVector[j];
+
+      //  Build the name of the cached chart files for this managed chartset
+      wxString Prefix = _T("oeRNC");
+      if(pChart->GetChartType() == CHART_TYPE_OEUSENC)
+        Prefix = _T("oeuSENC");
+
+      wxString serverEdition(pChart->serverChartEdition.c_str());
+      wxString serverYear = serverEdition.BeforeFirst('/');
+      wxString id = pChart->chartID;
+
+      //  The cached chart files for this managed chartset
+      wxString targetCacheDir = Prefix + "-" + id + "-" + serverYear;
+
+      if (candidate.IsSameAs(targetCacheDir)){
+        bfound = true;
+        break;
+      }
+    }
+
+    // Does the candidate directory belong to a currently installed chartset?
+    // Or is it an orphan?
+    if (!bfound)
+      orphanArray.Add(candidate);
+
+  }
+
+  //  Anything in the orphan array?
+  if(orphanArray.GetCount()){
+    wxString msg;
+    msg += _("The o-charts cache directory contains the following unused charts:");
+    msg += "\n";
+    for (unsigned int i=0; i < orphanArray.GetCount(); i++){
+      msg += "    ";
+      msg += orphanArray[i];
+      msg += "\n";
+    }
+    msg += "\n";
+    msg += _("Remove these unused charts now?");
+    int ret = ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxYES_NO);
+
+    if (ret == wxID_YES){
+      for (unsigned int i=0; i < orphanArray.GetCount(); i++){
+        wxString fullDir = cacheDir + wxFileName::GetPathSeparator() + orphanArray[i];
+        wxFileName::Rmdir( fullDir,	wxPATH_RMDIR_RECURSIVE);
+      }
+    }
+  }
+
+  return true;
+
+}
+
+
+
+
 
 //  Verify that a previously installed chartset actually exists in the recorded directory.
 //  If not, show a dialog allowing user to specify where the chartset actually is.
