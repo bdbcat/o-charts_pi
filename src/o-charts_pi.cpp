@@ -274,10 +274,10 @@ OESENC_HTMLMessageDialog *pinfoDlg;
 extern JavaVM *java_vm;         // found in androidUtil.cpp, accidentally exported....
 
 // Older Android devices do not export atof from their libc.so
-double atof(const char *nptr)
-{
-    return (strtod(nptr, NULL));
-}
+// double atof(const char *nptr)
+// {
+//     return (strtod(nptr, NULL));
+// }
 
 #endif
 
@@ -487,7 +487,7 @@ o_charts_pi::o_charts_pi(void *ppimgr)
         m_pplugin_icon = &m_panelBitmap;
       }
       else{
-        wxLogMessage(_T("    GRIB panel icon NOT loaded"));
+        wxLogMessage(_T("    o-charts panel icon NOT loaded"));
         m_panelBitmap = wxBitmap(default_pi);
         m_pplugin_icon = &m_panelBitmap;
       }
