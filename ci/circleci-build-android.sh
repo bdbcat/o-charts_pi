@@ -53,11 +53,7 @@ sudo ln -sf /opt/android/android-ndk-* /opt/android/ndk
 cmake \
   -DCMAKE_TOOLCHAIN_FILE=cmake/$OCPN_TARGET-toolchain.cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_SYSROOT=/opt/android/android-ndk-r20/toolchains/llvm/prebuilt/linux-x86_64/sysroot \
-  -DCMAKE_INCLUDE_PATH=/opt/android/android-ndk-r20/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include \
-  -DCMAKE_LIBRARY_PATH=/opt/android/android-ndk-r20/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/arm-linux-androideabi/16 \
   ..
-
 
 make VERBOSE=1
 
