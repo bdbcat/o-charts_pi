@@ -126,10 +126,8 @@ macro(add_plugin_libraries)
   add_subdirectory("libs/tinyxml")
   target_link_libraries(${PACKAGE_NAME} ocpn::tinyxml)
 
-if(NOT QT_ANDROID)
   add_subdirectory("libs/zlib")
   target_link_libraries(${PACKAGE_NAME} ocpn::zlib)
-endif(NOT QT_ANDROID)
 
   add_subdirectory("libs/opencpn-glu")
   target_link_libraries(${PACKAGE_NAME} opencpn::glu)
