@@ -108,6 +108,22 @@ macro(late_init)
   # Perform initialization after the PACKAGE_NAME library, compilers
   # and ocpn::api is available.
   target_include_directories(${PACKAGE_NAME} PRIVATE libs/gdal/src src)
+
+  # A specific target requires special handling
+  # When OCPN core is a ubuntu-bionic build, and the debian-10 plugin is loaded,
+  #   then there is conflict between wxCurl in core, vs plugin
+  # So, in this case, disable the plugin's use of wxCurl directly, and revert to
+  #   plugin API for network access.
+  # And, Android always uses plugin API for network access
+  string(TOLOWER "${OCPN_TARGET_TUPLE}" _lc_target)
+  message(STATUS "late_init: ${OCPN_TARGET_TUPLE}.")
+
+  if ( (NOT "${_lc_target}" MATCHES "debian;10;x86_64") AND
+       (NOT "${_lc_target}" MATCHES "android*") )
+    target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
+    add_definitions(-D__OCPN_USE_CURL__)
+  endif()
+
 endmacro ()
 
 macro(add_plugin_libraries)
@@ -133,7 +149,6 @@ macro(add_plugin_libraries)
   target_link_libraries(${PACKAGE_NAME} opencpn::glu)
 
   add_subdirectory("libs/wxcurl")
-  target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
 
   add_subdirectory("libs/oeserverd")
 

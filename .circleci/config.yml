@@ -128,6 +128,7 @@ jobs:
       - image: circleci/buildpack-deps:buster-scm
     environment:
       - OCPN_TARGET: buster
+      - OCPN_TARGET_TUPLE: debian;10;x86_64
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     <<: *debian-steps
 

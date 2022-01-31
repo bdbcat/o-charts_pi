@@ -1343,7 +1343,7 @@ wxBitmap& itemChart::GetChartThumbnail(int size, bool bDL_If_Needed)
         else if(bDL_If_Needed){
             int iResponseCode = 0;
             if(g_chartListUpdatedOK && thumbLink.length()){  // Do not access network until after first "getList"
-#ifndef __OCPN__ANDROID__
+#ifdef __OCPN_USE_CURL__
                 wxCurlHTTP get;
                 get.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
                 get.Get(file, wxString(thumbLink));
@@ -1366,7 +1366,7 @@ wxBitmap& itemChart::GetChartThumbnail(int size, bool bDL_If_Needed)
                     _OCPN_DLStatus ret = OCPN_downloadFile( wxString(thumbLink), file_URI, _T(""), _T(""), wxNullBitmap, NULL /*g_shopPanel*/, 0/*OCPN_DLDS_DEFAULT_STYLE*/, 15);
 
                     wxLogMessage(_T("DLRET"));
-                    qDebug() << "DL done";
+                    //qDebug() << "DL done";
                     if(OCPN_DL_NO_ERROR == ret){
                         wxCopyFile(filetmp, file);
                         iResponseCode = 200;
@@ -1378,7 +1378,7 @@ wxBitmap& itemChart::GetChartThumbnail(int size, bool bDL_If_Needed)
                     s_dlbusy = 0;
                 }
                 else
-                    qDebug() << "Busy";
+                    //qDebug() << "Busy";
 
 #endif
 
@@ -2395,19 +2395,19 @@ int doLogin( wxWindow *parent )
 
 #else
 
-    qDebug() << url.mb_str();
+    //qDebug() << url.mb_str();
     //qDebug() << loginParms.mb_str();
 
     wxString postresult;
     _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
 
-    qDebug() << "doLogin Post Stat: " << stat;
+    //qDebug() << "doLogin Post Stat: " << stat;
 
     if(stat != OCPN_DL_FAILED){
         wxCharBuffer buf = postresult.ToUTF8();
         std::string response(buf.data());
 
-        qDebug() << response.c_str();
+        //qDebug() << response.c_str();
         doc = new TiXmlDocument();
         doc->Parse( response.c_str());
         iResponseCode = 200;
@@ -2867,18 +2867,18 @@ int getChartList( bool bShowErrorDialogs = true){
     //wxLogMessage(tt);
 #else
      wxString postresult;
-    qDebug() << url.mb_str();
-    qDebug() << loginParms.mb_str();
+    //qDebug() << url.mb_str();
+    //qDebug() << loginParms.mb_str();
 
     _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
 
-    qDebug() << "getChartList Post Stat: " << stat;
+    //qDebug() << "getChartList Post Stat: " << stat;
 
     if(stat != OCPN_DL_FAILED){
         wxCharBuffer buf = postresult.ToUTF8();
         std::string response(buf.data());
 
-        qDebug() << response.c_str();
+        //qDebug() << response.c_str();
         responseBody = response.c_str();
         iResponseCode = 200;
     }
@@ -3087,17 +3087,17 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
     if(iResponseCode == 200)
         responseBody= post.GetResponseBody();
 #else
-    qDebug() << "do assign";
+    //qDebug() << "do assign";
     wxString postresult;
     _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
 
-    qDebug() << "doAssign Post Stat: " << stat;
+    //qDebug() << "doAssign Post Stat: " << stat;
 
     if(stat != OCPN_DL_FAILED){
         wxCharBuffer buf = postresult.ToUTF8();
         std::string response(buf.data());
 
-        qDebug() << response.c_str();
+        //qDebug() << response.c_str();
         responseBody = response.c_str();
 
         iResponseCode = 200;
@@ -3480,18 +3480,18 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
         responseBody = post.GetResponseBody();
 #else
     wxString postresult;
-    qDebug() << url.mb_str();
-    qDebug() << loginParms.mb_str();
+    //qDebug() << url.mb_str();
+    //qDebug() << loginParms.mb_str();
 
     _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
 
-    qDebug() << "doPrepare Post Stat: " << stat;
+    //qDebug() << "doPrepare Post Stat: " << stat;
 
     if(stat != OCPN_DL_FAILED){
         wxCharBuffer buf = postresult.ToUTF8();
         std::string response(buf.data());
 
-        qDebug() << response.c_str();
+        //qDebug() << response.c_str();
         responseBody = response.c_str();
         iResponseCode = 200;
     }
@@ -5021,19 +5021,19 @@ int shopPanel::GetShopNameFromFPR()
 
 #else
 
-    qDebug() << url.mb_str();
-    qDebug() << loginParms.mb_str();
+    //qDebug() << url.mb_str();
+    //qDebug() << loginParms.mb_str();
 
     wxString postresult;
     _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
 
-    qDebug() << "doLogin Post Stat: " << stat;
+    //qDebug() << "doLogin Post Stat: " << stat;
 
     if(stat != OCPN_DL_FAILED){
         wxCharBuffer buf = postresult.ToUTF8();
         std::string response(buf.data());
 
-        qDebug() << response.c_str();
+        //qDebug() << response.c_str();
         doc = new TiXmlDocument();
         doc->Parse( response.c_str());
         iResponseCode = 200;
@@ -6970,11 +6970,11 @@ void shopPanel::OnGetNewSystemName( wxCommandEvent& event )
 // }
 
 
-#ifdef __OCPN__ANDROID__
+#ifndef __OCPN_USE_CURL__
 
 void shopPanel::onDLEvent(OCPN_downloadEvent &evt)
 {
-    qDebug() << "onDLEvent";
+    //qDebug() << "onDLEvent";
 
     wxDateTime now = wxDateTime::Now();
 

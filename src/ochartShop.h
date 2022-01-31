@@ -38,8 +38,9 @@
 
 #include "ocpn_plugin.h"
 
-#ifndef __OCPN__ANDROID__
- #include "wx/curl/http.h"
+#ifdef __OCPN_USE_CURL__
+#include "wx/curl/http.h"
+#include "wx/curl/base.h"
 #endif
 
 #ifdef WXC_FROM_DIP
@@ -610,7 +611,7 @@ public:
 };
 
 
-#ifndef __OCPN__ANDROID__
+#ifdef __OCPN_USE_CURL__
 class OESENC_CURL_EvtHandler : public wxEvtHandler
 {
 public:

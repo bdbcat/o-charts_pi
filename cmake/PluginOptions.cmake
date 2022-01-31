@@ -1,5 +1,5 @@
 # ~~~
-# Summary:     Set up default plugin build options 
+# Summary:     Set up default plugin build options
 # License:     GPLv3+
 # Copyright (c) 2020-2021 Alec Leamas
 # ~~~
@@ -19,7 +19,7 @@ set(_default_build_type "Release")
 if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
   set(_default_build_type "Debug")
 endif()
- 
+
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS
     "Setting build type to '${_default_build_type}' as none was specified."
@@ -81,5 +81,4 @@ if ("${_lc_target}" MATCHES "android*")
   endif ()
 else ()
   set(QT_ANDROID OFF)
-  add_definitions(-D__OCPN_USE_CURL__)
 endif ()
