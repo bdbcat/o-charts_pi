@@ -120,7 +120,6 @@ macro(late_init)
 
   if ( (NOT "${_lc_target}" MATCHES "debian;10;x86_64") AND
        (NOT "${_lc_target}" MATCHES "android*") )
-    target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
     add_definitions(-D__OCPN_USE_CURL__)
   endif()
 
@@ -149,6 +148,7 @@ macro(add_plugin_libraries)
   target_link_libraries(${PACKAGE_NAME} opencpn::glu)
 
   add_subdirectory("libs/wxcurl")
+  target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
 
   add_subdirectory("libs/oeserverd")
 
