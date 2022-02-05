@@ -187,7 +187,7 @@ public:
     std::string targetEdition;
     std::string resultEdition;
     std::string link;
-    std::string size;
+    std::string fileSize;
     std::string sha256;
     std::string linkKeys;
     std::string sha256Keys;
@@ -439,6 +439,9 @@ public:
     void OnShowExpiredToggle( wxCommandEvent& event );
     bool verifyInstallationDirectory(itemSlot *slot, itemChart *chart);
     void DeselectAllCharts();
+
+    void SetChartOverrideStatus( wxString status );
+    void ClearChartOverrideStatus();
 
     oesu_piScreenLog *m_shopLog;
 
