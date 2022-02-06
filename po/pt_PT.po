@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-06-19 09:51-0400\n"
-"PO-Revision-Date: 2021-06-20 00:50\n"
+"POT-Creation-Date: 2022-02-05 23:25-0500\n"
+"PO-Revision-Date: 2022-02-06 16:42\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Language: pt_PT\n"
@@ -17,90 +17,92 @@ msgstr ""
 "X-Crowdin-File: /plugins/o-charts_pi/po/o-charts_pi.pot\n"
 "X-Crowdin-File-ID: 358\n"
 
-#: src/o-charts_pi.h:224 src/o-charts_pi.cpp:1462
+#: src/o-charts_pi.h:224 src/o-charts_pi.cpp:1476
 msgid "o-charts_pi Preferences"
-msgstr ""
+msgstr "Preferências o-charts_pi"
 
 #: src/o-charts_pi.h:343
 msgid "o-charts_pi Information"
-msgstr ""
+msgstr "Informação o-charts_pi"
 
-#: src/o-charts_pi.cpp:342 src/o-charts_pi.cpp:4113 src/o-charts_pi.cpp:4176
-#: src/o-charts_pi.cpp:4342 src/o-charts_pi.cpp:5119 src/o-charts_pi.cpp:5182
-#: src/o-charts_pi.cpp:5367 src/ochartShop.cpp:350 src/ochartShop.cpp:500
-#: src/ochartShop.cpp:3953 src/ochartShop.cpp:4146 src/ochartShop.cpp:6837
-#: src/ochartShop.cpp:6866 src/ochartShop.cpp:6976 src/ochartShop.cpp:7001
-#: src/ochartShop.cpp:7287
+#: src/o-charts_pi.cpp:355 src/o-charts_pi.cpp:4126 src/o-charts_pi.cpp:4189
+#: src/o-charts_pi.cpp:4355 src/o-charts_pi.cpp:5132 src/o-charts_pi.cpp:5195
+#: src/o-charts_pi.cpp:5380 src/ochartShop.cpp:351 src/ochartShop.cpp:501
+#: src/ochartShop.cpp:4046 src/ochartShop.cpp:4239 src/ochartShop.cpp:7118
+#: src/ochartShop.cpp:7147 src/ochartShop.cpp:7257 src/ochartShop.cpp:7282
+#: src/ochartShop.cpp:7568
 msgid "Dialog"
-msgstr ""
+msgstr "Diálogo"
 
-#: src/o-charts_pi.cpp:677
+#: src/o-charts_pi.cpp:691
 msgid "The o-charts plugin replaces the oeSENC plugin chart display functions.\n"
-msgstr ""
+msgstr "O plugin o-charts substitui as funções de apresentação de cartas do plugin oeSENC.\n"
 
-#: src/o-charts_pi.cpp:678
+#: src/o-charts_pi.cpp:692
 msgid "It is recommended that you disable any existing oeSENC plugin, and restart OpenCPN.\n"
-msgstr ""
+msgstr "É recomendado que desative qualquer plugin oeSENC existente e reinicie o OpenCPN.\n"
 
-#: src/o-charts_pi.cpp:679 src/o-charts_pi.cpp:685 src/o-charts_pi.cpp:1106
-#: src/o-charts_pi.cpp:2084 src/o-charts_pi.cpp:2124 src/o-charts_pi.cpp:2807
-#: src/o-charts_pi.cpp:2933 src/o-charts_pi.cpp:3555 src/o-charts_pi.cpp:3611
-#: src/o-charts_pi.cpp:3696 src/o-charts_pi.cpp:3706 src/o-charts_pi.cpp:3717
-#: src/o-charts_pi.cpp:3723 src/o-charts_pi.cpp:3743 src/o-charts_pi.cpp:3758
-#: src/o-charts_pi.cpp:3764 src/o-charts_pi.cpp:4548 src/o-charts_pi.cpp:4656
-#: src/fpr.cpp:369 src/ochartShop.cpp:2277 src/ochartShop.cpp:2298
-#: src/ochartShop.cpp:2321 src/ochartShop.cpp:2335 src/ochartShop.cpp:2919
-#: src/ochartShop.cpp:2940 src/ochartShop.cpp:2961 src/ochartShop.cpp:2986
-#: src/ochartShop.cpp:3182 src/ochartShop.cpp:3358 src/ochartShop.cpp:4735
-#: src/ochartShop.cpp:4885 src/ochartShop.cpp:4982 src/ochartShop.cpp:5022
-#: src/ochartShop.cpp:5028 src/ochartShop.cpp:5166 src/ochartShop.cpp:5173
-#: src/ochartShop.cpp:5736 src/ochartShop.cpp:5787 src/ochartShop.cpp:5979
-#: src/ochartShop.cpp:5996 src/ochartShop.cpp:6054 src/ochartShop.cpp:6704
+#: src/o-charts_pi.cpp:693 src/o-charts_pi.cpp:699 src/o-charts_pi.cpp:1120
+#: src/o-charts_pi.cpp:2098 src/o-charts_pi.cpp:2138 src/o-charts_pi.cpp:2820
+#: src/o-charts_pi.cpp:2946 src/o-charts_pi.cpp:3568 src/o-charts_pi.cpp:3624
+#: src/o-charts_pi.cpp:3709 src/o-charts_pi.cpp:3719 src/o-charts_pi.cpp:3730
+#: src/o-charts_pi.cpp:3736 src/o-charts_pi.cpp:3756 src/o-charts_pi.cpp:3771
+#: src/o-charts_pi.cpp:3777 src/o-charts_pi.cpp:4561 src/o-charts_pi.cpp:4669
+#: src/fpr.cpp:369 src/ochartShop.cpp:2278 src/ochartShop.cpp:2299
+#: src/ochartShop.cpp:2322 src/ochartShop.cpp:2336 src/ochartShop.cpp:2969
+#: src/ochartShop.cpp:2997 src/ochartShop.cpp:3025 src/ochartShop.cpp:3050
+#: src/ochartShop.cpp:3246 src/ochartShop.cpp:3422 src/ochartShop.cpp:4854
+#: src/ochartShop.cpp:5006 src/ochartShop.cpp:5103 src/ochartShop.cpp:5148
+#: src/ochartShop.cpp:5154 src/ochartShop.cpp:5345 src/ochartShop.cpp:5390
+#: src/ochartShop.cpp:5426 src/ochartShop.cpp:5433 src/ochartShop.cpp:6002
+#: src/ochartShop.cpp:6053 src/ochartShop.cpp:6253 src/ochartShop.cpp:6270
+#: src/ochartShop.cpp:6329 src/ochartShop.cpp:6985
 msgid "o-charts_pi Message"
-msgstr ""
+msgstr "Mensagem o-charts_pi"
 
-#: src/o-charts_pi.cpp:683
+#: src/o-charts_pi.cpp:697
 msgid "The o-charts plugin replaces the oeRNC plugin chart display functions.\n"
-msgstr ""
+msgstr "O plugin o-charts substitui as funções de apresentação de cartas do plugin oeRNC.\n"
 
-#: src/o-charts_pi.cpp:684
+#: src/o-charts_pi.cpp:698
 msgid "It is recommended that you disable any existing oeRNC plugin, and restart OpenCPN.\n"
-msgstr ""
+msgstr "É recomendado que desative qualquer plugin oeRNC existente e reinicie o OpenCPN.\n"
 
-#: src/o-charts_pi.cpp:831 src/o-charts_pi.cpp:4974 src/o-charts_pi.cpp:4989
+#: src/o-charts_pi.cpp:845 src/o-charts_pi.cpp:4987 src/o-charts_pi.cpp:5002
 msgid "o-charts"
-msgstr ""
+msgstr "o-charts"
 
-#: src/o-charts_pi.cpp:837
+#: src/o-charts_pi.cpp:851
 msgid "PlugIn for OpenCPN o-charts charts"
-msgstr ""
+msgstr "PlugIn para cartas OpenCPN o-charts"
 
-#: src/o-charts_pi.cpp:843
+#: src/o-charts_pi.cpp:857
 msgid "PlugIn for OpenCPN\n"
 "Provides support of o-charts charts.\n\n"
-msgstr ""
+msgstr "PlugIn para OpenCPN\n"
+"Fornece suporte para cartas o-charts.\n\n"
 
-#: src/o-charts_pi.cpp:1100
+#: src/o-charts_pi.cpp:1114
 msgid "To obtain a User Key, you must generate a unique System Identifier File.\n"
-msgstr ""
+msgstr "Para obter uma Chave de utilizador, deve gerar um ficheiro com o Identificador Único do Sistema.\n"
 
-#: src/o-charts_pi.cpp:1101 src/o-charts_pi.cpp:3690 src/o-charts_pi.cpp:3738
+#: src/o-charts_pi.cpp:1115 src/o-charts_pi.cpp:3703 src/o-charts_pi.cpp:3751
 msgid "This file is also known as a\"fingerprint\" file.\n"
-msgstr ""
+msgstr "Este ficheiro é também conhecido por \"impressão digital\".\n"
 
-#: src/o-charts_pi.cpp:1102
+#: src/o-charts_pi.cpp:1116
 msgid "The fingerprint file contains information to uniquely identifiy this computer.\n\n"
-msgstr ""
+msgstr "O ficheiro \"impressão digital\" contém informação para identificar inequivocamente este computador.\n\n"
 
-#: src/o-charts_pi.cpp:1103
+#: src/o-charts_pi.cpp:1117
 msgid "After creating this file, you will need it to obtain your User Key at the o-charts.org shop.\n\n"
-msgstr ""
+msgstr "Depois de criar este ficheiro, tem que obter a sua Chave de utilizador na loja o-charts.org.\n\n"
 
-#: src/o-charts_pi.cpp:1104 src/o-charts_pi.cpp:3693 src/o-charts_pi.cpp:3741
+#: src/o-charts_pi.cpp:1118 src/o-charts_pi.cpp:3706 src/o-charts_pi.cpp:3754
 msgid "Proceed to create Fingerprint file?"
-msgstr ""
+msgstr "Prosseguir para criar um ficheiro Impressão Digital?"
 
-#: src/o-charts_pi.cpp:2075
+#: src/o-charts_pi.cpp:2089
 msgid "This chart cannot be loaded due to any of the following reasons:\n\n"
 "- You have made important hardware changes on your computer.\n"
 "- Your OS has been updated and your license has been suspended.\n"
@@ -108,880 +110,938 @@ msgid "This chart cannot be loaded due to any of the following reasons:\n\n"
 "- This chart set was prepared for a USB key dongle, but dongle is not detected.\n"
 "- There are corrupted files due to errors during download or unzip.\n\n"
 "Please contact info@o-charts.org if the problem persists.\n"
-msgstr ""
+msgstr "Esta carta não pode ser carregada por um dos seguintes motivos:\n\n"
+"- Fez alterações importantes no seu computador.\n"
+"- O seu Sistema Operativo foi atualizado e a licença foi suspensa..\n"
+"- Este conjunto de cartas foi preparado para outro sistema.\n"
+"- Este conjunto de cartas foi preparado para um dongle USB, mas o dongle não foi detetado.\n"
+"- Existem ficheiros corrompidos devido a erros durante a descarga ou unzip..\n\n"
+"Por favor contacte info@o-charts.org se o problema persistir.\n"
 
-#: src/o-charts_pi.cpp:2094
+#: src/o-charts_pi.cpp:2108
 msgid "This chart will soon no longer display due to time restricted license requirements."
-msgstr ""
+msgstr "Em breve esta carta deixará de ser apresentada devido a exigências de licença restritas no tempo."
 
-#: src/o-charts_pi.cpp:2095
+#: src/o-charts_pi.cpp:2109
 msgid "This chart will no longer display due to time restricted license requirements."
-msgstr ""
+msgstr "Esta carta deixará de ser apresentada devido a exigências de licença restritas no tempo."
 
-#: src/o-charts_pi.cpp:2096
+#: src/o-charts_pi.cpp:2110
 msgid "Days until expiration:"
-msgstr ""
+msgstr "Dias até expiração:"
 
-#: src/o-charts_pi.cpp:2097
+#: src/o-charts_pi.cpp:2111
 msgid "Grace days available after expiration:"
-msgstr ""
+msgstr "Dias de graça disponíveis após expiração:"
 
-#: src/o-charts_pi.cpp:2098
+#: src/o-charts_pi.cpp:2112
 msgid "Please re-license the charts at o-charts.org."
-msgstr ""
+msgstr "Por favor, re-licencie as cartas no o-charts.org."
 
-#: src/o-charts_pi.cpp:2099 src/ochartShop.cpp:4178
+#: src/o-charts_pi.cpp:2113 src/ochartShop.cpp:4271
 msgid "Expired"
-msgstr ""
+msgstr "Expirada"
 
-#: src/o-charts_pi.cpp:2803
+#: src/o-charts_pi.cpp:2816
 msgid "Cannot find the oexserverd utility at \n"
-msgstr ""
+msgstr "Não foi encontrada a ferramenta oexserverd em \n"
 
-#: src/o-charts_pi.cpp:2928
+#: src/o-charts_pi.cpp:2941
 msgid "oexserverd utility at \n"
-msgstr ""
+msgstr "ferramenta oexserverd em \n"
 
-#: src/o-charts_pi.cpp:2932
+#: src/o-charts_pi.cpp:2945
 msgid " could not be started.\n\n"
-msgstr ""
-
-#: src/o-charts_pi.cpp:3327
-msgid " o-charts Version: "
-msgstr ""
-
-#: src/o-charts_pi.cpp:3332
-msgid "Show EULA"
-msgstr ""
+msgstr " não pode ser iniciado.\n\n"
 
 #: src/o-charts_pi.cpp:3340
+msgid " o-charts Version: "
+msgstr " Versão do o-charts: "
+
+#: src/o-charts_pi.cpp:3345
+msgid "Show EULA"
+msgstr "Mostrar EULA"
+
+#: src/o-charts_pi.cpp:3353
 msgid "System Identification"
-msgstr ""
+msgstr "Identificação do sistema"
 
-#: src/o-charts_pi.cpp:3350
+#: src/o-charts_pi.cpp:3363
 msgid "Create System Identifier file..."
-msgstr ""
+msgstr "Criar ficheiro de identificação do sistema..."
 
-#: src/o-charts_pi.cpp:3357
+#: src/o-charts_pi.cpp:3370
 msgid "Create USB key dongle System ID file..."
-msgstr ""
+msgstr "Criar ficheiro com ID do sistema na chave dongle USB..."
 
-#: src/o-charts_pi.cpp:3365
+#: src/o-charts_pi.cpp:3378
 msgid "Show In Finder"
-msgstr ""
+msgstr "Mostrar na pesquisa"
 
-#: src/o-charts_pi.cpp:3367
+#: src/o-charts_pi.cpp:3380
 msgid "Show on disk"
-msgstr ""
+msgstr "Mostrar no disco"
 
-#: src/o-charts_pi.cpp:3380 src/o-charts_pi.cpp:3385 src/ochartShop.cpp:4308
-#: src/ochartShop.cpp:4510 src/ochartShop.cpp:4516 src/ochartShop.cpp:4763
-#: src/ochartShop.cpp:4774
+#: src/o-charts_pi.cpp:3393 src/o-charts_pi.cpp:3398 src/ochartShop.cpp:4401
+#: src/ochartShop.cpp:4603 src/ochartShop.cpp:4609 src/ochartShop.cpp:4882
+#: src/ochartShop.cpp:4893
 msgid "System Name:"
-msgstr ""
+msgstr "Nome do Sistema:"
 
-#: src/o-charts_pi.cpp:3382 src/ochartShop.cpp:1806 src/ochartShop.cpp:2980
-#: src/ochartShop.cpp:4512 src/ochartShop.cpp:6547 src/ochartShop.cpp:6553
-#: src/ochartShop.cpp:7045 src/ochartShop.cpp:7058
+#: src/o-charts_pi.cpp:3395 src/ochartShop.cpp:1807 src/ochartShop.cpp:3044
+#: src/ochartShop.cpp:4605 src/ochartShop.cpp:6821 src/ochartShop.cpp:6827
+#: src/ochartShop.cpp:7326 src/ochartShop.cpp:7339
 msgid "USB Key Dongle"
-msgstr ""
+msgstr "Dongle USB"
 
-#: src/o-charts_pi.cpp:3388
+#: src/o-charts_pi.cpp:3401
 msgid "Pending chart refresh"
-msgstr ""
+msgstr "Atualização da carta pendente"
 
-#: src/o-charts_pi.cpp:3403
+#: src/o-charts_pi.cpp:3416
 msgid "Reset System Name"
-msgstr ""
+msgstr "Reinicializar o Nome do Sistema"
 
-#: src/o-charts_pi.cpp:3413
+#: src/o-charts_pi.cpp:3426
 msgid "Reset o-charts credentials"
-msgstr ""
+msgstr "Reinicializar as credenciais o-charts"
 
-#: src/o-charts_pi.cpp:3429
+#: src/o-charts_pi.cpp:3442
 msgid "Enable full chart database rebuild after chart download"
-msgstr ""
+msgstr "Habilitar a reconstrução da base de dados completa após descarga de carta"
 
-#: src/o-charts_pi.cpp:3552
+#: src/o-charts_pi.cpp:3565
 msgid "System name RESET shall be performed only by request from o-charts technical support staff."
-msgstr ""
+msgstr "O RESET ao nome do sistema deve ser efetuado apenas a pedido de pessoal do apoio técnico do o-charts."
 
-#: src/o-charts_pi.cpp:3554
+#: src/o-charts_pi.cpp:3567
 msgid "Proceed to RESET?"
-msgstr ""
+msgstr "Continuar o RESET?"
 
-#: src/o-charts_pi.cpp:3611
+#: src/o-charts_pi.cpp:3624
 msgid "Credential Reset Successful"
-msgstr ""
+msgstr "Reinicialização das credenciais com sucesso"
 
-#: src/o-charts_pi.cpp:3689 src/o-charts_pi.cpp:3737
+#: src/o-charts_pi.cpp:3702 src/o-charts_pi.cpp:3750
 msgid "To obtain a chart set, you must generate a Unique System Identifier File.\n"
-msgstr ""
+msgstr "Para obter um conjunto de cartas deve gerar um ficheiro de identificação única do sistema.\n"
 
-#: src/o-charts_pi.cpp:3691
+#: src/o-charts_pi.cpp:3704
 msgid "The fingerprint file contains information related to a connected USB key dongle.\n\n"
-msgstr ""
+msgstr "O ficheiro de assinatura contêm informação relacionada com um dongle USB conectado.\n\n"
 
-#: src/o-charts_pi.cpp:3692 src/o-charts_pi.cpp:3740
+#: src/o-charts_pi.cpp:3705 src/o-charts_pi.cpp:3753
 msgid "After creating this file, you will need it to obtain your chart sets at the o-charts.org shop.\n\n"
-msgstr ""
+msgstr "Depois de criar este ficheiro, deverá usá-lo para obter o conjunto de cartas na loja o-charts.org.\n\n"
 
-#: src/o-charts_pi.cpp:3706
+#: src/o-charts_pi.cpp:3719
 msgid "ERROR Creating Fingerprint file\n"
 " USB key dongle not detected."
-msgstr ""
+msgstr "ERRO a criar o ficheiro de impressão digital\n"
+" Dongle USB não detetado."
 
-#: src/o-charts_pi.cpp:3711 src/o-charts_pi.cpp:3752
+#: src/o-charts_pi.cpp:3724 src/o-charts_pi.cpp:3765
 msgid "Fingerprint file created.\n"
-msgstr ""
+msgstr "Ficheiro impressão digital criado.\n"
 
-#: src/o-charts_pi.cpp:3715 src/o-charts_pi.cpp:3756
+#: src/o-charts_pi.cpp:3728 src/o-charts_pi.cpp:3769
 msgid "\n\n"
 " Fingerprint file is also copied to desktop."
-msgstr ""
+msgstr "\n\n"
+" Ficheiro impressão digital também foi copiado para o desktop."
 
-#: src/o-charts_pi.cpp:3723
+#: src/o-charts_pi.cpp:3736
 msgid "ERROR Creating Fingerprint file\n"
 " Check OpenCPN log file."
-msgstr ""
+msgstr "ERRO a criar o ficheiro de impressão digital\n"
+" Verifique o ficheiro de log do OpenCPN."
 
-#: src/o-charts_pi.cpp:3739
+#: src/o-charts_pi.cpp:3752
 msgid "The fingerprint file contains information to uniquely identify this computer.\n\n"
-msgstr ""
+msgstr "O ficheiro de impressão digital contem informação que identifica univocamente este computador.\n\n"
 
-#: src/o-charts_pi.cpp:4266 src/o-charts_pi.cpp:5273
+#: src/o-charts_pi.cpp:4279 src/o-charts_pi.cpp:5286
 msgid "Could not open o-charts_pi EULA: "
-msgstr ""
+msgstr "Não foi possível abrir o-charts_pi EULA: "
 
-#: src/o-charts_pi.cpp:4339 src/o-charts_pi.cpp:5364
+#: src/o-charts_pi.cpp:4352 src/o-charts_pi.cpp:5377
 msgid "o-charts PlugIn for OpenCPN"
-msgstr ""
+msgstr "Plugin o-charts para OpenCPN"
 
-#: src/o-charts_pi.cpp:4402 src/o-charts_pi.cpp:5427
+#: src/o-charts_pi.cpp:4415 src/o-charts_pi.cpp:5440
 msgid "License"
-msgstr ""
+msgstr "Licença"
 
-#: src/o-charts_pi.cpp:4427 src/o-charts_pi.cpp:5452
+#: src/o-charts_pi.cpp:4440 src/o-charts_pi.cpp:5465
 msgid "Accept"
-msgstr ""
+msgstr "Aceitar"
 
-#: src/o-charts_pi.cpp:4432 src/o-charts_pi.cpp:5457
+#: src/o-charts_pi.cpp:4445 src/o-charts_pi.cpp:5470
 msgid "Reject"
-msgstr ""
+msgstr "Rejeitar"
 
-#: src/o-charts_pi.cpp:4477
+#: src/o-charts_pi.cpp:4490
 msgid "Available Chart sets:"
-msgstr ""
+msgstr "Conjuntos de Cartas disponíveis:"
 
-#: src/o-charts_pi.cpp:4516 src/o-charts_pi.cpp:4586
+#: src/o-charts_pi.cpp:4529 src/o-charts_pi.cpp:4599
 msgid "Version"
-msgstr ""
+msgstr "Versão"
 
-#: src/o-charts_pi.cpp:4522 src/o-charts_pi.cpp:4590
+#: src/o-charts_pi.cpp:4535 src/o-charts_pi.cpp:4603
 msgid "Valid until"
-msgstr ""
+msgstr "Válido até"
 
-#: src/o-charts_pi.cpp:4530 src/o-charts_pi.cpp:4594
+#: src/o-charts_pi.cpp:4543 src/o-charts_pi.cpp:4607
 msgid "Status"
-msgstr ""
+msgstr "Estado"
 
-#: src/o-charts_pi.cpp:4566
+#: src/o-charts_pi.cpp:4579
 msgid "The following Chart sets are available : "
-msgstr ""
+msgstr "Os seguintes conjuntos de cartas estão disponíveis : "
 
-#: src/o-charts_pi.cpp:4582
+#: src/o-charts_pi.cpp:4595
 msgid "Chart set"
-msgstr ""
+msgstr "Conjunto de cartas"
 
-#: src/o-charts_pi.cpp:5021
+#: src/o-charts_pi.cpp:5034
 msgid "Add/Update o-charts chart sets"
-msgstr ""
+msgstr "Adicionar/Atualizar conjuntos de cartas o-charts"
 
-#: src/o-charts_pi.cpp:5026
+#: src/o-charts_pi.cpp:5039
 msgid "Visit o-charts.org Website"
-msgstr ""
+msgstr "Visite a página web o-charts.org"
 
-#: src/o-charts_pi.cpp:5027
+#: src/o-charts_pi.cpp:5040
 msgid "Here you may order new o-charts chart sets."
-msgstr ""
+msgstr "Aqui pode adquirir novos conjuntos de cartas o-charts"
 
-#: src/eSENCChart.cpp:7018
+#: src/eSENCChart.cpp:7313
 msgid "Sector angles are True Bearings from Seaward"
-msgstr ""
+msgstr "Ângulos de sector são direções verdadeiras a partir do mar"
 
-#: src/s52plib.cpp:2309 src/s52plib.cpp:2336 src/s52plib.cpp:2444
-#: src/s52plib.cpp:2630 src/s52plib.cpp:2646
+#: src/s52plib.cpp:2355 src/s52plib.cpp:2382 src/s52plib.cpp:2490
+#: src/s52plib.cpp:2676 src/s52plib.cpp:2692
 msgid "ChartTexts"
-msgstr ""
+msgstr "ChartTexts"
 
 #: src/validator.cpp:275
 msgid "No chartset selected.\n"
-msgstr ""
+msgstr "Nenhum conjunto de cartas selecionado.\n"
 
 #: src/validator.cpp:279
 msgid "Starting chartset validation.\n"
-msgstr ""
+msgstr "Inicio da validação do conjunto de cartas.\n"
 
 #: src/validator.cpp:281
 msgid "  Checking server installation."
-msgstr ""
+msgstr "  Verificando a instalação do servidor."
 
 #: src/validator.cpp:283
 msgid "  Server not installed."
-msgstr ""
+msgstr "  Servidor não instalado."
 
 #: src/validator.cpp:287
 msgid "  Server execute command: "
-msgstr ""
+msgstr "  Comando a executar no servidor: "
 
 #: src/validator.cpp:291
 msgid "  Server unavailable."
-msgstr ""
+msgstr "  Servidor Indisponível."
 
 #: src/validator.cpp:295
 msgid "  Server reports version:  "
-msgstr ""
+msgstr "  Versão reportada pelo servidor:  "
 
 #: src/validator.cpp:303
 msgid "  Checking dongle..."
-msgstr ""
+msgstr "  Verificando o dongle..."
 
 #: src/validator.cpp:310
 msgid "  dongle found: "
-msgstr ""
+msgstr "  dongle encontrado: "
 
 #: src/validator.cpp:313
 msgid "  dongle not found: "
-msgstr ""
+msgstr "  dongle não encontrado: "
 
 #: src/validator.cpp:325
 msgid "  Validating chartset assigned to dongle: "
-msgstr ""
+msgstr "  Validando conjunto de cartas atribuído ao dongle: "
 
 #: src/validator.cpp:331 src/validator.cpp:338
 msgid "  Validating chartset assigned to systemName: "
-msgstr ""
+msgstr "  Validando conjunto de cartas atribuído ao Nome de Sistema: "
 
 #: src/validator.cpp:343
 msgid "  Unable to validate unassigned chartset."
-msgstr ""
+msgstr "  Não foi possível validar o conjunto de cartas não atribuído."
 
 #: src/validator.cpp:350
 msgid "  Unable to find slot assignment."
-msgstr ""
+msgstr "  Não encontrada nenhuma atribuição."
 
 #: src/validator.cpp:358
 msgid "  Selected chartset is not installed for dongle."
-msgstr ""
+msgstr "  Conjunto de cartas selecionado não instalado para o dongle."
 
 #: src/validator.cpp:360
 msgid "  Selected chartset is not installed."
-msgstr ""
+msgstr "  Conjunto de cartas selecionado não instalado."
 
 #: src/validator.cpp:366
 msgid "  Installation directory: "
-msgstr ""
+msgstr "  Diretório de instalação: "
 
-#: src/validator.cpp:373
+#: src/validator.cpp:376
 msgid "  ProcessingChartList.XML"
-msgstr ""
+msgstr "  ProcessingChartList.XML"
 
-#: src/validator.cpp:377
+#: src/validator.cpp:380
 msgid "    Checking for ChartList.XML at: "
-msgstr ""
+msgstr "    Verificando ChartList.XML em: "
 
-#: src/validator.cpp:382
+#: src/validator.cpp:385
 msgid "    ChartList.XML not found in installation directory."
-msgstr ""
-
-#: src/validator.cpp:386
-msgid "    Loading ChartList.XML"
-msgstr ""
+msgstr "    ChartList.XML não encontrado no diretório de instalação."
 
 #: src/validator.cpp:389
+msgid "    Loading ChartList.XML"
+msgstr "    Carregando ChartList.XML"
+
+#: src/validator.cpp:392
 msgid "    Error loading ChartList.XML"
-msgstr ""
+msgstr "    Erro a carregar ChartList.XML"
 
-#: src/validator.cpp:397
+#: src/validator.cpp:400
 msgid "    Checking ChartList for presence of each chart referenced"
-msgstr ""
+msgstr "    Verificando a presença de cada carta referenciada no ChartList"
 
-#: src/validator.cpp:408
+#: src/validator.cpp:411
 msgid "    Referenced chart is not present: "
-msgstr ""
+msgstr "    Carta referenciada não presente: "
 
-#: src/validator.cpp:420
+#: src/validator.cpp:423
 msgid "    Checking all charts for reference in ChartList"
-msgstr ""
+msgstr "    Verificando todas as cartas para referência na ChartList"
 
-#: src/validator.cpp:442
+#: src/validator.cpp:445
 msgid "    Found chart file not referenced in ChartList: "
-msgstr ""
+msgstr "    Encontrado ficheiro de carta não referenciado na ChartList: "
 
-#: src/validator.cpp:453
+#: src/validator.cpp:456
 msgid "    ChartList.XML validates OK."
-msgstr ""
+msgstr "    ChartList.XML valida OK."
 
-#: src/validator.cpp:457
+#: src/validator.cpp:460
 msgid "  Checking chart key files."
-msgstr ""
-
-#: src/validator.cpp:468
-msgid "    Loading keyFile: "
-msgstr ""
+msgstr "  Verificando ficheiros de chaves de cartas."
 
 #: src/validator.cpp:471
+msgid "    Loading keyFile: "
+msgstr "    Carregando ficheiro chave: "
+
+#: src/validator.cpp:474
 msgid "    Error loading keyFile: "
-msgstr ""
+msgstr "    Erro a carregar ficheiro chave: "
 
-#: src/validator.cpp:496
+#: src/validator.cpp:499
 msgid "    Key not found for chart file: "
-msgstr ""
+msgstr "    Chave não encontrada para o ficheiro de carta: "
 
-#: src/validator.cpp:508
+#: src/validator.cpp:511
 msgid "    Keyfiles validate OK."
-msgstr ""
-
-#: src/validator.cpp:517
-msgid "  Starting chart test load."
-msgstr ""
+msgstr "    Arquivos-chave validam OK."
 
 #: src/validator.cpp:520
+msgid "  Starting chart test load."
+msgstr "  Iniciando teste de carregamento de carta."
+
+#: src/validator.cpp:523
 msgid "  Chart count: "
-msgstr ""
+msgstr "  Número de cartas: "
 
-#: src/validator.cpp:539
+#: src/validator.cpp:542
 msgid "  Chart load error "
-msgstr ""
+msgstr "  Erro de carga de cartas "
 
-#: src/validator.cpp:548
+#: src/validator.cpp:551
 msgid "  Chart test load OK."
-msgstr ""
+msgstr "  Teste de carga de cartas OK."
 
-#: src/validator.cpp:552
+#: src/validator.cpp:555
 msgid "Chartset installation validates OK."
-msgstr ""
+msgstr "Instalação do conjunto de cartas valida OK."
 
 #: src/fpr.cpp:369
 msgid "Administrator priveleges are required to copy fpr.\n"
 "  Please try again...."
-msgstr ""
+msgstr "Necessários privilégios de Administrador para copiar fpr.\n"
+" Tento novamente...."
 
 #: src/piScreenLog.cpp:71
 msgid "Close"
-msgstr ""
+msgstr "Fechar"
 
 #: src/chart.cpp:4343
 msgid "---<<< Warning:  Chart georef accuracy may be poor. >>>---"
-msgstr ""
+msgstr "---<<< Atenção:  A precisão da georreferenciação pode ser baixa. >>>---"
 
 #: src/chart.cpp:4426 src/chart.cpp:4490
 msgid "---<<< Warning:  Chart georef accuracy is poor. >>>---"
-msgstr ""
+msgstr "---<<< Atenção:  A precisão da georreferenciação é baixa >>>---"
 
-#: src/ochartShop.cpp:1751
+#: src/ochartShop.cpp:1752
 msgid "Fully Assigned."
-msgstr ""
+msgstr "Totalmente atribuído."
 
-#: src/ochartShop.cpp:1755
+#: src/ochartShop.cpp:1756
 msgid "Available."
-msgstr ""
+msgstr "Disponível."
 
-#: src/ochartShop.cpp:1759
+#: src/ochartShop.cpp:1760
 msgid "Installed, Up-to-date."
-msgstr ""
+msgstr "Instalada, atualizada."
 
-#: src/ochartShop.cpp:1763
+#: src/ochartShop.cpp:1764
 msgid "Installed, Update available."
-msgstr ""
+msgstr "Instalada, atualização disponível."
 
-#: src/ochartShop.cpp:1768
+#: src/ochartShop.cpp:1769
 msgid "Expired."
-msgstr ""
+msgstr "Expirada."
 
-#: src/ochartShop.cpp:1772
+#: src/ochartShop.cpp:1773
 msgid "Preparing your chartset."
-msgstr ""
+msgstr "A preparar o conjunto de cartas."
 
-#: src/ochartShop.cpp:1776
+#: src/ochartShop.cpp:1777
 msgid "Ready for download."
-msgstr ""
+msgstr "Pronto para descarregar."
 
-#: src/ochartShop.cpp:1780
+#: src/ochartShop.cpp:1781
 msgid "Please update Chart List."
-msgstr ""
+msgstr "Por favor atualize a lista de Cartas."
 
-#: src/ochartShop.cpp:1784
+#: src/ochartShop.cpp:1785
 msgid "Ready for Download Request."
-msgstr ""
+msgstr "Pronto para pedido de descarga."
 
-#: src/ochartShop.cpp:1808
+#: src/ochartShop.cpp:1809
 msgid "System Key"
-msgstr ""
+msgstr "Chave do sistema"
 
-#: src/ochartShop.cpp:2240
+#: src/ochartShop.cpp:2241
 msgid "o-charts API error code: "
-msgstr ""
+msgstr "Código de erro da API o-charts: "
 
-#: src/ochartShop.cpp:2247
+#: src/ochartShop.cpp:2248
 msgid "Production server in maintenance mode."
-msgstr ""
+msgstr "Servidor de produção no modo de manutenção."
 
-#: src/ochartShop.cpp:2250
+#: src/ochartShop.cpp:2251
 msgid "User does not exist."
-msgstr ""
+msgstr "Utilizador não existe."
 
-#: src/ochartShop.cpp:2253
+#: src/ochartShop.cpp:2254
 msgid "This o-charts plugin version is obsolete."
-msgstr ""
+msgstr "Esta versão do plugin o-charts está obsoleta."
 
-#: src/ochartShop.cpp:2255
+#: src/ochartShop.cpp:2256
 msgid "Please update your plugin."
-msgstr ""
+msgstr "Por favor, atualize o seu plugin."
 
-#: src/ochartShop.cpp:2257 src/ochartShop.cpp:2273 src/ochartShop.cpp:2293
+#: src/ochartShop.cpp:2258 src/ochartShop.cpp:2274 src/ochartShop.cpp:2294
 msgid "Operation cancelled"
-msgstr ""
+msgstr "Operação cancelada"
 
-#: src/ochartShop.cpp:2260
+#: src/ochartShop.cpp:2261
 msgid "Invalid user/email name or password."
-msgstr ""
+msgstr "Nome de utilizador/e-mail ou password inválidos."
 
-#: src/ochartShop.cpp:2263
+#: src/ochartShop.cpp:2264
 msgid "This System Name is disabled."
-msgstr ""
+msgstr "Este Nome do Sistema está desativado."
 
-#: src/ochartShop.cpp:2266
+#: src/ochartShop.cpp:2267
 msgid "This chart has already been assigned to this machine."
-msgstr ""
+msgstr "Esta carta já foi atribuída a esta máquina."
 
-#: src/ochartShop.cpp:2307
+#: src/ochartShop.cpp:2308
 msgid "void username"
-msgstr ""
+msgstr "Utilizador vazio"
 
-#: src/ochartShop.cpp:2309
+#: src/ochartShop.cpp:2310
 msgid "invalid username"
-msgstr ""
+msgstr "Utilizador inválido"
 
-#: src/ochartShop.cpp:2311
+#: src/ochartShop.cpp:2312
 msgid "void password"
-msgstr ""
+msgstr "Password vazia"
 
-#: src/ochartShop.cpp:2313
+#: src/ochartShop.cpp:2314
 msgid "wrong password"
-msgstr ""
+msgstr "Password incorreta"
 
-#: src/ochartShop.cpp:2315
+#: src/ochartShop.cpp:2316
 msgid "There is not a system name for this device yet."
-msgstr ""
+msgstr "Ainda não existe um nome de sistema para este dispositivo."
 
-#: src/ochartShop.cpp:2317
+#: src/ochartShop.cpp:2318
 msgid "Something has changed in the device assigned to this system name."
-msgstr ""
+msgstr "Algo mudou no dispositivo atribuído a este nome de sistema."
 
-#: src/ochartShop.cpp:2319
+#: src/ochartShop.cpp:2320
 msgid "There is already a system name for this device."
-msgstr ""
+msgstr "Já existe um nome de sistema para este dispositivo."
 
-#: src/ochartShop.cpp:2321
+#: src/ochartShop.cpp:2322
 msgid "o-Charts shop interface error"
-msgstr ""
+msgstr "Erro na ligação à loja o-Chart"
 
-#: src/ochartShop.cpp:2330
+#: src/ochartShop.cpp:2331
 msgid "internet communications error code: "
-msgstr ""
+msgstr "código de erro de comunicações internet: "
 
-#: src/ochartShop.cpp:2334
+#: src/ochartShop.cpp:2335
 msgid "Check your connection and try again."
-msgstr ""
+msgstr "Verifique a ligação e tente novamente."
 
-#: src/ochartShop.cpp:2907
+#: src/ochartShop.cpp:2957
 msgid "This chartset will be installed as a new subdirectory within the directory you select next.\n\n"
-msgstr ""
+msgstr "Este conjunto de cartas será instalado como um novo subdiretório dentro do diretório que você selecionar em seguida.\n\n"
 
-#: src/ochartShop.cpp:2908
+#: src/ochartShop.cpp:2958
 msgid "For example, if you select the directory \"Charts\", then a new directory will be created as:\n\n"
-msgstr ""
+msgstr "Por exemplo, se você selecionar o diretório \"Cartas\", então um novo diretório será criado como:\n\n"
 
-#: src/ochartShop.cpp:2915
+#: src/ochartShop.cpp:2965
 msgid "The charts will be installed in this newly created directory."
-msgstr ""
+msgstr "As cartas serão instalados neste diretório recém-criado."
 
-#: src/ochartShop.cpp:2920
+#: src/ochartShop.cpp:2970
 msgid "Proceed"
-msgstr ""
+msgstr "Continuar"
 
-#: src/ochartShop.cpp:2920 src/ochartShop.cpp:6911 src/ochartShop.cpp:7094
-#: src/ochartShop.cpp:7391 src/ochartShop.cpp:7460
+#: src/ochartShop.cpp:2970 src/ochartShop.cpp:7192 src/ochartShop.cpp:7375
+#: src/ochartShop.cpp:7672 src/ochartShop.cpp:7741
 msgid "Cancel"
-msgstr ""
+msgstr "Cancelar"
 
-#: src/ochartShop.cpp:2930
+#: src/ochartShop.cpp:2983
 msgid "This chartset will be re-installed in the following location.\n\n"
-msgstr ""
+msgstr "Este conjunto de cartas será reinstalado no seguinte local.\n\n"
 
-#: src/ochartShop.cpp:2935 src/ochartShop.cpp:2956
+#: src/ochartShop.cpp:2992 src/ochartShop.cpp:3020
 msgid "If you want to use that location, press \"Continue\" \n\n"
-msgstr ""
+msgstr "Se você deseja usar esse local, pressione \"Continuar\" \n\n"
 
-#: src/ochartShop.cpp:2936 src/ochartShop.cpp:2957
+#: src/ochartShop.cpp:2993 src/ochartShop.cpp:3021
 msgid "If you want to change the installation location now, press \"Change\" \n\n"
-msgstr ""
+msgstr "Se você deseja alterar o local de instalação agora, pressione \"Mudar\" \n\n"
 
-#: src/ochartShop.cpp:2941 src/ochartShop.cpp:2962
+#: src/ochartShop.cpp:2998 src/ochartShop.cpp:3026
 msgid "Continue"
-msgstr ""
+msgstr "Continuar"
 
-#: src/ochartShop.cpp:2941 src/ochartShop.cpp:2962
+#: src/ochartShop.cpp:2998 src/ochartShop.cpp:3026
 msgid "Change"
-msgstr ""
+msgstr "Mudar"
 
-#: src/ochartShop.cpp:2951
+#: src/ochartShop.cpp:3011
 msgid "This chartset will be installed in the following location.\n\n"
-msgstr ""
+msgstr "Este conjunto de cartas será instalado na seguinte localização.\n\n"
 
-#: src/ochartShop.cpp:2972
+#: src/ochartShop.cpp:3036
 msgid "This action will PERMANENTLY assign the chart:"
-msgstr ""
+msgstr "Esta ação irá atribuir a carta PERMANENTEMENTE:"
 
-#: src/ochartShop.cpp:2976
+#: src/ochartShop.cpp:3040
 msgid "to this systemName:"
-msgstr ""
+msgstr "a este Nome do Sistema:"
 
-#: src/ochartShop.cpp:2984
+#: src/ochartShop.cpp:3048
 msgid "Proceed?"
-msgstr ""
+msgstr "Prosseguir?"
 
-#: src/ochartShop.cpp:3169 src/ochartShop.cpp:4872
+#: src/ochartShop.cpp:3233 src/ochartShop.cpp:4993
 msgid "  {USB Dongle not found.}"
-msgstr ""
+msgstr "  {USB Dongle not found.}"
 
-#: src/ochartShop.cpp:3172 src/ochartShop.cpp:4875
+#: src/ochartShop.cpp:3236 src/ochartShop.cpp:4996
 msgid "  {fpr file not found.}"
-msgstr ""
+msgstr "  {fpr file not found.}"
 
-#: src/ochartShop.cpp:3175 src/ochartShop.cpp:4878
+#: src/ochartShop.cpp:3239 src/ochartShop.cpp:4999
 msgid "  {fpr file not created.}"
-msgstr ""
+msgstr "  {fpr file not created.}"
 
-#: src/ochartShop.cpp:3179 src/ochartShop.cpp:3355 src/ochartShop.cpp:4882
+#: src/ochartShop.cpp:3243 src/ochartShop.cpp:3419 src/ochartShop.cpp:5003
 msgid "ERROR Creating Fingerprint file"
-msgstr ""
+msgstr "ERRO a criar o ficheiro de impressão digital"
 
-#: src/ochartShop.cpp:3180 src/ochartShop.cpp:3356 src/ochartShop.cpp:4883
+#: src/ochartShop.cpp:3244 src/ochartShop.cpp:3420 src/ochartShop.cpp:5004
 msgid "Check OpenCPN log file."
-msgstr ""
+msgstr "Verifique o ficheiro log do OpenCPN."
 
-#: src/ochartShop.cpp:3222
+#: src/ochartShop.cpp:3286
 msgid "[USB Key Dongle not found.]"
-msgstr ""
+msgstr "[Dongle USB não encontrado.]"
 
-#: src/ochartShop.cpp:3226
+#: src/ochartShop.cpp:3290
 msgid "[fpr file not found.]"
-msgstr ""
+msgstr "[ficheiro fpr não encontrado.]"
 
-#: src/ochartShop.cpp:3230
+#: src/ochartShop.cpp:3294
 msgid "[fpr file not created.]"
-msgstr ""
+msgstr "[ficheiro fpr não criado.]"
 
-#: src/ochartShop.cpp:3266
+#: src/ochartShop.cpp:3330
 msgid "[fpr not created.]"
-msgstr ""
+msgstr "[ficheiro fpr não criado.]"
 
-#: src/ochartShop.cpp:3651 src/androidSupport.cpp:577
+#: src/ochartShop.cpp:3715 src/androidSupport.cpp:577
 msgid "Unzipping chart files..."
+msgstr "A descomprimir ficheiros de cartas..."
+
+#: src/ochartShop.cpp:3716
+msgid "Unpacking charts"
 msgstr ""
 
-#: src/ochartShop.cpp:3994 src/ochartShop.cpp:4037
+#: src/ochartShop.cpp:4031 src/ochartShop.cpp:4087 src/ochartShop.cpp:4130
 msgid "Installed Chart Edition:"
-msgstr ""
+msgstr "Edição da carta instalada:"
 
-#: src/ochartShop.cpp:4000 src/ochartShop.cpp:4043
+#: src/ochartShop.cpp:4033 src/ochartShop.cpp:4093 src/ochartShop.cpp:4136
 msgid "Current Chart Edition:"
-msgstr ""
+msgstr "Edição da carta atual:"
 
-#: src/ochartShop.cpp:4007 src/ochartShop.cpp:4049
+#: src/ochartShop.cpp:4035 src/ochartShop.cpp:4100 src/ochartShop.cpp:4142
 msgid "Status:"
-msgstr ""
+msgstr "Estado:"
 
-#: src/ochartShop.cpp:4016 src/ochartShop.cpp:4064
+#: src/ochartShop.cpp:4037 src/ochartShop.cpp:4109 src/ochartShop.cpp:4157
 msgid "Order Reference:"
-msgstr ""
+msgstr "Referência de encomenda:"
 
-#: src/ochartShop.cpp:4023 src/ochartShop.cpp:4071
+#: src/ochartShop.cpp:4039 src/ochartShop.cpp:4116 src/ochartShop.cpp:4164
 msgid "Updates available through:"
-msgstr ""
+msgstr "Atualizações disponíveis através de:"
 
-#: src/ochartShop.cpp:4083
+#: src/ochartShop.cpp:4176
 msgid "Assignments:"
-msgstr ""
+msgstr "Atribuições:"
 
-#: src/ochartShop.cpp:4091
+#: src/ochartShop.cpp:4184
 msgid "    None"
-msgstr ""
+msgstr "    Nada"
 
-#: src/ochartShop.cpp:4102
+#: src/ochartShop.cpp:4195
 #, c-format
 msgid "%d) "
-msgstr ""
+msgstr "%d) "
 
-#: src/ochartShop.cpp:4322 src/ochartShop.cpp:4353
+#: src/ochartShop.cpp:4415 src/ochartShop.cpp:4446
 msgid "Refresh Chart List"
-msgstr ""
+msgstr "Atualizar a lista das cartas"
 
-#: src/ochartShop.cpp:4327 src/ochartShop.cpp:4357
+#: src/ochartShop.cpp:4420 src/ochartShop.cpp:4450
 msgid "Show Expired Charts"
-msgstr ""
+msgstr "Mostrar Cartas Expiradas"
 
-#: src/ochartShop.cpp:4332 src/ochartShop.cpp:4346
+#: src/ochartShop.cpp:4425 src/ochartShop.cpp:4439
 msgid "Show Chart Info"
-msgstr ""
+msgstr "Mostrar informações das cartas"
 
-#: src/ochartShop.cpp:4371
+#: src/ochartShop.cpp:4464
 msgid "My Chart Sets"
-msgstr ""
+msgstr "Os meus conjuntos de cartas"
 
-#: src/ochartShop.cpp:4400
+#: src/ochartShop.cpp:4493
 msgid "Actions"
-msgstr ""
+msgstr "Ações"
 
-#: src/ochartShop.cpp:4411 src/ochartShop.cpp:6564
+#: src/ochartShop.cpp:4504 src/ochartShop.cpp:6838
 msgid "Reinstall Selection"
-msgstr ""
+msgstr "Reinstale a seleção"
 
-#: src/ochartShop.cpp:4414
+#: src/ochartShop.cpp:4507
 msgid "Cancel Operation"
-msgstr ""
+msgstr "Cancelar Operação"
 
-#: src/ochartShop.cpp:4418
+#: src/ochartShop.cpp:4511
 msgid "Validate Installed Chart Set"
-msgstr ""
+msgstr "Validar o Conjunto de Cartas Instalado"
 
-#: src/ochartShop.cpp:4426
+#: src/ochartShop.cpp:4519
 msgid "Status: Chart List Refresh required."
-msgstr ""
+msgstr "Estado: Necessária Atualização da Lista de Cartas."
 
-#: src/ochartShop.cpp:4434 src/ochartShop.cpp:4494
+#: src/ochartShop.cpp:4527 src/ochartShop.cpp:4587
 msgid "Last Error Message: "
-msgstr ""
+msgstr "Última Mensagem de Erro: "
 
-#: src/ochartShop.cpp:4503 src/ochartShop.cpp:4767 src/ochartShop.cpp:4778
-#: src/ochartShop.cpp:4786 src/ochartShop.cpp:5925 src/ochartShop.cpp:5934
-#: src/ochartShop.cpp:5952 src/ochartShop.cpp:5961 src/ochartShop.cpp:5991
-#: src/ochartShop.cpp:6009 src/ochartShop.cpp:6048
+#: src/ochartShop.cpp:4596 src/ochartShop.cpp:4886 src/ochartShop.cpp:4897
+#: src/ochartShop.cpp:4905 src/ochartShop.cpp:6199 src/ochartShop.cpp:6208
+#: src/ochartShop.cpp:6226 src/ochartShop.cpp:6235 src/ochartShop.cpp:6265
+#: src/ochartShop.cpp:6283 src/ochartShop.cpp:6322
 msgid "Status: Ready"
-msgstr ""
+msgstr "Estado: Pronto"
 
-#: src/ochartShop.cpp:4620
+#: src/ochartShop.cpp:4737
 msgid "Contacting o-charts server..."
-msgstr ""
+msgstr "A contactar servidor o-charts..."
 
-#: src/ochartShop.cpp:4631 src/ochartShop.cpp:4646
+#: src/ochartShop.cpp:4748 src/ochartShop.cpp:4763
 msgid "Status: Login error."
-msgstr ""
+msgstr "Estado: Erro de login."
 
-#: src/ochartShop.cpp:4650 src/ochartShop.cpp:4661
+#: src/ochartShop.cpp:4767 src/ochartShop.cpp:4780
 msgid "Status: Communications error."
-msgstr ""
+msgstr "Estado: Erro de Comunicações."
 
-#: src/ochartShop.cpp:4734
+#: src/ochartShop.cpp:4853
 msgid "This System Name has been disabled\n"
 "Please create another System Name"
-msgstr ""
+msgstr "Este Nome de Sistema foi desativado\n"
+"Por favor crie outro Nome de Sistema"
 
-#: src/ochartShop.cpp:4981
+#: src/ochartShop.cpp:5102
 msgid "The detected System Name has been disabled\n"
 "Please create another System Name"
-msgstr ""
+msgstr "O Nome de Sistema detetado foi desativado\n"
+"Por favor crie outro Nome de Sistema"
 
-#: src/ochartShop.cpp:5021
+#: src/ochartShop.cpp:5147
 msgid "Invalid System Name"
-msgstr ""
+msgstr "Nome de Sistema Inválido"
 
-#: src/ochartShop.cpp:5027
+#: src/ochartShop.cpp:5153
 msgid "This System Name has been disabled\n"
 "Please choose another SystemName"
+msgstr "Este Nome de Sistema foi desativado\n"
+"Por favor escolha outro Nome de Sistema"
+
+#: src/ochartShop.cpp:5336
+msgid "The o-charts cache directory contains the following unused charts:"
 msgstr ""
 
-#: src/ochartShop.cpp:5166
+#: src/ochartShop.cpp:5344
+msgid "Remove these unused charts now?"
+msgstr ""
+
+#: src/ochartShop.cpp:5382
+msgid "WARNING:\n"
+msgstr ""
+
+#: src/ochartShop.cpp:5383
+msgid "This chart set has been previously installed.\n"
+msgstr ""
+
+#: src/ochartShop.cpp:5384
+msgid "However, the chart files cannot be located.\n\n"
+msgstr ""
+
+#: src/ochartShop.cpp:5385
+msgid "The original installation directory is: "
+msgstr ""
+
+#: src/ochartShop.cpp:5388
+msgid "Please select the directory where these chart files may now be found."
+msgstr ""
+
+#: src/ochartShop.cpp:5426
 msgid "Validation error on zip file"
-msgstr ""
+msgstr "Erro na validação do ficheiro zip"
 
-#: src/ochartShop.cpp:5173
+#: src/ochartShop.cpp:5433
 msgid "Validation error on key file"
+msgstr "Erro na validação do ficheiro chave"
+
+#: src/ochartShop.cpp:5735
+msgid "Finalizing charts"
 msgstr ""
 
-#: src/ochartShop.cpp:5489
+#: src/ochartShop.cpp:5750
 msgid "Relocating chart files..."
-msgstr ""
+msgstr "Recolocando ficheiros de cartas..."
 
-#: src/ochartShop.cpp:5644
+#: src/ochartShop.cpp:5906
 msgid "Status: Validating download file..."
+msgstr "Status: Validando ficheiro de descarga..."
+
+#: src/ochartShop.cpp:5907
+msgid "Verifying download"
 msgstr ""
 
-#: src/ochartShop.cpp:5720
+#: src/ochartShop.cpp:5986
 msgid "Validate Log"
-msgstr ""
+msgstr "Validar Log"
 
-#: src/ochartShop.cpp:5736
+#: src/ochartShop.cpp:6002
 msgid "No chartset selected."
-msgstr ""
+msgstr "Nenhum conjunto de cartas selecionado."
 
-#: src/ochartShop.cpp:5758 src/ochartShop.cpp:5768
+#: src/ochartShop.cpp:6024 src/ochartShop.cpp:6034
 msgid "Choose chart install location."
-msgstr ""
+msgstr "Escolha a localização para instalação das cartas."
 
-#: src/ochartShop.cpp:5787
+#: src/ochartShop.cpp:6053
 msgid "Chart download cancelled."
-msgstr ""
+msgstr "Cancelada descarga de carta."
 
-#: src/ochartShop.cpp:5979
+#: src/ochartShop.cpp:6095 src/ochartShop.cpp:6643
+msgid "Downloading..."
+msgstr "Descaregando..."
+
+#: src/ochartShop.cpp:6253
 msgid "Proceed with chart installation."
-msgstr ""
+msgstr "Prosseguir com a instalação das cartas."
 
-#: src/ochartShop.cpp:5992
+#: src/ochartShop.cpp:6266
 msgid "Chart installation ERROR."
-msgstr ""
+msgstr "ERRO na instalação de cartas."
 
-#: src/ochartShop.cpp:6049
+#: src/ochartShop.cpp:6323
 msgid "Chart installation complete.\n"
-msgstr ""
+msgstr "Instalação da carta terminada.\n"
 
-#: src/ochartShop.cpp:6051
+#: src/ochartShop.cpp:6326
 msgid "Don't forget to rebuild chart database\n"
 " (See manual)"
+msgstr "Não esqueça de reconstruir a base de dados de cartas\n"
+" (Ver manual)"
+
+#: src/ochartShop.cpp:6362
+msgid "Installing..."
 msgstr ""
 
-#: src/ochartShop.cpp:6088
+#: src/ochartShop.cpp:6364
 msgid "Preparing installation..."
-msgstr ""
+msgstr "A preparar a instalação..."
 
-#: src/ochartShop.cpp:6160
+#: src/ochartShop.cpp:6436
 msgid "Status: Dongle FPR upload error"
-msgstr ""
+msgstr "Estado: Erro de carga de Dongle FPR"
 
-#: src/ochartShop.cpp:6172
+#: src/ochartShop.cpp:6448
 msgid "Status: System FPR upload error"
+msgstr "Estado: Erro de carga de sistema FPR"
+
+#: src/ochartShop.cpp:6606 src/ochartShop.cpp:6607
+msgid "Requesting License Keys"
 msgstr ""
 
-#: src/ochartShop.cpp:6330
-msgid "Requesting License Keys..."
-msgstr ""
-
-#: src/ochartShop.cpp:6361
+#: src/ochartShop.cpp:6638
 msgid "Status: Downloading..."
-msgstr ""
+msgstr "Estado: Descarregando..."
 
-#: src/ochartShop.cpp:6366
-msgid "Downloading..."
-msgstr ""
-
-#: src/ochartShop.cpp:6404 src/ochartShop.cpp:6745 src/ochartShop.cpp:7203
+#: src/ochartShop.cpp:6681 src/ochartShop.cpp:7026 src/ochartShop.cpp:7484
 msgid "Status: OK"
-msgstr ""
+msgstr "Estado: OK"
 
-#: src/ochartShop.cpp:6556 src/ochartShop.cpp:6588 src/ochartShop.cpp:6592
+#: src/ochartShop.cpp:6830 src/ochartShop.cpp:6869 src/ochartShop.cpp:6873
 msgid "Download Selected Chart"
-msgstr ""
+msgstr "Descarregar a carta selecionada"
 
-#: src/ochartShop.cpp:6557
+#: src/ochartShop.cpp:6831
 msgid "Install Selected Chart for "
-msgstr ""
+msgstr "Instalar cartas selecionadas para "
 
-#: src/ochartShop.cpp:6558
+#: src/ochartShop.cpp:6832
 msgid "Reinstall Selected Chart for "
-msgstr ""
+msgstr "Reinstalar a Carta selecionada para "
 
-#: src/ochartShop.cpp:6559
+#: src/ochartShop.cpp:6833
 msgid "Update Selected Chart for "
-msgstr ""
+msgstr "Atualizar a Carta selecionada para "
 
-#: src/ochartShop.cpp:6562
+#: src/ochartShop.cpp:6836
 msgid "Download Selection"
-msgstr ""
+msgstr "Descarregar seleção"
 
-#: src/ochartShop.cpp:6563
+#: src/ochartShop.cpp:6837
 msgid "Install Selection"
-msgstr ""
+msgstr "Instalar seleção"
 
-#: src/ochartShop.cpp:6565
+#: src/ochartShop.cpp:6839
 msgid "Update Selection"
-msgstr ""
+msgstr "Atualizar seleção"
 
-#: src/ochartShop.cpp:6685 src/ochartShop.cpp:6897
+#: src/ochartShop.cpp:6966 src/ochartShop.cpp:7178
 msgid "A valid System Name is 3 to 15 characters in length."
-msgstr ""
+msgstr "Um nome de sistema válido tem de 3 a 15 caracteres."
 
-#: src/ochartShop.cpp:6695
+#: src/ochartShop.cpp:6976
 msgid "No symbols or spaces are allowed in System Name."
-msgstr ""
+msgstr "Não são permitidos símbolos ou espaços no Nome do Sistema."
 
-#: src/ochartShop.cpp:6794 src/ochartShop.cpp:7249
+#: src/ochartShop.cpp:7075 src/ochartShop.cpp:7530
 msgid "Downloaded:  "
-msgstr ""
+msgstr "Descarregado:  "
 
-#: src/ochartShop.cpp:6869
+#: src/ochartShop.cpp:7150
 msgid "New OpenCPN o-charts System Name"
-msgstr ""
+msgstr "Novo nome de sistema OpenCPN o-charts"
 
-#: src/ochartShop.cpp:6886
+#: src/ochartShop.cpp:7167
 msgid "Enter New System Name"
-msgstr ""
+msgstr "Introduza o novo nome de sistema"
 
-#: src/ochartShop.cpp:6903
+#: src/ochartShop.cpp:7184
 msgid "No symbols or spaces are allowed."
-msgstr ""
+msgstr "Símbolos ou espaços não permitidos."
 
-#: src/ochartShop.cpp:6916 src/ochartShop.cpp:7097 src/ochartShop.cpp:7394
-#: src/ochartShop.cpp:7463
+#: src/ochartShop.cpp:7197 src/ochartShop.cpp:7378 src/ochartShop.cpp:7675
+#: src/ochartShop.cpp:7744
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
-#: src/ochartShop.cpp:7004 src/ochartShop.h:560 src/ochartShop.h:568
+#: src/ochartShop.cpp:7285 src/ochartShop.h:566 src/ochartShop.h:574
 msgid "Select OpenCPN/o-charts System Name"
-msgstr ""
+msgstr "Selecione o Nome de Sistema OpenCPN/o-charts"
 
-#: src/ochartShop.cpp:7025
+#: src/ochartShop.cpp:7306
 msgid "Select your System Name from the following list, or "
-msgstr ""
+msgstr "Selecione o Nome de Sistema da seguinte lista, ou "
 
-#: src/ochartShop.cpp:7030
+#: src/ochartShop.cpp:7311
 msgid " create a new System Name for this computer."
-msgstr ""
+msgstr " crie um novo nome de sistema para este computador."
 
-#: src/ochartShop.cpp:7061
+#: src/ochartShop.cpp:7342
 msgid "new..."
-msgstr ""
+msgstr "nova..."
 
-#: src/ochartShop.cpp:7083
+#: src/ochartShop.cpp:7364
 msgid "System Names"
-msgstr ""
+msgstr "Nomes de Sistema"
 
-#: src/ochartShop.cpp:7357 src/ochartShop.cpp:7406
+#: src/ochartShop.cpp:7638 src/ochartShop.cpp:7687
 msgid "Login to o-charts.org"
-msgstr ""
+msgstr "Login no o-charts.org"
 
-#: src/ochartShop.cpp:7374
+#: src/ochartShop.cpp:7655
 msgid "email address:"
-msgstr ""
+msgstr "endereço de e-mail:"
 
-#: src/ochartShop.cpp:7381
+#: src/ochartShop.cpp:7662
 msgid "Password:"
-msgstr ""
+msgstr "Password:"
 
-#: src/ochartShop.cpp:7439
+#: src/ochartShop.cpp:7720
 msgid "email:"
-msgstr ""
+msgstr "email:"
 
-#: src/ochartShop.cpp:7445
+#: src/ochartShop.cpp:7726
 msgid "pass:"
-msgstr ""
+msgstr "pass:"
 
-#: src/ochartShop.h:523 src/ochartShop.h:531
+#: src/ochartShop.h:529 src/ochartShop.h:537
 msgid "OpenCPN o-charts System Name"
-msgstr ""
+msgstr "Nome de sistema OpenCPN o-charts"
 
-#: src/ochartShop.h:634 src/ochartShop.h:642
+#: src/ochartShop.h:640 src/ochartShop.h:648
 msgid "OpenCPN Login"
-msgstr ""
+msgstr "Login do OpenCpn"
 
