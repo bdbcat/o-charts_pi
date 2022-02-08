@@ -720,7 +720,8 @@ void wxCurlHTTPNoZIP::SetCurlHandleToDefaults(const wxString& relativeURL)
 
 bool wxCurlHTTPNoZIP::Post(const char* buffer, size_t size, const wxString& szRemoteFile /*= wxEmptyString*/)
 {
-    wxMemoryInputStream inStream(buffer, size);
+    size_t bufSize = strlen(buffer);
+    wxMemoryInputStream inStream(buffer, bufSize);
 
     return Post(inStream, szRemoteFile);
 }
@@ -2362,8 +2363,8 @@ int doLogin( wxWindow *parent )
     wxString pass = login.m_PasswordCtl->GetValue().Trim( true).Trim( false );
 
     // There may be special characters in password.  Encode them correctly for URL inclusion.
-    std::string pass_encode = urlEncode(std::string(pass.mb_str()));
-    pass = wxString( pass_encode.c_str() );
+    //std::string pass_encode = urlEncode(std::string(pass.mb_str()));
+    //pass = wxString( pass_encode.c_str() );
 
     wxString url = userURL;
     if(g_admin)
@@ -2376,7 +2377,7 @@ int doLogin( wxWindow *parent )
     loginParms += _T("&username=") + g_loginUser;
     loginParms += _T("&password=") + pass;
     if(g_debugShop.Len())
-        loginParms += _T("&debug=") + g_debugShop;
+      loginParms += _T("&debug=") + g_debugShop;
     loginParms += _T("&version=") + g_systemOS + g_versionString;
 
     int iResponseCode =0;
@@ -2385,7 +2386,8 @@ int doLogin( wxWindow *parent )
 #ifdef __OCPN_USE_CURL__
     wxCurlHTTPNoZIP post;
     post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
-    res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
+    int n = loginParms.Length();
+    res = post.Post( loginParms, loginParms.Len(), url );
 
     // get the response code of the server
     post.GetInfo(CURLINFO_RESPONSE_CODE, &iResponseCode);
