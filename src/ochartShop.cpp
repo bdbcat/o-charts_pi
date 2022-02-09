@@ -4695,6 +4695,16 @@ void shopPanel::ClearChartOverrideStatus()
 }
 
 
+wxString shopPanel::GetDongleName()
+{
+  g_dongleSN = GetDongleSN();
+  char sName[20];
+  snprintf(sName, 19, "sgl%08X", g_dongleSN);
+
+  return wxString(sName);
+}
+
+
 void shopPanel::OnButtonUpdate( wxCommandEvent& event )
 {
     m_shopLog->ClearLog();
@@ -4718,12 +4728,8 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     bool bDongleFound = false;
     g_dongleName.Clear();
     if(IsDongleAvailable()){
-        g_dongleSN = GetDongleSN();
-        char sName[20];
-        snprintf(sName, 19, "sgl%08X", g_dongleSN);
-
-        g_dongleName = wxString(sName);
-        bDongleFound = true;
+      g_dongleName = GetDongleName();
+      bDongleFound = true;
     }
 
     RefreshSystemName();
@@ -4816,7 +4822,6 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     if(!g_systemName.Len() && !g_dongleName.Len())
          bNeedSystemName = true;
 
-
     if(bNeedSystemName ){
         // Check shop to see if systemName is already known for this system
         int nGSN = GetShopNameFromFPR();
@@ -4829,7 +4834,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
                     if(!bDongleFound)                               // no dongle, so only a systemName is expected
                         g_systemName = doGetNewSystemName( );
                     else
-                        GetNewSystemName(false);                    // only show new possiblity, and dongle if present
+                        g_dongleName = GetDongleName();             // predetermined
                 }
                 else if(nGSN == 83){                                // system name exists, but is disabled.
                     g_systemName.Clear();
@@ -4837,7 +4842,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
                     return;                                         // Full message sent, no further action needed
                 }
                 else
-                    GetNewSystemName();
+                    g_systemName = doGetNewSystemName( );
             }
             else
                 bNeedSystemName = false;
@@ -5131,6 +5136,7 @@ int shopPanel::GetShopNameFromFPR()
 
 }
 
+#if 0
 bool shopPanel::GetNewSystemName( bool bShowAll )
 {
         bool sname_ok = false;
@@ -5162,7 +5168,7 @@ bool shopPanel::GetNewSystemName( bool bShowAll )
 
     return sname_ok;
 }
-
+#endif
 
 int shopPanel::ComputeUpdates(itemChart *chart, itemSlot *slot)
 {
@@ -6384,7 +6390,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
 
 
     // If this is an update, or re-install, then decide what systemName (or dongleName) is to be used
-    // Otherwise, alwys prefer the dongle, if present
+    // Otherwise, always prefer the dongle, if present
 
     bool bUseDongle = false;
     wxString selectedSystemName = g_systemName;
@@ -6404,8 +6410,8 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
         }
         else{
             if(!g_systemName.Length()){
-                if(GetNewSystemName())
-                    RefreshSystemName();
+                g_systemName = doGetNewSystemName();
+                RefreshSystemName();
             }
 
             if(!g_systemName.Length()){
@@ -6882,6 +6888,7 @@ void shopPanel::UpdateActionControls()
 }
 
 
+#if 0
 bool shopPanel::doSystemNameWizard( bool bShowAll )
 {
     // Make sure the system name array is current
@@ -6935,6 +6942,7 @@ bool shopPanel::doSystemNameWizard( bool bShowAll )
 
     return true;
 }
+#endif
 
 wxString shopPanel::doGetNewSystemName( )
 {
@@ -7230,7 +7238,7 @@ END_EVENT_TABLE()
  }
 
 
-
+#if 0
  IMPLEMENT_DYNAMIC_CLASS( oeUniSystemNameSelector, wxDialog )
  BEGIN_EVENT_TABLE( oeUniSystemNameSelector, wxDialog )
     EVT_BUTTON( ID_GETIP_CANCEL, oeUniSystemNameSelector::OnCancelClick )
@@ -7401,6 +7409,7 @@ wxString oeUniSystemNameSelector::getRBSelection(  )
      EndModal(0);
  }
 
+#endif
 
  //------------------------------------------------------------------
 

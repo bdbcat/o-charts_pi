@@ -442,6 +442,7 @@ public:
 
     void SetChartOverrideStatus( wxString status );
     void ClearChartOverrideStatus();
+    wxString GetDongleName();
 
     oesu_piScreenLog *m_shopLog;
 
@@ -474,7 +475,7 @@ public:
     void UpdateChartList();
     void OnGetNewSystemName( wxCommandEvent& event );
     void OnChangeSystemName( wxCommandEvent& event );
-    bool doSystemNameWizard( bool bshowAll);
+    //bool doSystemNameWizard( bool bshowAll);
     wxString doGetNewSystemName( );
     void UpdateActionControls();
     void setStatusText( const wxString &text ){ m_staticTextStatus->SetLabel( text );  m_staticTextStatus->Refresh(); }
@@ -482,7 +483,7 @@ public:
     void setStatusTextProgress( const wxString &text ){ m_staticTextStatus/*m_staticTextStatusProgress*/->SetLabel( text );  /*m_staticTextStatusProgress->Refresh();*/ }
     void MakeChartVisible(oeXChartPanel *chart);
     int ComputeUpdates(itemChart *chart, itemSlot *slot);
-    bool GetNewSystemName( bool bShowAll = true);
+    //bool GetNewSystemName( bool bShowAll = true);
     int processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *task);
     bool validateSHA256(std::string fileName, std::string shaSum);
     int GetShopNameFromFPR();
@@ -554,7 +555,7 @@ public:
 
 };
 
-
+#if 0
 class oeUniSystemNameSelector: public wxDialog
 {
     DECLARE_DYNAMIC_CLASS( oeUniSystemNameSelector )
@@ -589,7 +590,7 @@ public:
     wxRadioBox*   m_rbSystemNames;
 
 };
-
+#endif
 
 class InProgressIndicator: public wxGauge
 {
