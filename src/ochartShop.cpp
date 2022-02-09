@@ -2386,7 +2386,6 @@ int doLogin( wxWindow *parent )
 #ifdef __OCPN_USE_CURL__
     wxCurlHTTPNoZIP post;
     post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
-    int n = loginParms.Length();
     res = post.Post( loginParms, loginParms.Len(), url );
 
     // get the response code of the server
@@ -4833,10 +4832,9 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
                         GetNewSystemName(false);                    // only show new possiblity, and dongle if present
                 }
                 else if(nGSN == 83){                                // system name exists, but is disabled.
-                    if(!bDongleFound)                               // no dongle, so only a systemName is expected
-                        g_systemName = doGetNewSystemName( );
-                    else
-                        GetNewSystemName(false);                    // only show new possiblity, and dongle if present
+                    g_systemName.Clear();
+                    g_dongleName.Clear();
+                    return;                                         // Full message sent, no further action needed
                 }
                 else
                     GetNewSystemName();
@@ -5101,7 +5099,7 @@ int shopPanel::GetShopNameFromFPR()
         if(queryResult == _T("1")){
             // is the detected systemName disabled?
             if(g_systemNameDisabledArray.Index(tsystemName) != wxNOT_FOUND){
-                wxString msg = _("The detected System Name has been disabled\nPlease create another System Name");
+                wxString msg = _("The detected System Name has been disabled\nPlease contact o-charts to enable it again.");
                 ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
                 return 83;
             }
