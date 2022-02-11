@@ -273,7 +273,7 @@ wxString getPassEncode( wxString passClearText ){
 #ifndef __OCPN__ANDROID__
 
     wxString cmd = g_sencutil_bin;
-    cmd += _T(" -p ");                  //
+    cmd += _T(" -w ");
     cmd += stringHex;
 
     wxArrayString ret_array;
