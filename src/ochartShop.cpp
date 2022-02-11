@@ -4786,7 +4786,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     RefreshSystemName();
 
     //  Do we need an initial login to get the persistent key?
-    if(1/*g_loginKey.Len() == 0*/){
+    if(g_loginKey.Len() == 0){
         if(doLogin( g_shopPanel ) != 1)
             return;
         saveShopConfig();
