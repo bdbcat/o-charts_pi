@@ -256,6 +256,45 @@ std::string urlEncode(std::string str){
     return new_str;
  }
 
+wxString getPassEncode( wxString passClearText ){
+
+  wxCharBuffer buf = passClearText.ToUTF8();
+  size_t count = strlen(buf);
+
+  std::string stringHex;
+  for (size_t i=0 ; i < count; i++){
+    unsigned char c = buf[i];
+    wxString sc;
+    sc.Printf(_T("%02X"), c);
+    stringHex += sc;
+  }
+
+  wxString encodedPW;
+#ifndef __OCPN__ANDROID__
+
+    wxString cmd = g_sencutil_bin;
+    cmd += _T(" -p ");                  //
+    cmd += stringHex;
+
+    wxArrayString ret_array;
+    wxExecute(cmd, ret_array, ret_array );
+
+    for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
+        wxString line = ret_array[i];
+        if(line.Length() > 2){
+            encodedPW = line;
+            break;
+        }
+    }
+#else
+    encodedPW = _T("???");
+#endif
+
+    return encodedPW;
+}
+
+
+
 
 // Private class implementations
 class MessageHardBreakWrapper : public wxTextWrapper
@@ -2362,9 +2401,16 @@ int doLogin( wxWindow *parent )
     g_loginUser = login.m_UserNameCtl->GetValue().Trim( true).Trim( false );
     wxString pass = login.m_PasswordCtl->GetValue().Trim( true).Trim( false );
 
+    wxString taskID;
+#ifdef __OCPN__ANDROID__
     // There may be special characters in password.  Encode them correctly for URL inclusion.
-    //std::string pass_encode = urlEncode(std::string(pass.mb_str()));
-    //pass = wxString( pass_encode.c_str() );
+    std::string pass_encode = urlEncode(std::string(pass.mb_str()));
+    pass = wxString( pass_encode.c_str() );
+    taskID = "login";
+#else
+    pass = getPassEncode(pass);
+    taskID = "login2";
+#endif
 
     wxString url = userURL;
     if(g_admin)
@@ -2373,7 +2419,8 @@ int doLogin( wxWindow *parent )
     url +=_T("?fc=module&module=occharts&controller=apioesu");
 
     wxString loginParms;
-    loginParms += _T("taskId=login");
+    loginParms += _T("taskId=");
+    loginParms += taskID;
     loginParms += _T("&username=") + g_loginUser;
     loginParms += _T("&password=") + pass;
     if(g_debugShop.Len())
@@ -4377,6 +4424,10 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     m_validator = NULL;
     m_bconnected = false;
 
+//  wxString pass = "UEL5j7GLVjeuensLjLbhIt0z5G954CKIXquhq3KkKsM96d92EsT2cGwFABCabc&$ç¿?¡!123";
+//  int l = pass.Length();
+//  passEncode( pass );
+
     loadShopConfig();
 
 #ifdef __OCPN_USE_CURL__
@@ -4735,7 +4786,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     RefreshSystemName();
 
     //  Do we need an initial login to get the persistent key?
-    if(g_loginKey.Len() == 0){
+    if(1/*g_loginKey.Len() == 0*/){
         if(doLogin( g_shopPanel ) != 1)
             return;
         saveShopConfig();
