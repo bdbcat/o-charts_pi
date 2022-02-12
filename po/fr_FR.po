@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-02-08 22:21-0500\n"
-"PO-Revision-Date: 2022-02-11 02:24\n"
+"PO-Revision-Date: 2022-02-12 03:28\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -422,7 +422,7 @@ msgstr "    La carte n'est pas présente : "
 
 #: src/validator.cpp:423
 msgid "    Checking all charts for reference in ChartList"
-msgstr "    Vérification de toutes les cartes dans la liste du jeu de cartes"
+msgstr "    Vérification des cartes dans la liste du jeu de cartes"
 
 #: src/validator.cpp:445
 msgid "    Found chart file not referenced in ChartList: "
@@ -523,7 +523,7 @@ msgstr "Veuillez mettre à jour liste des cartes."
 
 #: src/ochartShop.cpp:1786
 msgid "Ready for Download Request."
-msgstr "Prêt pour le requête de téléchargement."
+msgstr "Prêt pour la requête de téléchargement."
 
 #: src/ochartShop.cpp:1810
 msgid "System Key"
@@ -587,7 +587,7 @@ msgstr "Il n'y a pas de nom système pour ce système"
 
 #: src/ochartShop.cpp:2319
 msgid "Something has changed in the device assigned to this system name."
-msgstr "Quelque chose a changé dans la machine assigné à ce nom de système."
+msgstr "Quelque chose a changé dans la machine assignée à ce nom de système."
 
 #: src/ochartShop.cpp:2321
 msgid "There is already a system name for this device."
@@ -741,11 +741,11 @@ msgstr "%d) "
 
 #: src/ochartShop.cpp:4416 src/ochartShop.cpp:4447
 msgid "Refresh Chart List"
-msgstr "Actualiser la liste de cartes"
+msgstr "Liste des cartes : Actualiser"
 
 #: src/ochartShop.cpp:4421 src/ochartShop.cpp:4451
 msgid "Show Expired Charts"
-msgstr "Afficher les cartes expirées"
+msgstr "Cartes expirées : Afficher"
 
 #: src/ochartShop.cpp:4426 src/ochartShop.cpp:4440
 msgid "Show Chart Info"
@@ -769,11 +769,11 @@ msgstr "Annuler l'opération"
 
 #: src/ochartShop.cpp:4512
 msgid "Validate Installed Chart Set"
-msgstr "Evaluer l'installation de ce jeu de cartes"
+msgstr "Ces cartes : Evaluer l'installation"
 
 #: src/ochartShop.cpp:4520
 msgid "Status: Chart List Refresh required."
-msgstr "Statut : Mise à jour requise de la liste des packs de cartes."
+msgstr "Statut : Mettre à jour la liste des cartes."
 
 #: src/ochartShop.cpp:4528 src/ochartShop.cpp:4588
 msgid "Last Error Message: "
@@ -834,11 +834,11 @@ msgstr "Attention :\n"
 
 #: src/ochartShop.cpp:5389
 msgid "This chart set has been previously installed.\n"
-msgstr "Ce jeux de cartes a déjà été installé.\n"
+msgstr "Ce jeux de cartes est installé.\n"
 
 #: src/ochartShop.cpp:5390
 msgid "However, the chart files cannot be located.\n\n"
-msgstr "Cependant, les fichiers des   cartes ne peuvent pas être localisés. \n\n"
+msgstr "Cependant, les fichiers des  cartes ne peuvent pas être localisés. \n\n"
 
 #: src/ochartShop.cpp:5391
 msgid "The original installation directory is: "
@@ -846,7 +846,7 @@ msgstr "Le dossier initial d'installation est :"
 
 #: src/ochartShop.cpp:5394
 msgid "Please select the directory where these chart files may now be found."
-msgstr "SvP : Sélectionner le dossier dans lequel les fhichiers des cartes peuvent être trouvés."
+msgstr "SvP : Sélectionner le dossier dans lequel les fichiers des cartes peuvent être trouvés."
 
 #: src/ochartShop.cpp:5432
 msgid "Validation error on zip file"
@@ -882,7 +882,7 @@ msgstr "Aucun jeu de cartes sélectionné"
 
 #: src/ochartShop.cpp:6030 src/ochartShop.cpp:6040
 msgid "Choose chart install location."
-msgstr "Choisissez le lieu de stockage des cartes."
+msgstr "Stockage des cartes : Choisissez le lieu."
 
 #: src/ochartShop.cpp:6059
 msgid "Chart download cancelled."
@@ -894,7 +894,7 @@ msgstr "Installation en cours ..."
 
 #: src/ochartShop.cpp:6259
 msgid "Proceed with chart installation."
-msgstr "Procéder à l'annulation"
+msgstr "Continuer l'installation"
 
 #: src/ochartShop.cpp:6272
 msgid "Chart installation ERROR."
@@ -924,7 +924,7 @@ msgstr "Statut : Erreur de chargement du fpr du Dongle USB"
 
 #: src/ochartShop.cpp:6454
 msgid "Status: System FPR upload error"
-msgstr "Statut: Erreur de chargement du fpr du système"
+msgstr "Statut : Erreur de chargement du fpr du système"
 
 #: src/ochartShop.cpp:6612 src/ochartShop.cpp:6613
 msgid "Requesting License Keys"
@@ -940,15 +940,15 @@ msgstr "Statut : Ok"
 
 #: src/ochartShop.cpp:6836 src/ochartShop.cpp:6875 src/ochartShop.cpp:6879
 msgid "Download Selected Chart"
-msgstr "Télécharger le jeu de cartes sélectionné"
+msgstr "Jeu de cartes choisi : Télécharger"
 
 #: src/ochartShop.cpp:6837
 msgid "Install Selected Chart for "
-msgstr "Installer le jeu de cartes sélectionné "
+msgstr "Jeu de cartes choisi : Installer"
 
 #: src/ochartShop.cpp:6838
 msgid "Reinstall Selected Chart for "
-msgstr "Ré-Installer le jeu de cartes sélectionné "
+msgstr "jeu de cartes coisi : Ré-Installer"
 
 #: src/ochartShop.cpp:6839
 msgid "Update Selected Chart for "
@@ -1033,7 +1033,7 @@ msgstr "email :"
 
 #: src/ochartShop.cpp:7735
 msgid "pass:"
-msgstr "pass."
+msgstr "pass :"
 
 #: src/ochartShop.h:530 src/ochartShop.h:538
 msgid "OpenCPN o-charts System Name"
