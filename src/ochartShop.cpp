@@ -2267,6 +2267,7 @@ void saveShopConfig()
       }
 #endif
    }
+   pConf->Flush();
 }
 
 int checkResult(wxString &result, bool bShowLoginErrorDialog = true)
