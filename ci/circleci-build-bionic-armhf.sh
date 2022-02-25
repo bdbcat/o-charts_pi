@@ -28,9 +28,10 @@ fi
 
 cat > $ci_source/build.sh << "EOF"
 
-# The following two lines have already been executed in the docker image before upload
-#sudo apt -y update
+# The following line has already been executed in the docker image before upload
 #sudo apt -y install devscripts equivs wget git lsb-release
+
+sudo apt -y update
 
 sudo mk-build-deps  /ci-source/build-deps/control
 sudo apt -y install ./opencpn-build-deps_1.0_all.deb
