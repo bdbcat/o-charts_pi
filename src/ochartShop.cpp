@@ -1863,16 +1863,22 @@ int GetEditionInt(std::string edition)
     wxString sed(edition.c_str());
     wxString smaj = sed.BeforeFirst('-');
     wxString smin = sed.AfterFirst('-');
+    wxString supermaj("0");
 
-    if(smaj.Find('/') != wxNOT_FOUND)
+    if(smaj.Find('/') != wxNOT_FOUND){
+        supermaj = smaj.BeforeFirst('/');
         smaj = smaj.AfterFirst('/');
+    }
+    long super = 0;
+    supermaj.ToLong(&super);
+    int superClip = super % 2000;
 
     long major = 0;
     smaj.ToLong(&major);
     long minor = 0;
     smin.ToLong(&minor);
 
-    return (major * 100) + minor;
+    return (superClip * 10000) + (major * 100) + minor;
 }
 
 int itemChart::GetServerEditionInt()
