@@ -2398,9 +2398,10 @@ int checkResponseCode(int iResponseCode)
 int doLogin( wxWindow *parent )
 {
     oeUniLogin login(parent);
+    login.SetLoginName(g_loginUser);
     login.ShowModal();
+
     if(!(login.GetReturnCode() == 0)){
-        //g_shopPanel->setStatusText( _("Invalid Login."));
         wxYield();
         return 55;
     }

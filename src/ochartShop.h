@@ -656,6 +656,7 @@ public:
     void OnCancelClick( wxCommandEvent& event );
     void OnOkClick( wxCommandEvent& event );
     void OnClose( wxCloseEvent& event );
+    void SetLoginName( wxString n ){ m_UserNameCtl->SetValue(n); }
 
     static bool ShowToolTips();
 
