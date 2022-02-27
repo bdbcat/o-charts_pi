@@ -12,12 +12,12 @@ set(OCPN_TEST_REPO
     CACHE STRING "Default repository for untagged builds"
 )
 set(OCPN_BETA_REPO
-    "david-register/ocpn-plugins-unstable"
+    "opencpn/o-charts-beta"
     CACHE STRING
     "Default repository for tagged builds matching 'beta'"
 )
 set(OCPN_RELEASE_REPO
-    "david-register/ocpn-plugins-stable"
+    "opencpn/o-charts-prod"
     CACHE STRING
     "Default repository for tagged builds not matching 'beta'"
 )
