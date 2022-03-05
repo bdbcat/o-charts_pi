@@ -1014,7 +1014,7 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
             g_GLOptionsSet = true;
 
             init_GLLibrary();                                  // once
-            ///g_oeChartSymbols->ResetRasterTextureCache();
+            g_oeChartSymbols->ResetRasterTextureCache();
 
         }
     }

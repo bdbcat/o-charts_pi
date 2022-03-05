@@ -118,10 +118,11 @@ public:
 	static wxColor GetwxColor( const char *colorName, int fromTable );
 	static wxString HashKey( const char* symbolName );
 	static wxImage GetImage( const char* symbolName );
-        static unsigned int GetGLTextureRect( wxRect &rect, const char* symbolName );
-        static wxSize GLTextureSize();
-        static void SetColorTableIndex( int index );
-        bool PatchConfigFile(s52plib* plibArg, const wxString &xmlPatchFileName);
+  static unsigned int GetGLTextureRect( wxRect &rect, const char* symbolName );
+  static wxSize GLTextureSize();
+  static void SetColorTableIndex( int index );
+  bool PatchConfigFile(s52plib* plibArg, const wxString &xmlPatchFileName);
+  static void ResetRasterTextureCache();
 
 private:
       void ProcessVectorTag( TiXmlElement* subNodes, SymbolSizeInfo_t &vectorSize );
@@ -134,14 +135,14 @@ private:
       void BuildLookup( Lookup &lookup );
       void BuildPattern( OCPNPattern &pattern );
       void BuildSymbol( ChartSymbol &symol );
-       
+
       void ProcessColorTables( pugi::xml_node &node );
       void ProcessLookups( pugi::xml_node &node );
       void ProcessLinestyles( pugi::xml_node &node );
       void ProcessPatterns( pugi::xml_node &node );
       void ProcessSymbols( pugi::xml_node &node );
       void ProcessVectorTag( pugi::xml_node &vectorNode, SymbolSizeInfo_t &vectorSize );
-      
+
       pugi::xml_document m_symbolsDoc;
 
       s52plib* plib;
