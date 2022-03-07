@@ -123,7 +123,6 @@ extern void androidHideBusyIcon();
 void androidGetDeviceName();
 #endif
 
-bool testSENCServer();
 bool validate_SENC_server(void);
 
 void init_S52Library();
@@ -698,8 +697,6 @@ int o_charts_pi::Init(void)
         msg += _("It is recommended that you disable any existing oeRNC plugin, and restart OpenCPN.\n");
         OCPNMessageBox_PlugIn(NULL, msg, _("o-charts_pi Message"), wxOK);
     }
-
-    //testSENCServer();
 
     int flags =  INSTALLS_PLUGIN_CHART_GL |
                  WANTS_PLUGIN_MESSAGING   |
@@ -2727,34 +2724,6 @@ void init_GLLibrary(void)
 }
 
 
-bool testSENCServer()
-{
-#ifdef __OCPN__ANDROID__
-    qDebug() << "Testing SENC server";
-
-    //  The target binary executable
-    wxString cmd = g_sencutil_bin;
-
-    //  Set up the parameter passed as the local app storage directory
-    wxString dataLoc = *GetpPrivateApplicationDataLocation();
-    wxFileName fn(dataLoc);
-    wxString dataDir = fn.GetPath(wxPATH_GET_SEPARATOR);
-
-    //  Set up the parameter passed to runtime environment as LD_LIBRARY_PATH
-    // This will be {dir of g_sencutil_bin}/lib
-    wxFileName fnl(cmd);
-    wxString libDir = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("lib");
-
-    wxLogMessage(_T("o_charts_pi: Starting: ") + cmd );
-
-    wxString result = callActivityMethod_s4s("createProcSync", cmd, _T("-w"), dataDir, libDir);
-
-    wxLogMessage(_T("o_charts_pi: Start Result: ") + result);
-
-
-#endif
-    return true;
-}
 
 bool validate_SENC_server(void)
 {
