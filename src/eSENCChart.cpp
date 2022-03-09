@@ -1040,6 +1040,12 @@ PI_InitReturn oesuChart::CreateHeaderDataFromeSENC()
 
     int retCode = senc.ingestHeader( m_SENCFileName.GetFullPath() );
 
+    // Check for "cancelled" chart cell
+    // This will be indicated if the published base edition number is "0".
+    // If we return "non-specific" error, then core will skip this file on database update
+    if (senc.getSENCReadBaseEdition().StartsWith("0") )
+      return PI_INIT_FAIL_NOERROR;
+
     // For uSENC charts, capture the expiration info
     m_uSENCExpireDaysRemaining = senc.m_expireDaysRemaining;
     m_uSENCGraceDaysAllowed = senc.m_graceDaysAllowed;
