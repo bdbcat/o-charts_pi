@@ -116,7 +116,11 @@ wxString callActivityMethod_vs(const char *method);
 wxString callActivityMethod_ss(const char *method, wxString parm);
 wxString callActivityMethod_s4s(const char *method, wxString parm1, wxString parm2, wxString parm3, wxString parm4);
 wxString callActivityMethod_s5s(const char *method, wxString parm1, wxString parm2, wxString parm3, wxString parm4, wxString parm5);
+
 wxString callActivityMethod_s6s(const char *method, wxString parm1, wxString parm2="", wxString parm3="", wxString parm4="", wxString parm5="", wxString parm6="");
+
+wxString callActivityMethod_s8s(const char *method, wxString parm1, wxString parm2="", wxString parm3="", wxString parm4="", wxString parm5="", wxString parm6="", wxString parm7="", wxString parm8="");
+
 wxString callActivityMethod_s2s(const char *method, wxString parm1, wxString parm2);
 extern void androidShowBusyIcon();
 extern void androidHideBusyIcon();
@@ -249,6 +253,8 @@ int                             g_SDK_INT;
 wxString                        g_loginUser;
 wxString                        g_loginKey;
 wxString                        g_systemOS;
+int                             g_VERSION_CODE;
+wxString                        g_SUPERLEGACYSSAID;
 
 bool                            g_GenericMessageShown;
 bool                            g_ExpiredMessageShown;
@@ -667,6 +673,15 @@ int o_charts_pi::Init(void)
         if(wxNOT_FOUND != s1.Find(_T("OCPNWVID:"))){
             g_WVID = s1.AfterFirst(':');
         }
+
+        g_VERSION_CODE = -1;
+        if(wxNOT_FOUND != s1.Find(_T("VERSION_CODE:"))){
+          wxString vcs = s1.AfterFirst(':');
+          long vcd;
+          if (vcs.ToLong(&vcd))
+            g_VERSION_CODE = vcd;
+        }
+
     }
     qDebug() << "Init() systemName by deviceInfo: " << g_systemName.mb_str();
     qDebug() << "Init() UUID by deviceInfo: " << g_UUID.mb_str();
@@ -676,6 +691,17 @@ int o_charts_pi::Init(void)
     long nsdk;
     g_sSDK_INT.ToLong(&nsdk);
     g_SDK_INT = nsdk;
+
+    // Get the Android SUPERLEGACY oeRNC SSAID, if available
+    wxString info_SUPERLEGACY = callActivityMethod_vs("GetLegacyServerdCreds");
+    if (info_SUPERLEGACY.Length()){
+      wxStringTokenizer tkz(info_SUPERLEGACY, _T(";"));
+      g_SUPERLEGACYSSAID = tkz.GetNextToken();
+    }
+
+    if ( g_SUPERLEGACYSSAID.Length() < 4)   // arbitrary, must be invalid
+      g_SUPERLEGACYSSAID = "0";
+
 
 #endif
 
@@ -2851,11 +2877,27 @@ bool validate_SENC_server(void)
     if(g_SDK_INT < 21){          // Earlier than Android 5
         result = callActivityMethod_s4s("createProc", cmd, "-q", dataDir, libDir);
     }
-    else if(g_SDK_INT < 29){            // Strictly earlier than Android 10
-        result = callActivityMethod_s4s("createProc", cmd, "-z", g_UUID, libDir);
+
+    else {
+      if (g_VERSION_CODE >= 82){
+        //if (g_SDK_INT < 29){            // Strictly earlier than Android 10
+          result = callActivityMethod_s8s("createProc", cmd,
+                                          "-z", g_UUID,
+                                          "-y", g_WVID,
+                                          "-u", g_SUPERLEGACYSSAID, //"cc0462b5-8c91-3a8e-bbd6-ca2cea2a7c32",
+                                          libDir);
+
+        //}
+        //else
+          //result = callActivityMethod_s4s("createProc", cmd, "-y", g_WVID, libDir);
+      }
+      else {
+         if (g_SDK_INT < 29)            // Strictly earlier than Android 10
+           result = callActivityMethod_s4s("createProc", cmd, "-z", g_UUID, libDir);
+         else
+           result = callActivityMethod_s4s("createProc", cmd, "-y", g_WVID, libDir);
+      }
     }
-    else
-        result = callActivityMethod_s4s("createProc", cmd, "-y", g_WVID, libDir);
 
     wxLogMessage(_T("o_charts_pi: Start Result: ") + result);
 
