@@ -250,6 +250,76 @@ wxString callActivityMethod_s6s(const char *method, wxString parm1, wxString par
 
 }
 
+wxString callActivityMethod_s8s(const char *method, wxString parm1, wxString parm2, wxString parm3, wxString parm4, wxString parm5, wxString parm6, wxString parm7, wxString parm8)
+{
+    if(CheckPendingJNIException())
+        return _T("NOK");
+    JNIEnv* jenv;
+
+    wxString return_string;
+    QAndroidJniObject activity = QAndroidJniObject::callStaticObjectMethod("org/qtproject/qt5/android/QtNative",
+                                                                           "activity", "()Landroid/app/Activity;");
+    if(CheckPendingJNIException())
+        return _T("NOK");
+
+    if ( !activity.isValid() ){
+        return return_string;
+    }
+
+    //  Need a Java environment to decode the resulting string
+    if (java_vm->GetEnv( (void **) &jenv, JNI_VERSION_1_6) != JNI_OK) {
+        return _T("jenv Error");
+    }
+
+    wxCharBuffer p1b = parm1.ToUTF8();
+    jstring p1 = (jenv)->NewStringUTF(p1b.data());
+
+    wxCharBuffer p2b = parm2.ToUTF8();
+    jstring p2 = (jenv)->NewStringUTF(p2b.data());
+
+    wxCharBuffer p3b = parm3.ToUTF8();
+    jstring p3 = (jenv)->NewStringUTF(p3b.data());
+
+    wxCharBuffer p4b = parm4.ToUTF8();
+    jstring p4 = (jenv)->NewStringUTF(p4b.data());
+
+    wxCharBuffer p5b = parm5.ToUTF8();
+    jstring p5 = (jenv)->NewStringUTF(p5b.data());
+
+    wxCharBuffer p6b = parm6.ToUTF8();
+    jstring p6 = (jenv)->NewStringUTF(p6b.data());
+
+    wxCharBuffer p7b = parm7.ToUTF8();
+    jstring p7 = (jenv)->NewStringUTF(p7b.data());
+
+    wxCharBuffer p8b = parm8.ToUTF8();
+    jstring p8 = (jenv)->NewStringUTF(p8b.data());
+
+    QAndroidJniObject data = activity.callObjectMethod(method, "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+                                                       p1, p2, p3, p4, p5, p6, p7, p8);
+    (jenv)->DeleteLocalRef(p1);
+    (jenv)->DeleteLocalRef(p2);
+    (jenv)->DeleteLocalRef(p3);
+    (jenv)->DeleteLocalRef(p4);
+    (jenv)->DeleteLocalRef(p5);
+    (jenv)->DeleteLocalRef(p6);
+    (jenv)->DeleteLocalRef(p7);
+    (jenv)->DeleteLocalRef(p8);
+
+    if(CheckPendingJNIException())
+        return _T("NOK");
+
+    jstring s = data.object<jstring>();
+
+    if( (jenv)->GetStringLength( s )){
+        const char *ret_string = (jenv)->GetStringUTFChars(s, NULL);
+        return_string = wxString(ret_string, wxConvUTF8);
+    }
+
+    return return_string;
+
+}
+
 wxString callActivityMethod_ss(const char *method, wxString parm)
 {
     if(CheckPendingJNIException())
