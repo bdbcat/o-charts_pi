@@ -2880,16 +2880,11 @@ bool validate_SENC_server(void)
 
     else {
       if (g_VERSION_CODE >= 82){
-        //if (g_SDK_INT < 29){            // Strictly earlier than Android 10
           result = callActivityMethod_s8s("createProc", cmd,
                                           "-z", g_UUID,
                                           "-y", g_WVID,
                                           "-u", g_SUPERLEGACYSSAID, //"cc0462b5-8c91-3a8e-bbd6-ca2cea2a7c32",
                                           libDir);
-
-        //}
-        //else
-          //result = callActivityMethod_s4s("createProc", cmd, "-y", g_WVID, libDir);
       }
       else {
          if (g_SDK_INT < 29)            // Strictly earlier than Android 10
