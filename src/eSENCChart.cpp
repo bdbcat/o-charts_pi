@@ -4121,6 +4121,10 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
 
     }
 
+    //  If the cell is "Cancelled", return error, so that cell does not display
+    if (sencfile->getSENCReadBaseEdition().StartsWith("0") )
+      return PI_INIT_FAIL_REMOVE;
+
     // For uSENC charts, capture the expiration info
     if(ctype == CTYPE_OESU){
         m_uSENCExpireDaysRemaining = sencfile->m_expireDaysRemaining;
