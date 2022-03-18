@@ -4487,80 +4487,93 @@ void showChartinfoDialog( void )
     if(g_binfoShown)
         return;
 
-    if(info_hash.empty())
-        return;
-
-    wxString hdr = _T("<html><body>");
-
-    hdr += _T("<center><font size=+1>");
-    hdr +=  _("Available Chart sets:");
-
-    hdr += _T("</font></center>");
-
-    hdr += _T("<hr />");
-
-
+    wxString hdr;
     int len_max = 0;
-    int ncs = 1;
-    std::map<std::string, ChartInfoItem *>::iterator iter;
-    for( iter = info_hash.begin(); iter != info_hash.end(); ++iter )
-    {
 
-        wxString formatted;
+    if(info_hash.empty()){
+      hdr = _T("<html><body>");
 
-        ChartInfoItem *pci = iter->second;
-        std::string key = iter->first;
-        wxString strk = wxString(key.c_str(), wxConvUTF8);
-        wxString info = pci->config_string;
-        if(info.Length() < 10)                  // Probably a manually installed local chart set.
-            continue;
+      hdr += _T("<center><font size=+1>");
+      hdr +=  _("No Chart sets installed.");
 
-        len_max = wxMax(info.Len(), len_max);
+      hdr += _T("</font></center>");
 
-        wxStringTokenizer tkx(info, _T(";"));
-        wxString name = tkx.GetNextToken();        //description
-
-        hdr += _T("<center>");
-        hdr +=  name;
-        hdr += _T("</center>");
-
-        hdr += _T("<center><table border=1 >");
-
-        // Get the line fields
-         while ( tkx.HasMoreTokens() ){
-            wxString token; // = tkx.GetNextToken();        //description
-
-            hdr += _T("<tr>");
-            token = tkx.GetNextToken();         // version
-            hdr += _T("<td>") + _("Version") + _T(":</td>");
-            hdr += _T("<td align=\"right\">") + token + _T("</td>");
-            hdr += _T("</tr>");
-
-            token = tkx.GetNextToken();         // expiry date
-            hdr += _T("<tr>");
-            hdr += _T("<td>") + _("Valid until") + _T(":</td>");
-            hdr += _T("<td align=\"right\">")  + token + _T("</td>");
-            hdr += _T("/<tr>");
-
-            if ( tkx.HasMoreTokens() ){
-                token = tkx.GetNextToken();         // current status, if available
-                if(g_chartListUpdatedOK){
-                    hdr += _T("<tr>");
-                    hdr += _T("<td>") + _("Status") +_T(":</td>");
-                    hdr += _T("<td align=\"right\">") + token + _T("</td>");
-                    hdr += _T("/<tr>");
-                }
-            }
-         }
-
-        ncs++;
-        hdr += _T("</table></center>");
-        hdr += _T("<hr />");
-
-
+      hdr += _T("<hr />");
+      hdr += _T("</body></html>");
     }
 
-    hdr += _T("</body></html>");
+    else{
+      hdr = _T("<html><body>");
+
+      hdr += _T("<center><font size=+1>");
+      hdr +=  _("Available Chart sets:");
+
+      hdr += _T("</font></center>");
+
+      hdr += _T("<hr />");
+
+
+      int ncs = 1;
+      std::map<std::string, ChartInfoItem *>::iterator iter;
+      for( iter = info_hash.begin(); iter != info_hash.end(); ++iter )
+      {
+
+          wxString formatted;
+
+          ChartInfoItem *pci = iter->second;
+          std::string key = iter->first;
+          wxString strk = wxString(key.c_str(), wxConvUTF8);
+          wxString info = pci->config_string;
+          if(info.Length() < 10)                  // Probably a manually installed local chart set.
+              continue;
+
+          len_max = wxMax(info.Len(), len_max);
+
+          wxStringTokenizer tkx(info, _T(";"));
+          wxString name = tkx.GetNextToken();        //description
+
+          hdr += _T("<center>");
+          hdr +=  name;
+          hdr += _T("</center>");
+
+          hdr += _T("<center><table border=1 >");
+
+          // Get the line fields
+          while ( tkx.HasMoreTokens() ){
+              wxString token; // = tkx.GetNextToken();        //description
+
+              hdr += _T("<tr>");
+              token = tkx.GetNextToken();         // version
+              hdr += _T("<td>") + _("Version") + _T(":</td>");
+              hdr += _T("<td align=\"right\">") + token + _T("</td>");
+              hdr += _T("</tr>");
+
+              token = tkx.GetNextToken();         // expiry date
+              hdr += _T("<tr>");
+              hdr += _T("<td>") + _("Valid until") + _T(":</td>");
+              hdr += _T("<td align=\"right\">")  + token + _T("</td>");
+              hdr += _T("/<tr>");
+
+              if ( tkx.HasMoreTokens() ){
+                  token = tkx.GetNextToken();         // current status, if available
+                  if(g_chartListUpdatedOK){
+                      hdr += _T("<tr>");
+                      hdr += _T("<td>") + _("Status") +_T(":</td>");
+                      hdr += _T("<td align=\"right\">") + token + _T("</td>");
+                      hdr += _T("/<tr>");
+                  }
+              }
+          }
+
+          ncs++;
+          hdr += _T("</table></center>");
+          hdr += _T("<hr />");
+
+
+      }
+
+      hdr += _T("</body></html>");
+    }
 
     wxCharBuffer buf = hdr.ToUTF8();
     if(buf.data())
@@ -4576,92 +4589,111 @@ void showChartinfoDialog( void )
     if(g_binfoShown)
         return;
 
-    if(info_hash.empty())
-        return;
-
-    g_binfoShown = true;
-
-    wxString hdr = _T("<html><body><center><font size=+2>");
-    hdr +=  _("The following Chart sets are available : ");
-    if(!g_lastShopUpdate.IsEmpty()){
-        hdr += _T("( ");
-        hdr += g_lastShopUpdate;
-        hdr += _T(" )");
-    }
-
-    hdr += _T("</font></center>");
-
-    hdr += _T("<hr />");
-
-    hdr += _T("<center><table border=0 bordercolor=#000000 style=background-color:#fbfbf9 width=600 cellpadding=3 cellspacing=3>");
-
-    hdr += _T("<tr>");
-
-    hdr += _T("<td><font size=+2>");
-    hdr += _("Chart set");
-    hdr += _T("</font></td>");
-
-    hdr += _T("<td><font size=+2>");
-    hdr += _("Version");
-    hdr += _T("</font></td>");
-
-    hdr += _T("<td><font size=+2>");
-    hdr += _("Valid until");
-    hdr += _T("</font></td>");
-
-    hdr += _T("<td><font size=+2>");
-    hdr += _("Status");
-    hdr += _T("</font></td>");
-
-    hdr += _T("</tr>");
-
+    wxString hdr;
     int len_max = 0;
-    std::map<std::string, ChartInfoItem *>::iterator iter;
-    for( iter = info_hash.begin(); iter != info_hash.end(); ++iter )
-    {
-        wxString formatted;
+    int lc = 0;
+    if(info_hash.empty()){
+      wxString txt = _("No Chart sets installed.");
+      hdr = _T("<html><body>");
 
-        ChartInfoItem *pci = iter->second;
-        std::string key = iter->first;
-        wxString strk = wxString(key.c_str(), wxConvUTF8);
-        wxString info = pci->config_string;
-        len_max = wxMax(info.Len(), len_max);
+      hdr += _T("<center><font size=+1>");
+      hdr +=  txt;
 
-        hdr += _T("<tr>");
+      hdr += _T("</font></center>");
 
-        // Get the line fields
-        wxStringTokenizer tkx(info, _T(";"));
-        while ( tkx.HasMoreTokens() ){
-            wxString token = tkx.GetNextToken();        //description
-            hdr += _T("<td>") + token + _T("</td>");
+      hdr += _T("<hr />");
+      hdr += _T("</body></html>");
 
-            token = tkx.GetNextToken();         // version
-            hdr += _T("<td>") + token + _T("</td>");
-
-            token = tkx.GetNextToken();         // expiry date
-            wxDateTime exdate;
-            bool pok = exdate.ParseDate(token);
-            if(pok){
-                wxTimeSpan diff = exdate - wxDateTime::Today();
-                // Expired? Red text
-                hdr += diff > 0 ? _T("<td>") + token + _T("</td>") :
-                                _T("<td><font color=#ff0000>") + token + _T("</font></td>");
-            }
-            else
-                hdr += _T("<td>") + token + _T("</td>");
-
-            if ( tkx.HasMoreTokens() ){
-                token = tkx.GetNextToken();         // current status, if available
-                if(g_chartListUpdatedOK)
-                    hdr += _T("<td>") + token + _T("</td>");
-            }
-        }
-
-        hdr += _T("</tr>");
+      lc = 6;
+      len_max = txt.Length();
     }
 
-    hdr += _T("</table></center>");
-    hdr += _T("</body></html>");
+    else{
+      g_binfoShown = true;
+
+      lc = 10;
+      hdr = _T("<html><body><center><font size=+2>");
+      hdr +=  _("The following Chart sets are available : ");
+      if(!g_lastShopUpdate.IsEmpty()){
+          hdr += _T("( ");
+          hdr += g_lastShopUpdate;
+          hdr += _T(" )");
+      }
+
+      hdr += _T("</font></center>");
+
+      hdr += _T("<hr />");
+
+      hdr += _T("<center><table border=0 bordercolor=#000000 style=background-color:#fbfbf9 width=600 cellpadding=3 cellspacing=3>");
+
+      hdr += _T("<tr>");
+
+      hdr += _T("<td><font size=+2>");
+      hdr += _("Chart set");
+      hdr += _T("</font></td>");
+
+      hdr += _T("<td><font size=+2>");
+      hdr += _("Version");
+      hdr += _T("</font></td>");
+
+      hdr += _T("<td><font size=+2>");
+      hdr += _("Valid until");
+      hdr += _T("</font></td>");
+
+      hdr += _T("<td><font size=+2>");
+      hdr += _("Status");
+      hdr += _T("</font></td>");
+
+      hdr += _T("</tr>");
+
+      std::map<std::string, ChartInfoItem *>::iterator iter;
+      for( iter = info_hash.begin(); iter != info_hash.end(); ++iter )
+      {
+          wxString formatted;
+          lc++;
+
+          ChartInfoItem *pci = iter->second;
+          std::string key = iter->first;
+          wxString strk = wxString(key.c_str(), wxConvUTF8);
+          wxString info = pci->config_string;
+          len_max = wxMax(info.Len(), len_max);
+
+          hdr += _T("<tr>");
+
+          // Get the line fields
+          wxStringTokenizer tkx(info, _T(";"));
+          while ( tkx.HasMoreTokens() ){
+              wxString token = tkx.GetNextToken();        //description
+              hdr += _T("<td>") + token + _T("</td>");
+
+              token = tkx.GetNextToken();         // version
+              hdr += _T("<td>") + token + _T("</td>");
+
+              token = tkx.GetNextToken();         // expiry date
+              wxDateTime exdate;
+              bool pok = exdate.ParseDate(token);
+              if(pok){
+                  wxTimeSpan diff = exdate - wxDateTime::Today();
+                  // Expired? Red text
+                  hdr += diff > 0 ? _T("<td>") + token + _T("</td>") :
+                                  _T("<td><font color=#ff0000>") + token + _T("</font></td>");
+              }
+              else
+                  hdr += _T("<td>") + token + _T("</td>");
+
+              if ( tkx.HasMoreTokens() ){
+                  token = tkx.GetNextToken();         // current status, if available
+                  if(g_chartListUpdatedOK)
+                      hdr += _T("<td>") + token + _T("</td>");
+              }
+          }
+
+          hdr += _T("</tr>");
+      }
+
+      hdr += _T("</table></center>");
+      hdr += _T("</body></html>");
+    }
 
     if(GetOCPNCanvasWindow()){
         wxFont *pFont = OCPNGetFont(_T("Dialog"), 12);
@@ -4669,11 +4701,11 @@ void showChartinfoDialog( void )
         int sx, sy;
         dc.GetTextExtent(_T("W"), &sx, &sy, NULL, NULL, pFont);
 
-        //        int parent_font_width = sx;
-        //         wxSize sz = wxSize(len_max * parent_font_width * 1.2, -1);
+        int parent_font_width = sx;
+        wxSize sz = wxSize(len_max * parent_font_width * 1.2, lc * sy * 1.2);
 
         pinfoDlg = new OESENC_HTMLMessageDialog( NULL /*GetOCPNCanvasWindow()*/, hdr, _("o-charts_pi Message"), wxOK);
-        //        pinfoDlg->SetClientSize(sz);
+        pinfoDlg->SetClientSize(sz);
         pinfoDlg->Centre();
         pinfoDlg->ShowModal();
         pinfoDlg->Destroy();
