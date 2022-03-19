@@ -5927,6 +5927,45 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             }
         }
 
+        // Find and store any TXT files found
+        wxArrayString fileArrayTXT;
+        wxDir::GetAllFiles(tmp_Zipdir, &fileArrayTXT, _T("*.txt"));
+        wxDir::GetAllFiles(tmp_Zipdir, &fileArrayTXT, _T("*.TXT"));
+
+        for(unsigned int i=0 ; i < fileArrayTXT.GetCount() ; i++){
+            // Capture subdirectory of TXT files
+            wxString src = fileArrayTXT.Item(i);
+            int it = src.Find(chartTopLevelZip);
+            wxString destination = destinationDir;
+            if (it != wxNOT_FOUND)
+              destination += src.Mid(it + chartTopLevelZip.Length() + 1);
+            wxString source = fileArrayTXT.Item(i);
+
+            wxFileName fnm(source);
+            g_shopPanel->setStatusText( _("Relocating chart files...") + fnm.GetFullName());
+            wxYield();
+
+            // Make the dir if necessary
+            wxFileName fn(destination);
+            if (!fn.DirExists()){
+              fn.Mkdir( wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+            }
+
+            bool bret;
+#ifdef __OCPN__ANDROID__
+            bret = AndroidSecureCopyFile( source, destination );
+#else
+            bret = wxCopyFile( source, destination);
+#endif
+
+            if(!bret)
+                wxLogError(_T("Can not copy TXT file...Source: ") + source + _T("   Destination: ") + destination);
+            else{
+               // Recover the temporary space used.
+                wxRemoveFile( source );
+            }
+        }
+
         // Delete the temporary Chartlist file
         if(wxFileExists(actionChartList)){
             wxRemoveFile(actionChartList);
