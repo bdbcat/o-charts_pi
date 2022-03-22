@@ -1579,6 +1579,15 @@ bool itemChart::isChartsetAssignedToAnyDongle() {
 }
 
 
+bool itemChart::isChartsetAssignedToInstalledDongle() {
+
+    int tmpQ;
+    if(GetSlotAssignedToInstalledDongle( tmpQ ) >= 0)
+        return true;
+
+    return false;
+}
+
 
 
 bool itemChart::isChartsetDontShow()
@@ -1720,9 +1729,9 @@ int itemChart::getChartStatus()
     // If a dongle is present, all operations will apply to dongle assigned slot, if any
     if(g_dongleName.Len()){
 
-        // If chartset is not assigned to any dongle, or to the systemName, the result is clearly known
+        // If chartset is not assigned to installed dongle, or to the systemName, the result is clearly known
         //  If it is already assigned to a dongle, we pass thru and determine the slot later
-        if(!isChartsetAssignedToAnyDongle() && !isChartsetAssignedToSystemKey( g_systemName )){
+        if(!isChartsetAssignedToInstalledDongle() && !isChartsetAssignedToSystemKey( g_systemName )){
             m_status = STAT_PURCHASED;
             return m_status;
         }

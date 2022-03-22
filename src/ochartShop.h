@@ -251,6 +251,7 @@ public:
     bool isChartsetFullyAssigned();
     bool isChartsetAssignedToSystemKey(wxString key);
     bool isChartsetAssignedToAnyDongle();
+    bool isChartsetAssignedToInstalledDongle();
     bool isChartsetAssignedToMe();
 
     int GetSlotAssignedToInstalledDongle( int &qId );
