@@ -2875,7 +2875,16 @@ bool validate_SENC_server(void)
 
     wxString result;
     if(g_SDK_INT < 21){          // Earlier than Android 5
+      if (g_VERSION_CODE >= 82){
+        result = callActivityMethod_s8s("createProc", cmd,
+                                          "-q", dataDir,
+                                          "-y", g_WVID,
+                                          "-u", g_SUPERLEGACYSSAID,
+                                          libDir);
+      }
+      else {
         result = callActivityMethod_s4s("createProc", cmd, "-q", dataDir, libDir);
+      }
     }
 
     else {
