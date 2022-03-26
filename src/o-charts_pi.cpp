@@ -255,6 +255,7 @@ wxString                        g_loginKey;
 wxString                        g_systemOS;
 int                             g_VERSION_CODE;
 wxString                        g_SUPERLEGACYSSAID;
+wxString                        g_creds_SUPERLEGACY;
 
 bool                            g_GenericMessageShown;
 bool                            g_ExpiredMessageShown;
@@ -694,6 +695,11 @@ int o_charts_pi::Init(void)
 
     // Get the Android SUPERLEGACY oeRNC SSAID, if available
     wxString info_SUPERLEGACY = callActivityMethod_vs("GetLegacyServerdCreds");
+    g_creds_SUPERLEGACY = info_SUPERLEGACY;
+
+    if( g_creds_SUPERLEGACY.Length() < 1)
+      g_creds_SUPERLEGACY = ";;";
+
     if (info_SUPERLEGACY.Length()){
       wxStringTokenizer tkz(info_SUPERLEGACY, _T(";"));
       g_SUPERLEGACYSSAID = tkz.GetNextToken();
@@ -2879,7 +2885,7 @@ bool validate_SENC_server(void)
         result = callActivityMethod_s8s("createProc", cmd,
                                           "-q", dataDir,
                                           "-y", g_WVID,
-                                          "-u", g_SUPERLEGACYSSAID,
+                                          "-u", g_creds_SUPERLEGACY,
                                           libDir);
       }
       else {
@@ -2892,7 +2898,7 @@ bool validate_SENC_server(void)
           result = callActivityMethod_s8s("createProc", cmd,
                                           "-z", g_UUID,
                                           "-y", g_WVID,
-                                          "-u", g_SUPERLEGACYSSAID, //"cc0462b5-8c91-3a8e-bbd6-ca2cea2a7c32",
+                                          "-u", g_creds_SUPERLEGACY,
                                           libDir);
       }
       else {
