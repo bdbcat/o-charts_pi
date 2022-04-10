@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-02-08 22:21-0500\n"
-"PO-Revision-Date: 2022-02-11 02:24\n"
+"PO-Revision-Date: 2022-04-10 02:29\n"
 "Last-Translator: \n"
 "Language-Team: Norwegian Bokmal\n"
 "Language: nb_NO\n"
@@ -706,7 +706,7 @@ msgstr "Pakker ut kartfiler..."
 
 #: src/ochartShop.cpp:3717
 msgid "Unpacking charts"
-msgstr ""
+msgstr "Pakker ut karter"
 
 #: src/ochartShop.cpp:4032 src/ochartShop.cpp:4088 src/ochartShop.cpp:4131
 msgid "Installed Chart Edition:"
@@ -809,7 +809,8 @@ msgstr "Dette systemnavnet er blitt deaktivert\n"
 #: src/ochartShop.cpp:5107
 msgid "The detected System Name has been disabled\n"
 "Please contact o-charts to enable it again."
-msgstr ""
+msgstr "Det oppdagede systemnavnet er blitt deaktivert.\n"
+"Vennligst kontakt o-charts for å aktivere det igjen."
 
 #: src/ochartShop.cpp:5153
 msgid "Invalid System Name"
@@ -823,31 +824,31 @@ msgstr "Dette systemnavnet er blitt deaktivert\n"
 
 #: src/ochartShop.cpp:5342
 msgid "The o-charts cache directory contains the following unused charts:"
-msgstr ""
+msgstr "O-charts cachemappen inneholder følgende ubrukte karter:"
 
 #: src/ochartShop.cpp:5350
 msgid "Remove these unused charts now?"
-msgstr ""
+msgstr "Fjerne de ubrukte kartene nå?"
 
 #: src/ochartShop.cpp:5388
 msgid "WARNING:\n"
-msgstr ""
+msgstr "ADVARSEL:\n"
 
 #: src/ochartShop.cpp:5389
 msgid "This chart set has been previously installed.\n"
-msgstr ""
+msgstr "Dette kartsettet har tidligere vært installert.\n"
 
 #: src/ochartShop.cpp:5390
 msgid "However, the chart files cannot be located.\n\n"
-msgstr ""
+msgstr "Men, kartfilene ble ikke funnet.\n\n"
 
 #: src/ochartShop.cpp:5391
 msgid "The original installation directory is: "
-msgstr ""
+msgstr "Den orginale installasjons mappen er: "
 
 #: src/ochartShop.cpp:5394
 msgid "Please select the directory where these chart files may now be found."
-msgstr ""
+msgstr "Venligst velg mappen hvor kartfilene befinner seg."
 
 #: src/ochartShop.cpp:5432
 msgid "Validation error on zip file"
@@ -859,7 +860,7 @@ msgstr "Valideringsfeil i nøkkelfil"
 
 #: src/ochartShop.cpp:5741
 msgid "Finalizing charts"
-msgstr ""
+msgstr "Ferdigstiller kartene"
 
 #: src/ochartShop.cpp:5756
 msgid "Relocating chart files..."
@@ -871,7 +872,7 @@ msgstr "Status: Validerer nedlastet fil..."
 
 #: src/ochartShop.cpp:5913
 msgid "Verifying download"
-msgstr ""
+msgstr "Verifiserer nedlastingen"
 
 #: src/ochartShop.cpp:5992
 msgid "Validate Log"
@@ -913,7 +914,7 @@ msgstr "Ikke glem å gjenoppbygge kartdatabasen\n"
 
 #: src/ochartShop.cpp:6368
 msgid "Installing..."
-msgstr ""
+msgstr "Installerer..."
 
 #: src/ochartShop.cpp:6370
 msgid "Preparing installation..."
@@ -929,7 +930,7 @@ msgstr "Status: Opplastingsfeil av System fingeravtrykk"
 
 #: src/ochartShop.cpp:6612 src/ochartShop.cpp:6613
 msgid "Requesting License Keys"
-msgstr ""
+msgstr "Etterspør lisensnøkler"
 
 #: src/ochartShop.cpp:6644
 msgid "Status: Downloading..."

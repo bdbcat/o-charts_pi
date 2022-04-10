@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-02-08 22:21-0500\n"
-"PO-Revision-Date: 2022-02-11 02:24\n"
+"PO-Revision-Date: 2022-04-10 02:29\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Language: pl_PL\n"
@@ -549,7 +549,7 @@ msgstr "Ta wersja wtyczki o-charts jest przestarzała."
 
 #: src/ochartShop.cpp:2257
 msgid "Please update your plugin."
-msgstr "Proszę o aktualizację wtyczki."
+msgstr "Proszę zaktualizować wtyczkę."
 
 #: src/ochartShop.cpp:2259 src/ochartShop.cpp:2275 src/ochartShop.cpp:2295
 msgid "Operation cancelled"
@@ -726,7 +726,7 @@ msgstr "Numer zamówienia:"
 
 #: src/ochartShop.cpp:4040 src/ochartShop.cpp:4117 src/ochartShop.cpp:4165
 msgid "Updates available through:"
-msgstr "Aktualizacje dostępne przez:"
+msgstr "Aktualizacje dostępne do:"
 
 #: src/ochartShop.cpp:4177
 msgid "Assignments:"

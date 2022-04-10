@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-02-08 22:21-0500\n"
-"PO-Revision-Date: 2022-02-11 02:24\n"
+"PO-Revision-Date: 2022-04-10 02:29\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Language: pt_PT\n"
@@ -706,7 +706,7 @@ msgstr "A descomprimir ficheiros de cartas..."
 
 #: src/ochartShop.cpp:3717
 msgid "Unpacking charts"
-msgstr ""
+msgstr "Desempacotando cartas"
 
 #: src/ochartShop.cpp:4032 src/ochartShop.cpp:4088 src/ochartShop.cpp:4131
 msgid "Installed Chart Edition:"
@@ -809,7 +809,8 @@ msgstr "Este Nome de Sistema foi desativado\n"
 #: src/ochartShop.cpp:5107
 msgid "The detected System Name has been disabled\n"
 "Please contact o-charts to enable it again."
-msgstr ""
+msgstr "O nome do sistema detetado foi desativado\n"
+"Entre em contacto com o-charts para ativá-lo novamente."
 
 #: src/ochartShop.cpp:5153
 msgid "Invalid System Name"
@@ -823,31 +824,31 @@ msgstr "Este Nome de Sistema foi desativado\n"
 
 #: src/ochartShop.cpp:5342
 msgid "The o-charts cache directory contains the following unused charts:"
-msgstr ""
+msgstr "O diretório de cache do o-charts contém as seguintes cartas não utilizadas:"
 
 #: src/ochartShop.cpp:5350
 msgid "Remove these unused charts now?"
-msgstr ""
+msgstr "Remover agora estas cartas não utilizadas?"
 
 #: src/ochartShop.cpp:5388
 msgid "WARNING:\n"
-msgstr ""
+msgstr "AVISO:\n"
 
 #: src/ochartShop.cpp:5389
 msgid "This chart set has been previously installed.\n"
-msgstr ""
+msgstr "Este conjunto de cartas foi instalado anteriormente.\n"
 
 #: src/ochartShop.cpp:5390
 msgid "However, the chart files cannot be located.\n\n"
-msgstr ""
+msgstr "No entanto, os ficheiros de cartas não foram localizados.\n\n"
 
 #: src/ochartShop.cpp:5391
 msgid "The original installation directory is: "
-msgstr ""
+msgstr "O diretório de instalação original é: "
 
 #: src/ochartShop.cpp:5394
 msgid "Please select the directory where these chart files may now be found."
-msgstr ""
+msgstr "Por favor, selecione o diretório onde os ficheiros de cartas podem ser encontrados."
 
 #: src/ochartShop.cpp:5432
 msgid "Validation error on zip file"
@@ -859,7 +860,7 @@ msgstr "Erro na validação do ficheiro chave"
 
 #: src/ochartShop.cpp:5741
 msgid "Finalizing charts"
-msgstr ""
+msgstr "Finalizando cartas"
 
 #: src/ochartShop.cpp:5756
 msgid "Relocating chart files..."
@@ -867,11 +868,11 @@ msgstr "Recolocando ficheiros de cartas..."
 
 #: src/ochartShop.cpp:5912
 msgid "Status: Validating download file..."
-msgstr "Status: Validando ficheiro de descarga..."
+msgstr "Estado: Validando ficheiro de descarga..."
 
 #: src/ochartShop.cpp:5913
 msgid "Verifying download"
-msgstr ""
+msgstr "Verificando a descarga"
 
 #: src/ochartShop.cpp:5992
 msgid "Validate Log"
@@ -913,7 +914,7 @@ msgstr "Não esqueça de reconstruir a base de dados de cartas\n"
 
 #: src/ochartShop.cpp:6368
 msgid "Installing..."
-msgstr ""
+msgstr "Instalando..."
 
 #: src/ochartShop.cpp:6370
 msgid "Preparing installation..."
@@ -929,7 +930,7 @@ msgstr "Estado: Erro de carga de sistema FPR"
 
 #: src/ochartShop.cpp:6612 src/ochartShop.cpp:6613
 msgid "Requesting License Keys"
-msgstr ""
+msgstr "Solicitando Chaves de Licença"
 
 #: src/ochartShop.cpp:6644
 msgid "Status: Downloading..."

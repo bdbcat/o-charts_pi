@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-02-08 22:21-0500\n"
-"PO-Revision-Date: 2022-02-12 03:28\n"
+"PO-Revision-Date: 2022-04-10 02:29\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -19,11 +19,11 @@ msgstr ""
 
 #: src/o-charts_pi.h:224 src/o-charts_pi.cpp:1476
 msgid "o-charts_pi Preferences"
-msgstr "Préférences de o-charts_pi"
+msgstr "ocharts_pi : Préférences"
 
 #: src/o-charts_pi.h:343
 msgid "o-charts_pi Information"
-msgstr "Informations par o-charts_pi"
+msgstr "o-charts_pi : Information"
 
 #: src/o-charts_pi.cpp:355 src/o-charts_pi.cpp:4126 src/o-charts_pi.cpp:4189
 #: src/o-charts_pi.cpp:4355 src/o-charts_pi.cpp:5132 src/o-charts_pi.cpp:5195
@@ -58,7 +58,7 @@ msgstr "Il est recommandé de désactiver/supprimer le complément oeSENC exista
 #: src/ochartShop.cpp:6059 src/ochartShop.cpp:6259 src/ochartShop.cpp:6276
 #: src/ochartShop.cpp:6335 src/ochartShop.cpp:6993
 msgid "o-charts_pi Message"
-msgstr "Message de o-charts_pi"
+msgstr "o-charts_pi : Message"
 
 #: src/o-charts_pi.cpp:697
 msgid "The o-charts plugin replaces the oeRNC plugin chart display functions.\n"
@@ -74,7 +74,7 @@ msgstr "o-charts"
 
 #: src/o-charts_pi.cpp:851
 msgid "PlugIn for OpenCPN o-charts charts"
-msgstr "Complément relatif aux cartes O-Charts pour OpenCPN"
+msgstr "Cartes O-Charts pour OpenCPN : Gestion"
 
 #: src/o-charts_pi.cpp:857
 msgid "PlugIn for OpenCPN\n"
@@ -109,11 +109,11 @@ msgid "This chart cannot be loaded due to any of the following reasons:\n\n"
 "- This chart set was prepared for a USB key dongle, but dongle is not detected.\n"
 "- There are corrupted files due to errors during download or unzip.\n\n"
 "Please contact info@o-charts.org if the problem persists.\n"
-msgstr "Cette carte marine ne peut pas être chargée pour l'une des raisons suivantes :\n\n"
+msgstr "Cette carte marine ne peut être chargée pour une des raisons suivantes :\n\n"
 "- Vous avez effectué des modifications matérielles importantes sur votre ordinateur.\n"
 "- Votre système d'exploitation a été mis à jour et votre licence a été suspendue.\n"
 "- Ce jeu de cartes a été préparé pour un autre système.\n"
-"- Ce jeu de cartes a été préparé pour un Dongle USB, mais ce dernier n’a pas été détecté.\n"
+"- Ce jeu de cartes a été préparé pour un dongle-USB, mais ce dernier n’a pas été détecté.\n"
 "- Il y a des fichiers corrompus en raison d'erreurs lors du téléchargement ou de la décompression.\n\n"
 "Veuillez contacter info@o-charts.org si le problème persiste.\n"
 
@@ -171,7 +171,7 @@ msgstr "Créer le fichier d'identification du système ..."
 
 #: src/o-charts_pi.cpp:3370
 msgid "Create USB key dongle System ID file..."
-msgstr "Créer un fichier ID du système pour un Dongle USB ..."
+msgstr "Créer un fichier ID du système pour un dongle-USB ..."
 
 #: src/o-charts_pi.cpp:3378
 msgid "Show In Finder"
@@ -191,7 +191,7 @@ msgstr "Nom du système :"
 #: src/ochartShop.cpp:4606 src/ochartShop.cpp:6827 src/ochartShop.cpp:6833
 #: src/ochartShop.cpp:7334 src/ochartShop.cpp:7347
 msgid "USB Key Dongle"
-msgstr "Clé USB Dongle"
+msgstr "Dongle-USB"
 
 #: src/o-charts_pi.cpp:3401
 msgid "Pending chart refresh"
@@ -227,7 +227,7 @@ msgstr "Pour obtenir un jeu de cartes, vous devez générer un unique fichier d'
 
 #: src/o-charts_pi.cpp:3704
 msgid "The fingerprint file contains information related to a connected USB key dongle.\n\n"
-msgstr "Le fichier d'empreinte contient des informations relatives à un dongle USB connecté.\n\n"
+msgstr "Le fichier d'empreinte contient des informations relatives à un dongle-USB connecté.\n\n"
 
 #: src/o-charts_pi.cpp:3705 src/o-charts_pi.cpp:3753
 msgid "After creating this file, you will need it to obtain your chart sets at the o-charts.org shop.\n\n"
@@ -237,7 +237,7 @@ msgstr "Après avoir créé ce fichier, vous en aurez besoin pour obtenir vos je
 msgid "ERROR Creating Fingerprint file\n"
 " USB key dongle not detected."
 msgstr "ERREUR Création du fichier d'empreintes digitales\n"
-" dongle USB non détecté."
+" dongle-USB non détecté."
 
 #: src/o-charts_pi.cpp:3724 src/o-charts_pi.cpp:3765
 msgid "Fingerprint file created.\n"
@@ -305,7 +305,7 @@ msgstr "Jeu de cartes"
 
 #: src/o-charts_pi.cpp:5034
 msgid "Add/Update o-charts chart sets"
-msgstr "Ajouter/Mettre à jour les jeux de cartes o-charts"
+msgstr "Cartes o-charts : Ajouter/Mettre  à jour"
 
 #: src/o-charts_pi.cpp:5039
 msgid "Visit o-charts.org Website"
@@ -330,7 +330,7 @@ msgstr "Aucun jeu de cartes sélectionné\n"
 
 #: src/validator.cpp:279
 msgid "Starting chartset validation.\n"
-msgstr "Démarrage de la validation du jeu de cartes.\n"
+msgstr " Jeu de cartes : Validation, Démarrage\n"
 
 #: src/validator.cpp:281
 msgid "  Checking server installation."
@@ -362,11 +362,11 @@ msgstr "  Dongle trouvé : "
 
 #: src/validator.cpp:313
 msgid "  dongle not found: "
-msgstr "  Dongle USB absent : "
+msgstr "  Dongle-USB absent : "
 
 #: src/validator.cpp:325
 msgid "  Validating chartset assigned to dongle: "
-msgstr "  Validation du jeu de cartes associé au dongle USB : "
+msgstr "  Validation du jeu de cartes associé au dongle-USB : "
 
 #: src/validator.cpp:331 src/validator.cpp:338
 msgid "  Validating chartset assigned to systemName: "
@@ -382,7 +382,7 @@ msgstr "Droits d'utilisation : Quantité absente."
 
 #: src/validator.cpp:358
 msgid "  Selected chartset is not installed for dongle."
-msgstr "  Le jeu de cartes sélectionné n'est pas installé pour le dongle USB."
+msgstr "  Le jeu de cartes sélectionné n'est pas installé pour le dongle-USB."
 
 #: src/validator.cpp:360
 msgid "  Selected chartset is not installed."
@@ -398,7 +398,7 @@ msgstr "  ProcessingChartList.XML"
 
 #: src/validator.cpp:380
 msgid "    Checking for ChartList.XML at: "
-msgstr "    Recherche de ChartList.XML at: "
+msgstr "    Accès à ChartList.XML ici :  "
 
 #: src/validator.cpp:385
 msgid "    ChartList.XML not found in installation directory."
@@ -434,15 +434,15 @@ msgstr "    ChartList.XML validée OK."
 
 #: src/validator.cpp:460
 msgid "  Checking chart key files."
-msgstr "  Vérification de la liste des cartes."
+msgstr "  Liste des cartes : Vérification."
 
 #: src/validator.cpp:471
 msgid "    Loading keyFile: "
-msgstr "Chargement de la liste des cartes"
+msgstr "Liste des cartes : Chargement."
 
 #: src/validator.cpp:474
 msgid "    Error loading keyFile: "
-msgstr "Erreur de chargement de la liste des cartes"
+msgstr "Liste des cartes : Erreur de chargement."
 
 #: src/validator.cpp:499
 msgid "    Key not found for chart file: "
@@ -454,7 +454,7 @@ msgstr "Liste des cartes obtenues : Ok"
 
 #: src/validator.cpp:520
 msgid "  Starting chart test load."
-msgstr "Début du test de chargement des cartes"
+msgstr "Chargement des cartes : Test"
 
 #: src/validator.cpp:523
 msgid "  Chart count: "
@@ -466,7 +466,7 @@ msgstr "  Erreur de chargement de la carte : "
 
 #: src/validator.cpp:551
 msgid "  Chart test load OK."
-msgstr "Test de chargement des cartes : Ok"
+msgstr "Chargement des cartes, test : Ok"
 
 #: src/validator.cpp:555
 msgid "Chartset installation validates OK."
@@ -511,7 +511,7 @@ msgstr "Expiré."
 
 #: src/ochartShop.cpp:1774
 msgid "Preparing your chartset."
-msgstr "Jeu de cartes en préparation."
+msgstr "Jeu de cartes : Préparation."
 
 #: src/ochartShop.cpp:1778
 msgid "Ready for download."
@@ -519,7 +519,7 @@ msgstr "Téléchargement : Prêt."
 
 #: src/ochartShop.cpp:1782
 msgid "Please update Chart List."
-msgstr "Veuillez mettre à jour liste des cartes."
+msgstr "Liste des cartes : Mettre à jour"
 
 #: src/ochartShop.cpp:1786
 msgid "Ready for Download Request."
@@ -664,7 +664,7 @@ msgstr "Procéder ?"
 
 #: src/ochartShop.cpp:3234 src/ochartShop.cpp:4998
 msgid "  {USB Dongle not found.}"
-msgstr "  {Dongle USB absent.}"
+msgstr "  {Dongle-USB absent.}"
 
 #: src/ochartShop.cpp:3237 src/ochartShop.cpp:5001
 msgid "  {fpr file not found.}"
@@ -684,7 +684,7 @@ msgstr "Regardez dans le fichier log d'OpenCPN."
 
 #: src/ochartShop.cpp:3287
 msgid "[USB Key Dongle not found.]"
-msgstr "[Dongle USB absent.]"
+msgstr "[Dongle-USB absent.]"
 
 #: src/ochartShop.cpp:3291
 msgid "[fpr file not found.]"
@@ -700,7 +700,7 @@ msgstr "[fichier fpr pas créé.]"
 
 #: src/ochartShop.cpp:3716 src/androidSupport.cpp:577
 msgid "Unzipping chart files..."
-msgstr "Préparation des fichiers de cartes ..."
+msgstr "Préparation des cartes ..."
 
 #: src/ochartShop.cpp:3717
 msgid "Unpacking charts"
@@ -745,7 +745,7 @@ msgstr "Liste des cartes : Actualiser"
 
 #: src/ochartShop.cpp:4421 src/ochartShop.cpp:4451
 msgid "Show Expired Charts"
-msgstr "Cartes expirées : Afficher"
+msgstr "Cartes expirées : Voir"
 
 #: src/ochartShop.cpp:4426 src/ochartShop.cpp:4440
 msgid "Show Chart Info"
@@ -769,7 +769,7 @@ msgstr "Annuler l'opération"
 
 #: src/ochartShop.cpp:4512
 msgid "Validate Installed Chart Set"
-msgstr "Ces cartes : Evaluer l'installation"
+msgstr "Pour ces cartes, évaluer l'installation"
 
 #: src/ochartShop.cpp:4520
 msgid "Status: Chart List Refresh required."
@@ -788,7 +788,7 @@ msgstr "Statut : Prêt"
 
 #: src/ochartShop.cpp:4744
 msgid "Contacting o-charts server..."
-msgstr "Connexion au serveur de o-charts ..."
+msgstr "Serveur o-charts : Connexion..."
 
 #: src/ochartShop.cpp:4755 src/ochartShop.cpp:4770
 msgid "Status: Login error."
@@ -862,7 +862,7 @@ msgstr "Installation ..."
 
 #: src/ochartShop.cpp:5756
 msgid "Relocating chart files..."
-msgstr "Jeu de cartes : Enregistrement ..."
+msgstr "Cartes : Enregistrer ..."
 
 #: src/ochartShop.cpp:5912
 msgid "Status: Validating download file..."
@@ -894,7 +894,7 @@ msgstr "Installation en cours ..."
 
 #: src/ochartShop.cpp:6259
 msgid "Proceed with chart installation."
-msgstr "Continuer l'installation"
+msgstr "Procéder à l'installation"
 
 #: src/ochartShop.cpp:6272
 msgid "Chart installation ERROR."
@@ -916,11 +916,11 @@ msgstr "Installation ..."
 
 #: src/ochartShop.cpp:6370
 msgid "Preparing installation..."
-msgstr "Préparation de l'installation..."
+msgstr "Installation : Préparation ..."
 
 #: src/ochartShop.cpp:6442
 msgid "Status: Dongle FPR upload error"
-msgstr "Statut : Erreur de chargement du fpr du Dongle USB"
+msgstr "Statut : Erreur de chargement du fpr du dongle-USB"
 
 #: src/ochartShop.cpp:6454
 msgid "Status: System FPR upload error"
@@ -948,11 +948,11 @@ msgstr "Jeu de cartes choisi : Installer"
 
 #: src/ochartShop.cpp:6838
 msgid "Reinstall Selected Chart for "
-msgstr "jeu de cartes coisi : Ré-Installer"
+msgstr "Cartes choisies, Ré-Installer "
 
 #: src/ochartShop.cpp:6839
 msgid "Update Selected Chart for "
-msgstr "Mettre à jour le jeu de cartes "
+msgstr "Jeu de cartes : Mettre à jour"
 
 #: src/ochartShop.cpp:6842
 msgid "Download Selection"
@@ -964,7 +964,7 @@ msgstr "Installer la sélection"
 
 #: src/ochartShop.cpp:6845
 msgid "Update Selection"
-msgstr "Mettre à jour la sélection"
+msgstr "Sélection : Mettre à jour"
 
 #: src/ochartShop.cpp:6974 src/ochartShop.cpp:7186
 msgid "A valid System Name is 3 to 15 characters in length."
@@ -988,7 +988,7 @@ msgstr "Entrer le nouveau nom du système"
 
 #: src/ochartShop.cpp:7192
 msgid "No symbols or spaces are allowed."
-msgstr "Ni symbole, ni l'espace ne sont autorisés."
+msgstr "Ni les symboles, ni l'espace ne sont autorisés."
 
 #: src/ochartShop.cpp:7205 src/ochartShop.cpp:7386 src/ochartShop.cpp:7684
 #: src/ochartShop.cpp:7753
