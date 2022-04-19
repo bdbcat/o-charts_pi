@@ -3692,7 +3692,10 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
         point_size++;
     }
 
-    double postmult =  1.0 ; //m_SoundingsScaleFactor;
+    wxString msg;
+    msg.Printf("m_SoundingsScaleFactor %g", m_SoundingsScaleFactor);
+    wxLogMessage(msg);
+    double postmult =  m_SoundingsScaleFactor;
     if((postmult <= 2.0) && (postmult >= 0.5)){
         point_size *= postmult;
         scale_factor *= postmult;
@@ -11369,7 +11372,7 @@ void PrepareS52ShaderUniforms(ViewPort *vp);
     lastLightLon = 0;
 
     //Precalulate the ENC Soundings scale factor
-    m_SoundingsScaleFactor = exp( m_nSoundingFactor * (log(2.0) / 5.0) );
+    m_SoundingsScaleFactor = 1.0; //exp( m_nSoundingFactor * (log(2.0) / 5.0) );
 
 }
 
