@@ -3637,7 +3637,7 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
     scale_factor *=  g_ChartScaleFactorExp;
     scale_factor *= g_scaminScale;
 
-    if(m_display_size_mm < 200){                //about 8 inches, implying some sort of smaller mobile device
+    if(0/*m_display_size_mm < 200*/){                //about 8 inches, implying some sort of smaller mobile device
         //  Set the onscreen size of the symbol
         //  Compensate for various display resolutions
         //  Develop empirically, making a buoy about 4 mm tall
