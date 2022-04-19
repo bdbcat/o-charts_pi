@@ -505,6 +505,8 @@ s52plib::s52plib( const wxString& PLib, bool b_forceLegacy )
     SetGLLineSmoothing( true );
 
     m_display_size_mm = 300;
+    m_displayScale = 1.0;
+
 }
 
 s52plib::~s52plib()
@@ -557,6 +559,11 @@ void s52plib::SetGLOptions(bool b_useStencil,
 
 void s52plib::SetPPMM( float ppmm )
 {
+#ifdef __WXOSX__
+  // Support Mac Retina displays.
+  m_displayScale = GetOCPNCanvasWindow()->GetContentScaleFactor();
+#endif
+
     canvas_pix_per_mm = ppmm;
 
     // We need a supplemental scale factor for HPGL vector symbol rendering.
@@ -577,7 +584,7 @@ void s52plib::SetPPMM( float ppmm )
     ::wxDisplaySize( &ww, &hh);
     m_display_size_mm = wxMax(ww, hh) / GetPPMM();        // accurate enough for internal use
 
-
+    m_display_size_mm /= m_displayScale;
 }
 
 //      Various static helper methods
