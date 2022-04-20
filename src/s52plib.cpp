@@ -3642,7 +3642,7 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
 
     scale_factor /= m_displayScale;
 
-    if(0/*m_display_size_mm < 200*/){                //about 8 inches, implying some sort of smaller mobile device
+    if(m_display_size_mm < 200){                //about 8 inches, implying some sort of smaller mobile device
         //  Set the onscreen size of the symbol
         //  Compensate for various display resolutions
         //  Develop empirically, making a buoy about 4 mm tall
@@ -11377,7 +11377,7 @@ void PrepareS52ShaderUniforms(ViewPort *vp);
     lastLightLon = 0;
 
     //Precalulate the ENC Soundings scale factor
-    m_SoundingsScaleFactor = 1.0; //exp( m_nSoundingFactor * (log(2.0) / 5.0) );
+    m_SoundingsScaleFactor = exp( m_nSoundingFactor * (log(2.0) / 5.0) );
 
 }
 
