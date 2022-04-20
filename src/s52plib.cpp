@@ -3636,9 +3636,6 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
 
     scale_factor *=  g_ChartScaleFactorExp;
     scale_factor *= g_scaminScale;
-    wxString msg0;
-    msg0.Printf("scale_factors %g  %g  %g", scale_factor, g_scaminScale, g_ChartScaleFactorExp);
-    wxLogMessage(msg0);
 
     scale_factor /= m_displayScale;
 
@@ -3697,9 +3694,6 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
         point_size++;
     }
 
-    wxString msg;
-    msg.Printf("m_SoundingsScaleFactor %g", m_SoundingsScaleFactor);
-    wxLogMessage(msg);
     double postmult = m_SoundingsScaleFactor;
     if((postmult <= 2.0) && (postmult >= 0.5)){
         point_size *= postmult;
