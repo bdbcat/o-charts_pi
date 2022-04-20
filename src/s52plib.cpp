@@ -3636,6 +3636,9 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
 
     scale_factor *=  g_ChartScaleFactorExp;
     scale_factor *= g_scaminScale;
+    wxString msg0;
+    msg0.Printf("scale_factors %g  %g  %g", scale_factor, g_scaminScale, g_ChartScaleFactorExp);
+    wxLogMessage(msg0);
 
     if(0/*m_display_size_mm < 200*/){                //about 8 inches, implying some sort of smaller mobile device
         //  Set the onscreen size of the symbol
