@@ -3695,7 +3695,7 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
     wxString msg;
     msg.Printf("m_SoundingsScaleFactor %g", m_SoundingsScaleFactor);
     wxLogMessage(msg);
-    double postmult =  m_SoundingsScaleFactor;
+    double postmult =  1.0; //m_SoundingsScaleFactor;
     if((postmult <= 2.0) && (postmult >= 0.5)){
         point_size *= postmult;
         scale_factor *= postmult;
