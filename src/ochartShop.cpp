@@ -2406,6 +2406,9 @@ int checkResponseCode(int iResponseCode)
 
 int doLogin( wxWindow *parent )
 {
+  wxString pass;
+
+  do {
     oeUniLogin login(parent);
     login.SetLoginName(g_loginUser);
     login.ShowModal();
@@ -2416,9 +2419,24 @@ int doLogin( wxWindow *parent )
     }
 
     g_loginUser = login.m_UserNameCtl->GetValue().Trim( true).Trim( false );
-    wxString pass = login.m_PasswordCtl->GetValue().Trim( true).Trim( false );
+    pass = login.m_PasswordCtl->GetValue().Trim( true).Trim( false );
 
-    wxString taskID;
+    if( (pass.Length() < 5) || (pass.length() > 255)){
+      wxString msg(_("Invalid password length"));
+      msg += "\n";
+      msg += wxString(_("Password length must be:"));
+      msg += "\n";
+      msg += wxString(_("Greater than 4 characters, and"));
+      msg += "\n";
+      msg += wxString(_("Less than 255 characters."));
+
+      ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
+
+    }
+
+  } while ((pass.Length() < 5) || (pass.length() > 255));
+
+  wxString taskID;
 #ifdef __OCPN__ANDROID__
     // There may be special characters in password.  Encode them correctly for URL inclusion.
     std::string pass_encode = urlEncode(std::string(pass.mb_str()));
