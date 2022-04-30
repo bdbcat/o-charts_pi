@@ -9139,7 +9139,14 @@ int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
             else
                 box = p_tp->tri_box;
 
-            if(!BBView.IntersectOut(box)) {
+            bool bTriPrimIntersect = !BBView.IntersectOut(box);
+
+            // For PRIO_AREA_2 objects, render all triangle primitives,
+            // to ensure coverage on small pan operations.
+            if (rzRules->LUP->DPRI == PRIO_AREA_2)
+              bTriPrimIntersect = true;
+
+            if(bTriPrimIntersect) {
 #ifdef USE_ANDROID_GLES2
 
                 if(b_useVBO) {
