@@ -465,6 +465,9 @@ private:
     wxFont *m_soundFont;
 
     double m_displayScale;
+    double m_soundingTextScaleFactor;
+    int m_soundingPointSize;
+    int m_soundingCharWidth, m_soundingCharHeight;
 
 };
 

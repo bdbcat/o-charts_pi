@@ -506,7 +506,7 @@ s52plib::s52plib( const wxString& PLib, bool b_forceLegacy )
 
     m_display_size_mm = 300;
     m_displayScale = 1.0;
-
+    m_soundingTextScaleFactor = 0;
 }
 
 s52plib::~s52plib()
@@ -632,7 +632,7 @@ void s52plib::DestroyRulesChain( Rules *top )
 
 DisCat s52plib::findLUPDisCat(const char *objectName, LUPname TNAM)
 {
-    LUPArrayContainer *plac = SelectLUPArrayContainer( TNAM );
+    //LUPArrayContainer *plac = SelectLUPArrayContainer( TNAM );
 
     wxArrayOfLUPrec *LUPArray = SelectLUPARRAY( TNAM  );
 
@@ -664,7 +664,6 @@ bool s52plib::GetAnchorOn()
     //  Investigate and report the logical condition that "Anchoring Condition" is shown
 
     int old_vis =  0;
-    OBJLElement *pOLE = NULL;
 
     if(  MARINERS_STANDARD == GetDisplayCategory()){
         old_vis = m_anchorOn;
@@ -685,7 +684,6 @@ bool s52plib::GetQualityOfData()
     //  Investigate and report the logical condition that "Quality of Data Condition" is shown
 
     int old_vis =  0;
-    OBJLElement *pOLE = NULL;
 
     if(  MARINERS_STANDARD == GetDisplayCategory()){
             for( unsigned int iPtr = 0; iPtr < pOBJLArray->GetCount(); iPtr++ ) {
@@ -2663,13 +2661,14 @@ int s52plib::RenderT_All( ObjRazRules *rzRules, Rules *rules, ViewPort *vp, bool
             if( useLegacyRaster ) {
                 text->pFont = specFont;
             } else {
-                int spec_weight = text->weight - 0x30;
-                wxFontWeight fontweight;
-                if( spec_weight < 5 ) fontweight = wxFONTWEIGHT_LIGHT;
-                else
-                    if( spec_weight == 5 ) fontweight = wxFONTWEIGHT_NORMAL;
-                    else
-                        fontweight = wxFONTWEIGHT_BOLD;
+//                int spec_weight = text->weight - 0x30;
+//
+//                 wxFontWeight fontweight;
+//                 if( spec_weight < 5 ) fontweight = wxFONTWEIGHT_LIGHT;
+//                 else
+//                     if( spec_weight == 5 ) fontweight = wxFONTWEIGHT_NORMAL;
+//                     else
+//                         fontweight = wxFONTWEIGHT_BOLD;
 
                 wxFont sys_font = *wxNORMAL_FONT;
                 int default_size = sys_font.GetPointSize();
@@ -2757,7 +2756,7 @@ int s52plib::RenderT_All( ObjRazRules *rzRules, Rules *rules, ViewPort *vp, bool
 
 //            if ( rzRules->obj->Primitive_type == GEO_POINT )
         {
-            double latmin, lonmin, latmax, lonmax, extent = 0;
+            double latmin, lonmin, latmax, lonmax;
 
             GetPixPointSingleNoRotate( rect.GetX(), rect.GetY() + rect.GetHeight(), &latmin, &lonmin, vp );
             GetPixPointSingleNoRotate( rect.GetX() + rect.GetWidth(), rect.GetY(), &latmax, &lonmax, vp );
@@ -2807,7 +2806,7 @@ bool s52plib::RenderHPGL( ObjRazRules *rzRules, Rule *prule, wxPoint &r, ViewPor
         float sym_length = 30;
         float scaled_length = sym_length / vp->view_scale_ppm;
 
-        double fac1 = scaled_length / fsf;
+        //double fac1 = scaled_length / fsf;
 
 
         float target_length = 1852;
@@ -3639,6 +3638,7 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
 
     scale_factor /= m_displayScale;
 
+#if 0
     if(m_display_size_mm < 200){                //about 8 inches, implying some sort of smaller mobile device
         //  Set the onscreen size of the symbol
         //  Compensate for various display resolutions
@@ -3666,6 +3666,7 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
 
         //scale_factor *= pix_factor;
     }
+#endif
 
     wxFontWeight fontWeight = wxFONTWEIGHT_NORMAL;
     wxString fontFacename = wxEmptyString;
@@ -3677,22 +3678,37 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
     defaultHeight = 2.2;
 #endif
 
-        // calculate the required point size to give specified height
     int point_size = 6;
-    bool not_done = true;
-    wxScreenDC sdc;
-    int charWidth, charHeight, charDescent;
-    while((point_size < 20) && not_done){
-        wxFont *tentativeFont = FindOrCreateFont_PlugIn( point_size, wxFONTFAMILY_SWISS,  wxFONTSTYLE_NORMAL, fontWeight, false, fontFacename );
-        sdc.GetTextExtent( _T("0"), &charWidth, &charHeight, &charDescent, NULL, tentativeFont ); // measure the text
-        double font_size_mm = (double)(charHeight- charDescent) / GetPPMM();
+    int charWidth, charHeight;
 
-        if(font_size_mm >= (defaultHeight * scale_factor)){
-            not_done = false;
-            break;
-        }
-        point_size++;
+    if(scale_factor != m_soundingTextScaleFactor) {
+        // calculate the required point size to give specified height
+      bool not_done = true;
+      int charDescent;
+      wxScreenDC sdc;
+      while((point_size < 20) && not_done){
+          wxFont *tentativeFont = FindOrCreateFont_PlugIn( point_size, wxFONTFAMILY_SWISS,  wxFONTSTYLE_NORMAL, fontWeight, false, fontFacename );
+          sdc.GetTextExtent( _T("0"), &charWidth, &charHeight, &charDescent, NULL, tentativeFont ); // measure the text
+          double font_size_mm = (double)(charHeight- charDescent) / GetPPMM();
+
+          if(font_size_mm >= (defaultHeight * scale_factor)){
+              not_done = false;
+              break;
+          }
+          point_size++;
+      }
+      m_soundingPointSize = point_size;
+      m_soundingCharWidth = charWidth;
+      m_soundingCharHeight = charHeight;
     }
+    else{
+      point_size = m_soundingPointSize;
+      charWidth = m_soundingCharWidth;
+      charHeight = m_soundingCharHeight;
+    }
+
+    m_soundingTextScaleFactor = scale_factor;
+
 
     double postmult = m_SoundingsScaleFactor;
     if((postmult <= 2.0) && (postmult >= 0.5)){
@@ -3713,7 +3729,6 @@ bool s52plib::RenderSoundingSymbol( ObjRazRules *rzRules, Rule *prule, wxPoint &
     else{
         m_soundFont = FindOrCreateFont_PlugIn( point_size, wxFONTFAMILY_SWISS,  wxFONTSTYLE_NORMAL, fontWeight, false, fontFacename );
         m_pdc->SetFont(*m_soundFont);
-        //charHeight -= charDescent;
     }
 
     int pivot_x;
@@ -4038,7 +4053,7 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
     //  Try to determine if the feature needs to be drawn in the most efficient way
     //  We need to look at priority and visibility of each segment
-    int bdraw = 0;
+    //int bdraw = 0;
 
     //  Get the current display priority
     //  Default comes from the LUP, unless overridden
@@ -4107,7 +4122,7 @@ int s52plib::RenderGLLS( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
         glDisable( GL_LINE_STIPPLE );
 #endif
 
-    GLuint textureDot = -1;
+    //GLuint textureDot = -1;
 
 
 #ifndef USE_ANDROID_GLES2
@@ -5452,7 +5467,7 @@ int s52plib::RenderLC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
                     vbo_inc = -2;
                 }
 
-                double offset = 0;
+                //double offset = 0;
                 for(int ip=0 ; ip < nPoints ; ip++){
                     wxPoint r;
                     GetPointPixSingle( rzRules, ppt[vbo_index + 1], ppt[vbo_index], &r, vp );
@@ -6708,11 +6723,11 @@ int s52plib::RenderCARC_VBO( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
     // The dimensions of the light are presented here as pixels on-screen.
     // We must scale the rendered size based on the device pixel density
     // Let us declare that the width of the arc should be no less than X mm
-    float wx = 1.0;
+    //float wx = 1.0;
 
-    float pd_scale = 1.0;
-    float nominal_arc_width_pix = wxMax(1.0, floor(GetPPMM() * wx));             // { wx } mm nominal, but not less than 1 pixel
-    pd_scale = nominal_arc_width_pix / arc_width;
+    //float pd_scale = 1.0;
+    //float nominal_arc_width_pix = wxMax(1.0, floor(GetPPMM() * wx));             // { wx } mm nominal, but not less than 1 pixel
+    //pd_scale = nominal_arc_width_pix / arc_width;
 
     //scale_factor *= pd_scale;
     //qDebug() << GetPPMM() << arc_width << nominal_arc_width_pix << pd_scale;
@@ -7837,14 +7852,14 @@ int s52plib::dda_tri( wxPoint *ptp, S52color *c, render_canvas_parms *pb_spec,
 
     //      Create edge arrays using fast integer DDA
     int m, x, dy, count;
-    bool dda8 = false;
+    //bool dda8 = false;
     bool cw;
 
     if( ( abs( xmax - xmin ) > 32768 ) || ( abs( xmid - xmin ) > 32768 )
             || ( abs( xmax - xmid ) > 32768 ) || ( abs( ymax - ymin ) > 32768 )
             || ( abs( ymid - ymin ) > 32768 ) || ( abs( ymax - ymid ) > 32768 ) || ( xmin > 32768 )
             || ( xmid > 32768 ) ) {
-        dda8 = true;
+        //dda8 = true;
 
         dy = ( ymax - ymin );
         if( dy ) {
@@ -8658,7 +8673,7 @@ void s52plib::RenderToBufferFilledPolygon( ObjRazRules *rzRules, S57Obj *obj, S5
 
         //  Allow a little slop in calculating whether a triangle
         //  is within the requested Viewport
-        double margin = BBView.GetLonRange() * .05;
+        //double margin = BBView.GetLonRange() * .05;
 
         PolyTriGroup *ppg = obj->pPolyTessGeo->Get_PolyTriGroup_head();
 
@@ -8768,7 +8783,7 @@ void s52plib::RenderToBufferFilledPolygon( ObjRazRules *rzRules, S57Obj *obj, S5
 int s52plib::RenderToGLAC( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 {
 #ifdef ocpnUSE_GL
-    GLenum reset_err = glGetError();
+    glGetError();     // Reset Error flag
 
     S52color *c;
     char *str = (char*) rules->INSTstr;
@@ -9367,8 +9382,6 @@ int s52plib::RenderToGLAP( ObjRazRules *rzRules, Rules *rules, ViewPort *vp )
 
     double z_clip_geom = 1.0;
     double z_tex_geom = 0.;
-
-    GLuint clip_list = 0;
 
     LLBBox BBView = vp->GetBBox();
 
@@ -10059,7 +10072,7 @@ void s52plib::RenderPolytessGL(ObjRazRules *rzRules, ViewPort *vp, double z_clip
 
     //  Allow a little slop in calculating whether a triangle
     //  is within the requested Viewport
-    double margin = BBView.GetLonRange() * .05;
+    //double margin = BBView.GetLonRange() * .05;
 
     int obj_xmin = 10000;
     int obj_xmax = -10000;
@@ -10260,7 +10273,6 @@ render_canvas_parms* s52plib::CreatePatternBufferSpec( ObjRazRules *rzRules, Rul
         int height = (int) dheight + 1;
 
 
-        float render_scale = 1.0;
 #ifdef sUSE_ANDROID_GLES2
         int width_pot = width;
         int height_pot = height;
@@ -11377,8 +11389,6 @@ void PrepareS52ShaderUniforms(ViewPort *vp);
 
 void s52plib::SetAnchorOn(bool val)
 {
-    OBJLElement *pOLE = NULL;
-
     const char * categories[] = { "ACHBRT", "ACHARE", "CBLSUB", "PIPARE", "PIPSOL", "TUNNEL", "SBDARE" };
     unsigned int num = sizeof(categories) / sizeof(categories[0]);
 
@@ -12286,8 +12296,8 @@ void APIENTRY s52DCvertexCallback( GLvoid* arg )
 
 void APIENTRY s52DCerrorCallback( GLenum errorCode )
 {
-    const GLubyte *estring;
-    estring = gluErrorString(errorCode);
+    //const GLubyte *estring;
+    //estring = gluErrorString(errorCode);
     //wxLogMessage( _T("OpenGL Tessellation Error: %s"), (char *)estring );
 }
 
