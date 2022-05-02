@@ -2045,14 +2045,69 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
     BuildLineVBO();
     SetLinePriorities();
 
-    //qDebug() << "PI RenderTime3" << sw.GetTime();
-
     //        Clear the text declutter list
     ps52plib->ClearTextList();
 
-    //qDebug() << "PI RenderTime3a" << sw.GetTime();
+#if 1
+    // Prepare the rectangles and associated viewports
+    int nrv = 0;
+    ViewPort vp0, vp1;
+    wxRect r0, r1;
 
-///    glPushMatrix();
+    wxRegionIterator updv( Region ); // get the Region rect list
+    while( updv.HaveRects() ) {
+            wxRect rect = updv.GetRect();
+
+            ViewPort temp_vp = m_cvp;
+            double temp_lon_left, temp_lat_bot, temp_lon_right, temp_lat_top;
+
+            if(fabs(VPoint.rotation) > 0.01){
+                wxPoint p;
+                p.x = VPoint.rv_rect.x;
+                p.y = VPoint.rv_rect.y;
+
+                PlugIn_ViewPort vpbox = VPoint;
+                vpbox.rotation = 0;
+                GetCanvasLLPix( &vpbox, p, &temp_lat_top, &temp_lon_left);
+
+                p.x += VPoint.rv_rect.width;
+                p.y += VPoint.rv_rect.height;
+                GetCanvasLLPix( &vpbox, p, &temp_lat_bot, &temp_lon_right);
+            }
+            else{
+                wxPoint p;
+                p.x = rect.x;
+                p.y = rect.y;
+
+                GetCanvasLLPix( (PlugIn_ViewPort *)&VPoint, p, &temp_lat_top, &temp_lon_left);
+
+                p.x += rect.width;
+                p.y += rect.height;
+                GetCanvasLLPix( (PlugIn_ViewPort *)&VPoint, p, &temp_lat_bot, &temp_lon_right);
+            }
+
+            if( temp_lon_right < temp_lon_left )        // presumably crossing Greenwich
+                temp_lon_right += 360.;
+
+
+            temp_vp.GetBBox().Set(temp_lat_bot, temp_lon_left, temp_lat_top, temp_lon_right);
+
+            if (nrv == 0){
+              vp0 = temp_vp;
+              r0 = rect;
+            }
+            else{
+              vp1 = temp_vp;
+              r1 = rect;
+            }
+
+            updv++;
+            nrv++;
+    }
+
+      DoRender2RectOnGL( glc, vp0, r0, vp1, r1, b_use_stencil);
+
+#else
 
     wxRegionIterator upd( Region ); // get the Region rect list
         while( upd.HaveRects() ) {
@@ -2123,15 +2178,14 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
 
             upd++;
         }  //while
+#endif
 
-        //      Update last_vp to reflect current state
+    //      Update last_vp to reflect current state
     m_last_vp = VPoint;
     m_last_Region = Region;
 
-///    glPopMatrix();
 
-#endif
-    //qDebug() << "PI RenderTime5" << sw.GetTime();
+#endif    //GL
 
     return true;
 }
@@ -2415,10 +2469,10 @@ bool eSENCChart::DoRenderRectOnGL( const wxGLContext &glc, const ViewPort& VPoin
     else
         glEnable( GL_DEPTH_TEST );
 
-//#ifndef USE_ANDROID_GLES2
+#ifndef USE_ANDROID_GLES2
     glDisable( GL_DEPTH_TEST );
     glDisable( GL_STENCIL_TEST );
-//#endif
+#endif
 
     //OCPNStopWatch sw;
 
@@ -2504,6 +2558,135 @@ bool eSENCChart::DoRenderRectOnGL( const wxGLContext &glc, const ViewPort& VPoin
 
     return true;
 }
+
+bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoint1, wxRect &rect1,
+                              const ViewPort& VPoint2, wxRect &rect2, bool b_useStencil )
+{
+
+    int i;
+    ObjRazRules *top;
+    ObjRazRules *crnt;
+
+    ViewPort tvp1 = VPoint1;                    // undo const  TODO fix this in PLIB
+    ViewPort tvp2 = VPoint2;
+
+//     if( b_useStencil )
+//         glEnable( GL_STENCIL_TEST );
+//     else
+//         glEnable( GL_DEPTH_TEST );
+
+//#ifndef USE_ANDROID_GLES2
+    glDisable( GL_DEPTH_TEST );
+    glDisable( GL_STENCIL_TEST );
+//#endif
+
+
+    //      Render the areas quickly
+    for( i = 0; i < PRIO_NUM; ++i ) {
+        if( PI_GetPLIBBoundaryStyle() == SYMBOLIZED_BOUNDARIES )
+            top = razRules[i][4]; // Area Symbolized Boundaries
+        else
+            top = razRules[i][3];           // Area Plain Boundaries
+
+        while( top != NULL ) {
+            crnt = top;
+            top = top->next;               // next object
+            crnt->sm_transform_parms = &vp_transform;
+
+            // This may be a deferred tesselation
+            // Don't pre-process the geometry unless the object is to be actually rendered
+            if(!crnt->obj->pPolyTessGeo->IsOk() ){
+                if((ps52plib->ObjectRenderCheckRules( crnt, &tvp1, true )) ||
+                    (ps52plib->ObjectRenderCheckRules( crnt, &tvp2, true ))){
+                   if(!crnt->obj->pPolyTessGeo->m_pxgeom)
+                        crnt->obj->pPolyTessGeo->m_pxgeom = buildExtendedGeom( crnt->obj );
+                }
+            }
+#ifdef USE_ANDROID_GLES2
+             glEnable(GL_SCISSOR_TEST);
+             glScissor(rect1.x, m_cvp.pix_height-rect1.height-rect1.y, rect1.width, rect1.height);
+#endif
+
+            ps52plib->m_last_clip_rect = rect1;
+            ps52plib->RenderAreaToGL( glc, crnt, &tvp1 );
+
+            if (!rect2.IsEmpty()){
+#ifdef USE_ANDROID_GLES2
+              glEnable(GL_SCISSOR_TEST);
+              glScissor(rect2.x, m_cvp.pix_height-rect2.height-rect2.y, rect2.width, rect2.height);
+#endif
+              ps52plib->m_last_clip_rect = rect2;
+              ps52plib->RenderAreaToGL( glc, crnt, &tvp2 );
+            }
+        }
+    }
+
+
+
+    //    Render the lines and points
+    for( i = 0; i < PRIO_NUM; ++i ) {
+        if( ps52plib->m_nBoundaryStyle == SYMBOLIZED_BOUNDARIES )
+            top = razRules[i][4]; // Area Symbolized Boundaries
+        else
+            top = razRules[i][3];           // Area Plain Boundaries
+        while( top != NULL ) {
+            crnt = top;
+            top = top->next;               // next object
+            crnt->sm_transform_parms = &vp_transform;
+            ps52plib->m_last_clip_rect = rect1;
+            ps52plib->RenderObjectToGL( glc, crnt, &tvp1 );
+            if (!rect2.IsEmpty()){
+              ps52plib->m_last_clip_rect = rect2;
+              ps52plib->RenderObjectToGL( glc, crnt, &tvp2 );
+            }
+        }
+    }
+
+
+    for( i = 0; i < PRIO_NUM; ++i ) {
+
+        top = razRules[i][2];           //LINES
+        while( top != NULL ) {
+            ObjRazRules *crnt = top;
+            top = top->next;
+            crnt->sm_transform_parms = &vp_transform;
+            ps52plib->m_last_clip_rect = rect1;
+            ps52plib->RenderObjectToGL( glc, crnt, &tvp1 );
+            if (!rect2.IsEmpty()){
+              ps52plib->m_last_clip_rect = rect2;
+              ps52plib->RenderObjectToGL( glc, crnt, &tvp2 );
+            }
+        }
+    }
+
+    for( i = 0; i < PRIO_NUM; ++i ) {
+        if( ps52plib->m_nSymbolStyle == SIMPLIFIED )
+            top = razRules[i][0];       //SIMPLIFIED Points
+        else
+            top = razRules[i][1];           //Paper Chart Points Points
+
+        while( top != NULL ) {
+            crnt = top;
+            top = top->next;
+            crnt->sm_transform_parms = &vp_transform;
+            ps52plib->m_last_clip_rect = rect1;
+            ps52plib->RenderObjectToGL( glc, crnt, &tvp1 );
+            if (!rect2.IsEmpty()){
+              ps52plib->m_last_clip_rect = rect2;
+              ps52plib->RenderObjectToGL( glc, crnt, &tvp2 );
+            }
+        }
+
+    }
+
+    glDisable( GL_STENCIL_TEST );
+    glDisable( GL_DEPTH_TEST );
+    glDisable( GL_SCISSOR_TEST );
+
+
+    return true;
+}
+
 
 bool eSENCChart::DoRenderRectOnGLTextOnly( const wxGLContext &glc, const ViewPort& VPoint, wxRect &rect, bool b_useStencil )
 {

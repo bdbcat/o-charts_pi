@@ -286,6 +286,8 @@ protected:
 //       void SetClipRegionGL( const wxGLContext &glc, const PlugIn_ViewPort& VPoint, const wxRect &Rect,
 //                             bool b_render_nodta, bool b_useStencil );
       bool DoRenderRectOnGL( const wxGLContext &glc, const ViewPort& VPoint, wxRect &rect, bool b_useStencil );
+      bool DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoint1, wxRect &rect1,
+                              const ViewPort& VPoint2, wxRect &rect2, bool b_useStencil );
       bool DoRenderRectOnGLTextOnly( const wxGLContext &glc, const ViewPort& VPoint, wxRect &rect, bool b_useStencil );
 
       void UpdateLUPsOnStateChange( void );
