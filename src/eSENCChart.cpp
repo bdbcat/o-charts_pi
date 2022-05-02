@@ -2050,6 +2050,7 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
 
 #if 1
     // Prepare the rectangles and associated viewports
+    // There may be either one or two rectangles in the region, no more.
     int nrv = 0;
     ViewPort vp0, vp1;
     wxRect r0, r1;
@@ -2203,7 +2204,6 @@ int eSENCChart::RenderRegionViewOnGLTextOnly( const wxGLContext &glc, const Plug
     ps52plib->PrepareForRender(&m_cvp);
 
     //    Adjust for rotation
-///    glPushMatrix();
 
 
     {
@@ -2257,7 +2257,6 @@ int eSENCChart::RenderRegionViewOnGLTextOnly( const wxGLContext &glc, const Plug
         }
     }
 
-///    glPopMatrix();
 
 #endif
     return true;
@@ -2442,6 +2441,7 @@ void eSENCChart::SetClipRegionGL( const wxGLContext &glc, const PlugIn_ViewPort&
 
 #endif
 
+#if 0
 bool eSENCChart::DoRenderRectOnGL( const wxGLContext &glc, const ViewPort& VPoint, wxRect &rect, bool b_useStencil )
 {
 
@@ -2558,6 +2558,7 @@ bool eSENCChart::DoRenderRectOnGL( const wxGLContext &glc, const ViewPort& VPoin
 
     return true;
 }
+#endif
 
 bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoint1, wxRect &rect1,
                               const ViewPort& VPoint2, wxRect &rect2, bool b_useStencil )
@@ -2570,15 +2571,8 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
     ViewPort tvp1 = VPoint1;                    // undo const  TODO fix this in PLIB
     ViewPort tvp2 = VPoint2;
 
-//     if( b_useStencil )
-//         glEnable( GL_STENCIL_TEST );
-//     else
-//         glEnable( GL_DEPTH_TEST );
-
-//#ifndef USE_ANDROID_GLES2
     glDisable( GL_DEPTH_TEST );
     glDisable( GL_STENCIL_TEST );
-//#endif
 
 
     //      Render the areas quickly
@@ -2621,7 +2615,9 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
         }
     }
 
-
+#ifdef USE_ANDROID_GLES2
+    glDisable( GL_SCISSOR_TEST );
+#endif
 
     //    Render the lines and points
     for( i = 0; i < PRIO_NUM; ++i ) {
