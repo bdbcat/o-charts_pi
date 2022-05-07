@@ -125,7 +125,7 @@ jobs:
 
   build-jammy:
     docker:
-      - image: cimg/base:stable-22.04
+      - image: cimg/base:edge-22.04
     environment:
       - OCPN_TARGET: jammy
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
