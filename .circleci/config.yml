@@ -123,6 +123,14 @@ jobs:
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     <<: *debian-steps
 
+  build-jammy:
+    docker:
+      - image: cimg/base:stable-22.04
+    environment:
+      - OCPN_TARGET: jammy
+      - CMAKE_BUILD_PARALLEL_LEVEL: 2
+    <<: *debian-steps
+
   build-buster:
     docker:
       - image: circleci/buildpack-deps:buster-scm
@@ -184,6 +192,9 @@ workflows:
           <<: *std-filters
 
       - build-focal:
+          <<: *std-filters
+
+      - build-jammy:
           <<: *std-filters
 
       - build-buster:
