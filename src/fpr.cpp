@@ -236,9 +236,9 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
 
             cmd += _T("\"");
 #else
-            cmd += wxString('\"');
+            //cmd += wxString('\"');
             cmd += fpr_dir;
-            cmd += _T("\"");
+            //cmd += _T("\"");
 
             //            cmd += _T("my fpr\\");            // testing spaces in path
 
