@@ -546,11 +546,6 @@ oeuSENCChart::~oeuSENCChart()
 {
 }
 
-wxString oeuSENCChart::GetFileSearchMask(void)
-{
-      return _T("*.oesenc");
-}
-
 int oeuSENCChart::Init( const wxString& name, int init_flags )
 {
     std::string sname = wx2std(name);
@@ -629,11 +624,6 @@ oeuEVCChart::oeuEVCChart() : eSENCChart()
 
 oeuEVCChart::~oeuEVCChart()
 {
-}
-
-wxString oeuEVCChart::GetFileSearchMask(void)
-{
-      return _T("*.oeevc");
 }
 
 
@@ -715,11 +705,6 @@ oesuChart::oesuChart() : eSENCChart()
 
 oesuChart::~oesuChart()
 {
-}
-
-wxString oesuChart::GetFileSearchMask(void)
-{
-      return _T("*.oesu");
 }
 
 

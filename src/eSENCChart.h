@@ -410,7 +410,7 @@ DECLARE_DYNAMIC_CLASS(oeuSENCChart)
       oeuSENCChart();
       virtual ~oeuSENCChart();
 
-      wxString GetFileSearchMask(void);
+      wxString GetFileSearchMask(void){return _T("*.oesenc");}
       int Init( const wxString& name, int init_flags );
 
 };
@@ -429,7 +429,7 @@ DECLARE_DYNAMIC_CLASS(oeuEVCChart)
       oeuEVCChart();
       virtual ~oeuEVCChart();
 
-      wxString GetFileSearchMask(void);
+      wxString GetFileSearchMask(void) { return _T("*.oeevc"); }
       int Init( const wxString& name, int init_flags );
 
 
@@ -449,7 +449,8 @@ DECLARE_DYNAMIC_CLASS(oesuChart)
       oesuChart();
       virtual ~oesuChart();
 
-      wxString  GetFileSearchMask(void);
+      wxString  GetFileSearchMask(void) { return _T("*.oesu"); }
+
       int       Init( const wxString& name, int init_flags );
       PI_InitReturn CreateHeaderDataFromeSENC(void);
       PI_InitReturn PostInit( int flags, int cs );
