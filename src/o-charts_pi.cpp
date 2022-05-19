@@ -2922,7 +2922,7 @@ bool validate_SENC_server(void)
     // Check to see if the server function is available
     if(g_serverProc){
         bool bAvail = false;
-        int nLoop = 3;
+        int nLoop = 5;
 
         while(nLoop){
             Osenc_instream testAvail_One;
