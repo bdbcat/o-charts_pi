@@ -236,9 +236,12 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
 
             cmd += _T("\"");
 #else
-            //cmd += wxString('\"');
-            cmd += fpr_dir;
-            //cmd += _T("\"");
+            cmd += wxString('\"');
+            // use linux style path sep character for last sep, to allow double-quote on argument.
+            wxString fpr_dir_mod = fpr_dir.BeforeLast('\\');
+            fpr_dir_mod += "/";
+            cmd += fpr_dir_mod;
+            cmd += '\"';
 
             //            cmd += _T("my fpr\\");            // testing spaces in path
 
