@@ -91,8 +91,7 @@ EOF6
 EOF7
             fi
         fi
-        if [ "$OCPN_TARGET" = "focal-armhf" ] ||
-           [ "$OCPN_TARGET" = "bullseye-arm64" ]; then
+        if [ "$OCPN_TARGET" = "focal-armhf" ]; then
             cat >> build.sh << "EOF8"
             CMAKE_VERSION=3.20.5-0kitware1ubuntu20.04.1
             wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc --no-check-certificate 2>/dev/null | apt-key add -
