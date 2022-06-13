@@ -164,6 +164,23 @@ jobs:
       - run: sh -c "cd /build-$OCPN_TARGET; /bin/bash < upload.sh"
       - run: sh -c "ci/git-push.sh /build-$OCPN_TARGET"
 
+  build-arm64-debian-bullseye:
+        machine:
+            image: ubuntu-2004:202104-01
+        resource_class: arm.medium
+
+        environment:
+        - OCPN_TARGET=bullseye-arm64
+        - DOCKER_IMAGE=debian:bullseye-backports
+        - BUILD_FLAGS=-j3
+        - BUILD_ENV=debian
+        steps:
+        - checkout
+        - run: chmod a+x ./ci/*.sh
+        - run:
+            command: ci/circleci-build-raspbian-arm64.sh
+            no_output_timeout: 30m
+
 std-filters: &std-filters
   filters:
     branches:
@@ -210,4 +227,7 @@ workflows:
           <<: *std-filters
 
       - build-focal-armhf:
+          <<: *std-filters
+
+      - build-arm64-debian-bullseye:
           <<: *std-filters
