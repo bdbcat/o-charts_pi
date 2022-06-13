@@ -74,9 +74,10 @@ else
         echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
         apt-get -qq update && DEBIAN_FRONTEND='noninteractive' TZ='America/New_York' apt-get -y --no-install-recommends install tzdata
         apt-get -y --no-install-recommends --fix-missing install \
-        software-properties-common devscripts equivs wget git build-essential gettext wx-common libgtk2.0-dev libwxbase3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release openssl libssl-dev
+        software-properties-common devscripts equivs wget git build-essential gettext wx-common libgtk2.0-dev libwxbase3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release openssl libssl-dev libgl1-mesa-dev
 EOF5
-        if [ "$OCPN_TARGET" = "buster-armhf" ]; then
+        if [ "$OCPN_TARGET" = "buster-armhf" ] ||
+           [ "$OCPN_TARGET" = "bullseye-arm64" ]; then
             echo "BUILD_GTK3: $BUILD_GTK3"
             if [ ! -n "$BUILD_GTK3" ] || [ "$BUILD_GTK3" = "false" ]; then
                 echo "Building for GTK2"
@@ -90,7 +91,8 @@ EOF6
 EOF7
             fi
         fi
-        if [ "$OCPN_TARGET" = "focal-armhf" ]; then
+        if [ "$OCPN_TARGET" = "focal-armhf" ] ||
+           [ "$OCPN_TARGET" = "bullseye-arm64" ]; then
             cat >> build.sh << "EOF8"
             CMAKE_VERSION=3.20.5-0kitware1ubuntu20.04.1
             wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc --no-check-certificate 2>/dev/null | apt-key add -

@@ -172,6 +172,7 @@ jobs:
         - DOCKER_IMAGE=arm64v8/debian:bullseye-backports
         - BUILD_FLAGS=-j3
         - BUILD_ENV=debian
+        - BUILD_GTK3: true
         steps:
         - checkout
         - run: chmod a+x ./ci/*.sh
