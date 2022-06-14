@@ -2462,7 +2462,7 @@ int doLogin( wxWindow *parent )
       loginParms += _T("&debug=") + g_debugShop;
     loginParms += _T("&version=") + g_systemOS + g_versionString;
 
-    int iResponseCode =0;
+    long iResponseCode =0;
     TiXmlDocument *doc = 0;
     size_t res = 0;
 #ifdef __OCPN_USE_CURL__
