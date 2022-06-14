@@ -1381,7 +1381,7 @@ wxBitmap& itemChart::GetChartThumbnail(int size, bool bDL_If_Needed)
             m_ChartImage = wxImage( file, wxBITMAP_TYPE_ANY);
         }
         else if(bDL_If_Needed){
-            int iResponseCode = 0;
+            long iResponseCode = 0;
             if(g_chartListUpdatedOK && thumbLink.length()){  // Do not access network until after first "getList"
 #ifdef __OCPN_USE_CURL__
                 wxCurlHTTP get;
@@ -2927,7 +2927,7 @@ int getChartList( bool bShowErrorDialogs = true){
         loginParms += _T("&debug=") + g_debugShop;
     loginParms += _T("&version=") + g_systemOS + g_versionString;
 
-    int iResponseCode = 0;
+    long iResponseCode = 0;
     std::string responseBody;
 
 #ifdef __OCPN_USE_CURL__
@@ -3158,7 +3158,7 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
     loginParms += _T("&quantityId=") + sqid;
     loginParms += _T("&version=") + g_systemOS + g_versionString;
 
-    int iResponseCode = 0;
+    long iResponseCode = 0;
     std::string responseBody;
 
 #ifdef __OCPN_USE_CURL__
@@ -3267,7 +3267,7 @@ int doUploadXFPR(bool bDongle)
 
             wxLogMessage(loginParms);
 
-            int iResponseCode = 0;
+            long iResponseCode = 0;
             size_t res = 0;
             std::string responseBody;
 
@@ -3447,7 +3447,7 @@ int doUploadXFPR(bool bDongle)
 
         //wxLogMessage(loginParms);
 
-        int iResponseCode = 0;
+        long iResponseCode = 0;
         std::string responseBody;
 
 #ifdef __OCPN_USE_CURL__
@@ -3550,7 +3550,7 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
 
     wxLogMessage(loginParms);
 
-    int iResponseCode = 0;
+    long iResponseCode = 0;
     std::string responseBody;
 
 #ifdef __OCPN_USE_CURL__
@@ -5114,7 +5114,7 @@ int shopPanel::GetShopNameFromFPR()
         loginParms += _T("&debug=") + g_debugShop;
     loginParms += _T("&version=") + g_systemOS + g_versionString;
 
-    int iResponseCode =0;
+    long iResponseCode =0;
     TiXmlDocument *doc = 0;
     size_t res = 0;
 
