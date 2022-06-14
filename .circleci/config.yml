@@ -180,7 +180,7 @@ jobs:
             command: ci/circleci-build-raspbian-arm64.sh
             no_output_timeout: 30m
         - run: sh -c "pwd; ls"
-        - run: sh -c "cd project/build; /bin/bash < upload.sh"
+        - run: sh -c "pwd; ls; cd build; ls; /bin/bash < upload.sh"
 
 std-filters: &std-filters
   filters:
