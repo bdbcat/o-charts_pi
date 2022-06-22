@@ -6227,7 +6227,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
 
 
 #ifdef __OCPN_USE_CURL__
-        g_curlDownloadThread = new wxCurlDownloadThread(g_CurlEventHandler);
+        g_curlDownloadThread = new wxCurlDownloadThread(g_CurlEventHandler, gtargetSlot->idlQueue);
         downloadOutStream = new wxFFileOutputStream(gtargetSlot->dlQueue[gtargetSlot->idlQueue].localFile);
         g_curlDownloadThread->SetURL(gtargetSlot->dlQueue[gtargetSlot->idlQueue].url);
         g_curlDownloadThread->SetOutputStream(downloadOutStream);
@@ -6822,6 +6822,23 @@ void shopPanel::OnButtonCancelOp( wxCommandEvent& event )
     UpdateChartList();
 
 }
+
+void shopPanel::ResetUI()
+{
+    setStatusText( _("Status: OK"));
+    m_buttonCancelOp->Hide();
+
+    ClearChartOverrideStatus();
+    m_buttonInstall->Enable();
+    m_buttonUpdate->Enable();
+    GetSizer()->Layout();
+
+    SetErrorMessage();
+
+    UpdateChartList();
+
+}
+
 
 void shopPanel::OnPrepareTimer(wxTimerEvent &evt)
 {
@@ -7624,6 +7641,36 @@ void OESENC_CURL_EvtHandler::onEndEvent(wxCurlEndPerformEvent &evt)
         downloadOutStream->Close();
         downloadOutStream = NULL;
     }
+
+    long responseCode = evt.GetResponseCode();
+    if (responseCode != 200){
+      g_shopPanel->setStatusText( _("Status: Error"));
+      wxLogError(_T("o-charts_pi: Download error"));
+      wxString msg;
+      msg.Printf(_("File Download error"));
+      msg += "\n";
+      msg += wxString(_("ResponseCode: "));
+      wxString msg1;
+      msg1.Printf("%d", (int)responseCode);
+      msg += msg1;
+      ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
+
+      g_shopPanel->ResetUI();
+      return;
+    }
+
+#if 0
+    // Check downloaded compressed file length
+    int ID = evt.GetId();
+    if (ID == 1){
+        itemTaskFileInfo *pInfo = gtargetSlot->taskFileList[0];
+        std::string file = gtargetSlot->dlQueue[ID].localFile;
+        wxFileName fn(file.c_str());
+        wxULongLong size = fn.GetSize();
+        int yyp = 4;
+
+    }
+#endif
 
     g_curlDownloadThread = NULL;
 

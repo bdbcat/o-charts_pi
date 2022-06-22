@@ -440,6 +440,7 @@ public:
     void OnShowExpiredToggle( wxCommandEvent& event );
     bool verifyInstallationDirectory(itemSlot *slot, itemChart *chart);
     void DeselectAllCharts();
+    void ResetUI();
 
     void SetChartOverrideStatus( wxString status );
     void ClearChartOverrideStatus();
