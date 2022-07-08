@@ -69,6 +69,7 @@ else
     if [ "$OCPN_TARGET" = "focal-arm64" ] ||
        [ "$OCPN_TARGET" = "focal-armhf" ] ||
        [ "$OCPN_TARGET" = "bullseye-arm64" ] ||
+       [ "$OCPN_TARGET" = "bullseye-armhf" ] ||
        [ "$OCPN_TARGET" = "buster-armhf" ]; then
         cat >> build.sh << "EOF5"
         echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
@@ -77,6 +78,7 @@ else
         software-properties-common devscripts equivs wget git build-essential gettext wx-common libgtk2.0-dev libwxbase3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release openssl libssl-dev libgl1-mesa-dev
 EOF5
         if [ "$OCPN_TARGET" = "buster-armhf" ] ||
+           [ "$OCPN_TARGET" = "bullseye-armhf" ] ||
            [ "$OCPN_TARGET" = "bullseye-arm64" ]; then
             echo "BUILD_GTK3: $BUILD_GTK3"
             if [ ! -n "$BUILD_GTK3" ] || [ "$BUILD_GTK3" = "false" ]; then

@@ -184,6 +184,26 @@ jobs:
         - run: sh -c "pip install --upgrade cloudsmith-cli"
         - run: sh -c "pwd; ls; cd build; ls; /bin/bash < upload.sh"
 
+  build-armhf-debian-bullseye:
+        machine:
+            image: ubuntu-2004:202104-01
+        environment:
+        - OCPN_TARGET=bullseye-armhf
+        - DOCKER_IMAGE=arm32v7/debian:bullseye-backports
+        - BUILD_FLAGS=-j3
+        - BUILD_ENV=debian
+        - BUILD_GTK3: true
+        steps:
+        - checkout
+        - run: chmod a+x ./ci/*.sh
+        - run:
+            command: ci/circleci-build-raspbian-arm64.sh
+            no_output_timeout: 30m
+        - run: sh -c "python3 -m pip install --user --upgrade -q setuptools wheel pip"
+        - run: sh -c "python3 -m pip install --user -q cloudsmith-cli cryptography"
+        - run: sh -c "pip install --upgrade cloudsmith-cli"
+        - run: sh -c "pwd; ls; cd build; ls; /bin/bash < upload.sh"
+
 std-filters: &std-filters
   filters:
     branches:
@@ -233,4 +253,7 @@ workflows:
           <<: *std-filters
 
       - build-arm64-debian-bullseye:
+          <<: *std-filters
+
+      - build-armhf-debian-bullseye:
           <<: *std-filters
