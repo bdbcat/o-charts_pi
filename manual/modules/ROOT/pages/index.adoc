@@ -1,0 +1,19 @@
+= o-charts Plugin
+
+The *o-charts* plugin replaces and unifies the former *oeSENC* and *oeRNC* plugins. 
+
+== How to install the o-charts plugin
+
+1: Update the Plugin Catalog in Options→ Plugins
+
+2: Select the o-charts plugin in the list
+
+3: Install the o-charts plugin
+
+4: Enable the o-charts plugin 
+
+image::plugin1.png[]
+
+== Getting and installing oeSENC and oeRNC charts
+
+Follow this short manual to license and install your charts from inside of openCPN using the o-charts plugin: https://o-charts.org/manuals
