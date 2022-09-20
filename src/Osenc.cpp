@@ -34,7 +34,7 @@
 #include <wx/filename.h>
 
 #include "Osenc.h"
-#include "pi_s52s57.h"
+#include "s52s57.h"
 //#include "s57chart.h"
 //#include "cutil.h"
 #include "s57RegistrarMgr.h"

@@ -44,7 +44,7 @@
 #include "mygeom.h"
 #include "cpl_csv.h"
 
-#include "pi_s52s57.h"
+#include "s52s57.h"
 #include "Osenc.h"
 #include "s52plib.h"
 #include "viewport.h"
@@ -52,10 +52,12 @@
 #include "uKey.h"
 #include "tinyxml.h"
 
+#include "dychart.h"
+
 #ifdef __WXOSX__
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#include <OpenGL/glext.h>
+// #include <OpenGL/gl.h>
+// #include <OpenGL/glu.h>
+// #include <OpenGL/glext.h>
 
 typedef void (*PFNGLGENBUFFERSPROC) (GLsizei n, GLuint *buffers);
 typedef void (*PFNGLBINDBUFFERPROC) (GLenum target, GLuint buffer);
@@ -63,13 +65,13 @@ typedef void (*PFNGLBUFFERDATAPROC) (GLenum target, GLsizeiptr size, const void 
 typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
 
 #elif defined(__OCPN__ANDROID__)
-#include <qopengl.h>
-#include <GLES/gl.h>
+// #include <qopengl.h>
+// #include <GLES/gl.h>
 
 #else
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glext.h>
+// #include <GL/gl.h>
+// #include <GL/glu.h>
+// #include <GL/glext.h>
 #endif
 
 
@@ -149,6 +151,7 @@ WX_DEFINE_LIST(ListOfPI_S57Obj);                // Implement a list of PI_S57 Ob
 WX_DEFINE_LIST(ListOfS57Obj);                // Implement a list of S57 Objects
 WX_DEFINE_LIST(ListOfObjRazRules);
 
+#if 0
 #ifdef ocpnUSE_GL
 extern PFNGLGENBUFFERSPROC                 s_glGenBuffers;
 extern PFNGLBINDBUFFERPROC                 s_glBindBuffer;
@@ -161,6 +164,7 @@ extern PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
 #define glBindBuffer (s_glBindBuffer)
 #define glBufferData (s_glBufferData)
 #define glDeleteBuffers (s_glDeleteBuffers)
+#endif
 #endif
 
 extern bool              g_b_EnableVBO;
@@ -1237,8 +1241,8 @@ eSENCChart::~eSENCChart()
       m_vc_hash.clear();
 
 #ifdef ocpnUSE_GL
-      if(s_glDeleteBuffers && (m_LineVBO_name > 0))
-          s_glDeleteBuffers(1, (GLuint *)&m_LineVBO_name);
+      if((m_LineVBO_name > 0))
+          glDeleteBuffers(1, (GLuint *)&m_LineVBO_name);
 #endif
 
       for(unsigned int i=0 ; i < m_pcs_vector.size() ; i++)
@@ -1445,7 +1449,7 @@ void eSENCChart::SetColorScheme(int cs, bool bApplyImmediate)
 {
 
     if(ps52plib)
-        ps52plib->SetPLIBColorScheme((ColorScheme)cs);
+        ps52plib->SetPLIBColorScheme((PI_ColorScheme)cs);
 
     if( bApplyImmediate ) {
         delete pDIB;        // Toss any current cache
@@ -2586,7 +2590,7 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
              glScissor(rect1.x, m_cvp.pix_height-rect1.height-rect1.y, rect1.width, rect1.height);
 #endif
 
-            ps52plib->m_last_clip_rect = rect1;
+            //ps52plib->m_last_clip_rect = rect1;
             ps52plib->RenderAreaToGL( glc, crnt, &tvp1 );
 
             if (!rect2.IsEmpty()){
@@ -2594,7 +2598,7 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
               glEnable(GL_SCISSOR_TEST);
               glScissor(rect2.x, m_cvp.pix_height-rect2.height-rect2.y, rect2.width, rect2.height);
 #endif
-              ps52plib->m_last_clip_rect = rect2;
+              //ps52plib->m_last_clip_rect = rect2;
               ps52plib->RenderAreaToGL( glc, crnt, &tvp2 );
             }
         }
@@ -2604,6 +2608,7 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
     glDisable( GL_SCISSOR_TEST );
 #endif
 
+#if 1  //TODO
     //    Render the lines and points
     for( i = 0; i < PRIO_NUM; ++i ) {
         if( ps52plib->m_nBoundaryStyle == SYMBOLIZED_BOUNDARIES )
@@ -2614,10 +2619,10 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
             crnt = top;
             top = top->next;               // next object
             crnt->sm_transform_parms = &vp_transform;
-            ps52plib->m_last_clip_rect = rect1;
+            //ps52plib->m_last_clip_rect = rect1;
             ps52plib->RenderObjectToGL( glc, crnt, &tvp1 );
             if (!rect2.IsEmpty()){
-              ps52plib->m_last_clip_rect = rect2;
+              //ps52plib->m_last_clip_rect = rect2;
               ps52plib->RenderObjectToGL( glc, crnt, &tvp2 );
             }
         }
@@ -2631,10 +2636,10 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
             ObjRazRules *crnt = top;
             top = top->next;
             crnt->sm_transform_parms = &vp_transform;
-            ps52plib->m_last_clip_rect = rect1;
+            //ps52plib->m_last_clip_rect = rect1;
             ps52plib->RenderObjectToGL( glc, crnt, &tvp1 );
             if (!rect2.IsEmpty()){
-              ps52plib->m_last_clip_rect = rect2;
+              //ps52plib->m_last_clip_rect = rect2;
               ps52plib->RenderObjectToGL( glc, crnt, &tvp2 );
             }
         }
@@ -2650,16 +2655,17 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
             crnt = top;
             top = top->next;
             crnt->sm_transform_parms = &vp_transform;
-            ps52plib->m_last_clip_rect = rect1;
+            //ps52plib->m_last_clip_rect = rect1;
             ps52plib->RenderObjectToGL( glc, crnt, &tvp1 );
             if (!rect2.IsEmpty()){
-              ps52plib->m_last_clip_rect = rect2;
+              //ps52plib->m_last_clip_rect = rect2;
               ps52plib->RenderObjectToGL( glc, crnt, &tvp2 );
             }
         }
 
     }
 
+#endif
     glDisable( GL_STENCIL_TEST );
     glDisable( GL_DEPTH_TEST );
     glDisable( GL_SCISSOR_TEST );
@@ -4645,6 +4651,7 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
             //  Set up the chart context
         m_this_chart_context = (chart_context *)calloc( sizeof(chart_context), 1);
         m_this_chart_context->chart = this;
+        m_this_chart_context->chart_type = GetChartType();
         m_this_chart_context->vertex_buffer = GetLineVertexBuffer();
 
         //  Loop and populate all the objects
@@ -6811,7 +6818,7 @@ bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radi
                             nPoints = ls->pedge->nCount;
                         }
                         else{
-                            ppt = (float *)(vbo_point + ls->pcs->vbo_offset_cs);
+                            ppt = (float *)(vbo_point + ls->pcs->vbo_offset);
                             nPoints = 2;
                         }
 
@@ -7864,7 +7871,7 @@ int eSENCChart::GetLineFeaturePointArray(S57Obj *obj, void **ret_array)
             count = ls_list->pedge->nCount;
         }
         else{
-            vbo_offset = ls_list->pcs->vbo_offset_cs;
+            vbo_offset = ls_list->pcs->vbo_offset;
             count = 2;
         }
 
@@ -8019,7 +8026,7 @@ void eSENCChart::AssembleLineGeometry( void )
                                 }
 
                                 connector_segment_vector.push_back(pair);
-                                pcs->vbo_offset_cs = seg_pair_index;               // use temporarily
+                                pcs->vbo_offset = seg_pair_index;               // use temporarily
                                 seg_pair_index ++;
 
                                 // calculate the centroid of this connector segment, used for viz testing
@@ -8102,7 +8109,7 @@ void eSENCChart::AssembleLineGeometry( void )
                                     pair.n1 = *ppt;
 
                                     connector_segment_vector.push_back(pair);
-                                    pcs->vbo_offset_cs = seg_pair_index;               // use temporarily
+                                    pcs->vbo_offset = seg_pair_index;               // use temporarily
                                     seg_pair_index ++;
 
                                     // calculate the centroid of this connector segment, used for viz testing
@@ -8158,7 +8165,7 @@ void eSENCChart::AssembleLineGeometry( void )
                                     pair.n1 = *ppt;
 
                                     connector_segment_vector.push_back(pair);
-                                    pcs->vbo_offset_cs = seg_pair_index;               // use temporarily
+                                    pcs->vbo_offset = seg_pair_index;               // use temporarily
                                     seg_pair_index ++;
 
                                     // calculate the centroid of this connector segment, used for viz testing
@@ -8240,13 +8247,13 @@ void eSENCChart::AssembleLineGeometry( void )
         connector_segment *pcs = iter->second;
         m_pcs_vector.push_back(pcs);
 
-        segment_pair pair = connector_segment_vector.at(pcs->vbo_offset_cs);
+        segment_pair pair = connector_segment_vector.at(pcs->vbo_offset);
         *lvr++ = pair.e0;
         *lvr++ = pair.n0;
         *lvr++ = pair.e1;
         *lvr++ = pair.n1;
 
-        pcs->vbo_offset_cs = offset;
+        pcs->vbo_offset = offset;
         offset += 4 * sizeof(float);
     }
 
@@ -8255,13 +8262,13 @@ void eSENCChart::AssembleLineGeometry( void )
         connector_segment *pcs = iter->second;
         m_pcs_vector.push_back(pcs);
 
-        segment_pair pair = connector_segment_vector.at(pcs->vbo_offset_cs);
+        segment_pair pair = connector_segment_vector.at(pcs->vbo_offset);
         *lvr++ = pair.e0;
         *lvr++ = pair.n0;
         *lvr++ = pair.e1;
         *lvr++ = pair.n1;
 
-        pcs->vbo_offset_cs = offset;
+        pcs->vbo_offset = offset;
         offset += 4 * sizeof(float);
     }
 
@@ -8270,13 +8277,13 @@ void eSENCChart::AssembleLineGeometry( void )
         connector_segment *pcs = iter->second;
         m_pcs_vector.push_back(pcs);
 
-        segment_pair pair = connector_segment_vector.at(pcs->vbo_offset_cs);
+        segment_pair pair = connector_segment_vector.at(pcs->vbo_offset);
         *lvr++ = pair.e0;
         *lvr++ = pair.n0;
         *lvr++ = pair.e1;
         *lvr++ = pair.n1;
 
-        pcs->vbo_offset_cs = offset;
+        pcs->vbo_offset = offset;
         offset += 4 * sizeof(float);
     }
 
@@ -9984,8 +9991,8 @@ S57Obj::~S57Obj()
             bool b_useVBO = g_b_EnableVBO  && !auxParm1;    // VBO allowed?
 
             PolyTriGroup *ppg_vbo = pPolyTessGeo->Get_PolyTriGroup_head();
-            if (b_useVBO && ppg_vbo && auxParm0 > 0 && ppg_vbo->single_buffer && s_glDeleteBuffers) {
-                 s_glDeleteBuffers(1, (GLuint *)&auxParm0);
+            if (b_useVBO && ppg_vbo && auxParm0 > 0 && ppg_vbo->single_buffer ) {
+                 glDeleteBuffers(1, (GLuint *)&auxParm0);
             }
 #endif
             delete pPolyTessGeo;
@@ -10302,7 +10309,7 @@ bool isPointInObjectBoundary( double east, double north, S57Obj *obj )
                         nPoints = ls->pedge->nCount;
                     }
                     else{
-                        ppt = (float *)(vbo_point + ls->pcs->vbo_offset_cs);
+                        ppt = (float *)(vbo_point + ls->pcs->vbo_offset);
                         nPoints = 2;
                     }
 
@@ -10407,7 +10414,7 @@ Extended_Geometry *eSENCChart::buildExtendedGeom( S57Obj *obj )
                     nPoints = ls->pedge->nCount;
                 }
                 else{
-                    ppt = (float *)(vbo_point + ls->pcs->vbo_offset_cs);
+                    ppt = (float *)(vbo_point + ls->pcs->vbo_offset);
                     nPoints = 2;
                 }
 
@@ -10433,7 +10440,7 @@ Extended_Geometry *eSENCChart::buildExtendedGeom( S57Obj *obj )
                     nPoints_next = lsn->pedge->nCount;
                 }
                 else{
-                    ppt = (float *)(vbo_point + lsn->pcs->vbo_offset_cs);
+                    ppt = (float *)(vbo_point + lsn->pcs->vbo_offset);
                     nPoints_next = 2;
                 }
                 float pfirsty_next = ppt[0];
@@ -10478,7 +10485,7 @@ Extended_Geometry *eSENCChart::buildExtendedGeom( S57Obj *obj )
 
         }
         else{
-            ppt = (float *)(vbo_point + ls->pcs->vbo_offset_cs);
+            ppt = (float *)(vbo_point + ls->pcs->vbo_offset);
             nPoints = 2;
         }
 
@@ -10523,7 +10530,7 @@ Extended_Geometry *eSENCChart::buildExtendedGeom( S57Obj *obj )
                 nPoints_next = lsn->pedge->nCount;
             }
             else{
-                ppt = (float *)(vbo_point + lsn->pcs->vbo_offset_cs);
+                ppt = (float *)(vbo_point + lsn->pcs->vbo_offset);
                 nPoints_next = 2;
             }
 

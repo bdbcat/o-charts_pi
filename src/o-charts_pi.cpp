@@ -67,11 +67,12 @@
 
 #include "ochartShop.h"
 
+#include "dychart.h"
 
 #ifdef __WXOSX__
-#include "OpenGL/gl.h"
-#include "OpenGL/glext.h"
-#include "OpenGL/glu.h"
+// #include "OpenGL/gl.h"
+// #include "OpenGL/glext.h"
+// #include "OpenGL/glu.h"
 
 typedef void (*PFNGLGENBUFFERSPROC) (GLsizei n, GLuint *buffers);
 typedef void (*PFNGLBINDBUFFERPROC) (GLenum target, GLuint buffer);
@@ -80,17 +81,17 @@ typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
 
 
 #elif defined(__OCPN__ANDROID__)
-#include <qopengl.h>
-#include <GLES/gl.h>
-#include <EGL/egl.h>
+// #include <qopengl.h>
+// #include <GLES/gl.h>
+// #include <EGL/egl.h>
 
 #else  //__WXOSX
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glext.h>
+// #include <GL/gl.h>
+// #include <GL/glu.h>
+// #include <GL/glext.h>
 
 #ifndef __WXMSW__
-#include <GL/glx.h>
+// #include <GL/glx.h>
 #endif
 
 #endif  //__WXOSX
@@ -231,10 +232,12 @@ bool g_GLSetupOK;
 
 oesencPrefsDialog               *g_prefs_dialog;
 
+#if 0
 PFNGLGENBUFFERSPROC                 s_glGenBuffers;
 PFNGLBINDBUFFERPROC                 s_glBindBuffer;
 PFNGLBUFFERDATAPROC                 s_glBufferData;
 PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
+#endif
 
 
 s57RegistrarMgr                 *pi_poRegistrarMgr;
@@ -1043,7 +1046,7 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
             g_GLOptionsSet = true;
 
             init_GLLibrary();                                  // once
-            g_oeChartSymbols->ResetRasterTextureCache();
+            //TODO g_oeChartSymbols->ResetRasterTextureCache();
 
         }
     }
@@ -1055,7 +1058,7 @@ void o_charts_pi::SetColorScheme(PI_ColorScheme cs)
     global_color_scheme = cs;
 
     if(ps52plib)
-        ps52plib-> SetPLIBColorScheme((ColorScheme)cs);
+        ps52plib-> SetPLIBColorScheme((PI_ColorScheme)cs);
 }
 
 bool o_charts_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
@@ -2463,6 +2466,7 @@ static GLboolean QueryExtension( const char *extName )
 typedef void (*GenericFunction)(void);
 //void (*glXGetProcAddress(const GLubyte *procname))( void );
 
+#if 0
 #if defined(__WXMSW__)
 #define systemGetProcAddress(ADDR) wglGetProcAddress(ADDR)
 #elif defined(__WXOSX__)
@@ -2473,7 +2477,9 @@ typedef void (*GenericFunction)(void);
 #else
 #define systemGetProcAddress(ADDR) glXGetProcAddress((const GLubyte*)ADDR)
 #endif
+#endif
 
+#if 0
 GenericFunction ocpnGetProcAddress(const char *addr, const char *extension)
 {
     char addrbuf[256];
@@ -2602,6 +2608,8 @@ static void GetglEntryPoints( void )
 
 }
 
+#endif
+
 void init_S52Library(void)
 {
     // General variables
@@ -2636,13 +2644,13 @@ void init_S52Library(void)
         // Load up any S52 PLIB patch files found
         wxString dataLocn = GetPluginDataDir("o-charts_pi");
 
-        if(!dataLocn.IsEmpty()){
-            wxArrayString patchFiles;
-            wxDir::GetAllFiles(dataLocn, &patchFiles, _T("*.xml"));
-            for(unsigned int i=0 ; i < patchFiles.GetCount() ; i++){
-                g_oeChartSymbols->PatchConfigFile( ps52plib, patchFiles.Item(i));
-            }
-        }
+//         if(!dataLocn.IsEmpty()){
+//             wxArrayString patchFiles;
+//             wxDir::GetAllFiles(dataLocn, &patchFiles, _T("*.xml"));
+//             for(unsigned int i=0 ; i < patchFiles.GetCount() ; i++){
+//                 g_oeChartSymbols->PatchConfigFile( ps52plib, patchFiles.Item(i));
+//             }
+//         }
 
             //    Preset some object class visibilites for "Mariner's Standard" display category
             //  They may be overridden in LoadS57Config
@@ -2656,7 +2664,7 @@ void init_S52Library(void)
         LoadS57Config();
         ps52plib->m_myConfig = PI_GetPLIBStateHash();
 
-        ps52plib->SetPLIBColorScheme( GLOBAL_COLOR_SCHEME_RGB );
+        ps52plib->SetPLIBColorScheme( PI_GLOBAL_COLOR_SCHEME_RGB );
 
         wxWindow *cc1 = GetOCPNCanvasWindow();
         if(cc1){
@@ -2683,7 +2691,24 @@ void init_S52Library(void)
 
 
 void init_GLLibrary(void)
+
+  // Initialize GLEW, as required
 {
+#ifndef __OCPN__ANDROID__
+#ifndef __WXOSX__
+  GLenum err = glewInit();
+  if (GLEW_OK != err)
+  {
+//    printf("GLEW init failed: %s!n", glewGetErrorString(err));
+//    exit(1);
+  }
+  else
+  {
+//  printf("GLEW init success!n");
+  }
+#endif
+#endif
+
 
     // OpenGL variables
 
@@ -2699,7 +2724,7 @@ void init_GLLibrary(void)
         if (str == NULL)
             wxLogMessage(_T("o_charts_pi failed to initialize OpenGL"));
 
-        GetglEntryPoints();
+        //GetglEntryPoints();
 
         char render_string[80];
         wxString renderer;
@@ -2748,7 +2773,7 @@ void init_GLLibrary(void)
 #endif
 
         //  Setup device dependent OpenGL options as communicated from core by JSON message
-        ps52plib->SetGLOptions(g_b_useStencil, g_b_useStencilAP, g_b_useScissorTest, g_b_useFBO,  g_b_EnableVBO, g_oe_texture_rectangle_format);
+        ps52plib->SetGLOptions(g_b_useStencil, g_b_useStencilAP, g_b_useScissorTest, g_b_useFBO,  g_b_EnableVBO, g_oe_texture_rectangle_format, 1, 1);
 
         pi_bopengl = true;
         g_GLSetupOK = true;

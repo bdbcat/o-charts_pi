@@ -81,9 +81,8 @@ set(SRC
   src/oernc_inStream.cpp
   src/Osenc.cpp
   src/Osenc.h
-  src/pi_DepthFont.cpp
+  src/DepthFont.cpp
   src/piScreenLog.cpp
-  src/razdsparser.cpp
   src/s52cnsy.cpp
   src/s52plib.cpp
   src/s52utils.cpp
@@ -101,6 +100,10 @@ set(SRC
 if(QT_ANDROID)
   set(SRC ${SRC} src/androidSupport.cpp)
 endif(QT_ANDROID)
+
+if(NOT QT_ANDROID)
+add_compile_definitions( ocpnUSE_GLSL )
+endif(NOT QT_ANDROID)
 
 set(PKG_API_LIB api-17)  #  A directory in libs/ e. g., api-17 or api-16
 

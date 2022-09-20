@@ -29,7 +29,7 @@ class ViewPort;
 class Extended_Geometry;
 
 #include "o-charts_pi.h"
-#include "pi_s52s57.h"
+#include "s52s57.h"
 #include "viewport.h"
 #include "Osenc.h"
 #include <vector>

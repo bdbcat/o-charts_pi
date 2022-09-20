@@ -33,7 +33,7 @@
   #include "wx/wx.h"
 #endif //precompiled headers
 
-#include "pi_s52s57.h"
+#include "s52s57.h"
 #include "ogr_s57.h"
 #include "cpl_csv.h"
 //#include "chartbase.h"
@@ -168,7 +168,7 @@ typedef struct _OSENC_Attribute_Record{
 typedef struct _OSENC_Attribute_Record_Payload{
     uint16_t        attribute_type_code;
     unsigned char   attribute_value_type;
-    
+
     union{
     uint32_t        attribute_value_int;
     double          attribute_value_double;
@@ -415,7 +415,7 @@ typedef struct _OSENC_EXTENT_Record_Payload{
      double          extent_se_lat;
      double          extent_se_lon;
  }_OSENC_EXTENT_Record_Payload;
- 
+
 typedef struct _OSENC_SERVERSTAT_Record{
     uint16_t        record_type;
     uint32_t        record_length;
@@ -437,10 +437,10 @@ typedef struct {
 }_OSENC_SERVERSTAT_Record_Payload;
 
 
-    
+
 
  #pragma pack(pop)
- 
+
 
 
 
@@ -459,7 +459,7 @@ const char *MyCSVGetField( const char * pszFilename,
                            const char * pszKeyFieldValue,
                            CSVCompareCriteria eCriteria,
                            const char * pszTargetField ) ;
-                           
+
 
 
 
@@ -489,10 +489,10 @@ public:
     ~Osenc();
 
     wxString getLastError(){ return errorMessage; }
-    
+
     int ingestHeader(const wxString &senc_file_name);
     int ingest200(const wxString &senc_file_name, S57ObjVector *pObjectVector, VE_ElementVector *pVEArray, VC_ElementVector *pVCArray);
-    
+
     //  SENC creation, by Version desired...
     int createSenc124(const wxString& FullPath000, const wxString& SENCFileName, bool b_showProg = true);
     void SetLODMeters(double meters){ m_LOD_meters = meters;}
@@ -501,11 +501,11 @@ public:
     void setRefLocn( double lat, double lon){ m_ref_lat = lat; m_ref_lon = lon; }
     void setKey( wxString& key){ m_key = key; }
     void setCtype( int type );
-    
+
     int getReadVersion(){ return m_senc_file_read_version; }
     wxString getUpdateDate(){ return m_LastUpdateDate; }
     wxString getBaseDate(){ return m_sdate000; }
-    
+
     wxString getSENCFileCreateDate(){ return m_readFileCreateDate; }
 
     int getSencReadVersion(){ return m_senc_file_read_version; }
@@ -517,20 +517,20 @@ public:
     Extent &getReadExtent(){ return m_extent; }
     wxString getSoundingsDatumString(){ return m_SoundingDatum; }
     wxStringHashMap GetTXTDSC_Map(){ return m_TXTDSC_fileMap; }
-    
+
     SENCFloatPtrArray &getSENCReadAuxPointArray(){ return m_AuxPtrArray;}
     wxArrayInt &getSENCReadAuxPointCountArray(){ return m_AuxCntArray;}
     SENCFloatPtrArray &getSENCReadNOCOVRPointArray(){ return m_NoCovrPtrArray;}
     wxArrayInt &getSENCReadNOCOVRPointCountArray(){ return m_NoCovrCntArray;}
-    
+
     int createSenc200(const wxString& FullPath000, const wxString& SENCFileName, bool b_showProg = true);
-    
+
     void CreateSENCVectorEdgeTableRecord200( FILE * fpOut, S57Reader *poReader );
     void CreateSENCVectorConnectedTableRecord200( FILE * fpOut, S57Reader *poReader );
-    
+
     void InitializePersistentBuffer( void );
     unsigned char *getBuffer( size_t length);
-    
+
     // Values fetched from uSENC status read
     int m_uSENCStatus;
     int m_uSENCDecryptStatus;
@@ -539,22 +539,22 @@ public:
     int m_graceDaysAllowed;
     int m_graceDaysRemining;
 
-        
+
 private:
     void init();
     int verifySENC(Osenc_instream &fpx,  const wxString &senc_file_name);
-    
+
     int ingestCell( OGRS57DataSource *poS57DS, const wxString &FullPath000, const wxString &working_dir );
     int ValidateAndCountUpdates( const wxFileName file000, const wxString CopyDir,
                                  wxString &LastUpdateDate, bool b_copyfiles);
     int GetUpdateFileArray(const wxFileName file000, wxArrayString *UpFiles);
     bool GetBaseFileAttr( const wxString &FullPath000 );
-    
+
     OGRFeature *GetChartFirstM_COVR( int &catcov, S57Reader *pENCReader, S57ClassRegistrar *poRegistrar );
     OGRFeature *GetChartNextM_COVR( int &catcov, S57Reader *pENCReader );
     bool CreateCOVRTables( S57Reader *pENCReader, S57ClassRegistrar *poRegistrar );
     bool CreateCovrRecords(FILE *fileOut);
-    
+
     void  CreateSENCVectorEdgeTable(FILE * fpOut, S57Reader *poReader);
     void  CreateSENCConnNodeTable(FILE * fpOut, S57Reader *poReader);
 
@@ -566,79 +566,79 @@ private:
     bool CreateAreaFeatureGeometryRecord200( S57Reader *poReader, OGRFeature *pFeature, FILE *fpOut );
     bool CreateLineFeatureGeometryRecord200( S57Reader *poReader, OGRFeature *pFeature, FILE *fpOut );
     bool CreateMultiPointFeatureGeometryRecord200( OGRFeature *pFeature, FILE *fpOut);
-    
+
     std::string GetFeatureAcronymFromTypecode( int typeCode );
     std::string GetAttributeAcronymFromTypecode( int typeCode );
-    
+
     PolyTessGeo *BuildPolyTessGeo(_OSENC_AreaGeometry_Record_Payload *record, unsigned char **bytes_consumed );
     PolyTessGeo *BuildPolyTessGeoF16(_OSENC_AreaGeometryExt_Record_Payload *record, unsigned char **next_byte );
-    
+
     LineGeometryDescriptor *BuildLineGeometry( _OSENC_LineGeometry_Record_Payload *pPayload );
-    
+
     wxString            errorMessage;
-    
+
     wxString            m_Name;
     wxString m_ID;
     wxString            m_FullPath000;
-    
+
     int                 m_Chart_Scale;
     int                 m_senc_file_read_version;
     int                 m_senc_file_create_version;
     wxString            m_read_base_edtn;
     int                 m_read_last_applied_update;
-    
+
     wxDateTime          m_date000;
     wxString            m_sdate000;
-    
+
     wxString            m_edtn000;
     int                 m_nGeoRecords;
     int                 m_last_applied_update;
     wxString            m_LastUpdateDate;
     int                 m_native_scale;
     wxString            m_readFileCreateDate;
-    
+
     double              m_ref_lat, m_ref_lon;             // Common reference point, derived from FullExtent
     VectorHelperHash    m_vector_helper_hash;
     double              m_LOD_meters;
     S57ClassRegistrar   *m_poRegistrar;
     s57RegistrarMgr     *m_pRegistrarMan;
     wxArrayString       m_tmpup_array;
-    
+
     wxProgressDialog    *s_ProgDialog;
-    
-    
+
+
     unsigned char *     pBuffer;
     size_t              bufferSize;
-    
+
 
     Extent              m_extent;
-    
+
     //  Clone of Chartbase structures of the same name and purpose
     //  Use mainly for SENC creation for ENC(.000) file
     int         m_nCOVREntries;                       // number of coverage table entries
     int         *m_pCOVRTablePoints;                  // int table of number of points in each coverage table entry
     float       **m_pCOVRTable;                       // table of pointers to list of floats describing valid COVR
-    
+
     int         m_nNoCOVREntries;                       // number of NoCoverage table entries
     int         *m_pNoCOVRTablePoints;                  // int table of number of points in each NoCoverage table entry
     float       **m_pNoCOVRTable;                       // table of pointers to list of floats describing valid NOCOVR
-    
-    
+
+
     //  Arrays used to accumulate coverage regions on oSENC load
     SENCFloatPtrArray     m_AuxPtrArray;
     wxArrayInt            m_AuxCntArray;
     SENCFloatPtrArray     m_NoCovrPtrArray;
     wxArrayInt            m_NoCovrCntArray;
-    
+
     wxString    m_key;
     wxString              m_SoundingDatum;
-    
+
     wxStringHashMap       m_TXTDSC_fileMap;
     unsigned char         m_read_esenc_cmd;
     unsigned char         m_read_esencHdr_cmd;
     int                   m_ctype;
-    
- 
+
+
 };
 
 struct fifo_msg {
@@ -653,10 +653,10 @@ struct fifo_msg {
 
 // #define CMD_TEST_AVAIL          1
 // #define CMD_EXIT                2
-// 
+//
 // #define CMD_READ_ESENC          3
 // #define CMD_READ_ESENC_HDR      4
-// 
+//
 // #define CMD_OPEN_RNC            0x80
 // #define CMD_OPEN_RNC_FULL       0x81
 
@@ -681,36 +681,36 @@ class Osenc_instream
 public:
     Osenc_instream();
     ~Osenc_instream();
-    
+
     void Init();
     void ReInit();
     void Close();
     bool Open( unsigned char cmd, wxString senc_file_name, wxString crypto_key );
-    
+
     Osenc_instream &Read(void *buffer, size_t size);
     bool IsOk();
     bool isAvailable(wxString user_key);
     void Shutdown();
-    
+
 private:
     int privatefifo; // file descriptor to read-end of PRIVATE
-    int publicfifo; // file descriptor to write-end of PUBLIC 
-    
+    int publicfifo; // file descriptor to write-end of PUBLIC
+
     char privatefifo_name[256];
     bool m_OK;
     int m_lastBytesRead, m_lastBytesReq;
-    
-    #ifdef __WXMSW__    
-    HANDLE hPipe; 
-    #endif    
-    
-    #ifndef __WXMSW__    
+
+    #ifdef __WXMSW__
+    HANDLE hPipe;
+    #endif
+
+    #ifndef __WXMSW__
     char publicsocket_name[256];
     struct sockaddr_un sockAddr;
     socklen_t sockLen;
     int publicSocket;
     #endif
-    
+
     wxFileInputStream *m_uncrypt_stream;
 };
 
