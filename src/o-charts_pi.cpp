@@ -232,7 +232,7 @@ bool g_GLSetupOK;
 
 oesencPrefsDialog               *g_prefs_dialog;
 
-#if 0
+#if 1
 PFNGLGENBUFFERSPROC                 s_glGenBuffers;
 PFNGLBINDBUFFERPROC                 s_glBindBuffer;
 PFNGLBUFFERDATAPROC                 s_glBufferData;
@@ -2466,7 +2466,7 @@ static GLboolean QueryExtension( const char *extName )
 typedef void (*GenericFunction)(void);
 //void (*glXGetProcAddress(const GLubyte *procname))( void );
 
-#if 0
+#if 1
 #if defined(__WXMSW__)
 #define systemGetProcAddress(ADDR) wglGetProcAddress(ADDR)
 #elif defined(__WXOSX__)
@@ -2479,7 +2479,7 @@ typedef void (*GenericFunction)(void);
 #endif
 #endif
 
-#if 0
+#if 1
 GenericFunction ocpnGetProcAddress(const char *addr, const char *extension)
 {
     char addrbuf[256];
@@ -2511,12 +2511,9 @@ GenericFunction ocpnGetProcAddress(const char *addr, const char *extension)
 
 }
 
-bool  b_glEntryPointsSet;
 
-static void GetglEntryPoints( void )
+static bool GetglEntryPoints( void )
 {
-    b_glEntryPointsSet = true;
-
     // the following are all part of framebuffer object,
     // according to opengl spec, we cannot mix EXT and ARB extensions
     // (I don't know that it could ever happen, but if it did, bad things would happen)
@@ -2537,28 +2534,6 @@ static void GetglEntryPoints( void )
     }
 
     if(i<n_ext){
-#if 0
-        s_glGenRenderbuffers = (PFNGLGENRENDERBUFFERSEXTPROC)
-        ocpnGetProcAddress( "glGenRenderbuffers", extensions[i]);
-        s_glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DEXTPROC)
-        ocpnGetProcAddress( "glFramebufferTexture2D", extensions[i]);
-        s_glBindFramebuffer = (PFNGLBINDFRAMEBUFFEREXTPROC)
-        ocpnGetProcAddress( "glBindFramebuffer", extensions[i]);
-        s_glFramebufferRenderbuffer = (PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC)
-        ocpnGetProcAddress( "glFramebufferRenderbuffer", extensions[i]);
-        s_glRenderbufferStorage = (PFNGLRENDERBUFFERSTORAGEEXTPROC)
-        ocpnGetProcAddress( "glRenderbufferStorage", extensions[i]);
-        s_glBindRenderbuffer = (PFNGLBINDRENDERBUFFEREXTPROC)
-        ocpnGetProcAddress( "glBindRenderbuffer", extensions[i]);
-        s_glCheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC)
-        ocpnGetProcAddress( "glCheckFramebufferStatus", extensions[i]);
-        s_glDeleteFramebuffers = (PFNGLDELETEFRAMEBUFFERSEXTPROC)
-        ocpnGetProcAddress( "glDeleteFramebuffers", extensions[i]);
-        s_glDeleteRenderbuffers = (PFNGLDELETERENDERBUFFERSEXTPROC)
-        ocpnGetProcAddress( "glDeleteRenderbuffers", extensions[i]);
-        s_glGenerateMipmap = (PFNGLGENERATEMIPMAPEXTPROC)
-        ocpnGetProcAddress( "glGenerateMipmap", extensions[i]);
-#endif
         //VBO
         s_glGenBuffers = (PFNGLGENBUFFERSPROC)
         ocpnGetProcAddress( "glGenBuffers", extensions[i]);
@@ -2568,10 +2543,6 @@ static void GetglEntryPoints( void )
         ocpnGetProcAddress( "glBufferData", extensions[i]);
         s_glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)
         ocpnGetProcAddress( "glDeleteBuffers", extensions[i]);
-
-//         s_glGetBufferParameteriv = (PFNGLGETBUFFERPARAMETERIV)
-//         ocpnGetProcAddress( "glGetBufferParameteriv", extensions[i]);
-
     }
 
     //  Retry VBO entry points with all extensions
@@ -2588,24 +2559,7 @@ static void GetglEntryPoints( void )
         }
     }
 
-
-#if 0
-#ifndef __OCPN__ANDROID__
-    for(i=0; i<n_ext; i++) {
-        if((s_glCompressedTexImage2D = (PFNGLCOMPRESSEDTEXIMAGE2DPROC)
-            ocpnGetProcAddress( "glCompressedTexImage2D", extensions[i])))
-            break;
-    }
-
-    if(i<n_ext){
-        s_glGetCompressedTexImage = (PFNGLGETCOMPRESSEDTEXIMAGEPROC)
-        ocpnGetProcAddress( "glGetCompressedTexImage", extensions[i]);
-    }
-#else
-    s_glCompressedTexImage2D =          glCompressedTexImage2D;
-#endif
-#endif
-
+    return (s_glGenBuffers != 0);
 }
 
 #endif
@@ -2689,27 +2643,23 @@ void init_S52Library(void)
     }
 }
 
-
-void init_GLLibrary(void)
-
+bool init_GLExtensions(void) {
   // Initialize GLEW, as required
-{
 #ifndef __OCPN__ANDROID__
-#ifndef __WXOSX__
-  GLenum err = glewInit();
-  if (GLEW_OK != err)
-  {
-//    printf("GLEW init failed: %s!n", glewGetErrorString(err));
-//    exit(1);
-  }
-  else
-  {
-//  printf("GLEW init success!n");
-  }
+  #ifndef __WXOSX__
+    #ifdef __OCPN_USE_GLEW__
+      GLenum err = glewInit();
+      return (GLEW_OK == err);
+    #else
+      return GetglEntryPoints();
+    #endif
+  #endif
+#else
+  return true;
 #endif
-#endif
+}
 
-
+void init_GLLibrary(void) {
     // OpenGL variables
 
     if(g_GLOptionsSet && !g_GLSetupOK){
@@ -2724,13 +2674,17 @@ void init_GLLibrary(void)
         if (str == NULL)
             wxLogMessage(_T("o_charts_pi failed to initialize OpenGL"));
 
-        //GetglEntryPoints();
 
         char render_string[80];
         wxString renderer;
         if(str){
             strncpy( render_string, str, 79 );
             renderer = wxString( render_string, wxConvUTF8 );
+        }
+
+        if (!init_GLExtensions()){
+            wxLogMessage(_T("o_charts_pi failed to initialize OpenGL Extensions"));
+            return;
         }
 
         g_GLMinCartographicLineWidth = 1.0;

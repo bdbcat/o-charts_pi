@@ -59,6 +59,14 @@ set(PKG_INFO_URL https://o-charts.org/)
 
 set(PKG_AUTHOR "Dave register")
 
+option(OCPN_BUILD_USE_GLEW "Use GLEW support library" OFF)
+
+if(OCPN_BUILD_USE_GLEW)
+  add_definitions(-D__OCPN_USE_GLEW__)
+endif(OCPN_BUILD_USE_GLEW)
+
+
+
 set(SRC
   src/bbox.cpp
   src/chart.cpp

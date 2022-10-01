@@ -31,6 +31,8 @@
 #include "wx/wx.h"
 #endif  // precompiled headers
 
+#include "dychart.h"
+
 #include <math.h>
 #include <stdlib.h>
 

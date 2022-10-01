@@ -151,7 +151,7 @@ WX_DEFINE_LIST(ListOfPI_S57Obj);                // Implement a list of PI_S57 Ob
 WX_DEFINE_LIST(ListOfS57Obj);                // Implement a list of S57 Objects
 WX_DEFINE_LIST(ListOfObjRazRules);
 
-#if 0
+#if 1
 #ifdef ocpnUSE_GL
 extern PFNGLGENBUFFERSPROC                 s_glGenBuffers;
 extern PFNGLBINDBUFFERPROC                 s_glBindBuffer;
@@ -165,6 +165,7 @@ extern PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
 #define glBufferData (s_glBufferData)
 #define glDeleteBuffers (s_glDeleteBuffers)
 #endif
+
 #endif
 
 extern bool              g_b_EnableVBO;
