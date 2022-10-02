@@ -151,13 +151,11 @@ WX_DEFINE_LIST(ListOfPI_S57Obj);                // Implement a list of PI_S57 Ob
 WX_DEFINE_LIST(ListOfS57Obj);                // Implement a list of S57 Objects
 WX_DEFINE_LIST(ListOfObjRazRules);
 
-#if 1
-#ifdef ocpnUSE_GL
+#ifndef __OCPN_USE_GLEW__
 extern PFNGLGENBUFFERSPROC                 s_glGenBuffers;
 extern PFNGLBINDBUFFERPROC                 s_glBindBuffer;
 extern PFNGLBUFFERDATAPROC                 s_glBufferData;
 extern PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
-#endif
 
 #ifndef USE_ANDROID_GLES2
 #define glGenBuffers (s_glGenBuffers)

@@ -31,12 +31,12 @@ if (NOT OPENGL_GLU_FOUND)
   message(WARNING "Cannot find OpenGL GLU extension.")
 endif ()
 
-if (OCPN_USE_GLEW)
+if (OCPN_BUILD_USE_GLEW)
   find_package(GLEW REQUIRED)
   include_directories(${GLEW_INCLUDE_DIRS})
   target_link_libraries(${PACKAGE_NAME} ${GLEW_LIBRARIES})
     message(STATUS "Using GLEW, libraries:  ${GLEW_LIBRARIES}")
-endif (OCPN_USE_GLEW)
+endif (OCPN_BUILD_USE_GLEW)
 
 if (APPLE)
   # As of 3.19.2, cmake's FindOpenGL does not link to the directory
