@@ -5148,7 +5148,7 @@ int s52plib::RenderLS_Dash_GLSL(ObjRazRules *rzRules, Rules *rules,
     }
   }
 
-//    delete odc;
+  glUseProgram(0);
   glDisableVertexAttribArray(mPosAttrib);
 
 #endif
@@ -8694,15 +8694,9 @@ int s52plib::RenderToGLAC(ObjRazRules *rzRules, Rules *rules, ViewPort *vp) {
 
 
 int s52plib::RenderToGLAC_GLSL(ObjRazRules *rzRules, Rules *rules, ViewPort *vp) {
-  //return 0;
 #ifdef ocpnUSE_GL
 #if defined(USE_ANDROID_GLES2) || defined(ocpnUSE_GLSL) || defined(ocpnUSE_GLSL_TEST)
 
-//   GLint id;
-//   glGetIntegerv(GL_CURRENT_PROGRAM,&id);
-
-  //glUseProgram(0);
-  //return 0;
   GLenum reset_err = glGetError();
 
   S52color *c;
@@ -9643,7 +9637,6 @@ void RotateToViewPort(const ViewPort &vp) {
 }
 
 int s52plib::RenderToGLAP(ObjRazRules *rzRules, Rules *rules, ViewPort *vp) {
-//#ifdef USE_ANDROID_GLES2
 #if defined(USE_ANDROID_GLES2) || defined(ocpnUSE_GLSL) || defined(ocpnUSE_GLSL_TEST)
   return RenderToGLAP_GLSL(rzRules, rules, vp);
 #else
