@@ -27,6 +27,11 @@
 
 #include "TexFont.h"
 
+#include "dychart.h"
+
+#include "linmath.h"
+
+#if 0
 #if defined(USE_ANDROID_GLES2) || defined(ocpnUSE_GLSL) || defined(ocpnUSE_GLSL_TEST)
 #include "GLES2/gl2.h"
 #include "linmath.h"
@@ -38,6 +43,7 @@
 #else
 #include <GL/gl.h>
 #include <GL/glu.h>
+#endif
 #endif
 
 extern  GLint S52texture_2D_ColorMod_shader_program;
@@ -243,7 +249,7 @@ void TexFont::RenderGlyph( int c )
     float ty1 = (float)y / (float)tex_h;
     float ty2 = (float)(y + h) / (float)tex_h;
 
-#if !defined(USE_ANDROID_GLES2) && !defined(ocpnUSE_GLSL) && !defined(ocpnUSE_GLSL_TEST)
+#if !defined(USE_ANDROID_GLES2) && !defined(ocpnUSE_GLSL)
 
     glBegin( GL_QUADS );
 
@@ -370,7 +376,7 @@ void TexFont::RenderGlyph( int c )
 void TexFont::RenderString( const char *string, int x, int y )
 {
 
-#if !defined(USE_ANDROID_GLES2) && !defined(ocpnUSE_GLSL) && !defined(ocpnUSE_GLSL_TEST)
+#if !defined(USE_ANDROID_GLES2) && !defined(ocpnUSE_GLSL)
 
     glPushMatrix();
     glTranslatef(x, y, 0);
@@ -426,4 +432,3 @@ void TexFont::RenderString( const wxString &string, int x, int y )
     RenderString((const char*)string.ToUTF8(), x, y);
 }
 
-//#endif     //#ifdef ocpnUSE_GL

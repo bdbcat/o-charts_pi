@@ -37,7 +37,7 @@ class wxGLContext;
 #include "ocpn_types.h"
 #include "DepthFont.h"
 #include "chartsymbols.h"
-#include "/home/dsr/Projects/o-charts_pi/libs/api-17/ocpn_plugin.h"
+#include "../libs/api-17/ocpn_plugin.h"
 
 #include <wx/dcgraph.h>  // supplemental, for Mac
 #include <unordered_map>

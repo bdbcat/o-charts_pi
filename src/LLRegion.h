@@ -29,8 +29,6 @@
 
 #include <list>
 
-#include "dychart.h"
-#if 0
 #ifdef _WIN32
     typedef void (__stdcall * _GLUfuncptr)(void);
     #include <windows.h>
@@ -51,7 +49,6 @@
     #include <GL/gl.h>
     #include <GL/glu.h>
     #include <GL/glext.h>
-#endif
 #endif
 
 #include "bbox.h"
