@@ -33,7 +33,9 @@
     typedef void (__stdcall * _GLUfuncptr)(void);
     #include <windows.h>
     #include <GL/gl.h>
-    #include <GL/glext.h>
+    #ifndef __OCPN_USE_GLEW__
+      #include <GL/glext.h>
+    #endif
     #include <GL/glu.h>
 #elif defined __OCPN__ANDROID__
     #include <qopengl.h>

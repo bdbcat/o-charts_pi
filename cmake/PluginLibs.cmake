@@ -32,10 +32,16 @@ if (NOT OPENGL_GLU_FOUND)
 endif ()
 
 if (OCPN_BUILD_USE_GLEW)
+if (NOT WIN32)
   find_package(GLEW REQUIRED)
   include_directories(${GLEW_INCLUDE_DIRS})
   target_link_libraries(${PACKAGE_NAME} ${GLEW_LIBRARIES})
-    message(STATUS "Using GLEW, libraries:  ${GLEW_LIBRARIES}")
+else (NOT WIN32)
+  include_directories("${PROJECT_SOURCE_DIR}/libs/glew/windows")
+  target_link_libraries(${PACKAGE_NAME} "${PROJECT_SOURCE_DIR}/libs/glew/windows/glew32.lib")
+endif (NOT WIN32)
+
+  message(STATUS "Using GLEW, libraries:  ${GLEW_LIBRARIES}")
 endif (OCPN_BUILD_USE_GLEW)
 
 if (APPLE)
@@ -77,13 +83,13 @@ endif ()
 include(${wxWidgets_USE_FILE})
 target_link_libraries(${PACKAGE_NAME} ${wxWidgets_LIBRARIES})
 
-if (WIN32)
-  if (EXISTS "${PROJECT_SOURCE_DIR}/libs/WindowsHeaders")
-    add_subdirectory("${PROJECT_SOURCE_DIR}/libs/WindowsHeaders")
-    target_link_libraries(${PACKAGE_NAME} windows::headers)
-  else ()
-    message(STATUS
-      "WARNING: WindowsHeaders library is missing, OpenGL unavailable"
-    )
-  endif ()
-endif ()
+#if (WIN32)
+#  if (EXISTS "${PROJECT_SOURCE_DIR}/libs/WindowsHeaders")
+#    add_subdirectory("${PROJECT_SOURCE_DIR}/libs/WindowsHeaders")
+#    target_link_libraries(${PACKAGE_NAME} windows::headers)
+#  else ()
+#    message(STATUS
+#      "WARNING: WindowsHeaders library is missing, OpenGL unavailable"
+#    )
+#  endif ()
+#endif ()

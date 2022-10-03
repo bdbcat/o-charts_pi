@@ -118,7 +118,7 @@ public:
   unsigned int GetGLTextureRect(wxRect &rect, const char *symbolName);
   wxSize GLTextureSize();
   void SetColorTableIndex(int index);
-
+  void SetTextureFormat( int format){ m_texture_rectangle_format = format; }
   wxArrayPtrVoid *m_colorTables;
   unsigned int rasterSymbolsTexture;
   wxSize rasterSymbolsTextureSize;
@@ -148,6 +148,7 @@ private:
                         SymbolSizeInfo_t &vectorSize);
 
   pugi::xml_document m_symbolsDoc;
+  GLenum m_texture_rectangle_format;
 
   s52plib *plib;
 };

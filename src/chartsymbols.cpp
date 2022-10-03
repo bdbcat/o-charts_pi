@@ -43,10 +43,6 @@
 
 extern bool g_bopengl;
 
-#ifdef ocpnUSE_GL
-extern GLenum g_texture_rectangle_format;
-#endif
-
 WX_DECLARE_STRING_HASH_MAP(wxRect, symbolGraphicsHashMap);
 
 symbolGraphicsHashMap *symbolGraphicLocations;
@@ -1233,12 +1229,12 @@ void ChartSymbols::SetColorTableIndex(int index) {
 
 int ChartSymbols::LoadRasterFileForColorTable(int tableNo, bool flush) {
   if (tableNo == rasterSymbolsLoadedColorMapNumber && !flush) {
-    if (g_bopengl) {
+    if (1 /*g_bopengl*/) {
       if (rasterSymbolsTexture) return true;
-#ifdef ocpnUSE_GL
-      else if (!g_texture_rectangle_format && rasterSymbols.IsOk())
-        return true;
-#endif
+// #ifdef ocpnUSE_GL
+//       else if (!g_texture_rectangle_format && rasterSymbols.IsOk())
+//         return true;
+// #endif
     }
     if (rasterSymbols.IsOk()) return true;
   }
@@ -1252,7 +1248,7 @@ int ChartSymbols::LoadRasterFileForColorTable(int tableNo, bool flush) {
   if (rasterFileImg.LoadFile(filename, wxBITMAP_TYPE_PNG)) {
 #ifdef ocpnUSE_GL
     /* for opengl mode, load the symbols into a texture */
-    if (g_bopengl && g_texture_rectangle_format) {
+    if (1/*g_bopengl && g_texture_rectangle_format*/) {
       int w = rasterFileImg.GetWidth();
       int h = rasterFileImg.GetHeight();
 
@@ -1275,26 +1271,26 @@ int ChartSymbols::LoadRasterFileForColorTable(int tableNo, bool flush) {
       }
       if (!rasterSymbolsTexture) glGenTextures(1, &rasterSymbolsTexture);
 
-      glBindTexture(g_texture_rectangle_format, rasterSymbolsTexture);
+      glBindTexture(m_texture_rectangle_format, rasterSymbolsTexture);
 
       /* unfortunately this texture looks terrible with compression */
       GLuint format = GL_RGBA;
-      glTexImage2D(g_texture_rectangle_format, 0, format, w, h, 0, GL_RGBA,
+      glTexImage2D(m_texture_rectangle_format, 0, format, w, h, 0, GL_RGBA,
                    GL_UNSIGNED_BYTE, e);
 
-      //             glTexParameteri( g_texture_rectangle_format,
+      //             glTexParameteri( m_texture_rectangle_format,
       //             GL_TEXTURE_MAG_FILTER, GL_NEAREST ); glTexParameteri(
-      //             g_texture_rectangle_format, GL_TEXTURE_MIN_FILTER,
+      //             m_texture_rectangle_format, GL_TEXTURE_MIN_FILTER,
       //             GL_NEAREST );
 
-      glTexParameteri(g_texture_rectangle_format, GL_TEXTURE_WRAP_S,
+      glTexParameteri(m_texture_rectangle_format, GL_TEXTURE_WRAP_S,
                       GL_CLAMP_TO_EDGE);
-      glTexParameteri(g_texture_rectangle_format, GL_TEXTURE_WRAP_T,
+      glTexParameteri(m_texture_rectangle_format, GL_TEXTURE_WRAP_T,
                       GL_CLAMP_TO_EDGE);
 
-      glTexParameteri(g_texture_rectangle_format, GL_TEXTURE_MAG_FILTER,
+      glTexParameteri(m_texture_rectangle_format, GL_TEXTURE_MAG_FILTER,
                       GL_NEAREST);  // No mipmapping
-      glTexParameteri(g_texture_rectangle_format, GL_TEXTURE_MIN_FILTER,
+      glTexParameteri(m_texture_rectangle_format, GL_TEXTURE_MIN_FILTER,
                       GL_NEAREST);
 
       rasterSymbolsTextureSize = wxSize(w, h);

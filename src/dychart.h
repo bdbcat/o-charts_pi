@@ -164,7 +164,7 @@
 #endif
 
 #ifdef __OCPN_USE_GLEW__
-  #if defined(__MSVC__)
+  #if defined(_WIN32)
     #include "glew.h"
   #elif defined(__WXQT__) || defined(__WXGTK__)
    #include <GL/glew.h>
@@ -180,7 +180,9 @@
 #elif defined(_WIN32)
  #define GL_GLEXT_PROTOTYPES
  #include <GL/gl.h>
- #include <GL/glext.h>
+  #ifndef __OCPN_USE_GLEW__
+    #include "../libs/WindowsHeaders/include/GL/glext.h"
+  #endif
  #include <GL/glu.h>
 #elif defined(__WXOSX__)
  #include <OpenGL/gl.h>

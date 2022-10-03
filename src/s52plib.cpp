@@ -68,6 +68,21 @@
 #include "qdebug.h"
 #endif
 
+#ifndef __OCPN_USE_GLEW__
+ extern PFNGLGENBUFFERSPROC                 s_glGenBuffers;
+ extern PFNGLBINDBUFFERPROC                 s_glBindBuffer;
+ extern PFNGLBUFFERDATAPROC                 s_glBufferData;
+ extern PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
+
+#ifndef USE_ANDROID_GLES2
+#define glGenBuffers (s_glGenBuffers)
+#define glBindBuffer (s_glBindBuffer)
+#define glBufferData (s_glBufferData)
+#define glDeleteBuffers (s_glDeleteBuffers)
+#endif
+
+#endif
+
 float g_scaminScale;
 
 
@@ -242,6 +257,7 @@ s52plib::s52plib(const wxString &PLib, bool b_forceLegacy) {
   m_txf = NULL;
 
   m_chartSymbols.InitializeTables();
+  m_chartSymbols.SetTextureFormat(GL_TEXTURE_2D);
   InitializeNatsurHash();
 
   m_bOK = !(S52_load_Plib(PLib, b_forceLegacy) == 0);
@@ -382,6 +398,7 @@ void s52plib::SetGLOptions(bool b_useStencil, bool b_useStencilAP,
   m_useVBO = b_useVBO;
   m_useGLSL = true;
   m_TextureFormat = nTextureFormat;
+  m_chartSymbols.SetTextureFormat(nTextureFormat);
   m_GLMinCartographicLineWidth = MinCartographicLineWidth;
   m_GLMinSymbolLineWidth = MinSymbolLineWidth;
 
@@ -1951,7 +1968,7 @@ bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
           float tx1 = 0, tx2 = draw_width;
           float ty1 = 0, ty2 = draw_height;
 
-          if (m_TextureRectangleFormat == GL_TEXTURE_2D) {
+          if (m_TextureFormat == GL_TEXTURE_2D) {
             tx1 /= ptext->RGBA_width, tx2 /= ptext->RGBA_width;
             ty1 /= ptext->RGBA_height, ty2 /= ptext->RGBA_height;
           }
@@ -1971,7 +1988,7 @@ bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
 
           glPopMatrix();
 
-          glDisable(m_TextureRectangleFormat);
+          glDisable(m_TextureFormat);
           glDisable(GL_BLEND);
 #else
           glEnable(GL_BLEND);
@@ -3111,7 +3128,7 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
 #if !defined(USE_ANDROID_GLES2) && !defined(ocpnUSE_GLSL)
 
       glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-      if (m_TextureRectangleFormat == GL_TEXTURE_2D) {
+      if (m_TextureFormat == GL_TEXTURE_2D) {
         wxSize size = m_chartSymbols.GLTextureSize();
         tx1 /= size.x, tx2 /= size.x;
         ty1 /= size.y, ty2 /= size.y;
@@ -3607,7 +3624,7 @@ bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
       //            );
       glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-      if (m_TextureRectangleFormat == GL_TEXTURE_2D) {
+      if (m_TextureFormat == GL_TEXTURE_2D) {
         wxSize size = m_texSoundings.GLTextureSize();
         tx1 /= size.x, tx2 /= size.x;
         ty1 /= size.y, ty2 /= size.y;
@@ -4601,7 +4618,9 @@ int s52plib::RenderLSLegacy(ObjRazRules *rzRules, Rules *rules, ViewPort *vp) {
       }  //for
     }   //for
 
+#if defined(USE_ANDROID_GLES2) || defined(ocpnUSE_GLSL)
     glDisableVertexAttribArray(pos);
+#endif
 
 #ifdef ocpnUSE_GL
 #if !defined(USE_ANDROID_GLES2) && !defined(ocpnUSE_GLSL)
@@ -9088,7 +9107,7 @@ int s52plib::RenderToGLAC_Direct(ObjRazRules *rzRules, Rules *rules, ViewPort *v
 
   if (rzRules->obj->pPolyTessGeo) {
     bool b_temp_vbo = false;
-    //bool b_transform = false;
+    bool b_transform = false;
 
     // Set up the OpenGL transform matrix for this object
     // We transform from SENC SM vertex data to screen.
@@ -12380,7 +12399,9 @@ bool RenderFromHPGL::Render(char *str, char *col, wxPoint &r, wxPoint &pivot,
 #ifdef ocpnUSE_GL
   if (renderToOpenGl) {
     glDisable(GL_BLEND);
+#if defined(USE_ANDROID_GLES2) || defined(ocpnUSE_GLSL)
     glUseProgram(0);
+#endif
 
 #if !defined(USE_ANDROID_GLES2) && !defined(ocpnUSE_GLSL)
     glColor4fv(m_currentColor);
