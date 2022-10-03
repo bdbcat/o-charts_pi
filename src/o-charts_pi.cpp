@@ -1053,12 +1053,12 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
 
 }
 
-void o_charts_pi::SetColorScheme(PI_ColorScheme cs)
+void o_charts_pi::SetColorScheme(ColorScheme cs)
 {
     global_color_scheme = cs;
 
     if(ps52plib)
-        ps52plib-> SetPLIBColorScheme((PI_ColorScheme)cs);
+        ps52plib-> SetPLIBColorScheme((ColorScheme)cs);
 }
 
 bool o_charts_pi::RenderOverlay(wxDC &dc, PlugIn_ViewPort *vp)
@@ -2431,6 +2431,7 @@ void LoadS57Config()
 
 
 
+#ifndef __OCPN_USE_GLEW__
 
 static GLboolean QueryExtension( const char *extName )
 {
@@ -2464,9 +2465,7 @@ static GLboolean QueryExtension( const char *extName )
 }
 
 typedef void (*GenericFunction)(void);
-//void (*glXGetProcAddress(const GLubyte *procname))( void );
 
-#if 1
 #if defined(__WXMSW__)
 #define systemGetProcAddress(ADDR) wglGetProcAddress(ADDR)
 #elif defined(__WXOSX__)
@@ -2477,9 +2476,7 @@ typedef void (*GenericFunction)(void);
 #else
 #define systemGetProcAddress(ADDR) glXGetProcAddress((const GLubyte*)ADDR)
 #endif
-#endif
 
-#if 1
 GenericFunction ocpnGetProcAddress(const char *addr, const char *extension)
 {
     char addrbuf[256];
@@ -2562,7 +2559,8 @@ static bool GetglEntryPoints( void )
     return (s_glGenBuffers != 0);
 }
 
-#endif
+#endif  //__OCPN_USE_GLEW__
+
 
 void init_S52Library(void)
 {
@@ -2618,7 +2616,7 @@ void init_S52Library(void)
         LoadS57Config();
         ps52plib->m_myConfig = PI_GetPLIBStateHash();
 
-        ps52plib->SetPLIBColorScheme( PI_GLOBAL_COLOR_SCHEME_RGB );
+        ps52plib->SetPLIBColorScheme( GLOBAL_COLOR_SCHEME_RGB );
 
         wxWindow *cc1 = GetOCPNCanvasWindow();
         if(cc1){

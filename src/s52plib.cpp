@@ -306,7 +306,7 @@ s52plib::s52plib(const wxString &PLib, bool b_forceLegacy) {
   m_useFBO = false;
   m_useVBO = false;
   m_useGLSL = false;
-  m_TextureRectangleFormat = -1;
+  m_TextureFormat = -1;
   m_GLMinCartographicLineWidth = 1.0;
   m_GLMinSymbolLineWidth = 1.0;
 
@@ -381,7 +381,7 @@ void s52plib::SetGLOptions(bool b_useStencil, bool b_useStencilAP,
   m_useFBO = b_useFBO;
   m_useVBO = b_useVBO;
   m_useGLSL = true;
-  m_TextureRectangleFormat = nTextureFormat;
+  m_TextureFormat = nTextureFormat;
   m_GLMinCartographicLineWidth = MinCartographicLineWidth;
   m_GLMinSymbolLineWidth = MinSymbolLineWidth;
 
@@ -1326,7 +1326,7 @@ LUPrec *s52plib::S52_LUPLookup(LUPname LUP_Name, const char *objectName,
   return LUP;
 }
 
-void s52plib::SetPLIBColorScheme(PI_ColorScheme cs) {
+void s52plib::SetPLIBColorScheme(ColorScheme cs) {
   wxString SchemeName;
   switch (cs) {
     case GLOBAL_COLOR_SCHEME_DAY:
@@ -1930,7 +1930,6 @@ bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
         }
 
         if (bdraw) {
-extern GLenum g_texture_rectangle_format;
 #if !defined(USE_ANDROID_GLES2) && !defined(ocpnUSE_GLSL)
 
           int draw_width = ptext->text_width;
@@ -3141,7 +3140,7 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
       }
 #else
 
-      if (m_TextureRectangleFormat == GL_TEXTURE_2D) {
+      if (m_TextureFormat == GL_TEXTURE_2D) {
         // Normalize the sybmol texture coordinates against the next higher POT
         // size
         wxSize size = m_chartSymbols.GLTextureSize();
@@ -3251,7 +3250,7 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
       glUseProgram(0);
 
 #endif  // GLES2
-      glDisable(m_TextureRectangleFormat);
+      glDisable(m_TextureFormat);
     } else { /* this is only for legacy mode, or systems without NPOT textures
               */
       float cr = cosf(vp->rotation);
@@ -3639,7 +3638,7 @@ bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
       }
 #else
 
-      if (m_TextureRectangleFormat == GL_TEXTURE_2D) {
+      if (m_TextureFormat == GL_TEXTURE_2D) {
         // Normalize the sybmol texture coordinates against the next higher POT
         // size
         wxSize size = m_texSoundings.GLTextureSize();
@@ -3745,7 +3744,7 @@ bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
       glDisableVertexAttribArray(mUvAttrib);
 
 #endif  // GLES2
-      glDisable(m_TextureRectangleFormat);
+      glDisable(m_TextureFormat);
     } else { /* this is only for legacy mode, or systems without NPOT textures
               */
       float cr = cosf(vp->rotation);
@@ -5130,6 +5129,7 @@ int s52plib::RenderLS_Dash_GLSL(ObjRazRules *rzRules, Rules *rules,
                 // coordinates...
                 glVertexAttribPointer(mPosAttrib, 2, GL_FLOAT, GL_FALSE, 0,
                                       coords);
+                glEnableVertexAttribArray(mPosAttrib);
 
                 // Perform the actual drawing.
                 glDrawArrays(GL_LINES, 0, 2);
@@ -9058,7 +9058,7 @@ int s52plib::RenderToGLAC_Direct(ObjRazRules *rzRules, Rules *rules, ViewPort *v
 //  GLint id;
 //  glGetIntegerv(GL_CURRENT_PROGRAM,&id);
 
-  GLenum reset_err = glGetError();
+  //GLenum reset_err = glGetError();
 
   S52color *c;
   char *str = (char *)rules->INSTstr;
@@ -9088,7 +9088,7 @@ int s52plib::RenderToGLAC_Direct(ObjRazRules *rzRules, Rules *rules, ViewPort *v
 
   if (rzRules->obj->pPolyTessGeo) {
     bool b_temp_vbo = false;
-    bool b_transform = false;
+    //bool b_transform = false;
 
     // Set up the OpenGL transform matrix for this object
     // We transform from SENC SM vertex data to screen.
@@ -10005,8 +10005,8 @@ int s52plib::RenderToGLAP_GLSL(ObjRazRules *rzRules, Rules *rules,
                   vp->m_projection_type == PROJECTION_MERCATOR;
 
   if (rzRules->obj->pPolyTessGeo) {
-    bool b_temp_vbo = false;
-    bool b_transform = false;
+    //bool b_temp_vbo = false;
+    //bool b_transform = false;
 
     // perform deferred tesselation
     if (!rzRules->obj->pPolyTessGeo->IsOk())
@@ -10528,7 +10528,7 @@ render_canvas_parms *s52plib::CreatePatternBufferSpec(ObjRazRules *rzRules,
     int width = (int)dwidth + 1;
     int height = (int)dheight + 1;
 
-    float render_scale = 1.0;
+    //float render_scale = 1.0;
 #ifdef sUSE_ANDROID_GLES2
     int width_pot = width;
     int height_pot = height;
@@ -11581,84 +11581,6 @@ void s52plib::PrepareForRender(ViewPort *vp) {
 #endif
 
   m_ChartScaleFactorExp = GetOCPNChartScaleFactor_Plugin();
-
-#ifdef BUILDING_PLUGIN
-  // Has the core S52PLIB configuration changed?
-  //  If it has, reload from global preferences file, and other dynamic status
-  //  information. This additional step is only necessary for Plugin chart
-  //  rendering, as core directly sets options and updates State Hash as needed.
-
-  sint core_config = PI_GetPLIBStateHash();
-  if (core_config != m_myConfig) {
-    g_ChartScaleFactorExp = GetOCPNChartScaleFactor_Plugin();
-
-    //  If a modern (> OCPN 4.4) version of the core is active,
-    //  we may rely upon having been updated on S52PLIB state by means of PlugIn
-    //  messaging scheme.
-    if (((m_coreVersionMajor == 4) && (m_coreVersionMinor >= 5)) ||
-        m_coreVersionMajor > 4) {
-      // Retain compatibility with O4.8.x
-      if ((m_coreVersionMajor == 4) && (m_coreVersionMinor < 9)) {
-        // First, we capture some temporary values that were set by messaging,
-        // but would be overwritten by config read
-        bool bTextOn = m_bShowS57Text;
-        bool bSoundingsOn = m_bShowSoundg;
-        enum _DisCat old = m_nDisplayCategory;
-
-        PLIB_LoadS57Config();
-
-        //  And then reset the temp values that were overwritten by config load
-        m_bShowS57Text = bTextOn;
-        m_bShowSoundg = bSoundingsOn;
-        m_nDisplayCategory = old;
-      } else
-        PLIB_LoadS57GlobalConfig();
-
-      // Pick up any changes in Mariner's Standard object list
-      PLIB_LoadS57ObjectConfig();
-
-      // Detect and manage "LIGHTS" toggle
-      bool bshow_lights = !m_lightsOff;
-      if (!bshow_lights)  // On, going off
-        AddObjNoshow("LIGHTS");
-      else {  // Off, going on
-        RemoveObjNoshow("LIGHTS");
-      }
-
-      const char *categories[] = {"ACHBRT", "ACHARE", "CBLSUB", "PIPARE",
-                                  "PIPSOL", "TUNNEL", "SBDARE"};
-      unsigned int num = sizeof(categories) / sizeof(categories[0]);
-
-      // Handle Anchor area toggle
-      if ((m_nDisplayCategory == OTHER) ||
-          (m_nDisplayCategory == MARINERS_STANDARD)) {
-        bool bAnchor = m_anchorOn;
-
-        if (!bAnchor) {
-          for (unsigned int c = 0; c < num; c++) AddObjNoshow(categories[c]);
-        } else {
-          for (unsigned int c = 0; c < num; c++) RemoveObjNoshow(categories[c]);
-
-          //  Force the USER STANDARD object list anchor detail items ON
-          unsigned int cnt = 0;
-          for (unsigned int iPtr = 0; iPtr < pOBJLArray->GetCount(); iPtr++) {
-            OBJLElement *pOLE = (OBJLElement *)(pOBJLArray->Item(iPtr));
-            for (unsigned int c = 0; c < num; c++) {
-              if (!strncmp(pOLE->OBJLName, categories[c], 6)) {
-                pOLE->nViz = 1;  // force on
-                cnt++;
-                break;
-              }
-            }
-            if (cnt == num) break;
-          }
-        }
-      }
-    }
-    m_myConfig = PI_GetPLIBStateHash();
-  }
-
-#endif  // BUILDING_PLUGIN
 
   // Reset the LIGHTS declutter machine
   lastLightLat = 0;
@@ -13356,10 +13278,10 @@ bool shadersLoaded = false;
 
 bool loadS52Shaders() {
   bool ret_val = true;
-  GLint success;
+  //GLint success;
 
   enum Consts { INFOLOG_LEN = 512 };
-  GLchar infoLog[INFOLOG_LEN];
+  //GLchar infoLog[INFOLOG_LEN];
 
   // Are the shaders ready?
   if(shadersLoaded)

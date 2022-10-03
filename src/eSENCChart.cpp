@@ -1448,7 +1448,7 @@ void eSENCChart::SetColorScheme(int cs, bool bApplyImmediate)
 {
 
     if(ps52plib)
-        ps52plib->SetPLIBColorScheme((PI_ColorScheme)cs);
+        ps52plib->SetPLIBColorScheme((ColorScheme)cs);
 
     if( bApplyImmediate ) {
         delete pDIB;        // Toss any current cache

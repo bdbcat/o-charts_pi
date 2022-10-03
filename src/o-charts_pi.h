@@ -33,6 +33,7 @@
   #include "wx/wx.h"
 #endif //precompiled headers
 
+#include "ocpn_types.h"
 #include "ocpn_plugin.h"
 #include "config.h"
 
@@ -59,13 +60,13 @@
 
 #ifdef __OCPN__ANDROID__
 #define WXC_FROM_DIP(x) x
-#else    
+#else
 #if wxVERSION_NUMBER >= 3100
 #define WXC_FROM_DIP(x) wxWindow::FromDIP(x, NULL)
 #else
 #define WXC_FROM_DIP(x) x
 #endif
-#endif    
+#endif
 
 WX_DECLARE_STRING_HASH_MAP( wxString, OKeyHash );
 
@@ -98,7 +99,7 @@ class ChartInfoItem {
 public:
     ChartInfoItem(){};
     ~ChartInfoItem(){};
-    
+
     wxString config_string;
     wxString display_string;
     bool bShown;
@@ -148,8 +149,8 @@ public:
     void OnSetupOptions();
     void OnCloseToolboxPanel(int page_sel, int ok_apply_cancel);
     void ShowPreferencesDialog( wxWindow* parent );
-    void SetColorScheme(PI_ColorScheme cs);
-    
+    void SetColorScheme(ColorScheme cs);
+
     void SetPluginMessage(wxString &message_id, wxString &message_body);
     void Set_FPR();
 
@@ -163,12 +164,12 @@ public:
 
     void OnNewFPRClick( wxCommandEvent &event );
     void OnShowFPRClick( wxCommandEvent &event );
-    
+
     void ProcessChartManageResult(wxString result);
     shopPanel           *m_shoppanel;
 
     wxScrolledWindow    *m_pOptionsPage;
-    
+
 private:
     bool ScrubChartinfoList( void );
     bool Is_oeSENC_pi_Enabled();
@@ -192,7 +193,7 @@ private:
     wxButton            *m_buttonNewUP;
     wxButton            *m_buttonImportCells;
     wxButton            *m_buttonNewIP;
-    
+
     wxString            m_userpermit;
 
     wxString            m_last_enc_root_dir;
@@ -202,29 +203,29 @@ private:
 
     bool                m_bSSE26_shown;
     TexFont             m_TexFontMessage;
-    
+
     oesencPanel         *m_oesencpanel;
     wxBitmap            m_panelBitmap;
 };
 
 
 
-class oesencPrefsDialog : public wxDialog 
+class oesencPrefsDialog : public wxDialog
 {
 private:
-    
+
 protected:
     wxStdDialogButtonSizer* m_sdbSizer1;
     wxButton* m_sdbSizer1OK;
     wxButton* m_sdbSizer1Cancel;
-    
+
 public:
-    
-    
-    oesencPrefsDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("o-charts_pi Preferences"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxDEFAULT_DIALOG_STYLE ); 
+
+
+    oesencPrefsDialog( wxWindow* parent, wxWindowID id = wxID_ANY, const wxString& title = _("o-charts_pi Preferences"), const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxCAPTION|wxDEFAULT_DIALOG_STYLE );
     ~oesencPrefsDialog();
     void OnPrefsOkClick(wxCommandEvent& event);
-    
+
     wxButton *m_buttonNewFPR, *m_buttonNewDFPR;
     wxButton *m_buttonShowFPR;
     wxButton *m_buttonClearSystemName;
@@ -235,19 +236,19 @@ public:
     wxButton *m_buttonShowEULA;
     wxCheckBox *m_cbEnableRebuild;
     DECLARE_EVENT_TABLE()
-    
-    
-    
+
+
+
 };
 
 // An Event handler class to catch events from UI dialog
 class o_charts_pi_event_handler : public wxEvtHandler
 {
 public:
-    
+
     o_charts_pi_event_handler(o_charts_pi *parent);
     ~o_charts_pi_event_handler();
-    
+
     void OnNewFPRClick( wxCommandEvent &event );
     void OnNewDFPRClick( wxCommandEvent &event );
     void OnShowFPRClick( wxCommandEvent &event );
@@ -258,17 +259,17 @@ public:
     void OnShowEULA( wxCommandEvent &event );
     void OnClearCredentials( wxCommandEvent &event );
     void OnSendStatus( wxCommandEvent &event );
-    
+
 private:
     void processArbResult( wxString result );
-    
+
     o_charts_pi  *m_parent;
-    
+
     wxTimer     m_eventTimer;
     int         m_timerAction;
-    
+
     DECLARE_EVENT_TABLE()
-    
+
 };
 
 
@@ -352,34 +353,34 @@ class o_charts_pi_about: public wxDialog
 {
     DECLARE_DYNAMIC_CLASS( about )
     DECLARE_EVENT_TABLE()
-    
+
 public:
     explicit o_charts_pi_about( );
-    explicit o_charts_pi_about( wxWindow* parent, 
+    explicit o_charts_pi_about( wxWindow* parent,
                     wxWindowID id = ID_DIALOG,
                     const wxString& caption = SYMBOL_ABOUT_TITLE,
                     const wxPoint& pos = wxDefaultPosition,
                     const wxSize& size = wxSize(500, 500),
                     long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
 
-    explicit o_charts_pi_about( wxWindow* parent, 
+    explicit o_charts_pi_about( wxWindow* parent,
                               wxString fileName,
                               wxWindowID id = ID_DIALOG,
                               const wxString& caption = SYMBOL_ABOUT_TITLE,
                               const wxPoint& pos = wxDefaultPosition,
                               const wxSize& size = wxSize(500, 500),
                               long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
-    
+
     bool Create( wxWindow* parent,
                  wxWindowID id = ID_DIALOG,
                  const wxString& caption = SYMBOL_ABOUT_TITLE,
                  const wxPoint& pos = wxDefaultPosition,
                  const wxSize& size = wxSize(500, 500),
                  long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
-    
+
     void RecalculateSize( void );
     void SetOKMode();
-    
+
 private:
     void CreateControls( void );
     void Populate( void );
@@ -387,28 +388,28 @@ private:
     void OnXidRejectClick( wxCommandEvent& event );
     void OnPageChange(wxNotebookEvent& event);
     void OnClose( wxCloseEvent& event );
-    
+
     wxWindow *m_parent;
     bool m_btips_loaded;
-    
+
     wxPanel* itemPanelAbout;
     wxPanel* itemPanelAuthors;
     wxPanel* itemPanelLicense;
     wxPanel* itemPanelTips;
-    
+
     wxTextCtrl *pAuthorTextCtl;
     wxTextCtrl *pLicenseTextCtl;
     wxNotebook *pNotebook;
     wxHtmlWindow *pAboutHTMLCtl;
     wxHtmlWindow *pLicenseHTMLCtl;
     wxHtmlWindow *pAuthorHTMLCtl;
-    
+
     wxString m_fileName;
     wxButton* closeButton;
     wxButton* rejectButton;
-    
+
     //wxSize m_displaySize;
-    
+
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -417,23 +418,23 @@ private:
 class oesencPanel : public wxPanel
 {
 private:
-    
+
 protected:
     wxButton* m_bManageCharts;
     wxButton* m_bVisitOcharts;
     wxButton* m_bCreateHWID;
-    
+
     // Virtual event handlers, overide them in your derived class
     //virtual void DoHelp( wxCommandEvent& event ) { event.Skip(); }
     virtual void ManageCharts( wxCommandEvent& event );
-    virtual void VisitOCharts( wxCommandEvent& event );    
-    virtual void CreateHWID( wxCommandEvent& event );    
-    
-    
+    virtual void VisitOCharts( wxCommandEvent& event );
+    virtual void CreateHWID( wxCommandEvent& event );
+
+
 public:
     oesencPanel( o_charts_pi* plugin, wxWindow* parent, wxWindowID id = wxID_ANY,
                  const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxSize( -1,-1 ), long style = wxTAB_TRAVERSAL );
-        
+
     virtual ~oesencPanel();
     oesencPanel() { }
 };
@@ -446,14 +447,14 @@ class oesencPanelImpl : public oesencPanel
 {
     friend class o_charts_pi;
 private:
-   
+
 protected:
     // Handlers for oesencPanel events.
-    
+
     void ManageCharts( wxCommandEvent& event );
     void VisitOCharts( wxCommandEvent& event );
-    
-#if 0    
+
+#if 0
     void            SetSource( int id );
     void            SelectSource( wxListEvent& event );
     void            AddSource( wxCommandEvent& event );
@@ -474,20 +475,20 @@ protected:
     void            OnShowLocalDir( wxCommandEvent& event );
     void            OnPaint( wxPaintEvent& event );
     void            OnLeftDClick( wxMouseEvent& event );
-    
+
     void            CleanForm();
     void            FillFromFile( wxString url, wxString dir, bool selnew = false, bool selupd = false );
-    
+
     void            OnContextMenu( wxMouseEvent& event );
     void            SetBulkUpdate( bool bulk_update );
-#endif    
-    
+#endif
+
 public:
     oesencPanelImpl() { }
     ~oesencPanelImpl();
-    oesencPanelImpl( o_charts_pi* plugin, wxWindow* parent, wxWindowID id = wxID_ANY, 
+    oesencPanelImpl( o_charts_pi* plugin, wxWindow* parent, wxWindowID id = wxID_ANY,
                      const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxDEFAULT_DIALOG_STYLE );
-    
+
 private:
     DECLARE_DYNAMIC_CLASS( oesencPanelImpl )
     DECLARE_EVENT_TABLE()
@@ -498,10 +499,10 @@ class pi_HTMLMessage: public wxDialog
 {
     DECLARE_DYNAMIC_CLASS( about )
     DECLARE_EVENT_TABLE()
-    
+
 public:
     explicit pi_HTMLMessage( );
-    explicit pi_HTMLMessage( wxWindow* parent, 
+    explicit pi_HTMLMessage( wxWindow* parent,
                     wxWindowID id = ID_DIALOG,
                     const wxString& caption = SYMBOL_ABOUT_TITLE,
                     const wxString& message = _T("Default message"),
@@ -509,7 +510,7 @@ public:
                     const wxSize& size = wxSize(500, 500),
                     long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
 
-    explicit pi_HTMLMessage( wxWindow* parent, 
+    explicit pi_HTMLMessage( wxWindow* parent,
                               wxString fileName,
                               wxWindowID id = ID_DIALOG,
                               const wxString& caption = SYMBOL_ABOUT_TITLE,
@@ -517,7 +518,7 @@ public:
                               const wxPoint& pos = wxDefaultPosition,
                               const wxSize& size = wxSize(500, 500),
                               long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
-    
+
     bool Create( wxWindow* parent,
                  wxWindowID id = ID_DIALOG,
                  const wxString& caption = SYMBOL_ABOUT_TITLE,
@@ -525,11 +526,11 @@ public:
                  const wxPoint& pos = wxDefaultPosition,
                  const wxSize& size = wxSize(500, 500),
                  long style = wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX );
-    
+
     void RecalculateSize( void );
     void SetOKMode();
     void SetText( wxString text ){ m_text = text; }
-    
+
 private:
     void CreateControls( void );
     void Populate( void );
@@ -537,29 +538,29 @@ private:
     void OnXidRejectClick( wxCommandEvent& event );
     void OnPageChange(wxNotebookEvent& event);
     void OnClose( wxCloseEvent& event );
-    
+
     wxWindow *m_parent;
     bool m_btips_loaded;
-    
+
     wxPanel* itemPanelAbout;
     wxPanel* itemPanelAuthors;
     wxPanel* itemPanelLicense;
     wxPanel* itemPanelTips;
-    
+
     wxTextCtrl *pAuthorTextCtl;
     wxTextCtrl *pLicenseTextCtl;
     wxNotebook *pNotebook;
     wxHtmlWindow *pAboutHTMLCtl;
     wxHtmlWindow *pLicenseHTMLCtl;
     wxHtmlWindow *pAuthorHTMLCtl;
-    
+
     wxString m_fileName;
     wxButton* closeButton;
     wxButton* rejectButton;
     wxString m_text;
-    
+
     //wxSize m_displaySize;
-    
+
 };
 
 #endif          // Guard

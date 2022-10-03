@@ -172,7 +172,7 @@ public:
   long GetStateHash() { return m_state_hash; }
 
   void SetPLIBColorScheme(wxString scheme);
-  void SetPLIBColorScheme(PI_ColorScheme cs);
+  void SetPLIBColorScheme(ColorScheme cs);
   wxString GetPLIBColorScheme(void) { return m_ColorScheme; }
 
   void SetGLRendererString(const wxString &renderer);
@@ -530,7 +530,7 @@ private:
   bool m_useScissors;
   bool m_useFBO;
   bool m_useVBO;
-  int m_TextureRectangleFormat;
+  int m_TextureFormat;
   bool m_GLLineSmoothing;
   bool m_GLPolygonSmoothing;
   wxFont *m_soundFont;
