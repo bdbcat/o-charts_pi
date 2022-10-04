@@ -3759,6 +3759,7 @@ bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
       // Restore GL state
       glDisableVertexAttribArray(mPosAttrib);
       glDisableVertexAttribArray(mUvAttrib);
+      glUseProgram(0);
 
 #endif  // GLES2
       glDisable(m_TextureFormat);
