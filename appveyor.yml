@@ -60,8 +60,8 @@ build_script:
   - >
     cmake -T v143  -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_GENERATOR_PLATFORM=Win32 ..
   - cmake --build . --target tarball --config RelWithDebInfo
-  - py ..\ci\windows-ldd
+ # - py ..\ci\windows-ldd
   - cmd: upload.bat
-  - py ..\ci\git-push
+ # - py ..\ci\git-push
 
 
