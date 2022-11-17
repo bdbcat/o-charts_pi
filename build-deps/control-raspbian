@@ -12,7 +12,8 @@ Build-Depends: debhelper (>= 9),
  lsb-release,
  libcurl4-openssl-dev,
  wget,
- wx-common
+ wx-common,
+ libglew-dev
 
 Standards-Version: 4.3.0
 Homepage: https://opencpn.org
