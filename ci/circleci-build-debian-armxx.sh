@@ -75,7 +75,7 @@ else
         echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
         apt-get -qq update && DEBIAN_FRONTEND='noninteractive' TZ='America/New_York' apt-get -y --no-install-recommends install tzdata
         apt-get -y --no-install-recommends --fix-missing install \
-        software-properties-common devscripts equivs wget git build-essential gettext wx-common libgtk2.0-dev libwxbase3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release openssl libssl-dev libgl1-mesa-dev
+        software-properties-common devscripts equivs wget git build-essential gettext wx-common libgtk2.0-dev libwxbase3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release openssl libssl-dev libgl1-mesa-dev libglew-dev
 EOF5
         if [ "$OCPN_TARGET" = "buster-armhf" ] ||
            [ "$OCPN_TARGET" = "bullseye-armhf" ] ||
@@ -110,7 +110,7 @@ EOF9
         cat > build.sh << "EOF10"
         apt-get -qq update
         apt-get -y --no-install-recommends install \
-        git cmake build-essential gettext wx-common libgtk2.0-dev libwxbase3.0-dev libwxgtk3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release
+        git cmake build-essential gettext wx-common libgtk2.0-dev libwxbase3.0-dev libwxgtk3.0-dev libbz2-dev libcurl4-openssl-dev libexpat1-dev libcairo2-dev libarchive-dev liblzma-dev libexif-dev lsb-release libglew-dev
 EOF10
     fi
 fi
