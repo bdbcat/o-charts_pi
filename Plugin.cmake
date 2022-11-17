@@ -155,6 +155,12 @@ macro(add_plugin_libraries)
   add_subdirectory("libs/zlib")
   target_link_libraries(${PACKAGE_NAME} ocpn::zlib)
 
+if (MSVC)
+  add_subdirectory("libs/WindowsHeaders")
+  target_link_libraries(${PACKAGE_NAME} _windows_headers)
+endif ()
+
+
 #   add_subdirectory("libs/opencpn-glu")
 #   target_link_libraries(${PACKAGE_NAME} opencpn::glu)
 
