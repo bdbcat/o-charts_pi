@@ -59,9 +59,11 @@ set(PKG_INFO_URL https://o-charts.org/)
 
 set(PKG_AUTHOR "Dave register")
 
-if(NOT QT_ANDROID)
+if(NOT QT_ANDROID AND NOT APPLE)
   set(OCPN_BUILD_USE_GLEW ON)
-endif(NOT QT_ANDROID)
+else(NOT QT_ANDROID AND NOT APPLE)
+  set(OCPN_BUILD_USE_GLEW OFF)
+endif(NOT QT_ANDROID AND NOT APPLE)
 
 if(OCPN_BUILD_USE_GLEW)
   add_definitions(-D__OCPN_USE_GLEW__)
