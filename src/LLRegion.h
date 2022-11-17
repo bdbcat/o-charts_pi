@@ -50,7 +50,9 @@
 #else
     #include <GL/gl.h>
     #include <GL/glu.h>
-    #include <GL/glext.h>
+  #ifndef __OCPN_USE_GLEW__
+      #include <GL/glext.h>
+  #endif
 #endif
 
 #include "bbox.h"
