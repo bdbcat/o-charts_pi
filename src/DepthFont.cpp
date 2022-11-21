@@ -34,7 +34,7 @@
 #ifdef USE_ANDROID_GLES2
 #include "GLES2/gl2.h"
 #include "linmath.h"
-#include "shaders.h"
+//#include "shaders.h"
 #elif defined(__WXOSX__)
 #include <OpenGL/gl.h>
 #include <OpenGL/glext.h>

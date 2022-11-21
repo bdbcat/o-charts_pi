@@ -930,8 +930,9 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
             if(root[_T("OpenCPN S52PLIB GlobalReconfig")].IsBool()){
                 bool needReconfig = root[_T("OpenCPN S52PLIB GlobalReconfig")].AsBool();
                 if(needReconfig){
-                    ps52plib->PLIB_LoadS57GlobalConfig();
-                    ps52plib->PLIB_LoadS57ObjectConfig();
+//FIXME (dave) Think about this...
+//                    ps52plib->PLIB_LoadS57GlobalConfig();
+//                    ps52plib->PLIB_LoadS57ObjectConfig();
 
                     // Set the chart object scale factor, it may have changed.
                     g_ChartScaleFactorExp = GetOCPNChartScaleFactor_Plugin();
@@ -1100,7 +1101,8 @@ bool o_charts_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
         wxFont *pfont = wxTheFontList->FindOrCreateFont(10, wxFONTFAMILY_DEFAULT,
                                                         wxFONTSTYLE_NORMAL,
                                                         wxFONTWEIGHT_NORMAL);
-        m_TexFontMessage.Build(*pfont);
+        //FIXME (dave) DPI parameter from where?
+        m_TexFontMessage.Build(*pfont, 1);
         int w, h;
         m_TexFontMessage.GetTextExtent( msg, &w, &h);
         h += 2;

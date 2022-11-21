@@ -72,9 +72,7 @@ endif(OCPN_BUILD_USE_GLEW)
 
 
 set(SRC
-  src/bbox.cpp
   src/chart.cpp
-  src/chartsymbols.cpp
   src/cutil.cpp
   src/eSENCChart.cpp
   src/eSENCChart.h
@@ -82,9 +80,6 @@ set(SRC
   src/georef.cpp
   src/InstallDirs.cpp
   src/InstallDirs.h
-  src/LLRegion.cpp
-  src/mygeom63.cpp
-  src/mygeom.h
   src/ochartShop.cpp
   src/ochartShop.h
   src/o-charts_pi.cpp
@@ -95,18 +90,12 @@ set(SRC
   src/Osenc.h
   src/DepthFont.cpp
   src/piScreenLog.cpp
-  src/s52cnsy.cpp
-  src/s52plib.cpp
-  src/s52utils.cpp
   src/s57RegistrarMgr.cpp
   src/sha256.c
-  src/TexFont.cpp
-  src/TexFont.h
   src/uKey.cpp
   src/validator.cpp
   src/viewport.cpp
   libs/gdal/src/s57classregistrar.cpp
-  src/pugixml.cpp
 )
 
 if(QT_ANDROID)
@@ -115,6 +104,7 @@ endif(QT_ANDROID)
 
 if(NOT QT_ANDROID)
 add_compile_definitions( ocpnUSE_GLSL )
+add_compile_definitions( ocpnUSE_GL )
 endif(NOT QT_ANDROID)
 
 set(PKG_API_LIB api-17)  #  A directory in libs/ e. g., api-17 or api-16
@@ -158,6 +148,15 @@ macro(add_plugin_libraries)
 
   add_subdirectory("libs/zlib")
   target_link_libraries(${PACKAGE_NAME} ocpn::zlib)
+
+  add_subdirectory(libs/s52plib)
+  target_link_libraries(${PACKAGE_NAME} ocpn::s52plib)
+
+  add_subdirectory(libs/geoprim)
+  target_link_libraries(${PACKAGE_NAME} ocpn::geoprim)
+
+  add_subdirectory(libs/pugixml)
+  target_link_libraries(${PACKAGE_NAME} ocpn::pugixml)
 
 if (MSVC)
   add_subdirectory("libs/WindowsHeaders")

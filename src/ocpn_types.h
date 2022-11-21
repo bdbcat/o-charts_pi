@@ -30,6 +30,7 @@
 #ifndef __OCPNTYPES_H__
 #define __OCPNTYPES_H__
 
+#if 0
 typedef struct _S52color {
   char colName[20];
   unsigned char R;
@@ -47,6 +48,7 @@ typedef struct _colTable {
   colorHashMap colors;
   wxColorHashMap wxColors;
 } colTable;
+#endif
 
 //    ChartType constants
 typedef enum ChartTypeEnum {
@@ -70,6 +72,7 @@ typedef enum ChartFamilyEnum {
   CHART_FAMILY_DONTCARE
 } _ChartFamilyEnum;
 
+#if 0
 typedef enum ColorScheme {
   GLOBAL_COLOR_SCHEME_RGB,
   GLOBAL_COLOR_SCHEME_DAY,
@@ -77,6 +80,7 @@ typedef enum ColorScheme {
   GLOBAL_COLOR_SCHEME_NIGHT,
   N_COLOR_SCHEMES
 } _ColorScheme;
+#endif
 
 //----------------------------------------------------------------------------
 // ocpn Toolbar stuff

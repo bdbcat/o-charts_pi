@@ -216,10 +216,17 @@ class  eSENCChart : public PlugInChartBaseExtended
 
       wxString          m_extended_error;
 
-      struct _chart_context     *m_this_chart_context;
+      struct chart_context     *m_this_chart_context;
 
-      virtual VE_Hash&  Get_ve_hash(void){ return m_ve_hash; }
-      virtual VC_Hash&  Get_vc_hash(void){ return m_vc_hash; }
+//       virtual VE_Hash&  Get_ve_hash(void){ return m_ve_hash; }
+//       virtual VC_Hash&  Get_vc_hash(void){ return m_vc_hash; }
+
+      virtual std::unordered_map<unsigned, VE_Element *> &Get_ve_hash(void) {
+        return m_ve_hash;
+      }
+      virtual std::unordered_map<unsigned, VC_Element *> &Get_vc_hash(void) {
+        return m_vc_hash;
+      }
 
       virtual void GetPointPix(ObjRazRules *rzRules, float rlat, float rlon, wxPoint *r);
       virtual void GetPointPix(ObjRazRules *rzRules, wxPoint2DDouble *en, wxPoint *r, int nPoints);
@@ -358,8 +365,11 @@ protected:
       int         *m_pNoCOVRTablePoints;                  // int table of number of points in each NoCoverage table entry
       float       **m_pNoCOVRTable;                       // table of pointers to list of floats describing valid NOCOVR
 
-      VE_Hash     m_ve_hash;
-      VC_Hash     m_vc_hash;
+//       VE_Hash     m_ve_hash;
+//       VC_Hash     m_vc_hash;
+
+      std::unordered_map<unsigned, VE_Element *> m_ve_hash;
+      std::unordered_map<unsigned, VC_Element *> m_vc_hash;
 
       float      *m_line_vertex_buffer;
       size_t      m_vbo_byte_length;

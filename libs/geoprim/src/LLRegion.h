@@ -29,38 +29,10 @@
 
 #include <list>
 
-#ifdef _WIN32
-    typedef void (__stdcall * _GLUfuncptr)(void);
-    #include <windows.h>
-    #include <GL/gl.h>
-    #ifndef __OCPN_USE_GLEW__
-      #include <GL/glext.h>
-    #endif
-    #include <GL/glu.h>
-#elif defined __OCPN__ANDROID__
-    #include <qopengl.h>
-    #include <GLES/gl.h>
-    typedef double GLdouble;
-    #include <GL/glu.h>
-#elif defined(__WXOSX__)
-    #include <OpenGL/gl.h>
-    #include <OpenGL/glu.h>
-    #include <OpenGL/glext.h>
-    typedef void (*_GLUfuncptr)(void);
-#else
-    #include <GL/gl.h>
-    #include <GL/glu.h>
-  #ifndef __OCPN_USE_GLEW__
-      #include <GL/glext.h>
-  #endif
-#endif
-
 #include "bbox.h"
-#include "cutil.h"
 
-struct contour_pt
-{
-    double y, x;
+struct contour_pt {
+  double y, x;
 };
 
 // ----------------------------------------------------------------------------
@@ -71,48 +43,47 @@ typedef std::list<contour_pt> poly_contour;
 class LLBBox;
 
 struct work;
-class LLRegion
-{
+class LLRegion {
 public:
-    LLRegion() {}
-    LLRegion( float minlat, float minlon, float maxlat, float maxlon);
-    LLRegion( const LLBBox& llbbox );
-    LLRegion( size_t n, const float *points );
-    LLRegion( size_t n, const double *points );
+  LLRegion() {}
+  LLRegion(float minlat, float minlon, float maxlat, float maxlon);
+  LLRegion(const LLBBox& llbbox);
+  LLRegion(size_t n, const float* points);
+  LLRegion(size_t n, const double* points);
 
-    static bool PointsCCW( size_t n, const double *points );
+  static bool PointsCCW(size_t n, const double* points);
 
-    void Print() const;
-    void plot(const char*fn) const;
+  void Print() const;
+  void plot(const char* fn) const;
 
-    LLBBox GetBox() const;
-    bool IntersectOut(const LLBBox &box) const;
+  LLBBox GetBox() const;
+  bool IntersectOut(const LLBBox& box) const;
 
-    bool Contains(float lat, float lon) const;
+  bool Contains(float lat, float lon) const;
 
-    void Clear() { contours.clear(); }
-    bool Empty() const { return contours.empty(); }
+  void Clear() { contours.clear(); }
+  bool Empty() const { return contours.empty(); }
 
-    void Intersect(const LLRegion& region);
-    void Union(const LLRegion& region);
-    void Subtract(const LLRegion& region);
+  void Intersect(const LLRegion& region);
+  void Union(const LLRegion& region);
+  void Subtract(const LLRegion& region);
 
-    void Reduce(double factor);
+  void Reduce(double factor);
 
-    std::list<poly_contour> contours;
+  std::list<poly_contour> contours;
 
 private:
-    bool NoIntersection(const LLBBox& box) const;
-    bool NoIntersection(const LLRegion& region) const;
-    void PutContours(work &w, const LLRegion& region, bool reverse=false);
-    void Put(const LLRegion& region, int winding_rule, bool reverse=false);
-    void Combine(const LLRegion& region);
-    void InitBox( float minlat, float minlon, float maxlat, float maxlon);
-    void InitPoints( size_t n, const double *points );
-    void AdjustLongitude();
-    void Optimize();
+  bool NoIntersection(const LLBBox& box) const;
+  bool NoIntersection(const LLRegion& region) const;
+  void PutContours(work& w, const LLRegion& region, bool reverse = false);
+  void Put(const LLRegion& region, int winding_rule, bool reverse = false);
+  void Combine(const LLRegion& region);
+  void InitBox(float minlat, float minlon, float maxlat, float maxlon);
+  void InitPoints(size_t n, const double* points);
+  void AdjustLongitude();
+  void Optimize();
 
-    LLBBox m_box;
+  LLBBox m_box;
 };
 
 #endif

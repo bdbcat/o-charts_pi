@@ -36,6 +36,7 @@
 #include "ocpn_types.h"
 #include "ocpn_plugin.h"
 #include "config.h"
+#include "color_types.h"
 
 #include "wx/socket.h"
 #include <wx/fileconf.h>

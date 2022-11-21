@@ -42,7 +42,6 @@
 #include "mygeom.h"
 
 #include <math.h>
-#include "ocpn_plugin.h"
 
 #ifdef ocpnUSE_GL
 
@@ -938,17 +937,17 @@ int PolyTessGeo::BuildTessGLFromXG(void)
 
 
 //      Get total number of contours
-      ncnt  = m_pxgeom->n_contours;
+      m_ncnt  = m_pxgeom->n_contours;
 
 //      Allocate cntr array
-      cntr = (int *)malloc(ncnt * sizeof(int));
+      cntr = (int *)malloc(m_ncnt * sizeof(int));
 
 //      Get total number of points(vertices)
       int npta  = m_pxgeom->contour_array[0];
       cntr[0] = npta;
       npta += 2;                            // fluff
 
-      for( iir=0 ; iir < ncnt-1 ; iir++)
+      for( iir=0 ; iir < m_ncnt-1 ; iir++)
       {
             int nptr = m_pxgeom->contour_array[iir+1];
             cntr[iir+1] = nptr;
@@ -1052,7 +1051,7 @@ int PolyTessGeo::BuildTessGLFromXG(void)
 
       int index_offset = npte;
 //  Now the interior contours
-      for(iir=0; iir < ncnt-1; iir++)
+      for(iir=0; iir < m_ncnt-1; iir++)
       {
             gluTessBeginContour(GLUtessobj);
 
@@ -1146,7 +1145,7 @@ int PolyTessGeo::BuildTessGLFromXG(void)
       m_ppg_head->m_bSMSENC = s_bSENC_SM;
       m_ppg_head->data_type = DATA_TYPE_DOUBLE;
 
-      m_ppg_head->nContours = ncnt;
+      m_ppg_head->nContours = m_ncnt;
       m_ppg_head->pn_vertex = cntr;             // pointer to array of poly vertex counts
 
 
@@ -1620,7 +1619,7 @@ void TriPrim::FreeMem()
     free(p_vertex);
 }
 
-
+#if 0
 //------------------------------------------------------------------------------
 //          PolyTrapGroup Implementation
 //------------------------------------------------------------------------------
@@ -1655,6 +1654,7 @@ PolyTrapGroup::~PolyTrapGroup()
       free(ptrapgroup_geom);
       free (trap_array);
 }
+#endif
 
 
 

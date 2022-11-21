@@ -29,6 +29,7 @@
 #ifndef  WX_PRECOMP
 #include "wx/wx.h"
 #endif //precompiled headers
+
 #include "wx/image.h"
 #include <wx/graphics.h>
 #include <wx/listbook.h>
@@ -40,6 +41,7 @@
 #include "OCPNRegion.h"
 #include "o-charts_pi.h"
 //#include "dychart.h"
+#include "cutil.h"
 
 #include <wx/listimpl.cpp>
 
@@ -169,7 +171,7 @@ wxPoint2DDouble ViewPort::GetDoublePixFromLL( double lat, double lon )
             xlon += 360.;
     }
 
-#if 0    
+#if 0
     // update cache of trig functions used for projections
     if(clat != lat0_cache) {
         lat0_cache = clat;
@@ -298,7 +300,7 @@ void ViewPort::GetLLFromPix( const wxPoint2DDouble &p, double *lat, double *lon 
         fromSM_Plugin( d_east, d_north, clat, clon, &slat, &slon );
         break;
 
-#if 0        
+#if 0
     case PROJECTION_TRANSVERSE_MERCATOR:
     {
         double tmceasting, tmcnorthing;
@@ -335,7 +337,7 @@ void ViewPort::GetLLFromPix( const wxPoint2DDouble &p, double *lat, double *lon 
         fromEQUIRECT( d_east, d_north, clat, clon, &slat, &slon );
         break;
 #endif
-        
+
     default:
         printf("unhandled projection\n");
     }
@@ -353,7 +355,7 @@ LLRegion ViewPort::GetLLRegion( const OCPNRegion &region )
     //       method in SetBoxes here
 #ifndef ocpnUSE_GL
     return LLRegion(GetBBox());
-#else    
+#else
 
     //if(!glChartCanvas::CanClipViewport(*this))
         return LLRegion(GetBBox());
@@ -415,8 +417,8 @@ LLRegion ViewPort::GetLLRegion( const OCPNRegion &region )
         it.NextRect();
     }
     return r;
-#endif    
-#endif    
+#endif
+#endif
 }
 
 struct ContourRegion
@@ -472,7 +474,7 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &region, const LLReg
 
     OCPNRegion r;
     for(std::list<ContourRegion>::iterator k = cregions.begin(); k!=cregions.end(); k++){
-        
+
         if(k->r.Ok()){
             if(k->subtract)
                 r.Subtract(k->r);
@@ -550,13 +552,13 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoi
 
     float *pfp = llpoints;
 
-    
+
     //wxPoint p = GetPixFromLL( pfp[0], pfp[1] );
     int poly_x_max = -1e6;
     int poly_y_max = -1e6;
     int poly_x_min = 1e6;
     int poly_y_min = 1e6;
-    
+
     bool valid = false;
     for( unsigned int ip = 0; ip < nPoints; ip++ ) {
         wxPoint p = GetPixFromLL( pfp[0], pfp[1] );
@@ -584,12 +586,12 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoi
         if (ppoints) delete[] ppoints; else free(pp);
         return OCPNRegion(); //empty;
     }
- 
+
     //  We want to avoid processing regions with very large rectangle counts,
     //  so make some tests for special cases
 
     float_2Dpt p0, p1, p2, p3;
-    
+
     //  First, calculate whether any segment of the input polygon intersects the specified Region
     int nrect = 0;
     bool b_intersect = false;
@@ -598,32 +600,32 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoi
         wxRect rect = screen_region_it1.GetRect();
 
         double lat, lon;
-        
+
         //  The screen region corners
         GetLLFromPix( wxPoint(rect.x, rect.y), &lat, &lon );
         p0.y = lat; p0.x = lon;
-        
+
         GetLLFromPix( wxPoint(rect.x + rect.width, rect.y), &lat, &lon );
         p1.y = lat; p1.x = lon;
-        
+
         GetLLFromPix( wxPoint(rect.x + rect.width, rect.y + rect.height), &lat, &lon );
         p2.y = lat; p2.x = lon;
-        
+
         GetLLFromPix( wxPoint(rect.x, rect.y + rect.height), &lat, &lon );
         p3.y = lat; p3.x = lon;
-        
-        
-        for(size_t i=0 ; i < nPoints-1 ; i++){            
+
+
+        for(size_t i=0 ; i < nPoints-1 ; i++){
             //  Quick check on y dimension
             int y0 = pp[i].y; int y1 = pp[i+1].y;
 
             if(y0 == INVALID_COORD || y1 == INVALID_COORD)
                 continue;
-            
+
             if( ((y0 < rect.y) && (y1 < rect.y)) ||
                 ((y0 > rect.y+rect.height) && (y1 > rect.y+rect.height)) )
                 continue;               // both ends of line outside of box, top or bottom
-            
+
             //  Look harder
             float_2Dpt f0; f0.y = llpoints[i * 2];     f0.x = llpoints[(i * 2) + 1];
             float_2Dpt f1; f1.y = llpoints[(i+1) * 2]; f1.x = llpoints[((i+1) * 2) + 1];
@@ -631,7 +633,7 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoi
             b_intersect |= Intersect_FL( p1, p2, f0, f1) != 0; if(b_intersect) break;
             b_intersect |= Intersect_FL( p2, p3, f0, f1) != 0; if(b_intersect) break;
             b_intersect |= Intersect_FL( p3, p0, f0, f1) != 0; if(b_intersect) break;
-            
+
             //  Must check the case where the input polygon has been pre-normalized, eg (0 < lon < 360), as cm93
             f0.x -= 360.;
             f1.x -= 360.;
@@ -639,28 +641,28 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoi
             b_intersect |= Intersect_FL( p1, p2, f0, f1) != 0; if(b_intersect) break;
             b_intersect |= Intersect_FL( p2, p3, f0, f1) != 0; if(b_intersect) break;
             b_intersect |= Intersect_FL( p3, p0, f0, f1) != 0; if(b_intersect) break;
-            
+
         }
-        
+
         // Check segment, last point back to first point
         if(!b_intersect){
-            
+
             float_2Dpt f0; f0.y = llpoints[(nPoints-1) * 2];     f0.x = llpoints[((nPoints-1) * 2) + 1];
             float_2Dpt f1; f1.y = llpoints[0]; f1.x = llpoints[1];
             b_intersect |= Intersect_FL( p0, p1, f0, f1) != 0;
             b_intersect |= Intersect_FL( p1, p2, f0, f1) != 0;
             b_intersect |= Intersect_FL( p2, p3, f0, f1) != 0;
             b_intersect |= Intersect_FL( p3, p0, f0, f1) != 0;
- 
+
             f0.x -= 360.;
             f1.x -= 360.;
             b_intersect |= Intersect_FL( p0, p1, f0, f1) != 0;
             b_intersect |= Intersect_FL( p1, p2, f0, f1) != 0;
             b_intersect |= Intersect_FL( p2, p3, f0, f1) != 0;
             b_intersect |= Intersect_FL( p3, p0, f0, f1) != 0;
-            
+
         }
-                
+
         screen_region_it1.NextRect();
         nrect++;
     }
@@ -672,7 +674,7 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoi
         OCPNRegionIterator screen_region_it2( Region );
         while( screen_region_it2.HaveRects() ) {
             wxRect rect = screen_region_it2.GetRect();
- 
+
             for(size_t i=0 ; i < nPoints-1 ; i++){
                 int x0 = pp[i].x;  int y0 = pp[i].y;
                 if(x0 == INVALID_COORD)
@@ -680,18 +682,18 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoi
 
                 if((x0 < rect.x) || (x0 > rect.x+rect.width))
                     continue;
-                
+
                 if((y0 < rect.y) || (y0 > rect.y+rect.height))
                     continue;
-                
+
                 b_contained = true;
                 break;
             }
             screen_region_it2.NextRect();
         }
     }
-    
-#if 1    
+
+#if 1
     // and here is the payoff
     if(!b_contained && !b_intersect){
         //  Two cases to consider
@@ -702,14 +704,14 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoi
         //  but it might not, especially for irregular or concave charts.
         //  So we cannot directly shortcut here
         //  Better check....
-        
+
 #if 1
             if(nrect == 1){                 // most common case
             // If the subject polygon contains the center of the target rectangle, then
             // the intersection must be the target rectangle
                 float rlat = (p0.y + p2.y)/2.;
                 float rlon = (p0.x + p1.x)/2.;
-                
+
                 if(G_PtInPolygon_FL((float_2Dpt *)llpoints, nPoints, rlon, rlat)){
                     if( NULL == ppoints ) free(pp);
                     return Region;
@@ -719,7 +721,7 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoi
                     if( NULL == ppoints ) free(pp);
                     return Region;
                 }
-                
+
                 //  otherwise, there is no intersection
                 else{
                     if( NULL == ppoints ) free(pp);
@@ -727,9 +729,9 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoi
                     return r;
                 }
             }
-        
-#endif        
-            
+
+#endif
+
         }
         else{
         //  Subject polygon is entirely outside of target Region
@@ -746,10 +748,10 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoi
         if( NULL == ppoints ) free(pp);
         return r;
     }
-        
-#endif    
-        
-    
+
+#endif
+
+
 #ifdef __WXGTK__
     sigaction(SIGSEGV, NULL, &sa_all_old);             // save existing action for this signal
 
@@ -802,7 +804,7 @@ wxRect ViewPort::GetVPRectIntersect( size_t n, float *llpoints )
 
     float *pfp = llpoints;
 
-    wxBoundingBox point_box;
+    BoundingBox point_box;
     for( unsigned int ip = 0; ip < n; ip++ ) {
         point_box.Expand(pfp[1], pfp[0]);
         pfp += 2;
@@ -849,7 +851,7 @@ void ViewPort::SetBoxes( void )
 
         int inflate_x = wxMax(( dx - pix_width ) / 2, 0);
         int inflate_y = wxMax(( dy - pix_height ) / 2, 0);
-        
+
         //  Grow the source rectangle appropriately
         rv_rect.Inflate( inflate_x, inflate_y );
     }
@@ -906,7 +908,7 @@ void ViewPort::SetBoxes( void )
             GetLLFromPix( ul, &dlat_max, &d );
             GetLLFromPix( lr, &d, &dlon_max );
             GetLLFromPix( ll, &d, &dlon_min );
-            GetLLFromPix( l, &dlat_min, &d );            
+            GetLLFromPix( l, &dlat_min, &d );
 
             if(fabs(fabs(d - clon) - 180) < 1) { // the pole is onscreen
                 dlat_min = -90;
@@ -967,11 +969,11 @@ void ViewPort::SetBBoxDirect( double latmin, double lonmin, double latmax, doubl
 ViewPort ViewPort::BuildExpandedVP(int width, int height)
 {
     ViewPort new_vp = *this;
-    
+
     new_vp.pix_width = width;
     new_vp.pix_height = height;
     new_vp.SetBoxes();
-    
+
     return new_vp;
 }
 

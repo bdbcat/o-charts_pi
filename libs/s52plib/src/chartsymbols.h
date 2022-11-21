@@ -28,10 +28,10 @@
 #define _CHARTSYMBOLS_H_
 
 #include "s52s57.h"
-#include <tinyxml.h>
 #include "pugixml.hpp"
-
 class s52plib;
+
+WX_DECLARE_STRING_HASH_MAP(wxRect, symbolGraphicsHashMap);
 
 class Lookup {
 public:
@@ -108,7 +108,6 @@ public:
   void InitializeTables(void);
   void DeleteGlobals(void);
   int LoadRasterFileForColorTable(int tableNo, bool flush = false);
-  wxArrayPtrVoid *GetColorTables();
   int FindColorTable(const wxString &tableName);
   S52color *GetColor(const char *colorName, int fromTable);
   wxColor GetwxColor(const wxString &colorName, int fromTable);
@@ -119,21 +118,17 @@ public:
   wxSize GLTextureSize();
   void SetColorTableIndex(int index);
   void SetTextureFormat( int format){ m_texture_rectangle_format = format; }
-  wxArrayPtrVoid *m_colorTables;
+
+  wxArrayPtrVoid m_colorTables;
   unsigned int rasterSymbolsTexture;
   wxSize rasterSymbolsTextureSize;
   wxBitmap rasterSymbols;
   int rasterSymbolsLoadedColorMapNumber;
   wxString configFileDirectory;
   int ColorTableIndex;
+  symbolGraphicsHashMap m_symbolGraphicLocations;
 
 private:
-  void ProcessVectorTag(TiXmlElement *subNodes, SymbolSizeInfo_t &vectorSize);
-  void ProcessColorTables(TiXmlElement *colortableodes);
-  void ProcessLookups(TiXmlElement *lookupNodes);
-  void ProcessLinestyles(TiXmlElement *linestyleNodes);
-  void ProcessPatterns(TiXmlElement *patternNodes);
-  void ProcessSymbols(TiXmlElement *symbolNodes);
   void BuildLineStyle(LineStyle &lineStyle);
   void BuildLookup(Lookup &lookup);
   void BuildPattern(OCPNPattern &pattern);

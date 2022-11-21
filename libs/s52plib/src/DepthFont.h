@@ -2,10 +2,10 @@
  *
  * Project:  OpenCPN
  * Purpose:  OpenGL text rendering
- * Author:   Sean D'Epagnier
+ * Author:   David Register, Sean D'Epagnier
  *
  ***************************************************************************
- *   Copyright (C) 2014 Sean D'Epagnier                                    *
+ *   Copyright (C) 2020 David Register                                    *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,56 +23,46 @@
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,  USA.         *
  **************************************************************************/
 
-#ifndef __TEXFONT_H__
-#define __TEXFONT_H__
+#ifndef __DEPTHFONT_H__
+#define __DEPTHFONT_H__
 
-/* support ascii plus degree symbol for now pack font in a single texture 16x8 */
-#define DEGREE_GLYPH 127
-#define MIN_GLYPH 32
-#define MAX_GLYPH 128
+#include <wx/font.h>
 
-#define NUM_GLYPHS (MAX_GLYPH - MIN_GLYPH)
+#define SOUND_MAX_GLYPH 50
 
-#define COLS_GLYPHS 16
-#define ROWS_GLYPHS ((NUM_GLYPHS / COLS_GLYPHS)+1)
-
-struct TexGlyphInfo {
-    int x, y, width, height;
-    float advance;
+struct SoundTexGlyphInfo {
+  int x, y, width, height;
+  float advance;
 };
 
-class TexFont {
+class DepthFont {
 public:
-    TexFont();
-    ~TexFont();
-    
-    void Build( wxFont &font, bool blur = false );
-    void Delete();
+  DepthFont();
+  ~DepthFont();
 
-    void GetTextExtent( const wxString &string, int *width, int *height);
-    void RenderString( const char *string, int x=0, int y=0 );
-    void RenderString( const wxString &string, int x=0, int y=0 );
-    bool IsBuilt(){ return m_built; }
-    void SetColor(wxColor &color){ m_color = color;}
+  void Build(wxFont *font, double scale);
+  void Delete();
 
-    bool m_built;
-    
+  bool IsBuilt() { return m_built; }
+  unsigned int GetTexture() { return texobj; }
+  bool GetGLTextureRect(wxRect &texrect, int symIndex);
+  wxSize GLTextureSize() { return wxSize(tex_w, tex_h); };
+  double GetScale() { return m_scaleFactor; }
+
 private:
-    void GetTextExtent( const char *string, int *width, int *height);
-    void RenderGlyph( int c );
+  wxFont m_font;
 
-    wxFont m_font;
-    bool m_blur;
+  SoundTexGlyphInfo tgi[SOUND_MAX_GLYPH];
 
-    TexGlyphInfo tgi[MAX_GLYPH];
+  unsigned int texobj;
+  int tex_w, tex_h;
+  int m_maxglyphw;
+  int m_maxglyphh;
+  bool m_built;
 
-    unsigned  int texobj;
-    int tex_w, tex_h;
-    int m_maxglyphw;
-    int m_maxglyphh;
-    
-    float m_dx;
-    float m_dy;
-    wxColor m_color;
+  float m_dx;
+  float m_dy;
+  double m_scaleFactor;
 };
-#endif  //guard
+
+#endif  // guard

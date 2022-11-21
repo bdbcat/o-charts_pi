@@ -18,7 +18,7 @@ set(SRC
   include/pi_shaders.h
   include/qtstylesheet.h
   include/TexFont.h
-)   
+)
 
 # Library is used also in the plugins, so:
 set(CMAKE_POSITION_INDEPENDENT_CODE "ON")

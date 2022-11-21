@@ -29,25 +29,21 @@
 #define _S52S57_H_
 
 #include "bbox.h"
-#include "ocpn_types.h"
+#include "color_types.h"
 
+#include <unordered_map>
 #include <vector>
 
 #define CURRENT_SENC_FORMAT_VERSION 201
 
 #define OBJL_NAME_LEN 6
 
-// typedef struct _S52color{
-//    char colName[20];
-//    unsigned char  R;
-//    unsigned char  G;
-//    unsigned char  B;
-// }S52color;
-
 //    Fwd Defns
 class wxArrayOfS57attVal;
 class OGREnvelope;
 class OGRGeometry;
+class VE_Element;
+class VC_Element;
 
 // name of the addressed look up table set (fifth letter)
 typedef enum _LUPname {
@@ -312,26 +308,25 @@ typedef struct _pt {
 } pt;
 
 //      Fwd References
-class eSENCChart;
+class s57chart;
 class S57Obj;
 class OGRFeature;
 class PolyTessGeo;
 class line_segment_element;
 class PI_line_segment_element;
 
-typedef struct _chart_context {
-  void *m_pvc_hash;
-  void *m_pve_hash;
+struct chart_context {
+  std::unordered_map<unsigned, VC_Element *> *m_pvc_hash;
+  std::unordered_map<unsigned, VE_Element *> *m_pve_hash;
   double ref_lat;
   double ref_lon;
   wxArrayPtrVoid *pFloatingATONArray;
   wxArrayPtrVoid *pRigidATONArray;
-  eSENCChart *chart;
-  int chart_type;
+  void *chart;
   double safety_contour;
   float *vertex_buffer;
-
-} chart_context;
+  int chart_type;
+};
 
 class LineGeometryDescriptor {
 public:
@@ -509,7 +504,7 @@ public:
   float *pPoints;
   int max_priority;
   size_t vbo_offset;
-  wxBoundingBox edgeBBox;
+  LLBBox edgeBBox;
 };
 
 class VC_Element {
@@ -578,11 +573,6 @@ public:
 };
 
 #endif
-
-WX_DECLARE_HASH_MAP(unsigned int, VE_Element *, wxIntegerHash, wxIntegerEqual,
-                    VE_Hash);
-WX_DECLARE_HASH_MAP(unsigned int, VC_Element *, wxIntegerHash, wxIntegerEqual,
-                    VC_Hash);
 
 class connector_key {
 public:

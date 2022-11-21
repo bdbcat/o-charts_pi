@@ -1,5 +1,5 @@
 /***************************************************************************
- * 
+ *
  * Project:  OpenCPN
  * Purpose:  XTR1_INSTREAM Object
  * Author:   David Register
@@ -56,7 +56,7 @@ int makeAddr(const char* name, struct sockaddr_un* pAddr, socklen_t* pSockLen)
 {
     // consider this:
     //http://stackoverflow.com/questions/11640826/can-not-connect-to-linux-abstract-unix-socket
-    
+
     int nameLen = strlen(name);
     if (nameLen >= (int) sizeof(pAddr->sun_path) -1)  /* too long? */
         return -1;
@@ -83,7 +83,7 @@ int makeAddrRNC(const char* name, struct sockaddr_un* pAddr, socklen_t* pSockLen
 {
     // consider this:
     //http://stackoverflow.com/questions/11640826/can-not-connect-to-linux-abstract-unix-socket
-    
+
     int nameLen = strlen(name);
     if (nameLen >= (int) sizeof(pAddr->sun_path) -1)  /* too long? */
         return -1;
@@ -92,7 +92,7 @@ int makeAddrRNC(const char* name, struct sockaddr_un* pAddr, socklen_t* pSockLen
     strncpy(pAddr->sun_path+1, name, nameLen);
     pAddr->sun_family = AF_LOCAL;
     *pSockLen = 1 + nameLen + offsetof(struct sockaddr_un, sun_path);
-    //qDebug() << "makeAddr::sockName: [" << pAddr->sun_path[1] << "]"; 
+    //qDebug() << "makeAddr::sockName: [" << pAddr->sun_path[1] << "]";
 
     return 0;
 }
@@ -101,39 +101,39 @@ int makeAddrRNC(const char* name, struct sockaddr_un* pAddr, socklen_t* pSockLen
 oernc_inStream::oernc_inStream()
 {
     Init();
-    
+
 }
 
 oernc_inStream::oernc_inStream( const wxString &file_name, const wxString &crypto_key, bool bHeaderOnly )
 {
     //qDebug() << "oernc_inStream::ctor()";
-    
+
     Init();
-    
+
     m_fileName = file_name;
     m_cryptoKey = crypto_key;
-    
+
     m_OK = Open( );
     if(m_OK){
         if(!Load(bHeaderOnly)){
             m_OK = false;
         }
     }
-    
-    
+
+
 //     if(-1 != publicSocket){
 //         //qDebug() << "Close() Close Socket" << publicSocket;
 //         close( publicSocket );
 //         publicSocket = -1;
 //     }
-    
+
     privatefifo = -1;
     m_lastBytesRead = 0;
     m_lastBytesReq = 0;
     m_uncrypt_stream = 0;
-    
-    
-   
+
+
+
 }
 
 oernc_inStream::~oernc_inStream()
@@ -144,15 +144,15 @@ oernc_inStream::~oernc_inStream()
         close( publicSocket );
         publicSocket = -1;
     }
-    
+
 }
 
 void oernc_inStream::Init()
 {
     //qDebug() << "oernc_inStream::Init()";
-    
+
     publicSocket = -1;
-    
+
     privatefifo = -1;
     publicfifo = -1;
     m_OK = false;
@@ -162,16 +162,16 @@ void oernc_inStream::Init()
     m_uncrypt_stream = 0;
 
     strcpy(publicsocket_name,"com.opencpn.ocharts_pi");
-    
+
     if (makeAddrRNC(publicsocket_name, &sockAddr, &sockLen) < 0){
         wxLogMessage(_T("oernc_pi: Could not makeAddr for PUBLIC socket"));
     }
-    
+
     publicSocket = socket(AF_LOCAL, SOCK_STREAM, PF_UNIX);
     if (publicSocket < 0) {
         wxLogMessage(_T("oernc_pi: Could not make PUBLIC socket"));
     }
-    
+
 }
 
 
@@ -179,30 +179,30 @@ void oernc_inStream::Close()
 {
     wxLogMessage(_T("oernc_inStream::Close()"));
     //qDebug() << "oernc_inStream::Close()";
-    
+
     if(-1 != privatefifo){
         if(g_debugLevel)printf("   Close private fifo: %s \n", privatefifo_name);
         close(privatefifo);
         if(g_debugLevel)printf("   unlink private fifo: %s \n", privatefifo_name);
         unlink(privatefifo_name);
     }
-    
+
     if(-1 != publicfifo)
         close(publicfifo);
-    
+
     if(m_uncrypt_stream){
         delete m_uncrypt_stream;
     }
-    
+
     if(-1 != publicSocket){
         //qDebug() << "Close() Close Socket" << publicSocket;
         close( publicSocket );
         publicSocket = -1;
     }
-    
+
 
     Init();             // In case it want to be used again
-    
+
 }
 
 
@@ -211,13 +211,13 @@ bool oernc_inStream::Open( )
     wxLogMessage(_T("oernc_inStream::Open()"));
     //qDebug() << "oernc_inStream::Open()";
     //qDebug() << "sockLen: " << sockLen;
-    //qDebug() << "sockName: [" << (const char *)sockAddr.sun_path+1 << "]"; 
-    
+    //qDebug() << "sockName: [" << (const char *)sockAddr.sun_path+1 << "]";
+
     if (connect(publicSocket, (const struct sockaddr*) &sockAddr, sockLen) < 0) {
         wxLogMessage(_T("oernc_pi: Could not connect to PUBLIC socket"));
         return false;
     }
-    
+
     return true;
 }
 
@@ -231,32 +231,32 @@ bool oernc_inStream::readPayload( unsigned char *p )
 }
 
 bool oernc_inStream::Load( bool bHeaderOnly )
-{ 
+{
     //printf("LOAD()\n");
     //wxLogMessage(_T("ofc_pi: LOAD"));
     //qDebug() << "oernc_pi: LOAD";
-    
+
     if(m_cryptoKey.Length() && m_fileName.length()){
-        
+
         rnc_fifo_msg msg;
         //  Build a message for the public pipe
-        
+
         wxCharBuffer buf = m_fileName.ToUTF8();
-        if(buf.data()) 
+        if(buf.data())
             strncpy(msg.file_name, buf.data(), sizeof(msg.file_name));
-        
+
         strncpy(msg.fifo_name, privatefifo_name, sizeof(privatefifo_name));
-        
+
         buf = m_cryptoKey.ToUTF8();
-        if(buf.data()) 
+        if(buf.data())
             strncpy(msg.crypto_key, buf.data(), sizeof(msg.crypto_key));
-        
+
         msg.cmd = CMD_OPEN_RNC_FULL;
         if(bHeaderOnly)
             msg.cmd =CMD_OPEN_RNC;
-                
+
         write(publicSocket, (char*) &msg, sizeof(msg));
- 
+
                 // Read the function return code
         char frcbuf[4];
         if(!Read(frcbuf, 1).IsOk()){
@@ -273,7 +273,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         // Read response, by steps...
         // 1.  The composite length string
         char lbuf[100];
-        
+
         if(!Read(lbuf, 41).IsOk()){
             strncpy(err, "Load:  READ error PL", sizeof(err));
              qDebug() << err;
@@ -282,15 +282,15 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         int lp1, lp2, lp3, lp4, lp5, lpl;
         sscanf(lbuf, "%d;%d;%d;%d;%d;%d;", &lp1, &lp2, &lp3, &lp4, &lp5, &lpl);
         m_lenIDat = lpl;
-        
+
         //qDebug() << "read41 " << lp1 << lp2 << lp3 << lp4 << lp5 << lpl;
-        
-        int maxLen = wxMax(lp1, lp2); 
+
+        int maxLen = wxMax(lp1, lp2);
         maxLen = wxMax(maxLen, lp3);
         maxLen = wxMax(maxLen, lp4);
         maxLen = wxMax(maxLen, lp5);
         char *work = (char *)calloc(maxLen+1, sizeof(char));
-        
+
         // 5 strings
         // 1
         if(!Read(work, lp1).IsOk()){
@@ -311,7 +311,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         work[lp2] = 0;
         m_ep2 =std::string(work);
         //qDebug() << "ep2: " << m_ep2.c_str();
-        
+
         // 3
         if(!Read(work, lp3).IsOk()){
             strncpy(err, "Load:  READ error P3", sizeof(err));
@@ -320,7 +320,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         }
         work[lp3] = 0;
         m_ep3 =std::string(work);
-        
+
         // 4
         if(!Read(work, lp4).IsOk()){
             strncpy(err, "Load:  READ error P4", sizeof(err));
@@ -329,7 +329,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         }
         work[lp4] = 0;
         m_ep4 =std::string(work);
-        
+
         // 5
         if(!Read(work, lp5).IsOk()){
             strncpy(err, "Load:  READ error P5", sizeof(err));
@@ -338,38 +338,38 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         }
         work[lp5] = 0;
         m_ep5 =std::string(work);
-        
+
         free(work);
 
         return true;
     }
-    
+
     return false;
 }
 
 bool oernc_inStream::SendServerCommand( unsigned char cmd )
 {
     rnc_fifo_msg msg;
-    
+
     strncpy(msg.fifo_name, privatefifo_name, sizeof(msg.fifo_name));
-    
+
     wxCharBuffer buf = m_fileName.ToUTF8();
-    if(buf.data()) 
+    if(buf.data())
         strncpy(msg.file_name, buf.data(), sizeof(msg.file_name));
     else
         strncpy(msg.file_name, "?", sizeof(msg.file_name));
-    
-    
+
+
     buf = m_cryptoKey.ToUTF8();
-    if(buf.data()) 
+    if(buf.data())
         strncpy(msg.crypto_key, buf.data(), sizeof(msg.crypto_key));
     else
         strncpy(msg.crypto_key, "??", sizeof(msg.crypto_key));
-    
+
     msg.cmd = cmd;
-    
+
     write(publicSocket, (char*) &msg, sizeof(msg));
-    
+
      return true;
 }
 
@@ -388,7 +388,7 @@ bool oernc_inStream::Ok()
 bool oernc_inStream::isAvailable(wxString user_key)
 {
     //qDebug() << "\nTestAvail";
-                        
+
                         if(m_uncrypt_stream){
                             return m_uncrypt_stream->IsOk();
                         }
@@ -397,7 +397,7 @@ bool oernc_inStream::isAvailable(wxString user_key)
                                 //qDebug() << "TestAvail Open FAILED\n";
                                 return false;
                             }
-                            
+
                       if( SendServerCommand(CMD_TEST_AVAIL) ){
                         //qDebug() << "TestAvail SendServerCommand OK" ;
                         char response[8];
@@ -408,12 +408,12 @@ bool oernc_inStream::isAvailable(wxString user_key)
                                 //qDebug() << "TestAvail Response Got" << response ;
                                 return( !strncmp(response, "OK", 2) );
                             }
-                            
+
                             //qDebug() << "Sleep on TestAvail: %d", nTry;
                         wxMilliSleep(100);
                         nTry--;
                         }while(nTry);
-                        
+
                         return false;
                             }
                             else{
@@ -421,7 +421,7 @@ bool oernc_inStream::isAvailable(wxString user_key)
                                 return false;
                             }
                         }
-                        
+
                         return false;
 }
 
@@ -429,34 +429,34 @@ wxString oernc_inStream::getHK()
 {
     //wxLogMessage(_T("hk0"));
     qDebug() << "\ngetHK";
-    
+
     if(!Open()){
         qDebug() << "getHK Open FAILED";
         wxLogMessage(_T("hk1"));
         return wxEmptyString;
     }
-    
+
     if( SendServerCommand(CMD_GET_HK) ){
         char response[9];
         memset( response, 0, 9);
-        strcpy( response, "testresp"); 
+        strcpy( response, "testresp");
         int nTry = 5;
         do{
             if( Read(response, 8).IsOk() ){
                 if(g_debugLevel)wxLogMessage(_T("hks") + wxString( response, wxConvUTF8 ));
                 return( wxString( response, wxConvUTF8 ));
             }
-            
+
             if(g_debugLevel)printf("Sleep on getHK: %d\n", nTry);
                wxLogMessage(_T("hk2"));
-            
+
             wxMilliSleep(100);
             nTry--;
         }while(nTry);
-        
+
         if(g_debugLevel)printf("getHK Response Timeout nTry\n");
                                wxLogMessage(_T("hk3"));
-        
+
         return wxEmptyString;
     }
     else{
@@ -473,7 +473,7 @@ void oernc_inStream::Shutdown()
         if(g_debugLevel)printf("Shutdown Open FAILED\n");
         return;
     }
-    
+
     if(SendServerCommand(CMD_EXIT)) {
         char response[8];
         memset( response, 0, 8);
@@ -488,9 +488,9 @@ oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
     #define MAX_TRIES 100;
     if(!m_uncrypt_stream){
         size_t max_read = READ_SIZE;
-        
+
         if( -1 != publicSocket){
-            
+
             int remains = size;
             char *bufRun = (char *)buffer;
             int totalBytesRead = 0;
@@ -499,14 +499,14 @@ oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
                 int bytes_to_read = wxMin(remains, max_read);
                 if(bytes_to_read > 10000)
                     int yyp = 2;
-                
+
                 int bytesRead;
-                
+
                 #if 1
                 struct pollfd fd;
                 int ret;
-                
-                fd.fd = publicSocket; // your socket handler 
+
+                fd.fd = publicSocket; // your socket handler
                 fd.events = POLLIN;
                 ret = poll(&fd, 1, 100); // 1 second for timeout
                 switch (ret) {
@@ -515,20 +515,20 @@ oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
                         bytesRead = 0;
                         break;
                     case 0:
-                        // Timeout 
+                        // Timeout
                         bytesRead = 0;
                         break;
                     default:
                         bytesRead = read(publicSocket, bufRun, bytes_to_read );
                         break;
                 }
-                
-                #else                
+
+                #else
                 bytesRead = read(publicSocket, bufRun, bytes_to_read );
-                #endif                
-                
+                #endif
+
                 //qDebug() << "Bytes Read " << bytesRead;
-                
+
                 // Server may not have opened the Write end of the FIFO yet
                 if(bytesRead == 0){
                     nLoop --;
@@ -539,14 +539,14 @@ oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
 //                 }
                 else
                     nLoop = MAX_TRIES;
-                
+
                 if(bytesRead > 0){
                     remains -= bytesRead;
                     bufRun += bytesRead;
                     totalBytesRead += bytesRead;
                 }
             } while( (remains > 0) && (nLoop) );
-            
+
             m_OK = ((size_t)totalBytesRead == size);
 
             m_lastBytesRead = totalBytesRead;
@@ -556,7 +556,7 @@ oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
             //qDebug() << "socket gone";
             m_OK=false;
         }
-        
+
         return *this;
     }
     else{
@@ -585,28 +585,28 @@ oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
 oernc_inStream::oernc_inStream()
 {
     Init();
-    
+
 }
 
 oernc_inStream::oernc_inStream( const wxString &file_name, const wxString &crypto_key, bool bHeaderOnly )
 {
     Init();
-    
-#ifdef LOCAL_FILE    
+
+#ifdef LOCAL_FILE
     m_uncrypt_stream = new wxFileInputStream(file_name);          // open the Header file as a read-only stream
     m_OK = m_uncrypt_stream->IsOk();
-    
+
     strncpy(BAPfileName, file_name.mb_str(), sizeof(BAPfileName));
     m_OK = processHeader();
     if(!m_OK)
         return;
-    
+
     m_OK = processOffsetTable();
-  
+
 #else
     m_fileName = file_name;
     m_cryptoKey = crypto_key;
-    
+
     m_OK = Open( );
     if(m_OK){
         if(!Load( bHeaderOnly )){
@@ -614,8 +614,8 @@ oernc_inStream::oernc_inStream( const wxString &file_name, const wxString &crypt
             m_OK = false;
         }
     }
-    
-    
+
+
     // Done with the private FIFO
 
     if(bHeaderOnly){
@@ -631,11 +631,11 @@ oernc_inStream::oernc_inStream( const wxString &file_name, const wxString &crypt
     m_lastBytesRead = 0;
     m_lastBytesReq = 0;
     m_uncrypt_stream = 0;
-    
-    
+
+
 #endif
-    
-    
+
+
 }
 
 oernc_inStream::~oernc_inStream()
@@ -652,8 +652,8 @@ void oernc_inStream::Init()
     m_lastBytesReq = 0;
     m_lenIDat = 0;
     m_uncrypt_stream = 0;
-    
-   
+
+
 }
 
 
@@ -665,40 +665,40 @@ void oernc_inStream::Close()
         if(g_debugLevel)printf("   unlink private fifo: %s \n", privatefifo_name);
         unlink(privatefifo_name);
     }
-    
+
     if(-1 != publicfifo)
         close(publicfifo);
-    
+
     if(m_uncrypt_stream){
         delete m_uncrypt_stream;
     }
 
-   
+
     Init();             // In case it want to be used again
-    
+
 }
 
 bool oernc_inStream::Open( )
 {
-        
+
     //printf("OPEN()\n");
     //wxLogMessage(_T("ofc_pi: OPEN"));
 
     // Open the well known public FIFO for writing
     if( (publicfifo = open(PUBLIC, O_WRONLY | O_NDELAY) ) == -1) {
         wxLogMessage(_T("oernc_pi: Could not open PUBLIC pipe"));
-        
+
         return false;
     }
-    
-             
+
+
     wxString tmp_file = wxFileName::CreateTempFileName( _T("") );
     unlink(tmp_file);
-        
+
     wxCharBuffer bufn = tmp_file.ToUTF8();
-    if(bufn.data()) 
+    if(bufn.data())
         strncpy(privatefifo_name, bufn.data(), sizeof(privatefifo_name));
-            
+
             // Create the private FIFO
     if(-1 == mkfifo(privatefifo_name, 0666)){
         if(g_debugLevel)printf("   mkfifo private failed: %s\n", privatefifo_name);
@@ -707,7 +707,7 @@ bool oernc_inStream::Open( )
     else{
         if(g_debugLevel)printf("   mkfifo OK: %s\n", privatefifo_name);
     }
-                
+
     return true;
 }
 
@@ -722,32 +722,31 @@ bool oernc_inStream::readPayload( unsigned char *p )
 
 
 bool oernc_inStream::Load( bool bHeaderOnly )
-{ 
+{
     //printf("LOAD()\n");
     //wxLogMessage(_T("ofc_pi: LOAD"));
-    
+
     if(m_cryptoKey.Length() && m_fileName.length()){
-     
+
         rnc_fifo_msg msg;
         //  Build a message for the public pipe
-        
+
         wxCharBuffer buf = m_fileName.ToUTF8();
-        if(buf.data()) 
+        if(buf.data())
             strncpy(msg.file_name, buf.data(), sizeof(msg.file_name));
-        
+
         strncpy(msg.fifo_name, privatefifo_name, sizeof(privatefifo_name));
-                
+
         buf = m_cryptoKey.ToUTF8();
-        int lenc = strlen(buf.data());
-        if(buf.data()) 
+        if(buf.data())
             strncpy(msg.crypto_key, buf.data(), sizeof(msg.crypto_key));
-                
+
         msg.cmd = CMD_OPEN_RNC_FULL;
         if(bHeaderOnly)
             msg.cmd =CMD_OPEN_RNC;
-                
+
         write(publicfifo, (char*) &msg, sizeof(msg));
-                
+
                 // Open the private FIFO for reading to get output of command
                 // from the server.
         if((privatefifo = open(privatefifo_name, O_RDONLY /*| O_NONBLOCK*/) ) == -1) {
@@ -769,7 +768,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         // Read response, by steps...
         // 1.  The composite length string
         char lbuf[100];
-        
+
         if(!Read(lbuf, 41).IsOk()){
             strncpy(err, "Load:  READ error PL", sizeof(err));
             return false;
@@ -777,13 +776,13 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         int lp1, lp2, lp3, lp4, lp5, lpl;
         sscanf(lbuf, "%d;%d;%d;%d;%d;%d;", &lp1, &lp2, &lp3, &lp4, &lp5, &lpl);
         m_lenIDat = lpl;
-        
-        int maxLen = wxMax(lp1, lp2); 
+
+        int maxLen = wxMax(lp1, lp2);
         maxLen = wxMax(maxLen, lp3);
         maxLen = wxMax(maxLen, lp4);
         maxLen = wxMax(maxLen, lp5);
         char *work = (char *)calloc(maxLen+1, sizeof(char));
-        
+
         // 5 strings
         // 1
         if(!Read(work, lp1).IsOk()){
@@ -792,7 +791,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         }
         work[lp1] = 0;
         m_ep1 =std::string(work);
-        
+
         // 2
         if(!Read(work, lp2).IsOk()){
             strncpy(err, "Load:  READ error P2", sizeof(err));
@@ -800,7 +799,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         }
         work[lp2] = 0;
         m_ep2 =std::string(work);
-        
+
         // 3
         if(!Read(work, lp3).IsOk()){
             strncpy(err, "Load:  READ error P3", sizeof(err));
@@ -808,7 +807,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         }
         work[lp3] = 0;
         m_ep3 =std::string(work);
-        
+
         // 4
         if(!Read(work, lp4).IsOk()){
             strncpy(err, "Load:  READ error P4", sizeof(err));
@@ -816,7 +815,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         }
         work[lp4] = 0;
         m_ep4 =std::string(work);
-        
+
         // 5
         if(!Read(work, lp5).IsOk()){
             strncpy(err, "Load:  READ error P5", sizeof(err));
@@ -824,9 +823,9 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         }
         work[lp5] = 0;
         m_ep5 =std::string(work);
-        
+
         free(work);
-        
+
 #if 0
         // 1.  Compressed Header
         if(NULL == phdr){
@@ -840,7 +839,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
             strncpy(err, "Load:  READ error chdr", sizeof(err));
             return false;
         }
-        
+
         // 2.  Palette Block
         if(phdr->nPalleteLines){
             pPalleteBlock = (char *)calloc( phdr->nPalleteLines,  PALLETE_LINE_SIZE);
@@ -855,7 +854,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
             int yyp = 4;
         //              printf("Offset %d:   %d\n", i, pline_table[i]);
         }
-        
+
         // 3.  Ref Block
         if(phdr->nRefLines){
             pRefBlock = (char *)calloc( phdr->nRefLines,  REF_LINE_SIZE);
@@ -864,7 +863,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
                 return false;
             }
         }
-        
+
         // 4.  Ply Block
         if(phdr->nPlyLines){
             pPlyBlock = (char *)calloc( phdr->nPlyLines,  PLY_LINE_SIZE);
@@ -873,10 +872,10 @@ bool oernc_inStream::Load( bool bHeaderOnly )
                 return false;
             }
         }
-        
+
         // 5.  Line offset Block
         pline_table = NULL;
-        pline_table = (int *)malloc((phdr->Size_Y+1) * sizeof(int) );               
+        pline_table = (int *)malloc((phdr->Size_Y+1) * sizeof(int) );
         if(!pline_table){
             strncpy(err, "Load:  cannot allocate memory, pline", sizeof(err));
             return false;
@@ -885,10 +884,10 @@ bool oernc_inStream::Load( bool bHeaderOnly )
             strncpy(err, "Load:  READ error off", sizeof(err));
             return false;
         }
-        
+
 //          for(int i=0 ; i < phdr->Size_Y+1 ; i++)
 //              printf("Offset %d:   %d\n", i, pline_table[i]);
-        
+
 #endif
 
         return true;
@@ -902,33 +901,33 @@ bool oernc_inStream::Load( bool bHeaderOnly )
 bool oernc_inStream::SendServerCommand( unsigned char cmd )
 {
         rnc_fifo_msg msg;
-        
+
         strncpy(msg.fifo_name, privatefifo_name, sizeof(msg.fifo_name));
-        
+
         wxCharBuffer buf = m_fileName.ToUTF8();
-        if(buf.data()) 
+        if(buf.data())
             strncpy(msg.file_name, buf.data(), sizeof(msg.file_name));
         else
             strncpy(msg.file_name, "?", sizeof(msg.file_name));
-        
-        
+
+
         buf = m_cryptoKey.ToUTF8();
-        if(buf.data()) 
+        if(buf.data())
             strncpy(msg.crypto_key, buf.data(), sizeof(msg.crypto_key));
         else
             strncpy(msg.crypto_key, "??", sizeof(msg.crypto_key));
-        
+
         msg.cmd = cmd;
-        
+
         write(publicfifo, (char*) &msg, sizeof(msg));
-        
+
         // Open the private FIFO for reading to get output of command
         // from the server.
         if((privatefifo = open(privatefifo_name, O_RDONLY) ) == -1) {
             wxLogMessage(_T("ofc_pi SendServerCommand: Could not open private pipe"));
             return false;
         }
-        
+
         return true;
 }
 
@@ -967,12 +966,12 @@ bool oernc_inStream::isAvailable(wxString user_key)
                     if(g_debugLevel)printf("TestAvail Response OK\n");
                     return( !strncmp(response, "OK", 2) );
                 }
-                
+
                 if(g_debugLevel)printf("Sleep on TestAvail: %d\n", nTry);
                 wxMilliSleep(100);
                 nTry--;
             }while(nTry);
-            
+
             return false;
         }
         else{
@@ -980,41 +979,41 @@ bool oernc_inStream::isAvailable(wxString user_key)
             return false;
         }
     }
-    
+
     return false;
 }
 
 wxString oernc_inStream::getHK()
 {
     wxLogMessage(_T("hk0"));
-    
+
     if(!Open()){
             if(g_debugLevel)printf("getHK Open FAILED\n");
             wxLogMessage(_T("hk1"));
             return wxEmptyString;
     }
-        
+
     if( SendServerCommand(CMD_GET_HK) ){
             char response[9];
             memset( response, 0, 9);
-            strcpy( response, "testresp"); 
+            strcpy( response, "testresp");
             int nTry = 5;
             do{
                 if( Read(response, 8).IsOk() ){
                     wxLogMessage(_T("hks") + wxString( response, wxConvUTF8 ));
                     return( wxString( response, wxConvUTF8 ));
                 }
-                
+
                 if(g_debugLevel)printf("Sleep on getHK: %d\n", nTry);
                 wxLogMessage(_T("hk2"));
-                
+
                 wxMilliSleep(100);
                 nTry--;
             }while(nTry);
-            
+
             if(g_debugLevel)printf("getHK Response Timeout nTry\n");
                              wxLogMessage(_T("hk3"));
-            
+
             return wxEmptyString;
     }
     else{
@@ -1032,7 +1031,7 @@ void oernc_inStream::Shutdown()
         if(g_debugLevel)printf("Shutdown Open FAILED\n");
         return;
     }
-    
+
     if(SendServerCommand(CMD_EXIT)) {
         char response[8];
         memset( response, 0, 8);
@@ -1048,19 +1047,19 @@ oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
     if(!m_uncrypt_stream){
         size_t max_read = READ_SIZE;
         //    bool blk = fcntl(privatefifo, F_GETFL) & O_NONBLOCK;
-        
+
         if( -1 != privatefifo){
             //            printf("           Read private fifo: %s, %d bytes\n", privatefifo_name, size);
-            
+
             size_t remains = size;
             char *bufRun = (char *)buffer;
             size_t totalBytesRead = 0;
             int nLoop = MAX_TRIES;
             do{
                 size_t bytes_to_read = wxMin(remains, max_read);
-                
+
                 size_t bytesRead = read(privatefifo, bufRun, bytes_to_read );
-                
+
                 // Server may not have opened the Write end of the FIFO yet
                 if(bytesRead == 0){
                     //                    printf("miss %d %d %d\n", nLoop, bytes_to_read, size);
@@ -1069,19 +1068,19 @@ oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
                 }
                 else
                     nLoop = MAX_TRIES;
-                
+
                 remains -= bytesRead;
                 bufRun += bytesRead;
                 totalBytesRead += bytesRead;
             } while( (remains > 0) && (nLoop) );
-            
+
             m_OK = (totalBytesRead == size);
 //             if(!m_OK)
 //                 int yyp = 4;
             m_lastBytesRead = totalBytesRead;
             m_lastBytesReq = size;
         }
-        
+
         return *this;
     }
     else{
@@ -1103,16 +1102,16 @@ oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
 oernc_inStream::oernc_inStream()
 {
     Init();
-    
+
 }
 
 oernc_inStream::oernc_inStream( const wxString &file_name, const wxString &crypto_key, bool bHeaderOnly )
 {
     Init();
-    
+
     m_fileName = file_name;
     m_cryptoKey = crypto_key;
-    
+
     m_OK = Open( );
     if(m_OK){
         if(!Load( bHeaderOnly )){
@@ -1145,18 +1144,18 @@ void oernc_inStream::Close()
 
 bool oernc_inStream::Open( )
 {
-    
+
     //printf("OPEN()\n");
     //wxLogMessage(_T("xtr1_pi: OPEN"));
-    
-#if 0    
-    
-    
+
+#if 0
+
+
     wxString tmp_file = wxFileName::CreateTempFileName( _T("") );
     wxCharBuffer bufn = tmp_file.ToUTF8();
-    if(bufn.data()) 
+    if(bufn.data())
         strncpy(privatefifo_name, bufn.data(), sizeof(privatefifo_name));
-    
+
     // Create the private FIFO
         if(-1 == mkfifo(privatefifo_name, 0666)){
             if(g_debugLevel)printf("   mkfifo private failed: %s\n", privatefifo_name);
@@ -1164,65 +1163,65 @@ bool oernc_inStream::Open( )
         else{
             if(g_debugLevel)printf("   mkfifo OK: %s\n", privatefifo_name);
         }
-        
-        
-        
+
+
+
         // Open the well known public FIFO for writing
         if( (publicfifo = open(PUBLIC, O_WRONLY | O_NDELAY) ) == -1) {
             wxLogMessage(_T("xtr1_pi: Could not open PUBLIC pipe"));
             return false;
             //if( errno == ENXIO )
         }
-        
-#endif 
 
-    LPTSTR lpvMessage=TEXT("Default message from client."); 
-    BOOL   fSuccess = FALSE; 
-     
+#endif
+
+    LPTSTR lpvMessage=TEXT("Default message from client.");
+    BOOL   fSuccess = FALSE;
+
     wxString pipeName;
     if(g_pipeParm.Length())
         pipeName = _T("\\\\.\\pipe\\") + g_pipeParm;
     else
         pipeName = _T("\\\\.\\pipe\\myoerncpipe");
-    
+
     LPCWSTR lpszPipename = pipeName.wc_str();
 
-    while (1) 
-    { 
-            hPipe = CreateFile( 
-            lpszPipename,   // pipe name 
-            GENERIC_READ |  // read and write access 
-            GENERIC_WRITE, 
-            0,              // no sharing 
+    while (1)
+    {
+            hPipe = CreateFile(
+            lpszPipename,   // pipe name
+            GENERIC_READ |  // read and write access
+            GENERIC_WRITE,
+            0,              // no sharing
             NULL,           // default security attributes
-            OPEN_EXISTING,  // opens existing pipe 
-            0,              // default attributes 
-            NULL);          // no template file 
-            
-            // Break if the pipe handle is valid. 
-            
-            if (hPipe != INVALID_HANDLE_VALUE) 
-                break; 
-            
-            // Exit if an error other than ERROR_PIPE_BUSY occurs. 
+            OPEN_EXISTING,  // opens existing pipe
+            0,              // default attributes
+            NULL);          // no template file
+
+            // Break if the pipe handle is valid.
+
+            if (hPipe != INVALID_HANDLE_VALUE)
+                break;
+
+            // Exit if an error other than ERROR_PIPE_BUSY occurs.
 
             int err = GetLastError();
-                
+
             if (err != ERROR_PIPE_BUSY) {
-                _tprintf( TEXT("Could not open pipe. GLE=%d\n"), err ); 
+                _tprintf( TEXT("Could not open pipe. GLE=%d\n"), err );
                 return false;
             }
-                
-                // All pipe instances are busy, so wait for 20 seconds. 
-                
-            if ( ! WaitNamedPipe(lpszPipename, 20000)) 
-            { 
-                _tprintf( TEXT("Could not open pipe: 20 second wait timed out.") ); 
-                //printf("Could not open pipe: 20 second wait timed out."); 
+
+                // All pipe instances are busy, so wait for 20 seconds.
+
+            if ( ! WaitNamedPipe(lpszPipename, 20000))
+            {
+                _tprintf( TEXT("Could not open pipe: 20 second wait timed out.") );
+                //printf("Could not open pipe: 20 second wait timed out.");
                 return false;
-            } 
+            }
     }
- 
+
     return true;
 }
 
@@ -1236,30 +1235,30 @@ bool oernc_inStream::readPayload( unsigned char *p )
 }
 
 bool oernc_inStream::Load( bool bHeaderOnly )
-{ 
+{
     //printf("LOAD()\n");
     //wxLogMessage(_T("ofc_pi: LOAD"));
-    
+
     if(m_cryptoKey.Length() && m_fileName.length()){
-     
+
         rnc_fifo_msg msg;
         //  Build a message for the public pipe
-        
+
         wxCharBuffer buf = m_fileName.ToUTF8();
-        if(buf.data()) 
+        if(buf.data())
             strncpy(msg.file_name, buf.data(), sizeof(msg.file_name));
-        
+
         strncpy(msg.fifo_name, privatefifo_name, sizeof(privatefifo_name));
-                
+
         buf = m_cryptoKey.ToUTF8();
         int lenc = strlen(buf.data());
-        if(buf.data()) 
+        if(buf.data())
             strncpy(msg.crypto_key, buf.data(), sizeof(msg.crypto_key));
-                
+
         msg.cmd = CMD_OPEN_RNC_FULL;
         if(bHeaderOnly)
             msg.cmd =CMD_OPEN_RNC;
-        
+
         SendServerCommand(&msg);
 
         // Read the function return code
@@ -1276,7 +1275,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         // Read response, by steps...
         // 1.  The composite length string
         char lbuf[100];
-        
+
         if(!Read(lbuf, 41).IsOk()){
             strncpy(err, "Load:  READ error PL", sizeof(err));
             return false;
@@ -1284,13 +1283,13 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         int lp1, lp2, lp3, lp4, lp5, lpl;
         sscanf(lbuf, "%d;%d;%d;%d;%d;%d;", &lp1, &lp2, &lp3, &lp4, &lp5, &lpl);
         m_lenIDat = lpl;
-        
-        int maxLen = wxMax(lp1, lp2); 
+
+        int maxLen = wxMax(lp1, lp2);
         maxLen = wxMax(maxLen, lp3);
         maxLen = wxMax(maxLen, lp4);
         maxLen = wxMax(maxLen, lp5);
         char *work = (char *)calloc(maxLen+1, sizeof(char));
-        
+
         // 5 strings
         // 1
         if(!Read(work, lp1).IsOk()){
@@ -1299,7 +1298,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         }
         work[lp1] = 0;
         m_ep1 =std::string(work);
-        
+
         // 2
         if(!Read(work, lp2).IsOk()){
             strncpy(err, "Load:  READ error P2", sizeof(err));
@@ -1307,7 +1306,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         }
         work[lp2] = 0;
         m_ep2 =std::string(work);
-        
+
         // 3
         if(!Read(work, lp3).IsOk()){
             strncpy(err, "Load:  READ error P3", sizeof(err));
@@ -1315,7 +1314,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         }
         work[lp3] = 0;
         m_ep3 =std::string(work);
-        
+
         // 4
         if(!Read(work, lp4).IsOk()){
             strncpy(err, "Load:  READ error P4", sizeof(err));
@@ -1323,7 +1322,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         }
         work[lp4] = 0;
         m_ep4 =std::string(work);
-        
+
         // 5
         if(!Read(work, lp5).IsOk()){
             strncpy(err, "Load:  READ error P5", sizeof(err));
@@ -1331,12 +1330,12 @@ bool oernc_inStream::Load( bool bHeaderOnly )
         }
         work[lp5] = 0;
         m_ep5 =std::string(work);
-        
+
         free(work);
-        
+
         return true;
     }
-    
+
     return false;
 }
 
@@ -1344,31 +1343,31 @@ bool oernc_inStream::Load( bool bHeaderOnly )
 
 #if 0
 bool oernc_inStream::Load( bool bHeaderOnly )
-{ 
+{
     //printf("LOAD()\n");
     //wxLogMessage(_T("ofc_pi: LOAD"));
-    
 
-        //  Build a message 
+
+        //  Build a message
         fifo_msg msg;
-        
+
         wxCharBuffer buf = m_fileName.ToUTF8();
-        if(buf.data()) 
+        if(buf.data())
             strncpy(msg.file_name, buf.data(), sizeof(msg.file_name));
-        
+
         strncpy(msg.fifo_name, privatefifo_name, sizeof(privatefifo_name));
-        
+
         buf = m_cryptoKey.ToUTF8();
-        if(buf.data()) 
+        if(buf.data())
             strncpy(msg.crypto_key, buf.data(), sizeof(msg.crypto_key));
-        
+
         //msg.cmd = CMD_OPEN;
 
         SendServerCommand(&msg);
-        
+
         // Read response, by steps...
- 
-#if 0        
+
+#if 0
         // 1.  Compressed Header
         if(NULL == phdr){
             phdr = (compressedHeader *)calloc(1, sizeof(compressedHeader));
@@ -1381,7 +1380,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
             strncpy(err, "Load:  READ error chdr", sizeof(err));
             return false;
         }
-        
+
         // 2.  Palette Block
         if(phdr->nPalleteLines){
             pPalleteBlock = (char *)calloc( phdr->nPalleteLines,  PALLETE_LINE_SIZE);
@@ -1390,13 +1389,13 @@ bool oernc_inStream::Load( bool bHeaderOnly )
                 return false;
             }
         }
-        
+
         for(int i=0 ; i < phdr->nPalleteLines ; i++){
             char *pl = &pPalleteBlock[i * PALLETE_LINE_SIZE];
             int yyp = 4;
             //              printf("Offset %d:   %d\n", i, pline_table[i]);
         }
-        
+
         // 3.  Ref Block
         if(phdr->nRefLines){
             pRefBlock = (char *)calloc( phdr->nRefLines,  REF_LINE_SIZE);
@@ -1405,7 +1404,7 @@ bool oernc_inStream::Load( bool bHeaderOnly )
                 return false;
             }
         }
-        
+
         // 4.  Ply Block
         if(phdr->nPlyLines){
             pPlyBlock = (char *)calloc( phdr->nPlyLines,  PLY_LINE_SIZE);
@@ -1414,10 +1413,10 @@ bool oernc_inStream::Load( bool bHeaderOnly )
                 return false;
             }
         }
-        
+
         // 5.  Line offset Block
         pline_table = NULL;
-        pline_table = (int *)malloc((phdr->Size_Y+1) * sizeof(int) );               
+        pline_table = (int *)malloc((phdr->Size_Y+1) * sizeof(int) );
         if(!pline_table){
             strncpy(err, "Load:  cannot allocate memory, pline", sizeof(err));
             return false;
@@ -1426,113 +1425,113 @@ bool oernc_inStream::Load( bool bHeaderOnly )
             strncpy(err, "Load:  READ error off", sizeof(err));
             return false;
         }
-        
+
         //          for(int i=0 ; i < phdr->Size_Y+1 ; i++)
         //              printf("Offset %d:   %d\n", i, pline_table[i]);
-        
-#endif        
+
+#endif
         return true;
 }
 #endif
 
 bool oernc_inStream::SendServerCommand( unsigned char cmd )
 {
-    
+
     rnc_fifo_msg msg;
-    
+
     strncpy(msg.fifo_name, privatefifo_name, sizeof(msg.fifo_name));
-    
+
     wxCharBuffer buf = m_fileName.ToUTF8();
-    if(buf.data()) 
+    if(buf.data())
         strncpy(msg.file_name, buf.data(), sizeof(msg.file_name));
     else
         strncpy(msg.file_name, "?", sizeof(msg.file_name));
-    
-    
+
+
     buf = m_cryptoKey.ToUTF8();
-    if(buf.data()) 
+    if(buf.data())
         strncpy(msg.crypto_key, buf.data(), sizeof(msg.crypto_key));
     else
         strncpy(msg.crypto_key, "??", sizeof(msg.crypto_key));
-    
+
     msg.cmd = cmd;
 
-#if 0    
+#if 0
     write(publicfifo, (char*) &msg, sizeof(msg));
-    
+
     // Open the private FIFO for reading to get output of command
     // from the server.
     if((privatefifo = open(privatefifo_name, O_RDONLY) ) == -1) {
         wxLogMessage(_T("xtr1_pi SendServerCommand: Could not open private pipe"));
         return false;
     }
-#endif 
+#endif
 
-    
-    // Send the command message to the pipe server. 
-    DWORD  cbToWrite, cbWritten; 
-    BOOL   fSuccess = FALSE; 
-    
+
+    // Send the command message to the pipe server.
+    DWORD  cbToWrite, cbWritten;
+    BOOL   fSuccess = FALSE;
+
     cbToWrite = sizeof(msg);
-    _tprintf( TEXT("Sending %d byte message \n"), cbToWrite); 
-    
-    fSuccess = WriteFile( 
-        hPipe,                  // pipe handle 
-        &msg,                   // message 
-        cbToWrite,              // message length 
-        &cbWritten,             // bytes written 
-        NULL);                  // not overlapped 
-    
-    if ( ! fSuccess) 
+    _tprintf( TEXT("Sending %d byte message \n"), cbToWrite);
+
+    fSuccess = WriteFile(
+        hPipe,                  // pipe handle
+        &msg,                   // message
+        cbToWrite,              // message length
+        &cbWritten,             // bytes written
+        NULL);                  // not overlapped
+
+    if ( ! fSuccess)
     {
-        _tprintf( TEXT("WriteFile to pipe failed. GLE=%d\n"), GetLastError() ); 
+        _tprintf( TEXT("WriteFile to pipe failed. GLE=%d\n"), GetLastError() );
         return false;
     }
-    
+
     printf("\nMessage sent to server.\n");
-    
-               
+
+
     return true;
 }
 
 bool oernc_inStream::SendServerCommand( rnc_fifo_msg *pmsg )
 {
-    
-#if 0    
+
+#if 0
     write(publicfifo, (char*) &msg, sizeof(msg));
-    
+
     // Open the private FIFO for reading to get output of command
     // from the server.
     if((privatefifo = open(privatefifo_name, O_RDONLY) ) == -1) {
         wxLogMessage(_T("xtr1_pi SendServerCommand: Could not open private pipe"));
         return false;
     }
-#endif 
+#endif
 
-    
-    // Send the command message to the pipe server. 
-    DWORD  cbToWrite, cbWritten; 
-    BOOL   fSuccess = FALSE; 
-    
+
+    // Send the command message to the pipe server.
+    DWORD  cbToWrite, cbWritten;
+    BOOL   fSuccess = FALSE;
+
     cbToWrite = sizeof(*pmsg);
-    _tprintf( TEXT("Sending %d byte message \n"), cbToWrite); 
-    
-    fSuccess = WriteFile( 
-        hPipe,                  // pipe handle 
-        pmsg,                   // message 
-        cbToWrite,              // message length 
-        &cbWritten,             // bytes written 
-        NULL);                  // not overlapped 
-    
-    if ( ! fSuccess) 
+    _tprintf( TEXT("Sending %d byte message \n"), cbToWrite);
+
+    fSuccess = WriteFile(
+        hPipe,                  // pipe handle
+        pmsg,                   // message
+        cbToWrite,              // message length
+        &cbWritten,             // bytes written
+        NULL);                  // not overlapped
+
+    if ( ! fSuccess)
     {
-        _tprintf( TEXT("WriteFile to pipe failed. GLE=%d\n"), GetLastError() ); 
+        _tprintf( TEXT("WriteFile to pipe failed. GLE=%d\n"), GetLastError() );
         return false;
     }
-    
+
     printf("\nMessage sent to server.\n");
-    
-               
+
+
     return true;
 }
 
@@ -1551,9 +1550,9 @@ bool oernc_inStream::Ok()
 
 bool oernc_inStream::isAvailable(wxString user_key)
 {
-#if 0    
+#if 0
     if(g_debugLevel)printf("TestAvail\n");
-                        
+
                         if(m_uncrypt_stream){
                             return m_uncrypt_stream->IsOk();
                         }
@@ -1562,7 +1561,7 @@ bool oernc_inStream::isAvailable(wxString user_key)
                                 if(g_debugLevel)printf("TestAvail Open FAILED\n");
                         return false;
                             }
-                            
+
                             if( SendServerCommand(CMD_TEST_AVAIL) ){
                                 if(g_debugLevel)printf("TestAvail Open OK\n");
                         char response[8];
@@ -1573,12 +1572,12 @@ bool oernc_inStream::isAvailable(wxString user_key)
                                 if(g_debugLevel)printf("TestAvail Response OK\n");
                         return( !strncmp(response, "OK", 2) );
                             }
-                            
+
                             if(g_debugLevel)printf("Sleep on TestAvail: %d\n", nTry);
                         wxMilliSleep(100);
                         nTry--;
                         }while(nTry);
-                        
+
                         return false;
                             }
                             else{
@@ -1586,7 +1585,7 @@ bool oernc_inStream::isAvailable(wxString user_key)
                         return false;
                             }
                         }
-#endif 
+#endif
 
                         if (Open()){
 
@@ -1614,52 +1613,52 @@ bool oernc_inStream::isAvailable(wxString user_key)
         if(g_debugLevel) wxLogMessage(_T("instream OPEN() failed"));
         return false;
     }
-    
+
 
 
     return false;
-                        
+
 }
 
 wxString oernc_inStream::getHK()
 {
     wxLogMessage(_T("hk0"));
-    
+
     if(!Open()){
         if(g_debugLevel)printf("getHK Open FAILED\n");
                                wxLogMessage(_T("hk1"));
         return wxEmptyString;
     }
-#if 1    
-    
+#if 1
+
     if( SendServerCommand(CMD_GET_HK) ){
         char response[9];
         memset( response, 0, 9);
-        strcpy( response, "testresp"); 
+        strcpy( response, "testresp");
         int nTry = 5;
         do{
             if( Read(response, 8).IsOk() ){
                 //wxLogMessage(_T("hks") + wxString( response, wxConvUTF8 ));
                 return( wxString( response, wxConvUTF8 ));
             }
-            
+
             if(g_debugLevel)printf("Sleep on getHK: %d\n", nTry);
                              //wxLogMessage(_T("hk2"));
-            
+
             wxMilliSleep(100);
             nTry--;
         }while(nTry);
-        
+
         if(g_debugLevel)printf("getHK Response Timeout nTry\n");
                                //wxLogMessage(_T("hk3"));
-        
+
         return wxEmptyString;
     }
     else{
         if(g_debugLevel)printf("getHK SendServer Error\n");
                              //wxLogMessage(_T("hk4"));
     }
-#endif    
+#endif
     return wxEmptyString;
 }
 
@@ -1671,7 +1670,7 @@ void oernc_inStream::Shutdown()
         if(g_debugLevel)printf("Shutdown Open FAILED\n");
         return;
     }
- 
+
     if(SendServerCommand(CMD_EXIT)) {
         char response[8];
         memset( response, 0, 8);
@@ -1682,25 +1681,25 @@ void oernc_inStream::Shutdown()
 
 oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
 {
-#if 0    
+#if 0
     #define READ_SIZE 64000;
     #define MAX_TRIES 100;
     if(!m_uncrypt_stream){
         size_t max_read = READ_SIZE;
         //    bool blk = fcntl(privatefifo, F_GETFL) & O_NONBLOCK;
-        
+
         if( -1 != privatefifo){
             //            printf("           Read private fifo: %s, %d bytes\n", privatefifo_name, size);
-            
+
             size_t remains = size;
             char *bufRun = (char *)buffer;
             size_t totalBytesRead = 0;
             int nLoop = MAX_TRIES;
             do{
                 size_t bytes_to_read = wxMin(remains, max_read);
-                
+
                 size_t bytesRead = read(privatefifo, bufRun, bytes_to_read );
-                
+
                 // Server may not have opened the Write end of the FIFO yet
                 if(bytesRead == 0){
                     //                    printf("miss %d %d %d\n", nLoop, bytes_to_read, size);
@@ -1709,19 +1708,19 @@ oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
                 }
                 else
                     nLoop = MAX_TRIES;
-                
+
                 remains -= bytesRead;
                 bufRun += bytesRead;
                 totalBytesRead += bytesRead;
             } while( (remains > 0) && (nLoop) );
-            
+
             m_OK = (totalBytesRead == size);
             //             if(!m_OK)
             //                 int yyp = 4;
             m_lastBytesRead = totalBytesRead;
             m_lastBytesReq = size;
         }
-        
+
         return *this;
     }
     else{
@@ -1734,49 +1733,49 @@ oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
 
     #define READ_SIZE 64000;
     size_t max_read = READ_SIZE;
-    
+
     if(size > max_read)
         int yyp = 4;
-    
+
     if( (HANDLE)-1 != hPipe){
         size_t remains = size;
         char *bufRun = (char *)buffer;
         int totalBytesRead = 0;
         DWORD bytesRead;
         BOOL fSuccess = FALSE;
-        
+
         do{
             int bytes_to_read = wxMin(remains, max_read);
-            
-            // Read from the pipe. 
-            
-            fSuccess = ReadFile( 
-                hPipe,                  // pipe handle 
-                bufRun,                 // buffer to receive reply 
-                bytes_to_read,          // size of buffer 
-                &bytesRead,             // number of bytes read 
-                NULL);                  // not overlapped 
-            
+
+            // Read from the pipe.
+
+            fSuccess = ReadFile(
+                hPipe,                  // pipe handle
+                bufRun,                 // buffer to receive reply
+                bytes_to_read,          // size of buffer
+                &bytesRead,             // number of bytes read
+                NULL);                  // not overlapped
+
             if ( ! fSuccess && GetLastError() != ERROR_MORE_DATA )
-                break; 
-            
-            //_tprintf( TEXT("\"%s\"\n"), chBuf ); 
-            
+                break;
+
+            //_tprintf( TEXT("\"%s\"\n"), chBuf );
+
             if(bytesRead == 0){
                 int yyp = 3;
                 remains = 0;    // break it
             }
-            
+
             remains -= bytesRead;
             bufRun += bytesRead;
             totalBytesRead += bytesRead;
         } while(remains > 0);
 
-        
+
         m_OK = (totalBytesRead == size) && fSuccess;
         m_lastBytesRead = totalBytesRead;
         m_lastBytesReq = size;
-        
+
     }
     else
         m_OK = false;
@@ -1787,7 +1786,7 @@ oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
 
 #endif          // MSW
 
-            
+
 
 
 

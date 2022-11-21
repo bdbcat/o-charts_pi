@@ -44,7 +44,6 @@
 #include "cpl_string.h"
 
 #include "mygeom.h"
-//#include <../opencpn/plugins/chartdldr_pi/src/unrar/rartypes.hpp>
 #include "georef.h"
 #include "ocpn_plugin.h"
 
@@ -2839,22 +2838,23 @@ PolyTessGeo *Osenc::BuildPolyTessGeo(_OSENC_AreaGeometry_Record_Payload *record,
 
         //  Read the triangle primitive bounding box as lat/lon
 
+        double minxt, maxxt, minyt, maxyt;
         #ifdef __arm__
         double abox[4];
         memcpy(&abox[0], pPayloadRun, 4 * sizeof(double));
-        tp->minxt = abox[0];
-        tp->maxxt = abox[1];
-        tp->minyt = abox[2];
-        tp->maxyt = abox[3];
+        minxt = abox[0];
+        maxxt = abox[1];
+        minyt = abox[2];
+        maxyt = abox[3];
         #else
         double *pbb = (double *)pPayloadRun;
-        tp->minxt = *pbb++;
-        tp->maxxt = *pbb++;
-        tp->minyt = *pbb++;
-        tp->maxyt = *pbb;
+        minxt = *pbb++;
+        maxxt = *pbb++;
+        minyt = *pbb++;
+        maxyt = *pbb;
         #endif
 
-        tp->tri_box.Set(tp->minyt, tp->minxt, tp->maxyt, tp->maxxt);
+        tp->tri_box.Set(minyt, minxt, maxyt, maxxt);
 
         pPayloadRun += 4 * sizeof(double);
 
@@ -2890,7 +2890,7 @@ PolyTessGeo *Osenc::BuildPolyTessGeo(_OSENC_AreaGeometry_Record_Payload *record,
     ppg->single_buffer_size = total_byte_size;
     ppg->data_type = DATA_TYPE_FLOAT;
 
-    pPTG->SetPPGHead(ppg);
+    pPTG->Set_PolyTriGroup_head(ppg);
     pPTG->SetnVertexMax( nvert_max );
 
 
@@ -3052,7 +3052,7 @@ PolyTessGeo *Osenc::BuildPolyTessGeoF16(_OSENC_AreaGeometryExt_Record_Payload *r
         ppg->single_buffer_size = float_total_byte_size;
         ppg->data_type = DATA_TYPE_FLOAT;
 
-        pPTG->SetPPGHead(ppg);
+        pPTG->Set_PolyTriGroup_head(ppg);
         pPTG->SetnVertexMax( nvert_max );
     }
 

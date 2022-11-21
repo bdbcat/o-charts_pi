@@ -51,7 +51,7 @@
 #include "s52utils.h"
 #include "uKey.h"
 #include "tinyxml.h"
-
+#include "poly_math.h"
 #include "dychart.h"
 
 #ifdef __WXOSX__
@@ -193,6 +193,27 @@ wxString std2wx(std::string s){
  return wx;
 }
 
+static void PrepareForRender(ViewPort *pvp, s52plib *plib) {
+ if(!plib)
+   return;
+
+ plib->SetVPointCompat(
+                    pvp->pix_width,
+                    pvp->pix_height,
+                    pvp->view_scale_ppm,
+                    pvp->rotation,
+                    pvp->clat,
+                    pvp->clon,
+                    pvp->chart_scale,
+                    pvp->rv_rect,
+                    pvp->GetBBox(),
+                    pvp->ref_scale,
+                    GetOCPNCanvasWindow()->GetContentScaleFactor()
+                      );
+ plib->PrepareForRender();
+
+}
+
 std::string wx2std(wxString s){
   std::string s2;
   if(s.wxString::IsAscii()) {
@@ -225,7 +246,7 @@ private:
 #endif
 
 
-#define round(x) round_msvc(x)
+//#define round(x) round_msvc(x)
 
 int DOUBLECMPFUNC(double *first, double *second)
 {
@@ -1219,6 +1240,7 @@ eSENCChart::~eSENCChart()
 
       free( m_this_chart_context );
 
+#if 0
       VE_Hash::iterator it;
       for( it = m_ve_hash.begin(); it != m_ve_hash.end(); ++it ) {
           VE_Element *value = it->second;
@@ -1238,6 +1260,7 @@ eSENCChart::~eSENCChart()
           }
       }
       m_vc_hash.clear();
+#endif
 
 #ifdef ocpnUSE_GL
       if((m_LineVBO_name > 0))
@@ -1840,7 +1863,8 @@ wxBitmap &eSENCChart::RenderRegionView(const PlugIn_ViewPort& VPoint, const wxRe
 
     if( Region != m_last_Region ) force_new_view = true;
 
-    ps52plib->PrepareForRender(&m_cvp);
+    //ps52plib->PrepareForRender(&m_cvp);
+    PrepareForRender(&m_cvp, ps52plib);
 
     if( m_plib_state_hash != PI_GetPLIBStateHash() ) {
         m_bLinePrioritySet = false;                     // need to reset line priorities
@@ -2009,7 +2033,8 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
 
     //qDebug() << "PI RenderTime1" << sw.GetTime();
 
-    ps52plib->PrepareForRender(&m_cvp);
+    //ps52plib->PrepareForRender(&m_cvp);
+    PrepareForRender(&m_cvp, ps52plib);
 
     //qDebug() << "PI RenderTime2" << sw.GetTime();
 
@@ -2189,7 +2214,8 @@ int eSENCChart::RenderRegionViewOnGLTextOnly( const wxGLContext &glc, const Plug
 
     SetVPParms( VPoint );
 
-    ps52plib->PrepareForRender(&m_cvp);
+    //ps52plib->PrepareForRender(&m_cvp);
+    PrepareForRender(&m_cvp, ps52plib);
 
     //    Adjust for rotation
 
@@ -2577,28 +2603,29 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
 
             // This may be a deferred tesselation
             // Don't pre-process the geometry unless the object is to be actually rendered
-            if(!crnt->obj->pPolyTessGeo->IsOk() ){
-                if((ps52plib->ObjectRenderCheckRules( crnt, &tvp1, true )) ||
-                    (ps52plib->ObjectRenderCheckRules( crnt, &tvp2, true ))){
-                   if(!crnt->obj->pPolyTessGeo->m_pxgeom)
-                        crnt->obj->pPolyTessGeo->m_pxgeom = buildExtendedGeom( crnt->obj );
-                }
-            }
+//FIXME (dave)
+//             if(!crnt->obj->pPolyTessGeo->IsOk() ){
+//                 if((ps52plib->ObjectRenderCheckRules( crnt, &tvp1, true )) ||
+//                     (ps52plib->ObjectRenderCheckRules( crnt, &tvp2, true ))){
+//                    if(!crnt->obj->pPolyTessGeo->m_pxgeom)
+//                         crnt->obj->pPolyTessGeo->m_pxgeom = buildExtendedGeom( crnt->obj );
+//                 }
+//             }
 #ifdef USE_ANDROID_GLES2
              glEnable(GL_SCISSOR_TEST);
              glScissor(rect1.x, m_cvp.pix_height-rect1.height-rect1.y, rect1.width, rect1.height);
 #endif
 
-            //ps52plib->m_last_clip_rect = rect1;
-            ps52plib->RenderAreaToGL( glc, crnt, &tvp1 );
+            PrepareForRender(&tvp1, ps52plib);
+            ps52plib->RenderAreaToGL( glc, crnt );
 
             if (!rect2.IsEmpty()){
 #ifdef USE_ANDROID_GLES2
               glEnable(GL_SCISSOR_TEST);
               glScissor(rect2.x, m_cvp.pix_height-rect2.height-rect2.y, rect2.width, rect2.height);
 #endif
-              //ps52plib->m_last_clip_rect = rect2;
-              ps52plib->RenderAreaToGL( glc, crnt, &tvp2 );
+              PrepareForRender(&tvp2, ps52plib);
+              ps52plib->RenderAreaToGL( glc, crnt );
             }
         }
     }
@@ -2618,11 +2645,13 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
             crnt = top;
             top = top->next;               // next object
             crnt->sm_transform_parms = &vp_transform;
-            //ps52plib->m_last_clip_rect = rect1;
-            ps52plib->RenderObjectToGL( glc, crnt, &tvp1 );
+
+            PrepareForRender(&tvp1, ps52plib);
+            ps52plib->RenderObjectToGL( glc, crnt );
+
             if (!rect2.IsEmpty()){
-              //ps52plib->m_last_clip_rect = rect2;
-              ps52plib->RenderObjectToGL( glc, crnt, &tvp2 );
+             PrepareForRender(&tvp2, ps52plib);
+             ps52plib->RenderObjectToGL( glc, crnt );
             }
         }
     }
@@ -2635,11 +2664,12 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
             ObjRazRules *crnt = top;
             top = top->next;
             crnt->sm_transform_parms = &vp_transform;
-            //ps52plib->m_last_clip_rect = rect1;
-            ps52plib->RenderObjectToGL( glc, crnt, &tvp1 );
+            PrepareForRender(&tvp1, ps52plib);
+            ps52plib->RenderObjectToGL( glc, crnt );
+
             if (!rect2.IsEmpty()){
-              //ps52plib->m_last_clip_rect = rect2;
-              ps52plib->RenderObjectToGL( glc, crnt, &tvp2 );
+              PrepareForRender(&tvp2, ps52plib);
+              ps52plib->RenderObjectToGL( glc, crnt );
             }
         }
     }
@@ -2654,11 +2684,13 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
             crnt = top;
             top = top->next;
             crnt->sm_transform_parms = &vp_transform;
-            //ps52plib->m_last_clip_rect = rect1;
-            ps52plib->RenderObjectToGL( glc, crnt, &tvp1 );
+
+            PrepareForRender(&tvp1, ps52plib);
+            ps52plib->RenderObjectToGL( glc, crnt );
+
             if (!rect2.IsEmpty()){
-              //ps52plib->m_last_clip_rect = rect2;
-              ps52plib->RenderObjectToGL( glc, crnt, &tvp2 );
+              PrepareForRender(&tvp2, ps52plib);
+              ps52plib->RenderObjectToGL( glc, crnt );
             }
         }
 
@@ -2682,6 +2714,8 @@ bool eSENCChart::DoRenderRectOnGLTextOnly( const wxGLContext &glc, const ViewPor
     ObjRazRules *crnt;
 
     ViewPort tvp = VPoint;                    // undo const  TODO fix this in PLIB
+
+    PrepareForRender(&tvp, ps52plib);
 
     //    If the ViewPort is unrotated, we can use a simple (fast) scissor test instead
     //    of a stencil or depth buffer clipping algorithm.....
@@ -2717,7 +2751,7 @@ bool eSENCChart::DoRenderRectOnGLTextOnly( const wxGLContext &glc, const ViewPor
             crnt = top;
             top = top->next;               // next object
             crnt->sm_transform_parms = &vp_transform;
-            ps52plib->RenderObjectToGLText( glc, crnt, &tvp );
+            ps52plib->RenderObjectToGLText( glc, crnt );
         }
 
         top = razRules[i][2];           //LINES
@@ -2725,7 +2759,7 @@ bool eSENCChart::DoRenderRectOnGLTextOnly( const wxGLContext &glc, const ViewPor
             ObjRazRules *crnt = top;
             top = top->next;
             crnt->sm_transform_parms = &vp_transform;
-            ps52plib->RenderObjectToGLText( glc, crnt, &tvp );
+            ps52plib->RenderObjectToGLText( glc, crnt );
         }
 
         if( PI_GetPLIBSymbolStyle() == SIMPLIFIED )
@@ -2737,7 +2771,7 @@ bool eSENCChart::DoRenderRectOnGLTextOnly( const wxGLContext &glc, const ViewPor
             crnt = top;
             top = top->next;
             crnt->sm_transform_parms = &vp_transform;
-            ps52plib->RenderObjectToGLText( glc, crnt, &tvp );
+            ps52plib->RenderObjectToGLText( glc, crnt );
         }
 
     }
@@ -2815,6 +2849,7 @@ bool eSENCChart::DCRenderText( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp )
 
     tvp.Validate();                 // This VP is valid
 
+    PrepareForRender(&tvp, ps52plib);
 
     for( i = 0; i < PRIO_NUM; ++i ) {
 
@@ -2826,7 +2861,7 @@ bool eSENCChart::DCRenderText( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp )
             crnt = top;
             top = top->next;               // next object
             crnt->sm_transform_parms = &vp_transform;
-            ps52plib->RenderObjectToDCText( &dcinput, crnt, &tvp );
+            ps52plib->RenderObjectToDCText( &dcinput, crnt );
         }
 
         top = razRules[i][2];           //LINES
@@ -2834,7 +2869,7 @@ bool eSENCChart::DCRenderText( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp )
             ObjRazRules *crnt = top;
             top = top->next;
             crnt->sm_transform_parms = &vp_transform;
-            ps52plib->RenderObjectToDCText( &dcinput, crnt, &tvp );
+            ps52plib->RenderObjectToDCText( &dcinput, crnt );
         }
 
         if( ps52plib->m_nSymbolStyle == SIMPLIFIED )
@@ -2846,7 +2881,7 @@ bool eSENCChart::DCRenderText( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp )
             crnt = top;
             top = top->next;
             crnt->sm_transform_parms = &vp_transform;
-            ps52plib->RenderObjectToDCText( &dcinput, crnt, &tvp );
+            ps52plib->RenderObjectToDCText( &dcinput, crnt );
         }
     }
 
@@ -4370,11 +4405,10 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
                 vrun++;
             }
 #endif
-            double lat, lon;
-            fromSM_Plugin( east_min, north_min, m_ref_lat, m_ref_lon, &lat, &lon );
-            vep->edgeBBox.SetMin( lon, lat);
-            fromSM_Plugin( east_max, north_max, m_ref_lat, m_ref_lon, &lat, &lon );
-            vep->edgeBBox.SetMax( lon, lat);
+            double lat1, lon1, lat2, lon2;
+            fromSM_Plugin( east_min, north_min, m_ref_lat, m_ref_lon, &lat1, &lon1 );
+            fromSM_Plugin( east_max, north_max, m_ref_lat, m_ref_lon, &lat2, &lon2 );
+            vep->edgeBBox.Set(lat1, lon1, lat2, lon2);
         }
 
         m_ve_hash[vep->index] = vep;
@@ -6024,11 +6058,11 @@ int eSENCChart::DCRenderRect( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp, wx
     ObjRazRules *top;
     ObjRazRules *crnt;
 
-    //PlugIn_ViewPort tvp = vp;                    // undo const  TODO fix this in PLIB
 
     ViewPort cvp = CreateCompatibleViewport( vp );
     cvp.GetBBox().Set(vp.lat_min, vp.lon_min, vp.lat_max, vp.lon_max);
 
+    PrepareForRender(&cvp, ps52plib);
 
     render_canvas_parms pb_spec;
 
@@ -6098,13 +6132,13 @@ int eSENCChart::DCRenderRect( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp, wx
                     // This may be a deferred tesselation
                     // Don't pre-process the geometry unless the object is to be actually rendered
                     if(!crnt->obj->pPolyTessGeo->IsOk() ){
-                        if(ps52plib->ObjectRenderCheckRules( crnt, &cvp, true )){
-                            if(!crnt->obj->pPolyTessGeo->m_pxgeom)
-                                crnt->obj->pPolyTessGeo->m_pxgeom = buildExtendedGeom( crnt->obj );
-                        }
+//                         if(ps52plib->ObjectRenderCheckRules( crnt, &cvp, true )){
+//                             if(!crnt->obj->pPolyTessGeo->m_pxgeom)
+//                                 crnt->obj->pPolyTessGeo->m_pxgeom = buildExtendedGeom( crnt->obj );
+//                         }
                     }
 
-                    ps52plib->RenderAreaToDC( &dcinput, crnt, &cvp, &pb_spec );
+                    ps52plib->RenderAreaToDC( &dcinput, crnt, &pb_spec );
 
                 }
     }
@@ -6155,6 +6189,8 @@ bool eSENCChart::DCRenderLPB( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp, wx
     ViewPort cvp = CreateCompatibleViewport( vp );
     cvp.GetBBox().Set(vp.lat_min, vp.lon_min, vp.lat_max, vp.lon_max);
 
+    PrepareForRender(&cvp, ps52plib);
+
     for( i = 0; i < PI_PRIO_NUM; ++i ) {
         //      Set up a Clipper for Lines
         wxDCClipper *pdcc = NULL;
@@ -6171,7 +6207,7 @@ bool eSENCChart::DCRenderLPB( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp, wx
             crnt = top;
             top = top->next;               // next object
             crnt->sm_transform_parms = &vp_transform;
-            ps52plib->RenderObjectToDC( &dcinput, crnt, &cvp );
+            ps52plib->RenderObjectToDC( &dcinput, crnt );
         }
 
         top = razRules[i][2];           //LINES
@@ -6180,7 +6216,7 @@ bool eSENCChart::DCRenderLPB( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp, wx
             top = top->next;
 
             crnt->sm_transform_parms = &vp_transform;
-            ps52plib->RenderObjectToDC( &dcinput, crnt, &cvp );
+            ps52plib->RenderObjectToDC( &dcinput, crnt );
         }
 
         if( PI_GetPLIBSymbolStyle() == PI_SIMPLIFIED )
@@ -6192,7 +6228,7 @@ bool eSENCChart::DCRenderLPB( wxMemoryDC& dcinput, const PlugIn_ViewPort& vp, wx
             crnt = top;
             top = top->next;
             crnt->sm_transform_parms = &vp_transform;
-            ps52plib->RenderObjectToDC( &dcinput, crnt, &cvp );
+            ps52plib->RenderObjectToDC( &dcinput, crnt );
         }
 
         //      Destroy Clipper
@@ -6572,6 +6608,7 @@ ListOfPI_S57Obj *eSENCChart::GetObjRuleListAtLatLon(float lat, float lon, float 
 
 {
     ViewPort cvp = CreateCompatibleViewport( *VPoint );
+    PrepareForRender(&cvp, ps52plib);
 
 
     ListOfObjRazRules *ret_ptr = new ListOfObjRazRules;
@@ -6591,7 +6628,7 @@ ListOfPI_S57Obj *eSENCChart::GetObjRuleListAtLatLon(float lat, float lon, float 
             while( top != NULL ) {
                 if( top->obj->npt == 1 )       // Do not select Multipoint objects (SOUNDG) yet.
                         {
-                            if( ps52plib->ObjectRenderCheck( top, &cvp ) ) {
+                            if( ps52plib->ObjectRenderCheck( top ) ) {
                                 if( DoesLatLonSelectObject( lat, lon, select_radius, top->obj ) )
                                     ret_ptr->Append( top );
                             }
@@ -6602,7 +6639,7 @@ ListOfPI_S57Obj *eSENCChart::GetObjRuleListAtLatLon(float lat, float lon, float 
                         if( top->child ) {
                             ObjRazRules *child_item = top->child;
                             while( child_item != NULL ) {
-                                if( ps52plib->ObjectRenderCheck( child_item, &cvp ) ) {
+                                if( ps52plib->ObjectRenderCheck( child_item ) ) {
                                     if( DoesLatLonSelectObject( lat, lon, select_radius, child_item->obj ) )
                                         ret_ptr->Append( child_item );
                                 }
@@ -6621,7 +6658,7 @@ ListOfPI_S57Obj *eSENCChart::GetObjRuleListAtLatLon(float lat, float lon, float 
             int area_boundary_type = ( ps52plib->m_nBoundaryStyle == PLAIN_BOUNDARIES ) ? 3 : 4;
             top = razRules[i][area_boundary_type];           // Area nnn Boundaries
             while( top != NULL ) {
-                if( ps52plib->ObjectRenderCheck( top, &cvp ) ) {
+                if( ps52plib->ObjectRenderCheck( top ) ) {
                     if( DoesLatLonSelectObject( lat, lon, select_radius, top->obj ) )
                         ret_ptr->Append( top );
                 }
@@ -6635,7 +6672,7 @@ ListOfPI_S57Obj *eSENCChart::GetObjRuleListAtLatLon(float lat, float lon, float 
             top = razRules[i][2];           // Lines
 
             while( top != NULL ) {
-                if( ps52plib->ObjectRenderCheck( top, &cvp ) ) {
+                if( ps52plib->ObjectRenderCheck( top ) ) {
                     if( DoesLatLonSelectObject( lat, lon, select_radius, top->obj ) )
                         ret_ptr->Append( top );
                 }
@@ -6711,7 +6748,7 @@ bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radi
                     // Double the select radius to adjust for the fact that LIGHTS has
                     // a 0x0 BBox to start with, which makes it smaller than all other
                     // rendered objects.
-                    wxBoundingBox sbox( olon - 2*select_radius, olat - 2*select_radius,
+                    BoundingBox sbox( olon - 2*select_radius, olat - 2*select_radius,
                                         olon + 2*select_radius, olat + 2*select_radius );
 
                     if( sbox.PointInBox( lon, lat, 0 ) ) return true;
@@ -6731,7 +6768,7 @@ bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radi
                 for( int ip = 0; ip < obj->npt; ip++ ) {
                     double lon_point = *pdl++;
                     double lat_point = *pdl++;
-                    wxBoundingBox BB_point( lon_point, lat_point, lon_point, lat_point );
+                    BoundingBox BB_point( lon_point, lat_point, lon_point, lat_point );
                     if( BB_point.PointInBox( lon, lat, select_radius ) ) {
                         //                                  index = ip;
                         return true;
@@ -6751,11 +6788,12 @@ bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radi
                 if( obj->pPolyTessGeo && obj->pPolyTessGeo->IsOk()) {
                     return IsPointInObjArea( lat, lon, select_radius, obj );
                 }
-                else{
-                    double easting, northing;
-                    toSM_Plugin( lat, lon, m_ref_lat, m_ref_lon, &easting, &northing );
-                    return isPointInObjectBoundary( easting, northing, obj );
-                }
+//FIXME (dave) better object inclusion test.
+//                 else{
+//                     double easting, northing;
+//                     toSM_Plugin( lat, lon, m_ref_lat, m_ref_lon, &easting, &northing );
+//                     return isPointInObjectBoundary( easting, northing, obj );
+//                 }
             }
         }
 
@@ -6807,7 +6845,7 @@ bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radi
                 if( obj->m_ls_list ){
 
                     float *ppt;
-                    unsigned char *vbo_point = (unsigned char *)obj->m_chart_context->chart->GetLineVertexBuffer();
+                    unsigned char *vbo_point = (unsigned char *)obj->m_chart_context->vertex_buffer;
                     line_segment_element *ls = obj->m_ls_list;
 
                     while(ls && vbo_point){
@@ -7096,6 +7134,7 @@ ListOfPI_S57Obj *eSENCChart::GetLightsObjRuleListVisibleAtLatLon(float lat, floa
 
   //    Iterate thru the razRules array, by object/rule type
   ViewPort cvp = CreateCompatibleViewport( *VPoint );
+  PrepareForRender(&cvp, ps52plib);
 
   ObjRazRules *top;
   char *curr_att = NULL;
@@ -7115,7 +7154,7 @@ ListOfPI_S57Obj *eSENCChart::GetLightsObjRuleListVisibleAtLatLon(float lat, floa
             double sectrTest;
             bool hasSectors = GetDoubleAttr(top->obj, "SECTR1", sectrTest);
             if (hasSectors) {
-              if (ps52plib->ObjectRenderCheckCat(top, &cvp)) {
+              if (ps52plib->ObjectRenderCheckCat(top)) {
                 int attrCounter;
                 double valnmr = -1;
                 wxString curAttrName;
@@ -7904,12 +7943,11 @@ void eSENCChart::AssembleLineGeometry( void )
 
     //  Start with the edge hash table
     size_t nPoints = 0;
-    VE_Hash::iterator it;
-    for( it = m_ve_hash.begin(); it != m_ve_hash.end(); ++it ) {
-        VE_Element *pedge = it->second;
-        if( pedge ) {
-            nPoints += pedge->nCount;
-        }
+    for (const auto &it : m_ve_hash) {
+      VE_Element *pedge = it.second;
+      if (pedge) {
+        nPoints += pedge->nCount;
+      }
     }
 
 //    printf("time0 %f\n", sw.GetTime());
@@ -8221,16 +8259,22 @@ void eSENCChart::AssembleLineGeometry( void )
 
     //      Copy and edge points as floats,
     //      and recording each segment's offset in the array
-    for( it = m_ve_hash.begin(); it != m_ve_hash.end(); ++it ) {
-        VE_Element *pedge = it->second;
-        if( pedge ) {
-            memcpy(lvr, pedge->pPoints, pedge->nCount * 2 * sizeof(float));
-            lvr += pedge->nCount * 2;
+    for (const auto &it : m_ve_hash) {
+      VE_Element *pedge = it.second;
+      if (pedge) {
+        memcpy(lvr, pedge->pPoints, pedge->nCount * 2 * sizeof(float));
+        lvr += pedge->nCount * 2;
 
-            pedge->vbo_offset = offset;
-            offset += pedge->nCount * 2 * sizeof(float);
-        }
+        pedge->vbo_offset = offset;
+        offset += pedge->nCount * 2 * sizeof(float);
+      }
+    //         else
+    //             int yyp = 4;        //TODO Why are zero elements being
+    //             inserted into m_ve_hash?
     }
+
+
+
 //    printf("time2 %f\n", sw.GetTime());
 
     //      Now iterate on the hashmaps, adding the connector segments in the temporary vector to the VBO buffer
@@ -8294,12 +8338,12 @@ void eSENCChart::AssembleLineGeometry( void )
     // Wwe can convert the edge hashmap to a vector, to allow  us to destroy the hashmap
     // and at the same time free up the point storage in the VE_Elements, since all the points
     // are now in the VBO buffer
-    for( it = m_ve_hash.begin(); it != m_ve_hash.end(); ++it ) {
-        VE_Element *pedge = it->second;
-        if(pedge){
-            m_pve_vector.push_back(pedge);
-            free(pedge->pPoints);
-        }
+    for (const auto &it : m_ve_hash) {
+      VE_Element *pedge = it.second;
+      if (pedge) {
+        m_pve_vector.push_back(pedge);
+        free(pedge->pPoints);
+      }
     }
     m_ve_hash.clear();
 
@@ -8308,12 +8352,11 @@ void eSENCChart::AssembleLineGeometry( void )
     // and we can empty the connector hashmap,
     // and at the same time free up the point storage in the VC_Elements, since all the points
     // are now in the VBO buffer
-    for( VC_Hash::iterator itc = m_vc_hash.begin(); itc != m_vc_hash.end(); ++itc ) {
-        VC_Element *pcs = itc->second;
-        if(pcs) {
-            free(pcs->pPoint);
-            delete pcs;
-        }
+
+    for (const auto &it : m_vc_hash) {
+      VC_Element *pcs = it.second;
+      if (pcs) free(pcs->pPoint);
+      delete pcs;
     }
     m_vc_hash.clear();
 
@@ -10278,6 +10321,7 @@ bool S57Obj::SetMultipointGeometry( MultipointGeometryDescriptor *pGeo, double r
 
 int Intersect(MyPoint, MyPoint, MyPoint, MyPoint) ;
 
+#if 0
 bool isPointInObjectBoundary( double east, double north, S57Obj *obj )
 {
     int count = 0;
@@ -10344,6 +10388,8 @@ bool isPointInObjectBoundary( double east, double north, S57Obj *obj )
 
     return( (count&1) == 1);
 }
+#endif
+
 
 #ifdef ARMHF
 #if defined(__clang__)
@@ -10384,7 +10430,7 @@ Extended_Geometry *eSENCChart::buildExtendedGeom( S57Obj *obj )
     double *ptpf = (double *) malloc( ( max_points *2 ) * sizeof(double) );
     double *pfRun = ptpf;
 
-    unsigned char *vbo_point = (unsigned char *)obj->m_chart_context->chart->GetLineVertexBuffer();;
+    unsigned char *vbo_point = (unsigned char *)obj->m_chart_context->vertex_buffer;
     line_segment_element *ls = obj->m_ls_list;
 
     unsigned int index = 0;
