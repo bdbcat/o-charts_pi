@@ -25,6 +25,9 @@
 
 #include <wx/wx.h>
 
+#include "../../src/dychart.h"
+
+#if 0
 #if defined(__OCPN__ANDROID__)
  //#include <GLES2/gl2.h>
  #include <qopengl.h>
@@ -40,6 +43,7 @@
 #elif defined(__WXQT__) || defined(__WXGTK__)
  #include <GL/glew.h>
  #include <GL/glu.h>
+#endif
 #endif
 
 #include "TexFont.h"

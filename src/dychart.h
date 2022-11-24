@@ -180,10 +180,8 @@
 #elif defined(_WIN32)
  #define GL_GLEXT_PROTOTYPES
  #include <GL/gl.h>
-  #ifndef __OCPN_USE_GLEW__
-    #include "../libs/WindowsHeaders/include/GL/glext.h"
-  #endif
  #include <GL/glu.h>
+ typedef void (__stdcall * _GLUfuncptr)(void);
 #elif defined(__WXOSX__)
  #include <OpenGL/gl.h>
  #include <OpenGL/glu.h>

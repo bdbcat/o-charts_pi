@@ -20,6 +20,7 @@ SET(SRC
     src/LOD_reduce.cpp
     src/LOD_reduce.h
     src/linmath.h
+    src/vector2D.cpp
     )
 
 if (NOT wxWidgets_INCLUDE_DIRS)

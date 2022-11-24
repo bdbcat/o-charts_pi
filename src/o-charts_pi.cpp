@@ -221,8 +221,8 @@ double g_display_size_mm;
 float g_GLMinCartographicLineWidth;
 bool  g_b_EnableVBO;
 float g_GLMinSymbolLineWidth;
-GLenum g_oe_texture_rectangle_format;
-bool pi_bopengl;
+GLenum g_texture_rectangle_format;
+bool g_bopengl;
 
 bool g_b_useStencil;
 bool g_b_useStencilAP;
@@ -1037,7 +1037,7 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
         if( root[_T("setupComplete")].AsBool() )
         {
             g_b_EnableVBO = root[_T("useVBO")].AsBool();
-            g_oe_texture_rectangle_format = root[_T("TextureRectangleFormat")].AsInt();
+            g_texture_rectangle_format = root[_T("TextureRectangleFormat")].AsInt();
 
             g_b_useStencil = root[_T("useStencil")].AsBool();
             g_b_useStencilAP = root[_T("useStencilAP")].AsBool();
@@ -2665,9 +2665,9 @@ void init_GLLibrary(void) {
     if(g_GLOptionsSet && !g_GLSetupOK){
         char *p = (char *) glGetString( GL_EXTENSIONS );
         if( NULL == p )
-            pi_bopengl = false;
+            g_bopengl = false;
         else
-            pi_bopengl = true;
+            g_bopengl = true;
 
 
         char *str = (char *) glGetString( GL_RENDERER );
@@ -2727,9 +2727,9 @@ void init_GLLibrary(void) {
 #endif
 
         //  Setup device dependent OpenGL options as communicated from core by JSON message
-        ps52plib->SetGLOptions(g_b_useStencil, g_b_useStencilAP, g_b_useScissorTest, g_b_useFBO,  g_b_EnableVBO, g_oe_texture_rectangle_format, 1, 1);
+        ps52plib->SetGLOptions(g_b_useStencil, g_b_useStencilAP, g_b_useScissorTest, g_b_useFBO,  g_b_EnableVBO, g_texture_rectangle_format, 1, 1);
 
-        pi_bopengl = true;
+        g_bopengl = true;
         g_GLSetupOK = true;
     }
 }

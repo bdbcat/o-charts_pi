@@ -27,6 +27,9 @@
 #ifndef _CHARTSYMBOLS_H_
 #define _CHARTSYMBOLS_H_
 
+#include "../../src/dychart.h"
+
+
 #include "s52s57.h"
 #include "pugixml.hpp"
 class s52plib;

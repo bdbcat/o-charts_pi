@@ -67,11 +67,11 @@ typedef vector2D *pVector2D;
 //      Vector Stuff for Hit Test Algorithm
 //---------------------------------------------------------------------------------
 
-extern "C" double vGetLengthOfNormal(pVector2D a, pVector2D b, pVector2D n);
-extern "C" double vDotProduct(pVector2D v0, pVector2D v1);
-extern "C" pVector2D vAddVectors(pVector2D v0, pVector2D v1, pVector2D v);
-extern "C" pVector2D vSubtractVectors(pVector2D v0, pVector2D v1, pVector2D v);
-extern "C" double vVectorMagnitude(pVector2D v0);
-extern "C" double vVectorSquared(pVector2D v0);
+extern double vGetLengthOfNormal(pVector2D a, pVector2D b, pVector2D n);
+extern double vDotProduct(pVector2D v0, pVector2D v1);
+extern pVector2D vAddVectors(pVector2D v0, pVector2D v1, pVector2D v);
+extern pVector2D vSubtractVectors(pVector2D v0, pVector2D v1, pVector2D v);
+extern double vVectorMagnitude(pVector2D v0);
+extern double vVectorSquared(pVector2D v0);
 
 #endif

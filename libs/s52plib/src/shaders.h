@@ -29,6 +29,9 @@
 #include "wx/wx.h"
 #endif //precompiled headers
 
+#include "../../src/dychart.h"
+typedef void (__stdcall * _GLUfuncptr)(void);
+
 #include "GLES2/gl2.h"
 
     extern GLint color_tri_shader_program;
@@ -37,7 +40,7 @@
     extern GLint circle_filled_shader_program;
     extern GLint FBO_texture_2D_shader_program;
     extern GLint texture_2DA_shader_program;
-    
+
 
 bool loadShaders();
 
