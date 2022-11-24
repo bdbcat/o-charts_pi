@@ -501,8 +501,8 @@ s52plib::s52plib( const wxString& PLib, bool b_forceLegacy )
     m_useFBO = false;
     m_useVBO = false;
     m_TextureFormat = -1;
-    SetGLPolygonSmoothing( true );
-    SetGLLineSmoothing( true );
+    SetGLPolygonSmoothing( false );
+    SetGLLineSmoothing( false );
 
     m_display_size_mm = 300;
     m_displayScale = 1.0;
