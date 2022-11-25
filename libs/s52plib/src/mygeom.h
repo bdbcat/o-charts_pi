@@ -55,10 +55,10 @@
 class OGRGeometry;
 class OGRPolygon;
 
-#define TESS_VERT   0                           // constants describing preferred tess orientation
-#define TESS_HORZ   1
+#define TESS_VERT 0  // constants describing preferred tess orientation
+#define TESS_HORZ 1
 
-#define EQUAL_EPS 1.0e-7                        // tolerance value
+#define EQUAL_EPS 1.0e-7  // tolerance value
 
 
 //  nota bene  These definitions are identical to OpenGL prototypes

@@ -27,14 +27,24 @@
 #define _S52PLIB_H_
 
 #include <vector>
+
+#include "../../src/dychart.h"
+
+#if 0
+#ifdef __OCPN_USE_GLEW__
+  #if defined(_WIN32)
+    #include "glew.h"
+  #elif defined(__WXQT__) || defined(__WXGTK__)
+   #include <GL/glew.h>
+  #endif
+#endif
+
 #if defined(__OCPN__ANDROID__)
  #include <qopengl.h>
  #include <GL/gl_private.h>  // this is a cut-down version of gl.h
  #include <GLES2/gl2.h>
 #elif defined(__MSVC__)
  #include "glew.h"
- #include <GL/glu.h>
- typedef void (__stdcall * _GLUfuncptrA)(void);
 #elif defined(__WXOSX__)
  #include <OpenGL/gl.h>
  #include <OpenGL/glu.h>
@@ -43,6 +53,7 @@
 #elif defined(__WXQT__) || defined(__WXGTK__)
  #include <GL/glew.h>
  #include <GL/glu.h>
+#endif
 #endif
 
 #include "s52s57.h"  //types

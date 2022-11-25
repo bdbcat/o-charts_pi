@@ -354,8 +354,8 @@ s52plib::s52plib(const wxString &PLib, bool b_forceLegacy) {
   m_GLMinSymbolLineWidth = 1.0;
 
   m_display_size_mm = 300;
-  SetGLPolygonSmoothing(true);
-  SetGLLineSmoothing(true);
+  SetGLPolygonSmoothing(false);
+  SetGLLineSmoothing(false);
 
   m_displayScale = 1.0;
 
@@ -8322,6 +8322,9 @@ int s52plib::RenderToGLAC_GLSL(ObjRazRules *rzRules, Rules *rules) {
 
     GLint colloc = glGetUniformLocation(S52color_tri_shader_program, "color");
     glUniform4fv(colloc, 1, colorv);
+
+    if (b_useVBO)
+      glBindBuffer(GL_ARRAY_BUFFER, rzRules->obj->auxParm0);
 
     while (p_tp) {
       LLBBox box;
