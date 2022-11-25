@@ -2020,6 +2020,7 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
                           const wxRegion &Region, bool b_use_stencil )
 {
 
+
 #ifdef ocpnUSE_GL
 
     if(!g_GLOptionsSet)
@@ -2590,6 +2591,9 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
 
 
     //      Render the areas quickly
+    // Areas forRect1
+    PrepareForRender(&tvp1, ps52plib);
+
     for( i = 0; i < PRIO_NUM; ++i ) {
         if( PI_GetPLIBBoundaryStyle() == SYMBOLIZED_BOUNDARIES )
             top = razRules[i][4]; // Area Symbolized Boundaries
@@ -2616,26 +2620,52 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
              glScissor(rect1.x, m_cvp.pix_height-rect1.height-rect1.y, rect1.width, rect1.height);
 #endif
 
-            PrepareForRender(&tvp1, ps52plib);
             ps52plib->RenderAreaToGL( glc, crnt );
 
-            if (!rect2.IsEmpty()){
-#ifdef USE_ANDROID_GLES2
-              glEnable(GL_SCISSOR_TEST);
-              glScissor(rect2.x, m_cvp.pix_height-rect2.height-rect2.y, rect2.width, rect2.height);
-#endif
-              PrepareForRender(&tvp2, ps52plib);
-              ps52plib->RenderAreaToGL( glc, crnt );
-            }
         }
     }
 
-#ifdef USE_ANDROID_GLES2
-    glDisable( GL_SCISSOR_TEST );
-#endif
+    //Areas Rect2
+    if (!rect2.IsEmpty()){
+      PrepareForRender(&tvp2, ps52plib);
 
-#if 1  //TODO
-    //    Render the lines and points
+      for( i = 0; i < PRIO_NUM; ++i ) {
+          if( PI_GetPLIBBoundaryStyle() == SYMBOLIZED_BOUNDARIES )
+              top = razRules[i][4]; // Area Symbolized Boundaries
+          else
+              top = razRules[i][3];           // Area Plain Boundaries
+
+          while( top != NULL ) {
+              crnt = top;
+              top = top->next;               // next object
+              crnt->sm_transform_parms = &vp_transform;
+
+              // This may be a deferred tesselation
+              // Don't pre-process the geometry unless the object is to be actually rendered
+  //FIXME (dave)
+  //             if(!crnt->obj->pPolyTessGeo->IsOk() ){
+  //                 if((ps52plib->ObjectRenderCheckRules( crnt, &tvp1, true )) ||
+  //                     (ps52plib->ObjectRenderCheckRules( crnt, &tvp2, true ))){
+  //                    if(!crnt->obj->pPolyTessGeo->m_pxgeom)
+  //                         crnt->obj->pPolyTessGeo->m_pxgeom = buildExtendedGeom( crnt->obj );
+  //                 }
+  //             }
+
+  #ifdef USE_ANDROID_GLES2
+              glEnable(GL_SCISSOR_TEST);
+              glScissor(rect2.x, m_cvp.pix_height-rect2.height-rect2.y, rect2.width, rect2.height);
+  #endif
+              ps52plib->RenderAreaToGL( glc, crnt );
+          }
+      }
+    }
+
+
+
+#if 1  //FIXME
+    //    Render the lines and points Rect 1
+    PrepareForRender(&tvp1, ps52plib);
+
     for( i = 0; i < PRIO_NUM; ++i ) {
         if( ps52plib->m_nBoundaryStyle == SYMBOLIZED_BOUNDARIES )
             top = razRules[i][4]; // Area Symbolized Boundaries
@@ -2646,13 +2676,7 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
             top = top->next;               // next object
             crnt->sm_transform_parms = &vp_transform;
 
-            PrepareForRender(&tvp1, ps52plib);
             ps52plib->RenderObjectToGL( glc, crnt );
-
-            if (!rect2.IsEmpty()){
-             PrepareForRender(&tvp2, ps52plib);
-             ps52plib->RenderObjectToGL( glc, crnt );
-            }
         }
     }
 
@@ -2664,14 +2688,9 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
             ObjRazRules *crnt = top;
             top = top->next;
             crnt->sm_transform_parms = &vp_transform;
-            PrepareForRender(&tvp1, ps52plib);
-            ps52plib->RenderObjectToGL( glc, crnt );
 
-            if (!rect2.IsEmpty()){
-              PrepareForRender(&tvp2, ps52plib);
-              ps52plib->RenderObjectToGL( glc, crnt );
-            }
-        }
+            ps52plib->RenderObjectToGL( glc, crnt );
+         }
     }
 
     for( i = 0; i < PRIO_NUM; ++i ) {
@@ -2685,22 +2704,67 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
             top = top->next;
             crnt->sm_transform_parms = &vp_transform;
 
-            PrepareForRender(&tvp1, ps52plib);
             ps52plib->RenderObjectToGL( glc, crnt );
-
-            if (!rect2.IsEmpty()){
-              PrepareForRender(&tvp2, ps52plib);
-              ps52plib->RenderObjectToGL( glc, crnt );
-            }
         }
 
     }
-
 #endif
+
+    // Rect2 Lines and points
+    if (!rect2.IsEmpty()){
+      PrepareForRender(&tvp2, ps52plib);
+
+      //    Render the lines and points for Rect2
+      for( i = 0; i < PRIO_NUM; ++i ) {
+          if( ps52plib->m_nBoundaryStyle == SYMBOLIZED_BOUNDARIES )
+              top = razRules[i][4]; // Area Symbolized Boundaries
+          else
+              top = razRules[i][3];           // Area Plain Boundaries
+          while( top != NULL ) {
+              crnt = top;
+              top = top->next;               // next object
+              crnt->sm_transform_parms = &vp_transform;
+
+              ps52plib->RenderObjectToGL( glc, crnt );
+          }
+      }
+
+
+      for( i = 0; i < PRIO_NUM; ++i ) {
+
+          top = razRules[i][2];           //LINES
+          while( top != NULL ) {
+              ObjRazRules *crnt = top;
+              top = top->next;
+              crnt->sm_transform_parms = &vp_transform;
+
+              ps52plib->RenderObjectToGL( glc, crnt );
+          }
+      }
+
+      for( i = 0; i < PRIO_NUM; ++i ) {
+          if( ps52plib->m_nSymbolStyle == SIMPLIFIED )
+              top = razRules[i][0];       //SIMPLIFIED Points
+          else
+              top = razRules[i][1];           //Paper Chart Points Points
+
+          while( top != NULL ) {
+              crnt = top;
+              top = top->next;
+              crnt->sm_transform_parms = &vp_transform;
+
+              ps52plib->RenderObjectToGL( glc, crnt );
+          }
+      }
+    }
+
+#ifdef USE_ANDROID_GLES2
+    glDisable( GL_SCISSOR_TEST );
+#endif
+
     glDisable( GL_STENCIL_TEST );
     glDisable( GL_DEPTH_TEST );
     glDisable( GL_SCISSOR_TEST );
-
 
     return true;
 }
