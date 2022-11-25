@@ -9369,7 +9369,7 @@ bool s52plib::ObjectRenderCheckCat(ObjRazRules *rzRules) {
   if (m_nDisplayCategory == OTHER) {
     if (OTHER == obj_cat) {
       if (!strncmp(rzRules->LUP->OBCL, "M_", 2))
-        if (!m_bShowMeta && strncmp(rzRules->LUP->OBCL, "M_QUAL", 6))
+        if (!m_bShowMeta /*&& strncmp(rzRules->LUP->OBCL, "M_QUAL", 6)*/)
           return false;
     }
   } else {
