@@ -940,23 +940,38 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
             }
 
             // Per canvas values can be overriden here.
-            if(root[_T("OpenCPN S52PLIB ShowText")].IsBool())             ps52plib->m_bShowS57Text = root[_T("OpenCPN S52PLIB ShowText")].AsBool();
-            if(root[_T("OpenCPN S52PLIB ShowSoundings")].IsBool())        ps52plib->m_bShowSoundg = root[_T("OpenCPN S52PLIB ShowSoundings")].AsBool();
-            if(root[_T("OpenCPN S52PLIB ShowAnchorConditions")].IsBool()) ps52plib->SetAnchorOn( root[_T("OpenCPN S52PLIB ShowAnchorConditions")].AsBool() );
-            if(root[_T("OpenCPN S52PLIB ShowLightDescription")].IsBool()) ps52plib->SetShowLdisText( root[_T("OpenCPN S52PLIB ShowLightDescription")].AsBool() );
-            if(root[_T("OpenCPN S52PLIB ShowATONLabel")].IsBool())        ps52plib->SetShowAtonText( root[_T("OpenCPN S52PLIB ShowATONLabel")].AsBool() );
-            if(root[_T("OpenCPN S52PLIB ShowQualityOfData")].IsBool())    ps52plib->SetQualityOfData( root[_T("OpenCPN S52PLIB ShowQualityOfData")].AsBool() );
+            if(root[_T("OpenCPN S52PLIB ShowText")].IsBool())
+              ps52plib->m_bShowS57Text = root[_T("OpenCPN S52PLIB ShowText")].AsBool();
+            if(root[_T("OpenCPN S52PLIB ShowSoundings")].IsBool())
+              ps52plib->m_bShowSoundg = root[_T("OpenCPN S52PLIB ShowSoundings")].AsBool();
+            if(root[_T("OpenCPN S52PLIB ShowAnchorConditions")].IsBool())
+              ps52plib->SetAnchorOn( root[_T("OpenCPN S52PLIB ShowAnchorConditions")].AsBool() );
+            if(root[_T("OpenCPN S52PLIB ShowLightDescription")].IsBool())
+              ps52plib->SetShowLdisText( root[_T("OpenCPN S52PLIB ShowLightDescription")].AsBool() );
+            if(root[_T("OpenCPN S52PLIB ShowATONLabel")].IsBool())
+              ps52plib->SetShowAtonText( root[_T("OpenCPN S52PLIB ShowATONLabel")].AsBool() );
+            if(root[_T("OpenCPN S52PLIB ShowQualityOfData")].IsBool())
+              ps52plib->SetQualityOfData( root[_T("OpenCPN S52PLIB ShowQualityOfData")].AsBool() );
 
-            if(root[_T("OpenCPN S52PLIB MetaDisplay")].IsBool())           ps52plib->m_bShowMeta = root[_T("OpenCPN S52PLIB MetaDisplay")].AsBool();
-            if(root[_T("OpenCPN S52PLIB DeclutterText")].IsBool())         ps52plib->m_bDeClutterText = root[_T("OpenCPN S52PLIB DeclutterText")].AsBool();
-            if(root[_T("OpenCPN S52PLIB ShowNationalText")].IsBool())      ps52plib->m_bShowNationalTexts = root[_T("OpenCPN S52PLIB ShowNationalText")].AsBool();
-            if(root[_T("OpenCPN S52PLIB UseSCAMIN")].IsBool())             ps52plib->m_bUseSCAMIN = root[_T("OpenCPN S52PLIB UseSCAMIN")].AsBool();
-            if(root[_T("OpenCPN S52PLIB ShowImportantTextOnly")].IsBool()) ps52plib->m_bShowS57ImportantTextOnly = root[_T("OpenCPN S52PLIB ShowImportantTextOnly")].AsBool();
+            if(root[_T("OpenCPN S52PLIB MetaDisplay")].IsBool())
+              ps52plib->m_bShowMeta = root[_T("OpenCPN S52PLIB MetaDisplay")].AsBool();
+            if(root[_T("OpenCPN S52PLIB DeclutterText")].IsBool())
+              ps52plib->m_bDeClutterText = root[_T("OpenCPN S52PLIB DeclutterText")].AsBool();
+            if(root[_T("OpenCPN S52PLIB ShowNationalText")].IsBool())
+              ps52plib->m_bShowNationalTexts = root[_T("OpenCPN S52PLIB ShowNationalText")].AsBool();
+            if(root[_T("OpenCPN S52PLIB UseSCAMIN")].IsBool())
+              ps52plib->m_bUseSCAMIN = root[_T("OpenCPN S52PLIB UseSCAMIN")].AsBool();
+            if(root[_T("OpenCPN S52PLIB ShowImportantTextOnly")].IsBool())
+              ps52plib->m_bShowS57ImportantTextOnly = root[_T("OpenCPN S52PLIB ShowImportantTextOnly")].AsBool();
 
-            if(root[_T("OpenCPN S52PLIB SymbolStyle")].IsInt())           ps52plib->m_nSymbolStyle = (LUPname)root[_T("OpenCPN S52PLIB SymbolStyle")].AsInt();
-            if(root[_T("OpenCPN S52PLIB BoundaryStyle")].IsInt())         ps52plib->m_nBoundaryStyle = (LUPname)root[_T("OpenCPN S52PLIB BoundaryStyle")].AsInt();
-            if(root[_T("OpenCPN S52PLIB ColorShades")].IsDouble())        S52_setMarinerParam( S52_MAR_TWO_SHADES, root[_T("OpenCPN S52PLIB ColorShades")].AsDouble());
-            if(root[_T("OpenCPN S52PLIB SoundingsFactor")].IsInt())       ps52plib->m_nSoundingFactor = root[_T("OpenCPN S52PLIB SoundingsFactor")].AsInt();
+            if(root[_T("OpenCPN S52PLIB SymbolStyle")].IsInt())
+              ps52plib->m_nSymbolStyle = (LUPname)root[_T("OpenCPN S52PLIB SymbolStyle")].AsInt();
+            if(root[_T("OpenCPN S52PLIB BoundaryStyle")].IsInt())
+              ps52plib->m_nBoundaryStyle = (LUPname)root[_T("OpenCPN S52PLIB BoundaryStyle")].AsInt();
+            if(root[_T("OpenCPN S52PLIB ColorShades")].IsDouble())
+              S52_setMarinerParam( S52_MAR_TWO_SHADES, root[_T("OpenCPN S52PLIB ColorShades")].AsDouble());
+            if(root[_T("OpenCPN S52PLIB SoundingsFactor")].IsInt())
+              ps52plib->m_nSoundingFactor = root[_T("OpenCPN S52PLIB SoundingsFactor")].AsInt();
 
             int icat;
             if( root[_T("OpenCPN S52PLIB DisplayCategory")].AsInt(icat) ){
@@ -968,17 +983,20 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
             if(root[_T("OpenCPN S52PLIB ShowLights")].IsBool()){
                 bool bNewVal = root[_T("OpenCPN S52PLIB ShowLights")].AsBool();
                 if(bNewVal != !ps52plib->GetLightsOff()){
-                    ps52plib->SetLightsOff( !bNewVal );
-//                     if(!bNewVal)                     // On, going off
-//                         ps52plib->AddObjNoshow("LIGHTS");
-//                     else                                   // Off, going on
-//                         ps52plib->RemoveObjNoshow("LIGHTS");
-                    }
+                 ps52plib->SetLightsOff( !bNewVal );
+                }
             }
 
 
 
             ps52plib->SetOCPNVersion( g_coreVersionMajor, g_coreVersionMinor, g_coreVersionPatch);
+
+            // syncronize Lights, special case
+            bool loff = ps52plib->GetLightsOff();
+            if(loff)
+              ps52plib->AddObjNoshow("LIGHTS");
+            else
+              ps52plib->RemoveObjNoshow("LIGHTS");
 
          }
 
