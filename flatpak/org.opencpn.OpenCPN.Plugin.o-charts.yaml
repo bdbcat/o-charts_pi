@@ -1,78 +1,96 @@
 #
-# Branches and runtimes:
-#   - master     Nigthly builds, 18.08 runtime
-#   - beta       Flathub beta branch, aarch64 with 20.08 runtime.
-#   - stable     Flathub main branch, x86_64 with 18.08 runtime.
+# Branches and runtime-version:
+#   - master     Nigthly builds, 22.08 runtime
+#   - beta       Flathub beta branch with 22.08 runtime.
+#   - stable     Flathub main branch x86_64 with 20.08 runtime.
 #
-id: org.opencpn.OpenCPN.Plugin.o-charts
+# This is a template used to create a complete manifest in the build
+# directory. Doing so, it handles three tokens:
+# @plugin_name
+#    is replaced with PKG_NAME from Plugin.cmake
+# @app_id
+#    is  replaced with the last part of the initial id: line
+#    after substituting possible @plugin_name.
+# @include  <file>
+#    Replaces the line with @include with the contents of <file>,
+#
+# See cmake/ConfigureManifest.cmake for details.
+#
+id: org.opencpn.OpenCPN.Plugin.@plugin_name
+
 runtime: org.opencpn.OpenCPN
-runtime-version: stable
-#runtime-version: master   # for nightly builds
-sdk: org.freedesktop.Sdk//20.08
+runtime-version: beta   # FIXME(alec) Revert to stable when updated to 22.08
+sdk: org.freedesktop.Sdk//22.08
 build-extension: true
 separate-locales: false
 appstream-compose: false
+finish-args:
+    - --socket=x11
+    - --socket=pulseaudio
+    - --filesystem=home
+    - --device=all
+
 modules:
-  - name: libusb
-    config-opts:
-      - --disable-static
-      - --disable-udev
-      - --prefix=/app/extensions/o-charts
-    sources:
-      - type: archive
-        url: https://github.com/libusb/libusb/archive/v1.0.22.tar.gz
-        sha256: 3500f7b182750cd9ccf9be8b1df998f83df56a39ab264976bdb3307773e16f48
+    - @include opencpn-libs/flatpak/glu.yaml
 
-  - name: libusb-compat-0.1
-    config-opts:
-      - --disable-static
-      - --prefix=/app/extensions/o-charts
-    build-options:
-      env:
-        PKG_CONFIG_PATH: /app/extensions/o-charts/lib/pkgconfig
-    sources:
-      - type: git
-        url: https://github.com/libusb/libusb-compat-0.1.git
-        tag: v0.1.7
-    cleanup:
-      - /lib/*.la
-      - /lib/pkgconfig
-      - /include
+    - name: libusb
+      config-opts:
+        - --disable-static
+        - --disable-udev
+        - --prefix=/app/extensions/o-charts
+      sources:
+        - type: archive
+          url: https://github.com/libusb/libusb/archive/v1.0.22.tar.gz
+          sha256: 3500f7b182750cd9ccf9be8b1df998f83df56a39ab264976bdb3307773e16f48
 
-  - name: iproute2
-    sources:
-      - type: archive
-        url: https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/iproute2-5.7.0.tar.xz
-        sha256: 725dc7ba94aae54c6f8d4223ca055d9fb4fe89d6994b1c03bfb4411c4dd10f21
-    no-autogen: true
-    buildsystem: autotools
-    make-args:
-      - PREFIX=/app
-    make-install-args:
-      - DESTDIR=/app/extensions/o-charts
-      - SBINDIR=/bin
-    post-install:
-      - >
-        cd /app/extensions/o-charts/bin;
-        rm -f bridge genl if* *stat route* rt* ss tc libusb-config
-      - cd /app/extensions/o-charts; rm -rf include etc lib/pkgconfig lib/*.la
+    - name: libusb-compat-0.1
+      config-opts:
+        - --disable-static
+        - --prefix=/app/extensions/o-charts
+      build-options:
+        env:
+          PKG_CONFIG_PATH: /app/extensions/o-charts/lib/pkgconfig
+      sources:
+        - type: git
+          url: https://github.com/libusb/libusb-compat-0.1.git
+          tag: v0.1.7
+      cleanup:
+        - /lib/*.la
+        - /lib/pkgconfig
+        - /include
 
-  - name: o-charts
-    no-autogen: true
-    cmake: true
-    build-options:
-      cflags: -fPIC
-      cxxflags: -fPIC -DFLATPAK
-    config-opts:
-      - -DCMAKE_INSTALL_PREFIX=/app/extensions/o-charts/
-      - -DCMAKE_BUILD_TYPE:STRING=Release
-      - -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-      - -DBUILD_TYPE:STRING=tarball
-      - -Uplugin_target
-    post-install:
-      - /usr/bin/bash libs/oeserverd/install-flatpak.sh
-      - rm -f /app/extensions/o-charts/bin/*.so
-    sources:
-      - type: git
-        url: ..
-        branch: HEAD
+    - name: iproute2
+      sources:
+        - type: archive
+          url: https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/iproute2-5.7.0.tar.xz
+          sha256: 725dc7ba94aae54c6f8d4223ca055d9fb4fe89d6994b1c03bfb4411c4dd10f21
+      no-autogen: true
+      buildsystem: autotools
+      make-args:
+        - PREFIX=/app
+      make-install-args:
+        - DESTDIR=/app/extensions/o-charts
+        - SBINDIR=/bin
+      post-install:
+        - >
+          cd /app/extensions/o-charts/bin;
+          rm -f bridge genl if* *stat route* rt* ss tc libusb-config
+        - cd /app/extensions/o-charts; rm -rf include etc lib/pkgconfig lib/*.la
+
+    - name: @app_id
+      no-autogen: true
+      buildsystem: cmake
+      config-opts:
+          - -DCMAKE_INSTALL_PREFIX=/app/extensions/@app_id
+          - -DCMAKE_BUILD_TYPE:STRING=Release
+          - -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+          - -DBUILD_TYPE:STRING=tarball
+          - -Uplugin_target
+      build-options:
+          cxxflags: -DFLATPAK -O3
+          cflags: -DFLATPAK -O3
+          # The flatpak-builder default CFLAGS adds -g
+      sources:
+          - type: git
+            url: ..
+            branch: HEAD

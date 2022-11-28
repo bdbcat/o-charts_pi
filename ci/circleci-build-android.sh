@@ -13,11 +13,19 @@
 
 set -xe
 
-uname -m
+# Read configuration and check if we should really build this
+here=$(cd $(dirname $0); pwd -P)
+source $here/../build-conf.rc
+if [ "$android_build_rate" -eq 0 ]; then exit 0; fi
+if [ $((CIRCLE_BUILD_NUM % android_build_rate)) -ne 0 ]; then
+    exit 0
+fi
 
 # Load local environment if it exists i. e., this is a local build
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
 if [ -d /ci-source ]; then cd /ci-source; fi
+
+git submodule update --init opencpn-libs
 
 # Set up build directory and a visible link in /
 builddir=build-$OCPN_TARGET
@@ -31,7 +39,7 @@ exec > >(tee $builddir/build.log) 2>&1
 # The local container needs to access the cache directory
 test -d cache || sudo mkdir cache
 test -w cache || sudo chmod -R go+w cache || :
-
+ 
 
 sudo apt -q update
 sudo apt install -q cmake git gettext
@@ -43,18 +51,14 @@ sudo apt remove python3-six python3-colorama python3-urllib3
 export LC_ALL=C.UTF-8  LANG=C.UTF-8
 python3 -m pip install --user -q cloudsmith-cli cryptography
 
-# Building using NDK requries a recent cmake, the packaged is too old
+# Building using NDK requires a recent cmake, the packaged is too old
 python3 -m pip install --user -q cmake
 
 # Build tarball
 cd $builddir
 
 sudo ln -sf /opt/android/android-ndk-* /opt/android/ndk
-cmake \
-  -DCMAKE_TOOLCHAIN_FILE=cmake/$OCPN_TARGET-toolchain.cmake \
-  -DCMAKE_BUILD_TYPE=Release \
-  ..
-
+cmake -DCMAKE_TOOLCHAIN_FILE=cmake/$OCPN_TARGET-toolchain.cmake ..
 make VERBOSE=1
 
 if [ -d /ci-source ]; then sudo chown --reference=/ci-source -R . ../cache; fi
