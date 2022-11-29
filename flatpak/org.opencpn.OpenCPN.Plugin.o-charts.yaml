@@ -38,7 +38,7 @@ modules:
     - name: libusb-compat-0.1
       config-opts:
         - --disable-static
-        - --prefix=/app/extensions/o-charts
+        - --prefix=/app/extensions/o-charts_pi
       build-options:
         env:
           PKG_CONFIG_PATH: /app/extensions/o-charts_pi/lib/pkgconfig
@@ -61,13 +61,13 @@ modules:
       make-args:
         - PREFIX=/app
       make-install-args:
-        - DESTDIR=/app/extensions/o-charts
+        - DESTDIR=/app/extensions/o-charts_pi
         - SBINDIR=/bin
       post-install:
         - >
-          cd /app/extensions/o-charts/bin;
+          cd /app/extensions/o-charts_pi/bin;
           rm -f bridge genl if* *stat route* rt* ss tc libusb-config
-        - cd /app/extensions/o-charts; rm -rf include etc lib/pkgconfig lib/*.la
+        - cd /app/extensions/o-charts_pi; rm -rf include etc lib/pkgconfig lib/*.la
 
     - name: @app_id
       no-autogen: true
