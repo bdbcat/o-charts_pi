@@ -33,15 +33,7 @@ finish-args:
 modules:
     - @include opencpn-libs/flatpak/glu.yaml
 
-    - name: libusb
-      config-opts:
-        - --disable-static
-        - --disable-udev
-        - --prefix=/app/extensions/o-charts
-      sources:
-        - type: archive
-          url: https://github.com/libusb/libusb/archive/v1.0.22.tar.gz
-          sha256: 3500f7b182750cd9ccf9be8b1df998f83df56a39ab264976bdb3307773e16f48
+    - @include opencpn-libs/flatpak/libusb.yaml
 
     - name: libusb-compat-0.1
       config-opts:
