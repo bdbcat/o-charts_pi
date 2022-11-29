@@ -67,6 +67,8 @@ endif(NOT QT_ANDROID AND NOT APPLE)
 
 if(OCPN_BUILD_USE_GLEW)
   add_definitions(-D__OCPN_USE_GLEW__)
+  include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
+  message(STATUS "include for glew: ${CMAKE_CURRENT_SOURCE_DIR}/include")
 endif(OCPN_BUILD_USE_GLEW)
 
 
