@@ -67,7 +67,8 @@ modules:
         - >
           cd /app/extensions/o-charts_pi/bin;
           rm -f bridge genl if* *stat route* rt* ss tc libusb-config
-        - cd /app/extensions/o-charts_pi; rm -rf include etc lib/pkgconfig lib/*.la
+        - cd /app/extensions/o-charts_pi;
+          rm -rf include etc lib/pkgconfig lib/*.la
 
     - name: @app_id
       no-autogen: true
