@@ -82,7 +82,7 @@ extern "C" wxString *GetpSharedDataLocation();
 #endif
 
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 #include "qdebug.h"
 #endif
 
@@ -1784,7 +1784,7 @@ bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
 
     //Fixme (dave)
     // We also do this the hard way for rotation of strings.  Very slow.
-//#ifdef __OCPN__ANDROID__
+//#ifdef __ANDROID__
     if (fabs(vp_plib.rotation) > .01) b_force_no_texture = true;
 //#endif
     if ((ptext->bspecial_char) || b_force_no_texture) {
@@ -3335,7 +3335,7 @@ bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
   wxString fontFacename = wxEmptyString;
   double defaultHeight = 3.0;
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
   fontWeight = wxFONTWEIGHT_BOLD;
   fontFacename = _T("Roboto");
   defaultHeight = 2.2;
@@ -3713,7 +3713,7 @@ int s52plib::RenderGLLS(ObjRazRules *rzRules, Rules *rules) {
   glDisable(GL_LINE_SMOOTH);
   glDisable(GL_BLEND);
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
   //     if( w > 1 )
   //         lineWidth = wxMin(lineWidth, parms[1]);
   glLineWidth(lineWidth);
@@ -3979,7 +3979,7 @@ int s52plib::RenderLS(ObjRazRules *rzRules, Rules *rules) {
     } else
       glLineWidth(wxMax(m_GLMinCartographicLineWidth, 1));
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     if (w >= 2 && m_GLLineSmoothing) {
       glEnable(GL_LINE_SMOOTH);
       glEnable(GL_BLEND);
@@ -4142,7 +4142,7 @@ int s52plib::RenderLSLegacy(ObjRazRules *rzRules, Rules *rules) {
     } else
       glLineWidth(wxMax(m_GLMinCartographicLineWidth, 1));
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     if (w >= 2 && m_GLLineSmoothing) {
       glEnable(GL_LINE_SMOOTH);
       glEnable(GL_BLEND);
@@ -4516,7 +4516,7 @@ int s52plib::RenderLS_Dash_GLSL(ObjRazRules *rzRules, Rules *rules) {
   glDisable(GL_LINE_SMOOTH);
   glEnable(GL_BLEND);  // for shader
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
   lineWidth = wxMin(lineWidth, parms[1]);
   glLineWidth(lineWidth);
 
@@ -5490,7 +5490,7 @@ void s52plib::draw_lc_poly(wxDC *pdc, wxColor &color, int width, wxPoint *ptp,
           }
 
           //      Enable anti-aliased lines, at best quality
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
           glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
           glEnable(GL_BLEND);
 
@@ -5561,7 +5561,7 @@ void s52plib::draw_lc_poly(wxDC *pdc, wxColor &color, int width, wxPoint *ptp,
             ys += sym_len * dy / seg_len * sym_factor;
             s += sym_len * sym_factor;
           }
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
           glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
           glEnable(GL_BLEND);
 
@@ -9036,7 +9036,7 @@ render_canvas_parms *s52plib::CreatePatternBufferSpec(ObjRazRules *rzRules,
 
     if (pd0 && ps0) {
       for (int iy = 0; iy < sizey; iy++) {
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
         pd = pd0 + ((sizey - iy - 1) * patt_spec->pb_pitch);
 #else
         pd = pd0 + (iy * patt_spec->pb_pitch);
@@ -9378,7 +9378,7 @@ bool s52plib::ObjectRenderCheckCat(ObjRazRules *rzRules) {
       if (!m_bShowMeta) return false;
   }
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
   // We want to filter out M_NSYS objects on Android, as they are of limited use
   // on a phone/tablet
   if (!strncmp(rzRules->LUP->OBCL, "M_", 2))
@@ -10463,7 +10463,7 @@ void RenderFromHPGL::SetPen() {
         wxMax(1/*m_GLMinSymbolLineWidth*/, (float)penWidth * nominal_line_width_pix);
     glLineWidth(line_width);
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     if (line_width >= 2 && plib->GetGLLineSmoothing())
       glEnable(GL_LINE_SMOOTH);
     else

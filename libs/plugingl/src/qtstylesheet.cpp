@@ -1,4 +1,4 @@
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 #include <qdebug.h>
 
 QString qtStyleSheet = "\

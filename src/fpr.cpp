@@ -42,7 +42,7 @@
 #include "fpr.h"
 #include "ocpn_plugin.h"
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 #include "androidSupport.h"
 #endif
 
@@ -50,7 +50,7 @@ extern wxString g_sencutil_bin;
 extern wxString g_deviceInfo;
 extern wxString g_systemName;
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 void androidGetDeviceName()
 {
     if(!g_deviceInfo.Length())
@@ -74,7 +74,7 @@ void androidGetDeviceName()
 
 bool IsDongleAvailable()
 {
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
 ///
 #if 0
     wxString cmdls = _T("ls -la /Applications/OpenCPN.app/Contents/PlugIns/oernc_pi");
@@ -124,7 +124,7 @@ unsigned int GetDongleSN()
 {
     unsigned int rv = 0;
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     wxString cmd = g_sencutil_bin;
     cmd += _T(" -t ");                  // SN
 
@@ -144,7 +144,7 @@ unsigned int GetDongleSN()
 wxString GetServerVersionString()
 {
     wxString ver;
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
 
     wxString cmd = g_sencutil_bin;
     cmd += _T(" -a ");                  // Version
@@ -168,7 +168,7 @@ wxString GetServerVersionString()
 wxString getExpDate( wxString rkey)
 {
     wxString ret;
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
 
     wxString cmd = g_sencutil_bin;
     cmd += _T(" -v ");                  // Expiry days
@@ -193,7 +193,7 @@ wxString getExpDate( wxString rkey)
 
 wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extra_info)
 {
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
 
             wxString msg1;
             wxString fpr_file;
@@ -469,7 +469,7 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
 #endif
 }
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 wxString androidGetSystemName()
 {
     wxString detectedSystemName;

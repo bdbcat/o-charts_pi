@@ -64,7 +64,7 @@ typedef void (*PFNGLBINDBUFFERPROC) (GLenum target, GLuint buffer);
 typedef void (*PFNGLBUFFERDATAPROC) (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
 typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
 
-#elif defined(__OCPN__ANDROID__)
+#elif defined(__ANDROID__)
 // #include <qopengl.h>
 // #include <GLES/gl.h>
 
@@ -75,7 +75,7 @@ typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
 #endif
 
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 #include "qdebug.h"
 #include "androidSupport.h"
 #endif
@@ -985,7 +985,7 @@ bool oesuChart::CreateChartInfoFile( wxString chartName, bool forceCreate )
     wxString l4 = _T("ChartInfoShow:");
     l4 += wxString(m_chartInfoShow.c_str());
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     // Create a  Chartinfo.txt file in the installBase directory
     wxString ciPath = installBase;
     ciPath += wxFileName::GetPathSeparator();

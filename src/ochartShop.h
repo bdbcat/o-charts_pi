@@ -47,7 +47,7 @@
 #undef WXC_FROM_DIP
 #endif
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     #define WXC_FROM_DIP(x) x
 #else
     #if wxVERSION_NUMBER >= 3100

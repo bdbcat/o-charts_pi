@@ -297,7 +297,7 @@ void ocValidator::startValidation()
 
     LogMessage(_T("\n"));
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     // Check the dongle
     g_dongleName.Clear();
     LogMessage(_("  Checking dongle..."));

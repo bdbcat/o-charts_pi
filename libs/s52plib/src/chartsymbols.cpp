@@ -33,7 +33,7 @@
 #include <wx/filename.h>
 #include <stdlib.h>
 
-#if defined(__OCPN__ANDROID__)
+#if defined(__ANDROID__)
  #include <qopengl.h>
  #include <GL/gl_private.h>  // this is a cut-down version of gl.h
  #include <GLES2/gl2.h>

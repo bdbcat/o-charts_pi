@@ -126,7 +126,7 @@ public:
 // eSENCChart Definition
 // ----------------------------------------------------------------------------
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
 class  eSENCChart : public PlugInChartBaseExtendedPlus2
 #else
 class  eSENCChart : public PlugInChartBaseExtended

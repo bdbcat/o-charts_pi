@@ -43,7 +43,7 @@
 #include <wx/msw/registry.h>
 #endif
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 #include "qdebug.h"
 #include "androidSupport.h"
 #endif
@@ -67,7 +67,7 @@ float hex2float( std::string h)
 {
     int val;
     sscanf(h.c_str(), "%x", &val);
-    
+
     float *pf = (float *)&val;
     return *pf;
 }
@@ -85,13 +85,13 @@ class OCPNStopWatch
 public:
     OCPNStopWatch() { Reset(); }
     void Reset() { clock_gettime(CLOCK_REALTIME, &tp); }
-    
+
     double GetTime() {
         timespec tp_end;
         clock_gettime(CLOCK_REALTIME, &tp_end);
         return (tp_end.tv_sec - tp.tv_sec) * 1.e3 + (tp_end.tv_nsec - tp.tv_nsec) / 1.e6;
     }
-    
+
 private:
     timespec tp;
 };
@@ -470,7 +470,7 @@ Chart_oeuRNC::Chart_oeuRNC()
       m_nColors = 0;
       m_imageMap = NULL;
       m_bImageReady = false;
- 
+
 }
 
 Chart_oeuRNC::~Chart_oeuRNC()
@@ -487,7 +487,7 @@ Chart_oeuRNC::~Chart_oeuRNC()
       delete m_pBMPThumb;
 
       free( m_imageMap );
-      
+
       ChartBaseBSBDTOR();
 }
 
@@ -521,28 +521,28 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
       Plypoint *pPlyTable = (Plypoint *)malloc(sizeof(Plypoint));
 
       Size_X = Size_Y = 0;
-      
+
       PreInit(name, init_flags, PI_GLOBAL_COLOR_SCHEME_DAY);
 
       m_FullPath = name;
       m_Description = m_FullPath;
-      
+
       if(!::wxFileExists(name)){
           wxString msg(_T("   o-charts_pi: chart file not found: "));
           msg.Append(m_FullPath);
           wxLogMessage(msg);
-          
+
           return INIT_FAIL_REMOVE;
       }
-      
+
       CreateChartInfoFile( name );
 
       if(!processChartinfo( name, _T("KEEP") )){
         return PI_INIT_FAIL_REMOVE;
       }
-      
+
       validate_SENC_server();
-      
+
 
       wxString key = wxString(getPrimaryKey(name));
       if(!key.Len()){
@@ -551,7 +551,7 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
             wxString msg(_T("   o-charts_pi: chart RInstallKey not found: "));
             msg.Append(m_FullPath);
             wxLogMessage(msg);
-          
+
             return INIT_FAIL_REMOVE;
           }
           SwapKeyHashes();          // interchanges hashes, so next time will be faster
@@ -569,19 +569,19 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
           wxLogMessage(msg);
 
           delete ifs_hdr;
-          
+
           SwapKeyHashes();          // interchanges hashes, so next time will be faster
 
           key = wxString(getPrimaryKey(name));
 
           validate_SENC_server();
- 
+
           ifs_hdr = new oernc_inStream(name, key, bHeaderOnly);          // open the file server
           if(!ifs_hdr->Ok()){
               wxString msg(_T("   o-charts_pi: chart local server error, final: "));
               msg.Append(m_FullPath);
               wxLogMessage(msg);
-              
+
               ShowGenericErrorMessage(m_FullPath);
 
               return INIT_FAIL_REMOVE;
@@ -593,46 +593,46 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
       long tmp;
       wxString hd(ifs_hdr->m_ep2.c_str());
       wxStringTokenizer tkz(hd, _T(";"));
-      
+
       wxString token = tkz.GetNextToken();      //Size_X
       token.ToLong( &tmp);
       Size_X = tmp;
       token = tkz.GetNextToken();      //Size_Y
       token.ToLong( &tmp);
       Size_Y= tmp;
-      
+
       token = tkz.GetNextToken();      //ID
       m_ID = token;
-      
+
       token = tkz.GetNextToken();      //Projection
       token.ToLong( &tmp);
       m_projection = (OcpnProjTypePI)tmp;
-      
+
       token = tkz.GetNextToken();      //DU
       token.ToLong( &tmp);
       m_Chart_DU = tmp;
-      
+
       token = tkz.GetNextToken();      //Scale
       token.ToLong( &tmp);
-      m_Chart_Scale = tmp; 
-      
+      m_Chart_Scale = tmp;
+
       double dtmp;
       token = tkz.GetNextToken();      //Skew
       token.ToDouble( &dtmp);
-      m_Chart_Skew = dtmp; 
-      
+      m_Chart_Skew = dtmp;
+
       token = tkz.GetNextToken();      //projection parameter
       token.ToDouble( &dtmp);
-      m_proj_parameter = dtmp; 
-      
+      m_proj_parameter = dtmp;
+
       token = tkz.GetNextToken();      //m_dx
       token.ToDouble( &dtmp);
-      m_dx = dtmp; 
-      
+      m_dx = dtmp;
+
       token = tkz.GetNextToken();      //m_dy
       token.ToDouble( &dtmp);
-      m_dy = dtmp; 
-      
+      m_dy = dtmp;
+
       token = tkz.GetNextToken();      //Depth units
       m_DepthUnits = token;
 
@@ -649,8 +649,8 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
       wxString date_wxstr  = token;
       wxDateTime dt;
       if(dt.ParseDate(date_wxstr)){       // successful parse?
-        int iyear = dt.GetYear(); 
-        
+        int iyear = dt.GetYear();
+
         if(iyear < 50){
             iyear += 2000;
             dt.SetYear(iyear);
@@ -675,18 +675,18 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
 
 
       //Check for bogus data
-      
+
       if((Size_X <= 0) || (Size_Y <= 0))
       {
           wxString msg(_T("   o-charts_pi: chart header content error 2: "));
           msg.Append(m_FullPath);
           wxLogMessage(msg);
-          
+
           return INIT_FAIL_REMOVE;
       }
       if(0 == m_Chart_Scale)
           m_Chart_Scale = 100000000;
-      
+
       // Name, UTF8 aware
       wxString nas(ifs_hdr->m_ep3.c_str());
       unsigned char nab[200];
@@ -699,8 +699,8 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
       }
       nab[nl] = 0;
       m_Name = wxString(nab, wxConvUTF8);
-      
-    
+
+
       // Ply Points
       wxString plys(ifs_hdr->m_ep4.c_str());
       nPlypoint = plys.Length() / 16;
@@ -710,11 +710,11 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
           float ltp = hex2float( std::string(v1.c_str()));
           wxString v2 = plys.Mid( (ip*16) + 8, 8);
           float lnp = hex2float( std::string(v2.c_str()));
-          
+
           pPlyTable[ip].ltp = ltp;
           pPlyTable[ip].lnp = lnp;
       }
-      
+
       // Ref Points
       wxString refs(ifs_hdr->m_ep1.c_str());
       nRefpoint =refs.Length() / 32;
@@ -736,7 +736,7 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
           pRefTable[ip].bXValid = 1;
           pRefTable[ip].bYValid = 1;
       }
-      
+
       // Palettes
       wxString pals(ifs_hdr->m_ep5.c_str());
       ///wxLogMessage(pals);
@@ -746,21 +746,21 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
       for(int i=0 ; i < N_BSB_COLORS ; i++){
         if(!pPalettes[i])
             pPalettes[i] = new opncpnPalette;
-  
+
         opncpnPalette *pp = pPalettes[i];
 
-        wxString token = tkpz.GetNextToken();      
+        wxString token = tkpz.GetNextToken();
         token.ToLong(&ptmp);            //  counter == i
-        token = tkpz.GetNextToken();      
+        token = tkpz.GetNextToken();
         token.ToLong(&ptmp);            //  m_nColors
         m_nColors = ptmp;
         pp->nFwd = m_nColors;
         pp->nRev = m_nColors;
         pp->FwdPalette = (int *)realloc(pp->FwdPalette, (pp->nFwd + 1) * sizeof(int));
         pp->RevPalette = (int *)realloc(pp->RevPalette, (pp->nRev + 1) * sizeof(int));
-        
+
         for(int j=0 ; j < m_nColors ; j++){
-            token = tkpz.GetNextToken();      
+            token = tkpz.GetNextToken();
             token.ToLong(&ptmp, 16);            //  a color
             //wxString msg;
             //msg.Printf(_T("Pallette %d: nColors %d: Color %d: "), i, m_nColors, j);
@@ -769,23 +769,23 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
             pp->FwdPalette[j] = ptmp;
         }
       }
-     
-     
-        
-          
- #if 0      
-      
-      
+
+
+
+
+ #if 0
+
+
 //      m_cph = pHeader->CPH;
 //      m_dtm_lat = pHeader->DTMlat;
 //      m_dtm_lon = pHeader->DTMlon;
-      
+
 #endif
 
     nColorSize = 3;
-    
-    
-    
+
+
+
     //    Clear georeferencing coefficients
     for(int icl=0 ; icl< 12 ; icl++)
     {
@@ -794,7 +794,7 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
         pwx[icl] = 0;
         pwy[icl] = 0;
     }
-    
+
 //     //    Set georeferencing coefficients
 //     for(int icl=0 ; icl< 12 ; icl++)
 //     {
@@ -803,11 +803,11 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
 //         pwx[icl] = pHeader->PWX[icl];
 //         pwy[icl] = pHeader->PWY[icl];
 //     }
-    
- 
-   
-    
- 
+
+
+
+
+
 //       ifss_bitmap = new wxFileInputStream(name); // Open again, as the bitmap
 //       ifs_bitmap = new wxBufferedInputStream(*ifss_bitmap);
 
@@ -882,9 +882,9 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
             free (m_imageComp);
             return INIT_FAIL_REMOVE;
         }
-        
+
 //         int inflate_err = DecodeImage();
- 
+
 //         if(inflate_err){
 //             wxString msg(_T("   o-charts_pi: chart local server inflate error, final: "));
 //             msg.Append(m_FullPath);
@@ -892,7 +892,7 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
 //             free (m_imageComp);
 //             return INIT_FAIL_REMOVE;
 //         }
-        
+
       }
 
 //    Perform common post-init actions in ChartBaseBSB
@@ -908,7 +908,7 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
 int Chart_oeuRNC::DecodeImage( void )
 {
         int inflate_err = 0;
-        m_imageMap = (unsigned char *)malloc(Size_X * Size_Y);             
+        m_imageMap = (unsigned char *)malloc(Size_X * Size_Y);
         m_lenImageMap = Size_X * Size_Y;
 
         inflate_err = ocpn_decode_image( m_imageComp, m_imageMap, ifs_hdr->m_lenIDat, m_lenImageMap, Size_X, Size_Y, m_nColors);
@@ -923,9 +923,9 @@ int Chart_oeuRNC::DecodeImage( void )
             msg.Append(m_FullPath);
             wxLogMessage(msg);
         }
-        
+
         m_bImageReady = true;
-        
+
         return inflate_err;
 }
 
@@ -949,7 +949,7 @@ bool Chart_oeuRNC::CreateChartInfoFile( wxString chartName, bool forceCreate )
 
     // Find and parse the Keyfile
     wxString installBase = getChartInstallBase( chartName );
-    
+
     // Make a list of all XML or xml files found in the installBase directory of the chart itself.
     if(installBase.IsEmpty()){
         wxFileName fn(chartName);
@@ -959,45 +959,45 @@ bool Chart_oeuRNC::CreateChartInfoFile( wxString chartName, bool forceCreate )
     wxArrayString xmlFiles;
     int nFiles = wxDir::GetAllFiles(installBase, &xmlFiles, _T("*.XML"));
     nFiles += wxDir::GetAllFiles(installBase, &xmlFiles, _T("*.xml"));
-        
+
     //  Read and parse them all
     for(unsigned int i=0; i < xmlFiles.GetCount(); i++){
         wxString xmlFile = xmlFiles.Item(i);
         if(xmlFile.Find(_T("ChartList")) != wxNOT_FOUND)
             continue;
-        
+
         FILE *iFile = fopen(xmlFile.mb_str(), "rb");
         if (iFile <= (void *) 0)
             continue;            // file error
-        
-        // compute the file length    
+
+        // compute the file length
         fseek(iFile, 0, SEEK_END);
         size_t iLength = ftell(iFile);
-    
+
         char *iText = (char *)calloc(iLength + 1, sizeof(char));
-    
+
         // Read the file
         fseek(iFile, 0, SEEK_SET);
         size_t nread = 0;
         while (nread < iLength){
             nread += fread(iText + nread, 1, iLength - nread, iFile);
-        }           
+        }
         fclose(iFile);
 
-    
+
         //  Parse the XML
         TiXmlDocument * doc = new TiXmlDocument();
         doc->Parse( iText);
-    
+
         TiXmlElement * root = doc->RootElement();
         if(!root){
             free( iText );
             continue;
         }
-            
+
         wxString rootName = wxString::FromUTF8( root->Value() );
         if(rootName.IsSameAs(_T("keyList"))){
-            
+
             TiXmlNode *child;
             for ( child = root->FirstChild(); child != 0; child = child->NextSibling()){
                 if(!strcmp(child->Value(), "Chart")){
@@ -1053,7 +1053,7 @@ bool Chart_oeuRNC::CreateChartInfoFile( wxString chartName, bool forceCreate )
             }
         }
         free( iText );
-                
+
 //  <ChartInfo>xxx</ChartInfo>
 //  <>2021/1-4</Edition>
 //  <>1619084536</ExpirationDate>
@@ -1066,7 +1066,7 @@ bool Chart_oeuRNC::CreateChartInfoFile( wxString chartName, bool forceCreate )
     wxArrayString htmlFiles;
     int nhtmlFiles = wxDir::GetAllFiles(installBase, &htmlFiles, _T("*.HTML"));
     nhtmlFiles += wxDir::GetAllFiles(installBase, &htmlFiles, _T("*.html"));
-    
+
     wxString EULAfileName;
     wxArrayString EULALines;
     for(int i=0 ; i < nhtmlFiles ; i++){
@@ -1084,30 +1084,30 @@ bool Chart_oeuRNC::CreateChartInfoFile( wxString chartName, bool forceCreate )
 
     wxString l2 = _T("ochartsEULAShow:");
     l2 += wxString(m_chartInfoEULAShow.c_str());
-    
+
     wxString l3 = _T("ChartInfo:");
     l3 += wxString::FromUTF8(m_chartInfo.c_str());
     l3 += _T(";");
     l3 += wxString(m_chartInfoEdition.c_str());
     l3 += _T(";");
     l3 += wxString(m_chartInfoExpirationDate.c_str());
-    
+
     wxString l4 = _T("ChartInfoShow:");
     l4 += wxString(m_chartInfoShow.c_str());
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     // Create a  Chartinfo.txt file in the installBase directory
     wxString ciPath = installBase;
     ciPath += wxFileName::GetPathSeparator();
     ciPath += _T("Chartinfo.txt");
-        
+
     wxRemoveFile(ciPath);
     wxTextFile file( ciPath );
     file.Create();
 
     for(unsigned int i=0 ; i < EULALines.GetCount() ; i++)
         file.AddLine(EULALines[i]);
-    
+
     file.AddLine( l2 );
     file.AddLine( l3 );
     file.AddLine( l4 );
@@ -1126,7 +1126,7 @@ bool Chart_oeuRNC::CreateChartInfoFile( wxString chartName, bool forceCreate )
 
     for(unsigned int i=0 ; i < EULALines.GetCount() ; i++)
         file.AddLine(EULALines[i]);
-    
+
     file.AddLine( l2 );
     file.AddLine( l3 );
     file.AddLine( l4 );
@@ -1138,12 +1138,12 @@ bool Chart_oeuRNC::CreateChartInfoFile( wxString chartName, bool forceCreate )
     wxString dest = installBase;
     dest += wxFileName::GetPathSeparator();
     dest += _T("Chartinfo.txt");
-    
+
     AndroidSecureCopyFile(ciPath, dest);
 
     wxRemoveFile(ciPath);
 
-#endif    
+#endif
     return true;
 }
 
@@ -1152,11 +1152,11 @@ wxString Chart_oeuRNC::getKeyAsciiHex(const wxString& name)
 {
     wxString key;
     wxString strhex;
-    
+
     // Extract the directory name
     wxFileName fn(name);
     wxString infoFile = fn.GetPath(wxPATH_GET_SEPARATOR + wxPATH_GET_VOLUME) + _T("chartInfo.txt");
-    
+
     wxTextFile info;
     if(info.Open( infoFile)){
         wxString str;
@@ -1171,7 +1171,7 @@ wxString Chart_oeuRNC::getKeyAsciiHex(const wxString& name)
             key = strhex.BeforeFirst(_T(':'));
         }
     }
-    
+
     return key;
 }
 
@@ -1283,7 +1283,7 @@ void Chart_oeuRNC::ChartBaseBSBDTOR()
 
       FreeLineCacheRows();
       free (pLineCache);
-      
+
 
       delete pPixCache;
 
@@ -1500,12 +1500,12 @@ InitReturn Chart_oeuRNC::PostInit(void)
       else
             pLineCache = NULL;
 #endif
-            
+
       if(bUseLineCache)
       {
           pLineCache = (CachedLine *)malloc(Size_Y * sizeof(CachedLine));
           CachedLine *pt;
-          
+
           for(int ylc = 0 ; ylc < Size_Y ; ylc++)
           {
               pt = &pLineCache[ylc];
@@ -1516,7 +1516,7 @@ InitReturn Chart_oeuRNC::PostInit(void)
       }
       else
           pLineCache = NULL;
-      
+
 
       //    Validate/Set Depth Unit Type
       wxString test_str = m_DepthUnits.Upper();
@@ -3306,7 +3306,7 @@ bool Chart_oeuRNC::GetAndScaleData(unsigned char *ppn, wxRect& source, int sourc
 bool Chart_oeuRNC::GetChartBits(wxRect& source, unsigned char *pPix, int sub_samp)
 {
     wxCriticalSectionLocker locker(m_critSect);
-    
+
     // temporarily change the palette direction
 #ifdef __NEED_PALETTE_REV__
     palette_direction = PaletteRev;
@@ -3606,7 +3606,7 @@ int   ChartXTR1::BSBGetScanline( unsigned char *pLineBuf, int y, int xs, int xl,
       {
           off_t rll_y = ifs_hdr->GetBitmapOffset( y );
           off_t rll_y1 = ifs_hdr->GetBitmapOffset( y + 1 );
-          
+
           if(rll_y == 0)
               return 0;
 
@@ -3750,8 +3750,8 @@ do { \
     pt->bValid = false; \
     return 0; \
     } while(0)
-    
-    
+
+
 //-----------------------------------------------------------------------
 //    Get a BSB Scan Line Using Cache and scan line index if available
 //-----------------------------------------------------------------------
@@ -3768,7 +3768,7 @@ int   Chart_oeuRNC::BSBGetScanline( unsigned char *pLineBuf, int y, int xs, int 
 //      unsigned char *lp;
       int ix = xs;
 
-      
+
 //          de-reference m_imageMap thru proper pallete directly to target
 
       if(xl > Size_X)
@@ -3790,7 +3790,7 @@ int   Chart_oeuRNC::BSBGetScanline( unsigned char *pLineBuf, int y, int xs, int 
                   cur_by &= 0xf0;
                   cur_by = cur_by >> 4;
               }
-                  
+
               rgbval = (int)(pPalette[cur_by]);
               *((int *)prgb) = rgbval;
               prgb+=dest_inc_val_bytes ;
@@ -3842,7 +3842,7 @@ int   Chart_oeuRNC::BSBGetScanline( unsigned char *pLineBuf, int y, int xs, int 
         }
       }
 
-#if 0          
+#if 0
 #ifdef USE_OLD_CACHE
       pCL = pt->pPix + xs;
 
@@ -3964,7 +3964,7 @@ nocachestart:
                   while(count--) {
                       *(uint32_t*)prgb = rgbval;
                       prgb += 3;
-                  } 
+                  }
               } else if(rgbval == 0 || rgbval == 0xffffff) {
                   // optimization for black or white (could work for any gray too)
                   memset(prgb, rgbval, nRunCount*3);
@@ -3980,7 +3980,7 @@ nocachestart:
 //  because the compiler will (probably) use the ldrd/strd instuction pair.
 //  So, advance the prgb pointer until it is 8-byte aligned,
 //  and then carry on if enough bytes are left to process as 64 bit elements
-                  
+
                   if((long)prgb & 7){
                     while(count--) {
                         *(uint32_t*)prgb = rgbval;
@@ -3991,8 +3991,8 @@ nocachestart:
                         }
                     }
                   }
-#endif                  
-                  
+#endif
+
 
                   // fill first 24 bytes
                   uint64_t *b = (uint64_t*)prgb;
@@ -6953,10 +6953,10 @@ int ocpn_decode_image( unsigned char *in, unsigned char *out, size_t in_size, si
     size_t out_size_required, out_width;
 
     out_size_required = out_size;
-    
+
     out_width = out_size_required / Size_Y;
 
-    //uint8_t channels = 1; 
+    //uint8_t channels = 1;
 
     //uint8_t bytes_per_pixel = 1;
 
@@ -6983,13 +6983,13 @@ int ocpn_decode_image( unsigned char *in, unsigned char *out, size_t in_size, si
     //int interlaced = 0;
 
     uint32_t k, scanline_idx, width;
-   
+
     const uint8_t samples_per_byte = 8 / bit_depth;
     const uint8_t mask = (uint16_t)(1 << bit_depth) - 1;
     const uint8_t initial_shift = 8 - bit_depth;
     size_t pixel_size = 1;
     size_t pixel_offset = 0;
-    
+
     unsigned char *pixel;
     //unsigned processing_depth = bit_depth;
 
@@ -7010,7 +7010,7 @@ int ocpn_decode_image( unsigned char *in, unsigned char *out, size_t in_size, si
     unsigned char *scanline = (unsigned char *)malloc(scanline_width);
 
     stream.avail_in = in_size;
-    stream.next_in = in; 
+    stream.next_in = in;
 
     {
 
