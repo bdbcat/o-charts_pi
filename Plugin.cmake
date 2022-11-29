@@ -107,7 +107,7 @@ add_compile_definitions( ocpnUSE_GLSL )
 add_compile_definitions( ocpnUSE_GL )
 endif(NOT QT_ANDROID)
 
-set(PKG_API_LIB api-16)  #  A directory in libs/ e. g., api-17 or api-16
+set(PKG_API_LIB api-17)  #  A directory in libs/ e. g., api-17 or api-16
 
 macro(late_init)
   # Perform initialization after the PACKAGE_NAME library, compilers
