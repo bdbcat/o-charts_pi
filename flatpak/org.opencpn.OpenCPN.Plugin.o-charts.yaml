@@ -63,10 +63,6 @@ modules:
       make-install-args:
         - DESTDIR=/app/extensions/o-charts_pi
         - SBINDIR=/bin
-      post-install:
-        - >
-          cd /app/extensions/o-charts_pi/bin;
-          rm -f bridge genl if* *stat route* rt* ss tc libusb-config
 
     - name: @app_id
       no-autogen: true
