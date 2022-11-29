@@ -15,6 +15,7 @@ cmake_minimum_required(VERSION 3.12.0)
 include(${CMAKE_SOURCE_DIR}/cmake/CmakeSetup.cmake NO_POLICY_SCOPE)
 message(STATUS "Cmake version: ${CMAKE_VERSION}.")
 
+
 # -------- Build setup  --------
 #
 include(PluginOptions)
@@ -24,18 +25,29 @@ else ()
   message(STATUS "Configuring")
 endif ()
 
+# -------- Plugin setup ----------
+#
 include(Plugin.cmake)
 
 # -------- Setup completed, build the plugin --------
 #
+if ("${OCPN_TARGET_TUPLE}" MATCHES wx32)
+  # Evil, dirty hack to force a different name for wx32 builds. We
+  # need a cleaner solution here. FIXME(leamas)
+  set(PKG_NAME "${PKG_NAME}-wx32")
+endif ()
 project(${PKG_NAME} VERSION ${PKG_VERSION})
 include(PluginCompiler)
 
-add_library(${CMAKE_PROJECT_NAME} SHARED ${SRC})
+add_library(${CMAKE_PROJECT_NAME} SHARED EXCLUDE_FROM_ALL ${SRC})
 include_directories(BEFORE ${CMAKE_BINARY_DIR}/include)
 
-add_subdirectory("libs/${PKG_API_LIB}")
-target_link_libraries(${CMAKE_PROJECT_NAME} ocpn::api)
+add_subdirectory("opencpn-libs/${PKG_API_LIB}")
+if (${PKG_NAME} MATCHES wx32)
+  target_link_libraries(${CMAKE_PROJECT_NAME} ocpn::api_wx32)
+else ()
+  target_link_libraries(${CMAKE_PROJECT_NAME} ocpn::api)
+endif ()
 
 set(VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(VERSION_MINOR ${PROJECT_VERSION_MINOR})
@@ -51,15 +63,20 @@ if (COMMAND late_init)
   late_init()
 endif ()
 
+# Configure the flatpak manifest
+file(
+  GLOB manifest ${PROJECT_SOURCE_DIR}/flatpak/org.opencpn.OpenCPN.Plugin.*.yaml
+)
+include(ConfigureManifest)
+configure_manifest(${manifest} _new_manifest)
+
 # Set up targets. Targets sets up new targets with BUILD_TYPE set to
 # 'flatpak', 'android' or 'tarball'. The initial call without BUILD_TYPE ends
 # here.
 #
-file(GLOB FLATPAK_MANIFEST
-  ${PROJECT_SOURCE_DIR}/flatpak/org.opencpn.OpenCPN.Plugin.*.yaml
-)
 include(Targets)
-create_targets(${FLATPAK_MANIFEST})
+create_targets(${_new_manifest})
+
 if ("${BUILD_TYPE}" STREQUAL "")
   return ()
 endif ()
@@ -79,11 +96,6 @@ if (NOT ${BUILD_TYPE} STREQUAL "flatpak")
 
   if (COMMAND add_plugin_libraries)
     add_plugin_libraries()
-  endif ()
-
-  if (EXISTS "libs/jsoncpp" AND NOT TARGET ocpn::jsoncpp)
-    add_subdirectory("libs/jsoncpp")
-    target_link_libraries(${PACKAGE_NAME} ocpn::jsoncpp)
   endif ()
 
 endif ()
