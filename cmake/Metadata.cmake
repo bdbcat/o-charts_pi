@@ -127,13 +127,20 @@ if (NOT "${OCPN_WX_ABI}" STREQUAL "")
 endif ()
 
 if ("${_git_tag}" STREQUAL "")
+  message(STATUS "TAG test 0")
   set(pkg_displayname "${PLUGIN_API_NAME}-${VERSION_MAJOR}.${VERSION_MINOR}")
 else ()
+  message(STATUS "TAG test 1")
   set(pkg_displayname "${PLUGIN_API_NAME}-${_git_tag}")
 endif ()
+
+message(STATUS "pkg_displayname0: ${pkg_displayname}.")
+
 string(APPEND pkg_displayname
   "-${plugin_target}${_wx_abi}${_display_arch}-${plugin_target_version}"
 )
+
+message(STATUS "pkg_displayname1: ${pkg_displayname}.")
 
 # pkg_xmlname: XML metadata basename
 set(pkg_xmlname ${pkg_displayname})
