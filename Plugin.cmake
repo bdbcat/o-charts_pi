@@ -159,10 +159,10 @@ macro(add_plugin_libraries)
   add_subdirectory(libs/pugixml)
   target_link_libraries(${PACKAGE_NAME} ocpn::pugixml)
 
-if (MSVC)
-  add_subdirectory("libs/WindowsHeaders")
-  target_link_libraries(${PACKAGE_NAME} _windows_headers)
-endif ()
+#if (MSVC)
+#  add_subdirectory("libs/WindowsHeaders")
+#  target_link_libraries(${PACKAGE_NAME} _windows_headers)
+#endif ()
 
 
 #   add_subdirectory("libs/opencpn-glu")
