@@ -131,7 +131,7 @@ if ("${_git_tag}" STREQUAL "")
   set(pkg_displayname "${PLUGIN_API_NAME}-${VERSION_MAJOR}.${VERSION_MINOR}")
 else ()
   message(STATUS "TAG test 1")
-  set(pkg_displayname "${PLUGIN_API_NAME}-${_git_tag}")
+  set(pkg_displayname "${PLUGIN_API_NAME}-${VERSION_MAJOR}.${VERSION_MINOR")
 endif ()
 
 message(STATUS "pkg_displayname0: ${pkg_displayname}.")
