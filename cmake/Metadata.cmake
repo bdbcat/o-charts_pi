@@ -112,7 +112,7 @@ endif ()
 if ("${_git_tag}" STREQUAL "")
   set(pkg_semver "${PROJECT_VERSION}${_pre_rel}+${_build_id}.${_gitversion}")
 else ()
-  set(pkg_semver "${_git_tag}")
+  set(pkg_semver "${PROJECT_VERSION}")
 endif ()
 
 # pkg_displayname: GUI name
