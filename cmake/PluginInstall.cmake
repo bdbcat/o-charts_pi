@@ -27,6 +27,7 @@ if (APPLE)
 
 elseif (WIN32)
   message(STATUS "Install Prefix: ${CMAKE_INSTALL_PREFIX}")
+  message(STATUS "Package_Name: ${PACKAGE_NAME}")
   if (CMAKE_CROSSCOMPILING)
     install(TARGETS ${PACKAGE_NAME} RUNTIME DESTINATION "plugins")
   else ()
