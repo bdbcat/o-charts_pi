@@ -137,7 +137,7 @@ endif ()
 message(STATUS "pkg_displayname0: ${pkg_displayname}.")
 
 string(APPEND pkg_displayname
-  "-${plugin_target}${_wx_abi}${_display_arch}-${plugin_target_version}"
+  "-${plugin_target}${_display_arch}-${plugin_target_version}"
 )
 
 message(STATUS "pkg_displayname1: ${pkg_displayname}.")
