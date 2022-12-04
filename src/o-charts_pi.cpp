@@ -2667,7 +2667,17 @@ bool init_GLExtensions(void) {
   #ifndef __WXOSX__
     #ifdef __OCPN_USE_GLEW__
       GLenum err = glewInit();
-      return (GLEW_OK == err);
+#ifdef GLEW_ERROR_NO_GLX_DISPLAY
+      if (GLEW_OK != err && GLEW_ERROR_NO_GLX_DISPLAY != err)
+#else
+      if (GLEW_OK != err)
+#endif
+      {
+        printf("GLEW init failed: %s\n", glewGetErrorString(err));
+        return false;
+      }
+      else
+        return true;
     #else
       return GetglEntryPoints();
     #endif
