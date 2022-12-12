@@ -176,9 +176,11 @@ if ("${BUILD_TYPE}" STREQUAL "flatpak")
     set(pkg_target_arch "${pkg_target_arch}-${OCPN_WX_ABI}")
   endif ()
 elseif ("${plugin_target}" MATCHES "ubuntu|raspbian|debian|mingw")
-  set(pkg_target_arch "${plugin_target}-${ARCH}")
+  set(pkg_target_arch "${plugin_target}-${_wx_abi}-${ARCH}")
 else ()
   set(pkg_target_arch "${plugin_target}")
 endif ()
+
+message(STATUS "pkg_target_arch: ${pkg_target_arch}.")
 
 #cmake-format: on
