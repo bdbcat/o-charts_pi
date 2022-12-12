@@ -117,6 +117,8 @@ configure_file(
   @ONLY
 )
 
+message(STATUS "At configure_file, pkg_target_arch: ${pkg_target_arch}.")
+
 set(checksum "@checksum@")
 configure_file(
   # The XML metadata file
