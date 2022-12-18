@@ -1000,8 +1000,20 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
 
          }
 
-        if(root[_T("OpenCPN Zoom Mod Vector")].IsInt())
-            g_chart_zoom_modifier_vector = root[_T("OpenCPN Zoom Mod Vector")].AsInt();
+        if(root[_T("OpenCPN Zoom Mod Vector")].IsInt()){
+          if (ps52plib)
+            ps52plib->SetScaleFactorZoomMod(root[_T("OpenCPN Zoom Mod Vector")].AsInt());
+        }
+
+        if(root[_T("OpenCPN Scale Factor Exp")].IsInt()){
+          if (ps52plib)
+            ps52plib->SetScaleFactorExp(root[_T("OpenCPN Scale Factor Exp")].AsInt());
+        }
+
+        if(root[_T("OpenCPN Scale Factor Exp")].IsDouble()){
+          if (ps52plib)
+            ps52plib->SetScaleFactorExp(root[_T("OpenCPN Scale Factor Exp")].AsDouble());
+        }
 
         if(root[_T("OpenCPN Display Width")].IsInt()){
             g_display_size_mm = (double)root[_T("OpenCPN Display Width")].AsInt();

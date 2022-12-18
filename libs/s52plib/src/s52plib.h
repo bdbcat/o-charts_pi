@@ -302,7 +302,8 @@ public:
   void SetQualityOfData(bool val);
   bool GetQualityOfData();
 
-  void SetGuiScaleFactors(double ChartScaleFactor, int chart_zoom_modifier_vector);
+  void SetScaleFactorExp(double ChartScaleFactorExp);
+  void SetScaleFactorZoomMod(int chart_zoom_modifier_vector);
 
   int GetMajorVersion(void) { return m_VersionMajor; }
   int GetMinorVersion(void) { return m_VersionMinor; }

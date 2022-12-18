@@ -503,8 +503,11 @@ void s52plib::SetPPMM(float ppmm) {
   wxLogMessage(msg);
 }
 
-void s52plib::SetGuiScaleFactors(double ChartScaleFactorExp, int chart_zoom_modifier_vector) {
+void s52plib::SetScaleFactorExp(double ChartScaleFactorExp) {
   m_ChartScaleFactorExp = ChartScaleFactorExp;
+}
+
+void s52plib::SetScaleFactorZoomMod(int chart_zoom_modifier_vector) {
   m_chart_zoom_modifier_vector = chart_zoom_modifier_vector;
 }
 
