@@ -37,7 +37,7 @@
 //#include "shaders.h"
 #elif defined(__WXOSX__)
 #include <OpenGL/gl.h>
-#include <OpenGL/glext.h>
+//#include <OpenGL/glext.h>
 #include <OpenGL/glu.h>
 #else
 #include <GL/gl.h>

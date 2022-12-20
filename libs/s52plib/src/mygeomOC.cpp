@@ -48,7 +48,7 @@
 #ifdef __WXOSX__
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
-#include <OpenGL/glext.h>
+//#include <OpenGL/glext.h>
 
 #elif defined(__ANDROID__)
 #include <KHR/khrplatform.h>
