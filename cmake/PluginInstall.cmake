@@ -77,7 +77,7 @@ if (CMAKE_BUILD_TYPE MATCHES "Release|MinSizeRel")
     # Plain, native linux
     set(_striplib lib/opencpn/lib${PACKAGE_NAME}.so)
   endif ()
-  if (BUILD_TYPE STREQUAL "tarball" AND DEFINED _striplib)
+  if (BUILD_TYPE STREQUAL "tarballxx" AND DEFINED _striplib)
     find_program(STRIP_UTIL NAMES strip REQUIRED)
     if (APPLE)
       set(STRIP_UTIL "${STRIP_UTIL} -x")
