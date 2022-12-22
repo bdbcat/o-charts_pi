@@ -152,16 +152,16 @@ WX_DEFINE_LIST(ListOfS57Obj);                // Implement a list of S57 Objects
 WX_DEFINE_LIST(ListOfObjRazRules);
 
 #ifndef __OCPN_USE_GLEW__
-extern PFNGLGENBUFFERSPROC                 s_glGenBuffers;
-extern PFNGLBINDBUFFERPROC                 s_glBindBuffer;
-extern PFNGLBUFFERDATAPROC                 s_glBufferData;
-extern PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
+//extern PFNGLGENBUFFERSPROC                 s_glGenBuffers;
+//extern PFNGLBINDBUFFERPROC                 s_glBindBuffer;
+//extern PFNGLBUFFERDATAPROC                 s_glBufferData;
+//extern PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
 
 #ifndef USE_ANDROID_GLES2
-#define glGenBuffers (s_glGenBuffers)
-#define glBindBuffer (s_glBindBuffer)
-#define glBufferData (s_glBufferData)
-#define glDeleteBuffers (s_glDeleteBuffers)
+//#define glGenBuffers (s_glGenBuffers)
+//#define glBindBuffer (s_glBindBuffer)
+//#define glBufferData (s_glBufferData)
+//#define glDeleteBuffers (s_glDeleteBuffers)
 #endif
 
 #endif

@@ -34,6 +34,7 @@
 #include <math.h>
 #include <stdlib.h>
 
+#define GL_SILENCE_DEPRECATION 1
 
 #ifndef PI
 #define PI 3.1415926535897931160E0 /* pi */
@@ -87,16 +88,16 @@ extern "C" wxString *GetpSharedDataLocation();
 #endif
 
 #ifndef __OCPN_USE_GLEW__
- extern PFNGLGENBUFFERSPROC                 s_glGenBuffers;
- extern PFNGLBINDBUFFERPROC                 s_glBindBuffer;
- extern PFNGLBUFFERDATAPROC                 s_glBufferData;
- extern PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
+ //extern PFNGLGENBUFFERSPROC                 s_glGenBuffers;
+ //extern PFNGLBINDBUFFERPROC                 s_glBindBuffer;
+ //extern PFNGLBUFFERDATAPROC                 s_glBufferData;
+ //extern PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
 
 #ifndef USE_ANDROID_GLES2
-#define glGenBuffers (s_glGenBuffers)
-#define glBindBuffer (s_glBindBuffer)
-#define glBufferData (s_glBufferData)
-#define glDeleteBuffers (s_glDeleteBuffers)
+//#define glGenBuffers (s_glGenBuffers)
+//#define glBindBuffer (s_glBindBuffer)
+//#define glBufferData (s_glBufferData)
+//#define glDeleteBuffers (s_glDeleteBuffers)
 #endif
 
 #endif

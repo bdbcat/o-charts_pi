@@ -74,10 +74,10 @@
 // #include "OpenGL/glext.h"
 // #include "OpenGL/glu.h"
 
-typedef void (*PFNGLGENBUFFERSPROC) (GLsizei n, GLuint *buffers);
-typedef void (*PFNGLBINDBUFFERPROC) (GLenum target, GLuint buffer);
-typedef void (*PFNGLBUFFERDATAPROC) (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
-typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
+//typedef void (*PFNGLGENBUFFERSPROC) (GLsizei n, GLuint *buffers);
+//typedef void (*PFNGLBINDBUFFERPROC) (GLenum target, GLuint buffer);
+//typedef void (*PFNGLBUFFERDATAPROC) (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
+//typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
 
 
 #elif defined(__ANDROID__)
@@ -233,10 +233,10 @@ bool g_GLSetupOK;
 oesencPrefsDialog               *g_prefs_dialog;
 
 #if 1
-PFNGLGENBUFFERSPROC                 s_glGenBuffers;
-PFNGLBINDBUFFERPROC                 s_glBindBuffer;
-PFNGLBUFFERDATAPROC                 s_glBufferData;
-PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
+//PFNGLGENBUFFERSPROC                 s_glGenBuffers;
+//PFNGLBINDBUFFERPROC                 s_glBindBuffer;
+//PFNGLBUFFERDATAPROC                 s_glBufferData;
+//PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
 #endif
 
 
@@ -2465,6 +2465,7 @@ void LoadS57Config()
 
 #ifndef __OCPN_USE_GLEW__
 
+#if 0
 static GLboolean QueryExtension( const char *extName )
 {
     /*
@@ -2592,6 +2593,7 @@ static bool GetglEntryPoints( void )
 }
 
 #endif  //__OCPN_USE_GLEW__
+#endif
 
 
 void init_S52Library(void)
