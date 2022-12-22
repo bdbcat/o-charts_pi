@@ -21,6 +21,7 @@
   #include "wx/wx.h"
 #endif //precompiled headers
 
+#define GL_SILENCE_DEPRECATION 1
 
 //  Why are these not in wx/prec.h?
 #include "wx/dir.h"
@@ -2019,7 +2020,6 @@ int eSENCChart::RenderRegionViewOnGLNoText( const wxGLContext &glc, const PlugIn
 int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewPort& VPoint,
                           const wxRegion &Region, bool b_use_stencil )
 {
-
 
 #ifdef ocpnUSE_GL
 

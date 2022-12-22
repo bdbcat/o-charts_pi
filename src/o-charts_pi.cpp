@@ -2695,6 +2695,8 @@ bool init_GLExtensions(void) {
     #else
       return GetglEntryPoints();
     #endif
+  #else
+      return true;    //OSX
   #endif
 #else
   return true;
@@ -2772,6 +2774,7 @@ void init_GLLibrary(void) {
         ps52plib->SetGLOptions(g_b_useStencil, g_b_useStencilAP, g_b_useScissorTest, g_b_useFBO,  g_b_EnableVBO, g_texture_rectangle_format, 1, 1);
 
         g_bopengl = true;
+        ps52plib->SetUseGLSL(true);
         g_GLSetupOK = true;
     }
 }
