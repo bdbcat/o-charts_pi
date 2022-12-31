@@ -4750,6 +4750,7 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
         m_this_chart_context->chart = this;
         m_this_chart_context->chart_type = GetChartType();
         m_this_chart_context->vertex_buffer = GetLineVertexBuffer();
+        m_this_chart_context->chart_scale = GetNativeScale();
 
         //  Loop and populate all the objects
         for( int i = 0; i < PRIO_NUM; ++i ) {
@@ -9011,7 +9012,8 @@ PI_S57Obj::PI_S57Obj()
     geoPtz = NULL;
     geoPt = NULL;
     bIsClone = false;
-    Scamin = 10000000;                              // ten million enough?
+    Scamin = 1e8+2;  // Default is very large number, effectively unused.
+    //SuperScamin = -1;
     nRef = 0;
     pPolyTessGeo = NULL;
 
@@ -10143,7 +10145,8 @@ void S57Obj::Init()
     geoPtz = NULL;
     geoPt = NULL;
     bIsClone = false;
-    Scamin = 10000000;                              // ten million enough?
+    Scamin = 1e8+2;  // Default is very large number, effectively unused.
+    SuperScamin = -1;
     nRef = 0;
 
     bIsAton = false;

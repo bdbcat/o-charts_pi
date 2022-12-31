@@ -961,6 +961,8 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
               ps52plib->m_bShowNationalTexts = root[_T("OpenCPN S52PLIB ShowNationalText")].AsBool();
             if(root[_T("OpenCPN S52PLIB UseSCAMIN")].IsBool())
               ps52plib->m_bUseSCAMIN = root[_T("OpenCPN S52PLIB UseSCAMIN")].AsBool();
+            if(root[_T("OpenCPN S52PLIB UseSUPER_SCAMIN")].IsBool())
+              ps52plib->m_bUseSUPER_SCAMIN = root[_T("OpenCPN S52PLIB UseSUPER_SCAMIN")].AsBool();
             if(root[_T("OpenCPN S52PLIB ShowImportantTextOnly")].IsBool())
               ps52plib->m_bShowS57ImportantTextOnly = root[_T("OpenCPN S52PLIB ShowImportantTextOnly")].AsBool();
 

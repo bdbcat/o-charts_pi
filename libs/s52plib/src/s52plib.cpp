@@ -34,7 +34,6 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define GL_SILENCE_DEPRECATION 1
 
 #ifndef PI
 #define PI 3.1415926535897931160E0 /* pi */
@@ -83,21 +82,21 @@ extern "C" wxString *GetpSharedDataLocation();
 #endif
 
 
-#ifdef __ANDROID__
+#ifdef __OCPN__ANDROID__
 #include "qdebug.h"
 #endif
 
 #ifndef __OCPN_USE_GLEW__
- //extern PFNGLGENBUFFERSPROC                 s_glGenBuffers;
- //extern PFNGLBINDBUFFERPROC                 s_glBindBuffer;
- //extern PFNGLBUFFERDATAPROC                 s_glBufferData;
- //extern PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
+ extern PFNGLGENBUFFERSPROC                 s_glGenBuffers;
+ extern PFNGLBINDBUFFERPROC                 s_glBindBuffer;
+ extern PFNGLBUFFERDATAPROC                 s_glBufferData;
+ extern PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
 
 #ifndef USE_ANDROID_GLES2
-//#define glGenBuffers (s_glGenBuffers)
-//#define glBindBuffer (s_glBindBuffer)
-//#define glBufferData (s_glBufferData)
-//#define glDeleteBuffers (s_glDeleteBuffers)
+#define glGenBuffers (s_glGenBuffers)
+#define glBindBuffer (s_glBindBuffer)
+#define glBufferData (s_glBufferData)
+#define glDeleteBuffers (s_glDeleteBuffers)
 #endif
 
 #endif
@@ -367,7 +366,7 @@ s52plib::s52plib(const wxString &PLib, bool b_forceLegacy) {
      s_txf[i].key = 0;
      s_txf[i].cache = 0;
   }
-  m_dpifactor = 1.0;
+  m_dipfactor = 1.0;
 
 }
 
@@ -461,8 +460,8 @@ void s52plib::SetGLOptions(bool b_useStencil, bool b_useStencilAP,
 
 }
 
-void s52plib::SetDPIFactor( double factor) {
-  m_dpifactor = factor;
+void s52plib::SetDIPFactor( double factor) {
+  m_dipfactor = factor;
 }
 
 void s52plib::SetPPMM(float ppmm) {
@@ -1788,7 +1787,7 @@ bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
 
     //Fixme (dave)
     // We also do this the hard way for rotation of strings.  Very slow.
-//#ifdef __ANDROID__
+//#ifdef __OCPN__ANDROID__
     if (fabs(vp_plib.rotation) > .01) b_force_no_texture = true;
 //#endif
     if ((ptext->bspecial_char) || b_force_no_texture) {
@@ -2085,7 +2084,7 @@ bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
           delete s_txf[i].cache;
         s_txf[i].cache = new TexFont();
         f_cache = s_txf[i].cache;
-        f_cache->Build(*ptext->pFont, m_dpifactor);
+        f_cache->Build(*ptext->pFont, m_dipfactor);
       }
 
       int w, h;
@@ -3339,7 +3338,7 @@ bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
   wxString fontFacename = wxEmptyString;
   double defaultHeight = 3.0;
 
-#ifdef __ANDROID__
+#ifdef __OCPN__ANDROID__
   fontWeight = wxFONTWEIGHT_BOLD;
   fontFacename = _T("Roboto");
   defaultHeight = 2.2;
@@ -3403,8 +3402,8 @@ bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
        m_soundFont = FindOrCreateFont_PlugIn(point_size, wxFONTFAMILY_SWISS,
                                              wxFONTSTYLE_NORMAL, fontWeight,
                                              false, fontFacename);
-      m_texSoundings.Build(m_soundFont,
-                           scale_factor);  // texSounding owns the font
+      m_texSoundings.BuildF(m_soundFont,
+                           scale_factor, m_dipfactor);  // texSounding owns the font
     }
   } else {
     m_soundFont = FindOrCreateFont_PlugIn(point_size, wxFONTFAMILY_SWISS,
@@ -3457,6 +3456,8 @@ bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
     pivot_x = -(pivotWidth / 4);
     pivot_y = pivotHeight / 5;
   }
+  pivot_x *= m_dipfactor;
+  pivot_y *= m_dipfactor;
 
   //        Get the bounding box for the to-be-drawn symbol
   int b_width, b_height;
@@ -3717,7 +3718,7 @@ int s52plib::RenderGLLS(ObjRazRules *rzRules, Rules *rules) {
   glDisable(GL_LINE_SMOOTH);
   glDisable(GL_BLEND);
 
-#ifdef __ANDROID__
+#ifdef __OCPN__ANDROID__
   //     if( w > 1 )
   //         lineWidth = wxMin(lineWidth, parms[1]);
   glLineWidth(lineWidth);
@@ -3983,7 +3984,7 @@ int s52plib::RenderLS(ObjRazRules *rzRules, Rules *rules) {
     } else
       glLineWidth(wxMax(m_GLMinCartographicLineWidth, 1));
 
-#ifndef __ANDROID__
+#ifndef __OCPN__ANDROID__
     if (w >= 2 && m_GLLineSmoothing) {
       glEnable(GL_LINE_SMOOTH);
       glEnable(GL_BLEND);
@@ -4146,7 +4147,7 @@ int s52plib::RenderLSLegacy(ObjRazRules *rzRules, Rules *rules) {
     } else
       glLineWidth(wxMax(m_GLMinCartographicLineWidth, 1));
 
-#ifndef __ANDROID__
+#ifndef __OCPN__ANDROID__
     if (w >= 2 && m_GLLineSmoothing) {
       glEnable(GL_LINE_SMOOTH);
       glEnable(GL_BLEND);
@@ -4520,7 +4521,7 @@ int s52plib::RenderLS_Dash_GLSL(ObjRazRules *rzRules, Rules *rules) {
   glDisable(GL_LINE_SMOOTH);
   glEnable(GL_BLEND);  // for shader
 
-#ifdef __ANDROID__
+#ifdef __OCPN__ANDROID__
   lineWidth = wxMin(lineWidth, parms[1]);
   glLineWidth(lineWidth);
 
@@ -5494,7 +5495,7 @@ void s52plib::draw_lc_poly(wxDC *pdc, wxColor &color, int width, wxPoint *ptp,
           }
 
           //      Enable anti-aliased lines, at best quality
-#ifndef __ANDROID__
+#ifndef __OCPN__ANDROID__
           glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
           glEnable(GL_BLEND);
 
@@ -5565,7 +5566,7 @@ void s52plib::draw_lc_poly(wxDC *pdc, wxColor &color, int width, wxPoint *ptp,
             ys += sym_len * dy / seg_len * sym_factor;
             s += sym_len * sym_factor;
           }
-#ifndef __ANDROID__
+#ifndef __OCPN__ANDROID__
           glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
           glEnable(GL_BLEND);
 
@@ -5847,7 +5848,7 @@ int s52plib::RenderCARC_GLSL(ObjRazRules *rzRules, Rules *rules) {
 
   float arcw = arc_width * canvas_pix_per_mm;
   // On larger screens, make the arc_width 1.0 mm
-  if ( vp_plib.pix_width / canvas_pix_per_mm > 200)     //200 mm, about 8 inches
+  if ( m_display_size_mm > 200)     //200 mm, about 8 inches
     arcw = canvas_pix_per_mm;
 
 
@@ -5860,7 +5861,7 @@ int s52plib::RenderCARC_GLSL(ObjRazRules *rzRules, Rules *rules) {
   //   and scale it down when rendered if necessary.
 
   float xscale = 1.0;
-  if (rzRules->obj->Scamin > 10000000) {  // huge (unset) SCAMIN)
+  if (rzRules->obj->Scamin > 1e8) {  // huge (unset) SCAMIN)
     float radius_meters_target = 200;
 
     float radius_meters = (radius * canvas_pix_per_mm) / vp_plib.view_scale_ppm;
@@ -6015,7 +6016,7 @@ int s52plib::RenderCARC_GLSL(ObjRazRules *rzRules, Rules *rules) {
 
     wxPen thispen = *wxBLACK_PEN;
     thispen.SetDashes(2, dash1);
-    thispen.SetWidth(3);
+    thispen.SetWidth(2);
     thispen.SetStyle(wxPENSTYLE_USER_DASH);
 
     float a = (sectr1 - 90) * PI / 180;
@@ -6148,7 +6149,7 @@ int s52plib::RenderCARC_VBO(ObjRazRules *rzRules, Rules *rules) {
   //   and scale it down when rendered if necessary.
 
   float xscale = 1.0;
-  if (rzRules->obj->Scamin > 10000000) {  // huge (unset) SCAMIN)
+  if (rzRules->obj->Scamin > 1e8) {  // huge (unset) SCAMIN)
     float radius_meters_target = 200;
 
     float radius_meters = (radius * canvas_pix_per_mm) / vp_plib.view_scale_ppm;
@@ -9040,7 +9041,7 @@ render_canvas_parms *s52plib::CreatePatternBufferSpec(ObjRazRules *rzRules,
 
     if (pd0 && ps0) {
       for (int iy = 0; iy < sizey; iy++) {
-#ifdef __ANDROID__
+#ifdef __OCPN__ANDROID__
         pd = pd0 + ((sizey - iy - 1) * patt_spec->pb_pitch);
 #else
         pd = pd0 + (iy * patt_spec->pb_pitch);
@@ -9373,7 +9374,7 @@ bool s52plib::ObjectRenderCheckCat(ObjRazRules *rzRules) {
   if (m_nDisplayCategory == OTHER) {
     if (OTHER == obj_cat) {
       if (!strncmp(rzRules->LUP->OBCL, "M_", 2))
-        if (!m_bShowMeta /*&& strncmp(rzRules->LUP->OBCL, "M_QUAL", 6)*/)
+        if (!m_bShowMeta && strncmp(rzRules->LUP->OBCL, "M_QUAL", 6))
           return false;
     }
   } else {
@@ -9382,7 +9383,7 @@ bool s52plib::ObjectRenderCheckCat(ObjRazRules *rzRules) {
       if (!m_bShowMeta) return false;
   }
 
-#ifdef __ANDROID__
+#ifdef __OCPN__ANDROID__
   // We want to filter out M_NSYS objects on Android, as they are of limited use
   // on a phone/tablet
   if (!strncmp(rzRules->LUP->OBCL, "M_", 2))
@@ -9468,6 +9469,45 @@ bool s52plib::ObjectRenderCheckCat(ObjRazRules *rzRules) {
           if (vp_plib.chart_scale > rzRules->obj->Scamin) b_visible = false;
         }
       }
+
+      // Check for SUPER_SCAMIN, apply if enabled
+      if (m_bUseSUPER_SCAMIN){
+        if (rzRules->obj->SuperScamin < 0){
+          if ( (strncmp(rzRules->obj->FeatureName, "LNDARE", 6) &&
+                strncmp(rzRules->obj->FeatureName, "DEPARE", 6) &&
+                strncmp(rzRules->obj->FeatureName, "COALNE", 6)) ||
+              (!strncmp(rzRules->obj->FeatureName, "LNDARE", 6) && (rzRules->LUP->ruleList->ruleType != RUL_ARE_CO))) {
+
+            double chart_ref_scale = rzRules->obj->m_chart_context->chart_scale;
+
+            // Is the ENC cell SCAMIN for this object un-defined?
+            if (rzRules->obj->Scamin > 1e8) {   // undefined default value is 1e8+2
+              // Get the scale of the ENC, and establish SUPERSCAMIN
+              double super_scamin = chart_ref_scale * 4;
+              rzRules->obj->SuperScamin = super_scamin;
+            }
+            if (rzRules->obj->Scamin > 9e6) {   // Presumed undefined value for Greek ENC Lights
+              // Get the scale of the ENC, and establish SUPERSCAMIN
+              double super_scamin = chart_ref_scale * 2;
+              rzRules->obj->SuperScamin = super_scamin;
+            }
+            if (!strncmp(rzRules->obj->FeatureName, "SOUNDG", 6)){
+                if (rzRules->obj->Scamin > 4e6) {   // Presumed undefined value for Greek ENC soundings
+                  // Get the scale of the ENC, and establish SUPERSCAMIN
+                  double super_scamin = chart_ref_scale * 2;
+                  rzRules->obj->SuperScamin = super_scamin;
+              }
+            }
+          }
+        }
+
+        // Make the test
+        if ((rzRules->obj->SuperScamin > 0) &&
+             (vp_plib.chart_scale > rzRules->obj->SuperScamin))
+            b_visible = false;
+
+      }
+
 
       //      On the other hand, $TEXTS features need not really be displayed at
       //      all scales, always To do so makes a very cluttered display
@@ -10467,7 +10507,7 @@ void RenderFromHPGL::SetPen() {
         wxMax(1/*m_GLMinSymbolLineWidth*/, (float)penWidth * nominal_line_width_pix);
     glLineWidth(line_width);
 
-#ifndef __ANDROID__
+#ifndef __OCPN__ANDROID__
     if (line_width >= 2 && plib->GetGLLineSmoothing())
       glEnable(GL_LINE_SMOOTH);
     else
@@ -11048,10 +11088,8 @@ void RenderFromHPGL::DrawPolygonTessellated(int n, wxPoint points[],
     gluTessBeginContour(m_tobj);
 
     //               ViewPort *pvp = cc1->GetpVP();
-
+    double *p = new double [n * 3];
     for (int i = 0; i < n; i++) {
-      double *p = new double[6];
-
       //                     if(fabs(pvp->rotation) > 0.01){
       //                         float cx = pvp->pix_width/2.;
       //                         float cy = pvp->pix_height/2.;
@@ -11064,9 +11102,9 @@ void RenderFromHPGL::DrawPolygonTessellated(int n, wxPoint points[],
       //                         p[2] = 0;
       //                     }
       //                     else
-      p[0] = points[i].x, p[1] = points[i].y, p[2] = 0;
+      p[3 * i] = points[i].x, p[3 * i + 1] = points[i].y, p[3 * i + 2] = 0;
 
-      gluTessVertex(m_tobj, p, p);
+      gluTessVertex(m_tobj, p + 3 * i, p + 3 * i);
     }
 
     gluTessEndContour(m_tobj);
@@ -11074,6 +11112,7 @@ void RenderFromHPGL::DrawPolygonTessellated(int n, wxPoint points[],
     //}
 
     gluDeleteTess(m_tobj);
+    delete[] p;
 
     //         for(std::list<double*>::iterator i =
     //         odc_combine_work_data.begin(); i!=odc_combine_work_data.end();

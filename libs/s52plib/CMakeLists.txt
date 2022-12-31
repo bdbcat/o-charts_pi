@@ -16,6 +16,7 @@ SET(SRC
     src/s52utils.cpp
     src/s52shaders.cpp
     src/mygeomOC.cpp
+    src/DepthFont.cpp
     )
 
 if (NOT wxWidgets_INCLUDE_DIRS)

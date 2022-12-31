@@ -27,35 +27,6 @@
 #define _S52PLIB_H_
 
 #include <vector>
-
-#include "../../src/dychart.h"
-
-#if 0
-#ifdef __OCPN_USE_GLEW__
-  #if defined(_WIN32)
-    #include "glew.h"
-  #elif defined(__WXQT__) || defined(__WXGTK__)
-   #include <GL/glew.h>
-  #endif
-#endif
-
-#if defined(__ANDROID__)
- #include <qopengl.h>
- #include <GL/gl_private.h>  // this is a cut-down version of gl.h
- #include <GLES2/gl2.h>
-#elif defined(__MSVC__)
- #include "glew.h"
-#elif defined(__WXOSX__)
- #include <OpenGL/gl.h>
- #include <OpenGL/glu.h>
- typedef void (*  _GLUfuncptr)();
- #define GL_COMPRESSED_RGB_FXT1_3DFX       0x86B0
-#elif defined(__WXQT__) || defined(__WXGTK__)
- #include <GL/glew.h>
- #include <GL/glu.h>
-#endif
-#endif
-
 #include "s52s57.h"  //types
 
 class wxGLContext;
@@ -215,7 +186,7 @@ public:
 
   void SetPPMM(float ppmm);
   float GetPPMM() { return canvas_pix_per_mm; }
-  void SetDPIFactor( double factor);
+  void SetDIPFactor( double factor);
 
   void SetOCPNVersion(int major, int minor, int patch);
 
@@ -362,6 +333,7 @@ public:
   bool m_bShowMeta;
   bool m_bShowS57Text;
   bool m_bUseSCAMIN;
+  bool m_bUseSUPER_SCAMIN;
   bool m_bShowAtonText;
   bool m_bShowLdisText;
   bool m_bExtendLightSectors;
@@ -375,7 +347,7 @@ public:
   double m_soundFontDelta;
   double m_ChartScaleFactorExp;
   int m_chart_zoom_modifier_vector;
-  double m_dpifactor;
+  double m_dipfactor;
 
   int m_VersionMajor;
   int m_VersionMinor;

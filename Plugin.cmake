@@ -95,7 +95,6 @@ set(SRC
   src/oernc_inStream.cpp
   src/Osenc.cpp
   src/Osenc.h
-  src/DepthFont.cpp
   src/piScreenLog.cpp
   src/s57RegistrarMgr.cpp
   src/sha256.c
