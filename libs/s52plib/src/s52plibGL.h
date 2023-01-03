@@ -1,11 +1,11 @@
-/***************************************************************************
+/******************************************************************************
  *
  * Project:  OpenCPN
- * Purpose:  OpenGL text rendering
- * Author:   David Register, Sean D'Epagnier
+ * Purpose:  Global Build Options
+ * Author:   David Register
  *
  ***************************************************************************
- *   Copyright (C) 2020 David Register                                    *
+ *   Copyright (C) 2010 by David S. Register   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -21,48 +21,36 @@
  *   along with this program; if not, write to the                         *
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,  USA.         *
- **************************************************************************/
+ ***************************************************************************
+ *
+ */
 
-#ifndef __DEPTHFONT_H__
-#define __DEPTHFONT_H__
+//----------------------------------------------------------------------------------
+//          OpenGL Build options for S52PLIB
+//----------------------------------------------------------------------------------
+#ifndef _S52PLIBGL_H_
+#define _S52PLIBGL_H_
 
-#include <wx/font.h>
+#include "config.h"
 
-#define SOUND_MAX_GLYPH 50
+#include <cmath>
+#include <algorithm>
 
-struct SoundTexGlyphInfo {
-  int x, y, width, height;
-  float advance;
-};
 
-class DepthFont {
-public:
-  DepthFont();
-  ~DepthFont();
+#if defined(__OCPN__ANDROID__)
+ #include <qopengl.h>
+ #include <GL/gl_private.h>  // this is a cut-down version of gl.h
+ #include <GLES2/gl2.h>
+#elif defined(__MSVC__)
+ #include "glew.h"
+#elif defined(__WXOSX__)
+ #include <OpenGL/gl.h>
+ #include <OpenGL/glu.h>
+ typedef void (*  _GLUfuncptr)();
+ #define GL_COMPRESSED_RGB_FXT1_3DFX       0x86B0
+#elif defined(__WXQT__) || defined(__WXGTK__)
+ #include <GL/glew.h>
+ #include <GL/glu.h>
+#endif
 
-  void Build(wxFont *font, double scale, double dip_factor = 1.0);
-  void Delete();
-
-  bool IsBuilt() { return m_built; }
-  unsigned int GetTexture() { return texobj; }
-  bool GetGLTextureRect(wxRect &texrect, int symIndex);
-  wxSize GLTextureSize() { return wxSize(tex_w, tex_h); };
-  double GetScale() { return m_scaleFactor; }
-
-private:
-  wxFont m_font;
-
-  SoundTexGlyphInfo tgi[SOUND_MAX_GLYPH];
-
-  unsigned int texobj;
-  int tex_w, tex_h;
-  int m_maxglyphw;
-  int m_maxglyphh;
-  bool m_built;
-
-  float m_dx;
-  float m_dy;
-  double m_scaleFactor;
-};
-
-#endif  // guard
+#endif  // __FILE__

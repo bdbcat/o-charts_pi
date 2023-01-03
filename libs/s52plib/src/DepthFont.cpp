@@ -25,8 +25,7 @@
 
 #include <wx/wx.h>
 
-//#include "dychart.h"
-#include "../../src/dychart.h"
+#include "s52plibGL.h"
 
 #include "DepthFont.h"
 
@@ -38,7 +37,7 @@ DepthFont::DepthFont() {
 
 DepthFont::~DepthFont() { Delete(); }
 
-void DepthFont::BuildF(wxFont *font, double scale, double dip_factor) {
+void DepthFont::Build(wxFont *font, double scale, double dip_factor) {
   /* avoid rebuilding if the parameters are the same */
   if (m_built && (*font == m_font)) return;
 
