@@ -46,7 +46,6 @@
 #elif defined(__WXOSX__)
  #include <OpenGL/gl.h>
  #include <OpenGL/glu.h>
- typedef void (*  _GLUfuncptr)();
  #define GL_COMPRESSED_RGB_FXT1_3DFX       0x86B0
 #elif defined(__WXQT__) || defined(__WXGTK__)
  #include <GL/glew.h>
