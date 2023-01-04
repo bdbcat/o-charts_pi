@@ -48,7 +48,7 @@ extern CGLShaderProgram *ptexture_2D_shader_program[2];
 extern CGLShaderProgram *pcircle_filled_shader_program[2];
 extern CGLShaderProgram *ptexture_2DA_shader_program[2];
 
-extern const GLchar* preamble;
+extern const GLchar* Xpreamble;
 
 class CGLShaderProgram
 {
@@ -62,8 +62,8 @@ public:
       char const *shaderCStr = shaderSource.c_str();
       GLuint shaderId = glCreateShader(shaderType);
 
-      GLchar const* files[] = { preamble, shaderCStr };
-      GLint lengths[]       = { (GLint)strlen(preamble),  (GLint)strlen(shaderCStr)  };
+      GLchar const* files[] = { Xpreamble, shaderCStr };
+      GLint lengths[]       = { (GLint)strlen(Xpreamble),  (GLint)strlen(shaderCStr)  };
 
       glShaderSource(shaderId, 2, files, lengths);
 

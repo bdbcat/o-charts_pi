@@ -41,7 +41,7 @@
  #include <qopengl.h>
  #include <GL/gl_private.h>  // this is a cut-down version of gl.h
  #include <GLES2/gl2.h>
-#elif defined(__MSVC__)
+#elif defined(_WIN32)
  #include "glew.h"
 #elif defined(__WXOSX__)
  #include <OpenGL/gl.h>
