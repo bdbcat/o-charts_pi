@@ -1040,6 +1040,15 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
             }
         }
 
+        if(root[_T("OpenCPN Content Scale Factor")].IsDouble()){
+        }
+
+        if(root[_T("OpenCPN Display DIP Scale Factor")].IsDouble()){
+          if (ps52plib)
+            ps52plib->SetDIPFactor(root[_T("OpenCPN Display DIP Scale Factor")].AsDouble());
+        }
+
+
         if(ps52plib)
             ps52plib->GenerateStateHash();
 
