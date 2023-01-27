@@ -974,6 +974,8 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
               S52_setMarinerParam( S52_MAR_TWO_SHADES, root[_T("OpenCPN S52PLIB ColorShades")].AsDouble());
             if(root[_T("OpenCPN S52PLIB SoundingsFactor")].IsInt())
               ps52plib->m_nSoundingFactor = root[_T("OpenCPN S52PLIB SoundingsFactor")].AsInt();
+            if(root[_T("OpenCPN S52PLIB TextFactor")].IsInt())
+              ps52plib->m_nTextFactor = root[_T("OpenCPN S52PLIB TextFactor")].AsInt();
 
             int icat;
             if( root[_T("OpenCPN S52PLIB DisplayCategory")].AsInt(icat) ){
@@ -1034,13 +1036,15 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
 
                 g_pix_per_mm = pix_per_mm;
 
-                wxString msg;
-                msg.Printf(_T("o_charts_pi:  Calculated pix/mm = %g"), g_pix_per_mm);
-                wxLogMessage(msg);
+//                 wxString msg;
+//                 msg.Printf(_T("o_charts_pi:  Calculated pix/mm = %g"), g_pix_per_mm);
+//                 wxLogMessage(msg);
             }
         }
 
         if(root[_T("OpenCPN Content Scale Factor")].IsDouble()){
+          if (ps52plib)
+            ps52plib->SetContentScaleFactor(root[_T("OpenCPN Content Scale Factor")].AsDouble());
         }
 
         if(root[_T("OpenCPN Display DIP Scale Factor")].IsDouble()){
@@ -1143,7 +1147,7 @@ bool o_charts_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
                                                         wxFONTSTYLE_NORMAL,
                                                         wxFONTWEIGHT_NORMAL);
         //FIXME (dave) DPI parameter from where?
-        m_TexFontMessage.Build(*pfont, 1);
+        m_TexFontMessage.Build(*pfont, 1, 1);
         int w, h;
         m_TexFontMessage.GetTextExtent( msg, &w, &h);
         h += 2;
@@ -2777,8 +2781,8 @@ void init_GLLibrary(void) {
         // So, on MSW and MacOS platforms, Intel graphics, we override the core GL options and disable VBO
 
 #if defined( __WXMSW__ ) || defined(__WXOSX__)
-    if( renderer.Upper().Find( _T("INTEL") ) != wxNOT_FOUND )
-        g_b_EnableVBO = false;
+//     if( renderer.Upper().Find( _T("INTEL") ) != wxNOT_FOUND )
+//         g_b_EnableVBO = false;
 #endif
 
         //  Setup device dependent OpenGL options as communicated from core by JSON message
