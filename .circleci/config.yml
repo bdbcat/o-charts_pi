@@ -43,7 +43,7 @@ jobs:
     steps:
       - checkout
       - run: ci/circleci-build-buster-armhf.sh
-      - run: ci/maybe-push-upload.sh
+      - run: cd build-debian; /bin/bash < upload.sh
 
   build-bullseye:
     docker:
