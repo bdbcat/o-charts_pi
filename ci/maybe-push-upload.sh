@@ -4,8 +4,9 @@
 
 here=$(cd $(dirname $0); pwd -P)
 source $here/../build-conf.rc
-
+echo $OCPN_TARGET
 if [ ! -d /build-$OCPN_TARGET ]; then exit 0; fi   # no build available
+echo FOUNDIT
 
 case ${OCPN_TARGET,} in
   *buster*)
