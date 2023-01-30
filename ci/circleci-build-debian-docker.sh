@@ -52,7 +52,7 @@ function install_wx32() {
   wget  $repo/$head/w/wx/wx3.2-headers_${vers}/wx3.2-headers_${vers}_all.deb
   wget  $repo/$head/w/wx/wx-common_3.2.1+dfsg-1/wx-common_3.2.1+dfsg-1_arm64.deb
   wget  $repo/$head/l/li/libwxgtk-webview3.2-dev_3.2.1+dfsg-1/libwxgtk-webview3.2-dev_3.2.1+dfsg-1_arm64.deb
-  wget  $repo/$head/l/li/libwxgtk-webview3.2-0_3.2.1+dfsg-1/libwxgtk-webview3.2-0_3.2.1+dfsg-1_arm64.deb 
+  wget  $repo/$head/l/li/libwxgtk-webview3.2-0_3.2.1+dfsg-1/libwxgtk-webview3.2-0_3.2.1+dfsg-1_arm64.deb
   wget  $repo/$head/l/li/libwxgtk-media3.2-dev_3.2.1+dfsg-1/libwxgtk-media3.2-dev_3.2.1+dfsg-1_arm64.deb
   wget  $repo/$head/l/li/libwxgtk3.2-dev_3.2.1+dfsg-1/libwxgtk3.2-dev_3.2.1+dfsg-1_arm64.deb
   wget  $repo/$head/l/li/libwxgtk3.2-0_3.2.1+dfsg-1/libwxgtk3.2-0_3.2.1+dfsg-1_arm64.deb
@@ -90,13 +90,14 @@ else
 fi
 
 if [ -n "@BUILD_WX32@" ]; then
-  remove_wx30  
+  remove_wx30
   install_wx32
 fi
 
 
 cd /ci-source
 rm -rf build-debian; mkdir build-debian; cd build-debian
+git config --global --add safe.directory /ci-source
 cmake -DCMAKE_BUILD_TYPE=Release\
    -DOCPN_TARGET_TUPLE="@TARGET_TUPLE@" \
     ..
