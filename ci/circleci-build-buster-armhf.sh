@@ -52,6 +52,7 @@ apt install -y ./cmake_3.19.3-0.1_armhf.deb ./cmake-data_3.19.3-0.1_all.deb
 
 cd /ci-source
 rm -rf build-debian; mkdir build-debian; cd build-debian
+git config --global --add safe.directory /ci-source
 cmake -DCMAKE_BUILD_TYPE=Release -DOCPN_TARGET_TUPLE="debian;10;armhf" ..
 make -j $(nproc) VERBOSE=1 tarball
 ldd  app/*/lib/opencpn/*.so
