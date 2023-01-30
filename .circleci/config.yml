@@ -42,6 +42,7 @@ jobs:
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     steps:
       - checkout
+      - run: git config --global --add safe.directory /ci-source
       - run: ci/circleci-build-buster-armhf.sh
       - run: cd build-debian; /bin/bash < upload.sh
 
