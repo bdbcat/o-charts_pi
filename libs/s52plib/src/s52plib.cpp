@@ -1725,6 +1725,7 @@ bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
 #define FIXIT
 #endif
   bool bdraw = true;
+return 0;
 
     m_dipfactor = 1;
     m_ContentScaleFactor = 1;
