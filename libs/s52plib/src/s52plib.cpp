@@ -1726,6 +1726,9 @@ bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
 #endif
   bool bdraw = true;
 
+    m_dipfactor = 1;
+    m_ContentScaleFactor = 1;
+
   wxFont *scaled_font = ptext->pFont;
   wxCoord w_scaled = 0;
   wxCoord h_scaled = 0;
@@ -1759,8 +1762,6 @@ bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
 #ifdef ocpnUSE_GL
 
     bool b_force_no_texfont = true; //false;
-    m_dipfactor = 1;
-    m_ContentScaleFactor = 1;
 
     if (ptext->bspecial_char)
       b_force_no_texfont = true;
