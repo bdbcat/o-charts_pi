@@ -1725,7 +1725,6 @@ bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
 #define FIXIT
 #endif
   bool bdraw = true;
-return 0;
 
     m_dipfactor = 1;
     m_ContentScaleFactor = 1;
@@ -1762,7 +1761,7 @@ return 0;
   {
 #ifdef ocpnUSE_GL
 
-    bool b_force_no_texfont = true; //false;
+    bool b_force_no_texfont = false;
 
     if (ptext->bspecial_char)
       b_force_no_texfont = true;
