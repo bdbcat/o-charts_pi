@@ -338,7 +338,7 @@ protected:
       double    m_pixx_vp_center, m_pixy_vp_center;
       double    m_view_scale_ppm;
 
-      int               m_plib_state_hash;
+      long              m_plib_state_hash;
       bool              m_bLinePrioritySet;
 
       long              m_sync_cmd_pid;

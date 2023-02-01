@@ -624,7 +624,7 @@ void s52plib::GenerateStateHash() {
   memset(state_buffer, 0, sizeof(state_buffer));
 
   int time = ::wxGetUTCTime();
-  memcpy(state_buffer, &time, sizeof(int));
+  //memcpy(state_buffer, &time, sizeof(int));
 
   size_t offset = sizeof(int);  // skipping the time int, first element
 
@@ -693,6 +693,7 @@ void s52plib::GenerateStateHash() {
     offset += sizeof(int);
   }
   m_state_hash = crc32buf(state_buffer, offset);
+  //printf("Gen: %ld\n", m_state_hash);
 }
 
 wxArrayOfLUPrec *s52plib::SelectLUPARRAY(LUPname TNAM) {

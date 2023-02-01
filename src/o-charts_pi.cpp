@@ -972,6 +972,22 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
               ps52plib->m_nBoundaryStyle = (LUPname)root[_T("OpenCPN S52PLIB BoundaryStyle")].AsInt();
             if(root[_T("OpenCPN S52PLIB ColorShades")].IsDouble())
               S52_setMarinerParam( S52_MAR_TWO_SHADES, root[_T("OpenCPN S52PLIB ColorShades")].AsDouble());
+
+            if(root[_T("OpenCPN S52PLIB Safety Depth")].IsDouble())
+              S52_setMarinerParam( S52_MAR_SAFETY_CONTOUR, root[_T("OpenCPN S52PLIB Safety Depth")].AsDouble());
+            else if(root[_T("OpenCPN S52PLIB Safety Depth")].IsInt())
+              S52_setMarinerParam( S52_MAR_SAFETY_CONTOUR, root[_T("OpenCPN S52PLIB Safety Depth")].AsInt());
+
+            if(root[_T("OpenCPN S52PLIB Shallow Contour")].IsDouble())
+              S52_setMarinerParam( S52_MAR_SHALLOW_CONTOUR, root[_T("OpenCPN S52PLIB Shallow Contour")].AsDouble());
+            else if(root[_T("OpenCPN S52PLIB Shallow Contour")].IsInt())
+              S52_setMarinerParam( S52_MAR_SHALLOW_CONTOUR, root[_T("OpenCPN S52PLIB Shallow Contour")].AsInt());
+
+            if(root[_T("OpenCPN S52PLIB Deep Contour")].IsDouble())
+              S52_setMarinerParam( S52_MAR_DEEP_CONTOUR, root[_T("OpenCPN S52PLIB Deep Contour")].AsDouble());
+            else if(root[_T("OpenCPN S52PLIB Deep Contour")].IsInt())
+              S52_setMarinerParam( S52_MAR_DEEP_CONTOUR, root[_T("OpenCPN S52PLIB Deep Contour")].AsInt());
+
             if(root[_T("OpenCPN S52PLIB SoundingsFactor")].IsInt())
               ps52plib->m_nSoundingFactor = root[_T("OpenCPN S52PLIB SoundingsFactor")].AsInt();
             if(root[_T("OpenCPN S52PLIB TextFactor")].IsInt())

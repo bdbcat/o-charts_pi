@@ -1867,7 +1867,7 @@ wxBitmap &eSENCChart::RenderRegionView(const PlugIn_ViewPort& VPoint, const wxRe
     //ps52plib->PrepareForRender(&m_cvp);
     PrepareForRender(&m_cvp, ps52plib);
 
-    if( m_plib_state_hash != PI_GetPLIBStateHash() ) {
+    if( m_plib_state_hash != ps52plib->GetStateHash() ) {
         m_bLinePrioritySet = false;                     // need to reset line priorities
         UpdateLUPs( this );                               // and update the LUPs
         ClearRenderedTextCache();                       // and reset the text renderer,
@@ -1877,7 +1877,7 @@ wxBitmap &eSENCChart::RenderRegionView(const PlugIn_ViewPort& VPoint, const wxRe
         ps52plib->FlushSymbolCaches();
         m_last_vp.bValid = 0;
 
-        m_plib_state_hash = PI_GetPLIBStateHash();
+        m_plib_state_hash = ps52plib->GetStateHash();
     }
 
     if( VPoint.view_scale_ppm != m_last_vp.view_scale_ppm ) {
@@ -2026,20 +2026,24 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
     if(!g_GLOptionsSet)
         return 0;
 
-    //OCPNStopWatch sw;
+    OCPNStopWatch sw;
 
     m_cvp = CreateCompatibleViewport( VPoint );
 
     SetVPParms( VPoint );
 
-    //qDebug() << "PI RenderTime1" << sw.GetTime();
+    //printf("RenderTime1 %g\n",sw.GetTime());
 
     //ps52plib->PrepareForRender(&m_cvp);
     PrepareForRender(&m_cvp, ps52plib);
 
+    //printf("RenderTime2 %g\n",sw.GetTime());
     //qDebug() << "PI RenderTime2" << sw.GetTime();
 
-    if( m_plib_state_hash != PI_GetPLIBStateHash() ) {
+    //printf("Check: %ld   plib: %ld\n", m_plib_state_hash, ps52plib->GetStateHash());
+
+    if( m_plib_state_hash != ps52plib->GetStateHash() ) {
+      //printf("    miss..\n");
         m_bLinePrioritySet = false;                     // need to reset line priorities
         UpdateLUPs( this );                             // and update the LUPs
         ClearRenderedTextCache();                       // and reset the text renderer,
@@ -2047,10 +2051,11 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
         SetSafetyContour();
         ps52plib->FlushSymbolCaches();
 
-        m_plib_state_hash = PI_GetPLIBStateHash();
+        m_plib_state_hash = ps52plib->GetStateHash();
 
     }
 
+    //printf("RenderTime2 %g\n",sw.GetTime());
 
     if( VPoint.view_scale_ppm != m_last_vp.view_scale_ppm ) {
         ResetPointBBoxes( m_last_vp, VPoint );
@@ -2058,6 +2063,7 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
 
     BuildLineVBO();
     SetLinePriorities();
+    //printf("RenderTime4 %g\n",sw.GetTime());
 
     //        Clear the text declutter list
     ps52plib->ClearTextList();
@@ -2120,7 +2126,11 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
             nrv++;
     }
 
+    //printf("RenderTime5 %g\n",sw.GetTime());
+
       DoRender2RectOnGL( glc, vp0, r0, vp1, r1, b_use_stencil);
+
+    //printf("RenderTime6 %g\n",sw.GetTime());
 
 #else
 
@@ -5446,7 +5456,6 @@ void eSENCChart::SetSafetyContour(void)
     //    is greater than or equal to the current PLIB mariner parameter S52_MAR_SAFETY_CONTOUR
 
     double mar_safety_contour = S52_getMarinerParam(S52_MAR_SAFETY_CONTOUR);
-
     int i = 0;
     if( NULL != m_pvaldco_array ) {
         for( i = 0; i < m_nvaldco; i++ ) {
@@ -5738,12 +5747,12 @@ bool eSENCChart::DoRenderRegionViewOnDC( wxMemoryDC& dc, const PlugIn_ViewPort& 
     PI_PLIBSetRenderCaps( PLIB_CAPS_LINE_BUFFER | PLIB_CAPS_SINGLEGEO_BUFFER | PLIB_CAPS_OBJSEGLIST | PLIB_CAPS_OBJCATMUTATE);
     PI_PLIBPrepareForNewRender();
 
-    if( m_plib_state_hash != PI_GetPLIBStateHash() ) {
+    if( m_plib_state_hash != ps52plib->GetStateHash() ) {
         m_bLinePrioritySet = false;                     // need to reset line priorities
         UpdateLUPs( this );                             // and update the LUPs
         ResetPointBBoxes( m_last_vp, VPoint );
         SetSafetyContour();
-        m_plib_state_hash = PI_GetPLIBStateHash();
+        m_plib_state_hash = ps52plib->GetStateHash();
 
     }
 
@@ -5880,12 +5889,12 @@ bool eSENCChart::RenderViewOnDC( wxMemoryDC& dc, const PlugIn_ViewPort& VPoint )
     PI_PLIBSetRenderCaps( PLIB_CAPS_LINE_BUFFER | PLIB_CAPS_SINGLEGEO_BUFFER | PLIB_CAPS_OBJSEGLIST | PLIB_CAPS_OBJCATMUTATE);
     PI_PLIBPrepareForNewRender();
 
-    if( m_plib_state_hash != PI_GetPLIBStateHash() ) {
+    if( m_plib_state_hash != ps52plib->GetStateHash() ) {
         m_bLinePrioritySet = false;                     // need to reset line priorities
         UpdateLUPs( this );                             // and update the LUPs
         ResetPointBBoxes( m_last_vp, VPoint );
         SetSafetyContour();
-        m_plib_state_hash = PI_GetPLIBStateHash();
+        m_plib_state_hash = ps52plib->GetStateHash();
 
     }
 
