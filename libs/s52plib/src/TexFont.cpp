@@ -92,10 +92,10 @@ void TexFont::Build(wxFont &font, double scale_factor, double dpi_factor, bool b
   scaler /= m_ContentScaleFactor;
 
   wxFont *scaled_font =
-           FindOrCreateFont_PlugIn(font.GetPointSize() * scaler,
-                                   font.GetFamily(), font.GetStyle(),
-                                   font.GetWeight(), false,
-                                   font.GetFaceName());
+          FindOrCreateFont_PlugIn(font.GetPointSize() * scaler,
+                                  font.GetFamily(), font.GetStyle(),
+                                  font.GetWeight(), false,
+                                  font.GetFaceName());
   wxScreenDC sdc;
   sdc.SetFont(*scaled_font);
 

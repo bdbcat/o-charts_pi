@@ -354,6 +354,8 @@ s52plib::s52plib(const wxString &PLib, bool b_forceLegacy) {
   m_dipfactor = 1.0;
   m_ContentScaleFactor = 1.0;
   m_FinalTextScaleFactor = 0;
+  m_TextScaleFactor = 1;
+  m_nTextFactor = 0;
 }
 
 s52plib::~s52plib() {
