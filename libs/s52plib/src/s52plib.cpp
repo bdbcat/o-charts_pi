@@ -1758,7 +1758,7 @@ bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
   {
 #ifdef ocpnUSE_GL
 
-    bool b_force_no_texfont = false;
+    bool b_force_no_texfont = true; //false;
     if (ptext->bspecial_char)
       b_force_no_texfont = true;
 
