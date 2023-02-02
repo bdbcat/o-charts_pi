@@ -2026,7 +2026,7 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
     if(!g_GLOptionsSet)
         return 0;
 
-    OCPNStopWatch sw;
+    //OCPNStopWatch sw;
 
     m_cvp = CreateCompatibleViewport( VPoint );
 
