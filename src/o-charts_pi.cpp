@@ -2757,6 +2757,9 @@ void init_GLLibrary(void) {
             renderer = wxString( render_string, wxConvUTF8 );
         }
 
+        ps52plib->SetGLRendererString(renderer);
+
+
         if (!init_GLExtensions()){
             wxLogMessage(_T("o_charts_pi failed to initialize OpenGL Extensions"));
             return;
