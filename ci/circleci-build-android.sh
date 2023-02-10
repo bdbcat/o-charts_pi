@@ -39,9 +39,9 @@ exec > >(tee $builddir/build.log) 2>&1
 # The local container needs to access the cache directory
 test -d cache || sudo mkdir cache
 test -w cache || sudo chmod -R go+w cache || :
- 
 
-sudo apt -q update
+
+sudo apt -qq update
 sudo apt install -q cmake git gettext
 
 # Install cloudsmith-cli (for upload) and cryptography (for git-push)
