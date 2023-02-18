@@ -2584,6 +2584,7 @@ bool eSENCChart::DoRenderRectOnGL( const wxGLContext &glc, const ViewPort& VPoin
     return true;
 }
 #endif
+extern int n_areaObjs;
 
 bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoint1, wxRect &rect1,
                               const ViewPort& VPoint2, wxRect &rect2, bool b_useStencil )
@@ -2603,6 +2604,14 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
     //      Render the areas quickly
     // Areas forRect1
     PrepareForRender(&tvp1, ps52plib);
+    ps52plib->SetReducedBBox(tvp1.GetBBox());
+
+//   printf("TVP1:  %g %g       %g %g\n",
+//          tvp1.GetBBox().GetMinLat(),
+//          tvp1.GetBBox().GetMaxLat(),
+//          tvp1.GetBBox().GetMinLon(),
+//          tvp1.GetBBox().GetMaxLon());
+    n_areaObjs = 0;
 
     for( i = 0; i < PRIO_NUM; ++i ) {
         if( PI_GetPLIBBoundaryStyle() == SYMBOLIZED_BOUNDARIES )
@@ -2634,10 +2643,12 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
 
         }
     }
-
+//     printf("TVP1 nobjs: %d\n",n_areaObjs);
+    n_areaObjs = 0;
     //Areas Rect2
     if (!rect2.IsEmpty()){
       PrepareForRender(&tvp2, ps52plib);
+      ps52plib->SetReducedBBox(tvp2.GetBBox());
 
       for( i = 0; i < PRIO_NUM; ++i ) {
           if( PI_GetPLIBBoundaryStyle() == SYMBOLIZED_BOUNDARIES )
@@ -2669,12 +2680,14 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
           }
       }
     }
+    //printf("TVP2 nobjs: %d\n",n_areaObjs);
 
 
 
 #if 1  //FIXME
     //    Render the lines and points Rect 1
     PrepareForRender(&tvp1, ps52plib);
+    ps52plib->SetReducedBBox(tvp1.GetBBox());
 
     for( i = 0; i < PRIO_NUM; ++i ) {
         if( ps52plib->m_nBoundaryStyle == SYMBOLIZED_BOUNDARIES )
@@ -2686,7 +2699,7 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
             top = top->next;               // next object
             crnt->sm_transform_parms = &vp_transform;
 
-            ps52plib->RenderObjectToGL( glc, crnt );
+           ps52plib->RenderObjectToGL( glc, crnt );
         }
     }
 
@@ -2723,6 +2736,7 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
     // Rect2 Lines and points
     if (!rect2.IsEmpty()){
       PrepareForRender(&tvp2, ps52plib);
+      ps52plib->SetReducedBBox(tvp2.GetBBox());
 
       //    Render the lines and points for Rect2
       for( i = 0; i < PRIO_NUM; ++i ) {
