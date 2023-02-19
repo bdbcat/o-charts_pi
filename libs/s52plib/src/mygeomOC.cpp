@@ -50,7 +50,7 @@
 #include <OpenGL/glu.h>
 #include <OpenGL/glext.h>
 
-#elif defined(__OCPN__ANDROID__)
+#elif defined(__ANDROID__)
 #include <KHR/khrplatform.h>
 typedef khronos_intptr_t GLintptr;
 typedef khronos_ssize_t GLsizeiptr;

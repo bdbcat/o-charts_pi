@@ -62,7 +62,7 @@
 WX_DEFINE_OBJARRAY(ArrayOfCharts);
 WX_DEFINE_OBJARRAY(ArrayOfChartPanels);
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 #include "qdebug.h"
 #include "androidSupport.h"
 #endif
@@ -270,7 +270,7 @@ wxString getPassEncode( wxString passClearText ){
   }
 
   wxString encodedPW;
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
 
     wxString cmd = g_sencutil_bin;
     cmd += _T(" -w ");
@@ -480,7 +480,7 @@ void OERNCMessageDialog::OnClose( wxCloseEvent& event )
 
 int ShowOERNCMessageDialog(wxWindow *parent, const wxString& message,  const wxString& caption, long style)
 {
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     OERNCMessageDialog dlg( parent, message, caption, style);
     dlg.ShowModal();
     return dlg.GetReturnCode();
@@ -533,7 +533,7 @@ OCP_ScrolledMessageDialog::OCP_ScrolledMessageDialog( wxWindow *parent,
                                       long style)
 : wxDialog( parent, wxID_ANY, caption, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE /*| wxSTAY_ON_TOP*/ )
 {
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     SetBackgroundColour(ANDROID_DIALOG_BACKGROUND_COLOR);
 #endif
 
@@ -545,7 +545,7 @@ OCP_ScrolledMessageDialog::OCP_ScrolledMessageDialog( wxWindow *parent,
 
     //  Need a caption on StaticBox for Android, otherwise not.
     wxString boxCaption = caption;
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     boxCaption.Clear();
 #endif
     wxStaticBox* itemStaticBoxSizer4Static = new wxStaticBox( this, wxID_ANY, boxCaption );
@@ -582,7 +582,7 @@ OCP_ScrolledMessageDialog::OCP_ScrolledMessageDialog( wxWindow *parent,
         i++;
     }
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     wxSize screenSize = getAndroidDisplayDimensions();
     int nMax = screenSize.y / GetCharHeight();
     qDebug() << "nMax" << nMax;
@@ -609,7 +609,7 @@ OCP_ScrolledMessageDialog::OCP_ScrolledMessageDialog( wxWindow *parent,
     wxButton *CancelButton = new wxButton(this, OCP_ID_NO, labelButtonNO);
     buttons->Add(CancelButton, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     SetAutoLayout( true );
     topsizer->SetSizeHints( this );
     topsizer->Fit( this );
@@ -653,14 +653,14 @@ void OCP_ScrolledMessageDialog::OnClose( wxCloseEvent& event )
 int ShowScrollMessageDialog(wxWindow *parent, const wxString& message,  const wxString& caption, wxString labelYes, wxString labelNo, long style)
 {
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     androidDisableRotation();
 #endif
 
     OCP_ScrolledMessageDialog dlg( parent, message, caption, labelYes, labelNo, style);
     dlg.ShowModal();
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     androidEnableRotation();
 #endif
 
@@ -2437,7 +2437,7 @@ int doLogin( wxWindow *parent )
   } while ((pass.Length() < 5) || (pass.length() > 255));
 
   wxString taskID;
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     // There may be special characters in password.  Encode them correctly for URL inclusion.
     std::string pass_encode = urlEncode(std::string(pass.mb_str()));
     pass = wxString( pass_encode.c_str() );
@@ -3340,7 +3340,7 @@ int doUploadXFPR(bool bDongle)
     wxString stringFPR;
     wxString fprName;
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     // Generate the FPR file
     bool b_copyOK = false;
 
@@ -3709,7 +3709,7 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
 bool ExtractZipFiles( const wxString& aZipFile, const wxString& aTargetDir, bool aStripPath, wxDateTime aMTime, bool aRemoveZip )
 {
     bool ret = true;
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     int nStrip = 0;
     if(aStripPath)
         nStrip = 1;
@@ -3899,7 +3899,7 @@ oeXChartPanel::oeXChartPanel(wxWindow *parent, wxWindowID id, const wxPoint &pos
 
     m_unselectedHeight = 5 * m_refHeight;
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     m_unselectedHeight = 4 * m_refHeight;
 #endif
 
@@ -3907,7 +3907,7 @@ oeXChartPanel::oeXChartPanel(wxWindow *parent, wxWindowID id, const wxPoint &pos
     SetMinSize(wxSize(-1, m_unselectedHeight));
 
     Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(oeXChartPanel::OnClickDown), NULL, this);
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     Connect(wxEVT_LEFT_UP, wxMouseEventHandler(oeXChartPanel::OnClickUp), NULL, this);
 #endif
 
@@ -3918,13 +3918,13 @@ oeXChartPanel::~oeXChartPanel()
 }
 
 static  wxStopWatch swclick;
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 static  int downx, downy;
 #endif
 
 void oeXChartPanel::OnClickDown( wxMouseEvent &event )
 {
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     swclick.Start();
     event.GetPosition( &downx, &downy );
 #else
@@ -3934,7 +3934,7 @@ void oeXChartPanel::OnClickDown( wxMouseEvent &event )
 
 void oeXChartPanel::OnClickUp( wxMouseEvent &event )
 {
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     qDebug() << swclick.Time();
     if(swclick.Time() < 200){
         int upx, upy;
@@ -4490,7 +4490,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     if(g_systemName.Length())
         sn += g_systemName;
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     wxFlexGridSizer *sysBox = new wxFlexGridSizer(2);
     sysBox->AddGrowableCol(0);
     boxSizerTop->Add(sysBox, 0, wxALL|wxEXPAND, WXC_FROM_DIP(2));
@@ -4544,7 +4544,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
 #endif
 
     int add_prop_flag = 1;
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     add_prop_flag = 1;
 #endif
 
@@ -4557,7 +4557,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     cPanel->SetSizer(boxSizercPanel);
 
     m_scrollWinChartList = new wxScrolledWindow(cPanel, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxBORDER_RAISED | wxVSCROLL | wxBG_STYLE_ERASE );
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     m_scrollRate = 5;
 #else
     m_scrollRate = 1;
@@ -4798,7 +4798,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     // Deselect any selected chart
     DeselectAllCharts();
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     if(!g_systemName.Length()){
         extern wxString androidGetSystemName();
         g_systemName = androidGetSystemName();
@@ -5590,7 +5590,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         ChartSetKeys cskey_target(chartListKeysXMLtarget);
 
         // Extract the zip file to a temporary location, making the embedded files available for parsing
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
         wxString tmp_Zipdir = AndroidGetCacheDir();
         tmp_Zipdir += wxFileName::GetPathSeparator();
         tmp_Zipdir += _T("zipTemp");
@@ -5800,7 +5800,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         wxString destinationDir = wxString(slot->installLocation.c_str()) + wxFileName::GetPathSeparator() + dest + wxFileName::GetPathSeparator();
         wxFileName fndd(destinationDir);
         if( !fndd.DirExists() ){
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
             if( !wxFileName::Mkdir(fndd.GetPath(), 0755, wxPATH_MKDIR_FULL) ){
                 // We do a secure copy to the target location, of a simple dummy file.
                 // This has the effect of creating the target directory.
@@ -5847,7 +5847,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             }
 
             bool bret;
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
             bret = AndroidSecureCopyFile( source, destination );
 #else
             bret = wxCopyFile( source, destination);
@@ -5875,7 +5875,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         csdata_target.setEditionTag(chart->editionTag);
 
         // Write out the modified Target ChartList.XML file as the new result ChartList.XML
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
         wxString tmpFile = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator() + _T("ChartList.XML"));
         if(! csdata_target.WriteFile( std::string(tmpFile.mb_str()) )){
             wxLogError(_T("Can not write temp target ChartList.XML on TASK_UPDATE '") + tmpFile );
@@ -5902,7 +5902,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
 
 
         // Write out the modified Target KeyList.XML file as the new result KeyList.XML
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
         wxString tmpFile2 = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator() +  dest + _T("-") + keySystem + _T(".XML"));
         if(! cskey_target.WriteFile( std::string(tmpFile2.mb_str()) )){
             wxLogError(_T("Can not write temp target KefList.XML on TASK_UPDATE '") + tmpFile2 );
@@ -5939,7 +5939,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             wxString source = fileArrayEULA.Item(i);
 
             bool bret;
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
             bret = AndroidSecureCopyFile( source, destination );
 #else
             bret = wxCopyFile( source, destination);
@@ -5979,7 +5979,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             }
 
             bool bret;
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
             bret = AndroidSecureCopyFile( source, destination );
 #else
             bret = wxCopyFile( source, destination);
@@ -6039,7 +6039,7 @@ bool shopPanel::validateSHA256(std::string fileName, std::string shaSum)
 
     wxYield();
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     androidShowBusyIcon();
 #endif
 
@@ -6087,7 +6087,7 @@ bool shopPanel::validateSHA256(std::string fileName, std::string shaSum)
 
     wxYield();
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     androidHideBusyIcon();
 #endif
 
@@ -6151,7 +6151,7 @@ wxString ChooseInstallDir(wxString wk_installDir)
 
     wxString dir_spec;
     int result;
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     wxDirDialog dirSelector( NULL, _("Choose chart install location."), installLocn, wxDD_DEFAULT_STYLE  );
     result = dirSelector.ShowModal();
 
@@ -6378,7 +6378,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
             }
 
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
             int vres = validateAndroidWriteLocation( gtargetSlot->installLocation );
             if(!vres){                  // Running SAF dialog.
                 ShowOERNCMessageDialog(NULL, _("Proceed with chart installation."), _("o-charts_pi Message"), wxOK);
@@ -6980,7 +6980,7 @@ void shopPanel::UpdateActionControls()
     wxString labelReinstall = _("Reinstall Selected Chart for ") + suffix;
     wxString labelUpdate = _("Update Selected Chart for ") + suffix;
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     labelDownload = _("Download Selection");
     labelInstall = _("Install Selection");
     labelReinstall = _("Reinstall Selection");
@@ -7042,7 +7042,7 @@ bool shopPanel::doSystemNameWizard( bool bShowAll )
 
     wxSize dialogSize(500, -1);
 
-    #ifdef __OCPN__ANDROID__
+    #ifdef __ANDROID__
     wxSize ss = ::wxGetDisplaySize();
     dialogSize.x = ss.x * 8 / 10;
     #endif
@@ -7050,7 +7050,7 @@ bool shopPanel::doSystemNameWizard( bool bShowAll )
     dlg.Centre();
 
 
-    #ifdef __OCPN__ANDROID__
+    #ifdef __ANDROID__
 //    androidHideBusyIcon();
     #endif
     dlg.ShowModal();
@@ -7092,7 +7092,7 @@ wxString shopPanel::doGetNewSystemName( )
 
     wxSize dialogSize(500, -1);
 
-    #ifdef __OCPN__ANDROID__
+    #ifdef __ANDROID__
     wxSize ss = ::wxGetDisplaySize();
     dialogSize.x = ss.x * 8 / 10;
     #endif
@@ -7399,7 +7399,7 @@ END_EVENT_TABLE()
      long wstyle = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER;
      wxDialog::Create( parent, id, caption, pos, size, wstyle );
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     SetBackgroundColour(ANDROID_DIALOG_BACKGROUND_COLOR);
     SetForegroundColour(wxColour(200, 200, 200));
 #endif
@@ -7434,7 +7434,7 @@ END_EVENT_TABLE()
 
      SetTitle( _("Select OpenCPN/o-charts System Name"));
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     SetBackgroundColour(ANDROID_DIALOG_BACKGROUND_COLOR);
     SetForegroundColour(wxColour(200, 200, 200));
 #endif
@@ -7494,7 +7494,7 @@ END_EVENT_TABLE()
     wxPanel *selectorPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxBG_STYLE_ERASE );
     itemBoxSizer2->Add(selectorPanel, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     selectorPanel->SetForegroundColour(wxColour(200, 200, 200));
     selectorPanel->SetBackgroundColour(ANDROID_DIALOG_BODY_COLOR);
 #endif
@@ -7748,7 +7748,7 @@ oeUniLogin::oeUniLogin( wxWindow* parent, wxWindowID id, const wxString& caption
 
     wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     SetFont( *qFont );
 #else
     if(m_bCompact){
@@ -7811,7 +7811,7 @@ void oeUniLogin::CreateControls(  )
 
     oeUniLogin* itemDialog1 = this;
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
 
     wxBoxSizer* itemBoxSizer2 = new wxBoxSizer( wxVERTICAL );
     itemDialog1->SetSizer( itemBoxSizer2 );

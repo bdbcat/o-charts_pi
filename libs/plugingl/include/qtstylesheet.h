@@ -1,3 +1,3 @@
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 extern QString qtStyleSheet;
 #endif

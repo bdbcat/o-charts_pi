@@ -80,7 +80,7 @@ function (create_finish_script)
     execute_process(
       COMMAND cmake -E ${_rmdir_cmd} app/${pkg_displayname}
     )
-     execute_process(
+    execute_process(
       COMMAND cmake -E rename app/files app/${pkg_displayname}
     )
     execute_process(
@@ -98,14 +98,14 @@ function (create_finish_script)
 endfunction ()
 
 function (android_target)
-  add_custom_target(android-conf)
   if ("${ARM_ARCH}" STREQUAL "aarch64")
     set(OCPN_TARGET_TUPLE "'android-arm64\;16\;arm64'")
   else ()
     set(OCPN_TARGET_TUPLE "'android-armhf\;16\;armhf'")
   endif ()
   add_custom_command(
-    TARGET android-conf
+    OUTPUT android-conf-stamp
+    COMMAND cmake -E touch android-conf-stamp
     COMMAND cmake
       -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/app/files
       -DBUILD_TYPE:STRING=tarball
@@ -113,9 +113,10 @@ function (android_target)
       $ENV{CMAKE_BUILD_OPTS}
       ${CMAKE_BINARY_DIR}
   )
-  add_custom_target(android-build)
-  add_custom_command(TARGET android-build COMMAND ${_build_cmd})
-
+  add_custom_target(android-build DEPENDS android-conf-stamp)
+  add_custom_command(
+    TARGET android-build COMMAND ${_build_target_cmd} ${PKG_NAME}
+  )
   add_custom_target(android-install)
   add_custom_command(TARGET android-install COMMAND ${_install_cmd})
 
@@ -130,16 +131,15 @@ function (android_target)
   add_dependencies(android android-finish)
   add_dependencies(android-finish android-install)
   add_dependencies(android-install android-build)
-  add_dependencies(android-build android-conf)
 endfunction ()
 
 function (tarball_target)
 
   # tarball target setup
   #
-  add_custom_target(tarball-conf)
   add_custom_command(
-    TARGET tarball-conf
+    OUTPUT tarball-conf-stamp
+    COMMAND cmake -E touch tarball-conf-stamp
     COMMAND cmake
       -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/app/files
       -DBUILD_TYPE:STRING=tarball
@@ -147,8 +147,10 @@ function (tarball_target)
       ${CMAKE_BINARY_DIR}
   )
 
-  add_custom_target(tarball-build)
-  add_custom_command(TARGET tarball-build COMMAND ${_build_cmd})
+  add_custom_target(tarball-build DEPENDS tarball-conf-stamp)
+  add_custom_command(
+    TARGET tarball-build COMMAND ${_build_target_cmd} ${PKG_NAME}
+  )
 
   add_custom_target(tarball-install)
   add_custom_command(TARGET tarball-install COMMAND ${_install_cmd})
@@ -160,7 +162,6 @@ function (tarball_target)
     COMMAND cmake -P ${CMAKE_BINARY_DIR}/finish_tarball.cmake
     VERBATIM
   )
-  add_dependencies(tarball-build tarball-conf)
   add_dependencies(tarball-install tarball-build)
   add_dependencies(tarball-finish tarball-install)
 
@@ -179,21 +180,32 @@ function (flatpak_target manifest)
       $ENV{CMAKE_BUILD_OPTS}
       ${CMAKE_BINARY_DIR}
   )
+
+  # Script used to copy out files from the flatpak sandbox
+  file(WRITE ${CMAKE_BINARY_DIR}/copy_out [=[
+    appdir=$(find /run/build -maxdepth 3 -iname $1)
+    appdir=$(ls -t $appdir)       # Sort entries if there is more than one
+    appdir=${appdir%% *}          # Pick first entry
+    appdir=${appdir%%/lib*so}     # Drop filename, use remaining dir part
+    cp -ar $appdir/app $2
+  ]=])
+
   set(_fp_script "
     execute_process(
       COMMAND
         flatpak-builder --force-clean --keep-build-dirs
-          ${CMAKE_CURRENT_BINARY_DIR}/app ${manifest}
+          ${CMAKE_BINARY_DIR}/app ${manifest}
     )
     # Copy the data out of the sandbox to installation directory
     execute_process(
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       COMMAND
-        flatpak-builder  --run app ${manifest}  bash -c \"
-          set -x\; stable_link=$(find /run/build -maxdepth 1 -type l)\; \
-          cp -ar $stable_link/app/files/*           \
-              ${CMAKE_CURRENT_BINARY_DIR}/app/files
-        \"
+        flatpak-builder --run app ${manifest}
+           bash copy_out lib${PACKAGE_NAME}.so ${CMAKE_BINARY_DIR}
     )
+    if (NOT EXISTS app/files/lib/opencpn/lib${PACKAGE_NAME}.so)
+      message(FATAL_ERROR \"Cannot find generated file lib${PACKAGE_NAME}.so\")
+    endif ()
     execute_process(
       COMMAND bash -c \"sed -e '/@checksum@/d' \
           < ${pkg_xmlname}.xml.in > app/files/metadata.xml\"
@@ -223,7 +235,7 @@ function (flatpak_target manifest)
   file(WRITE "${CMAKE_BINARY_DIR}/build_flatpak.cmake" ${_fp_script})
   add_custom_target(flatpak)
   add_custom_command(
-    TARGET flatpak      # Compute checksum
+    TARGET flatpak
     COMMAND cmake -P ${CMAKE_BINARY_DIR}/build_flatpak.cmake
     VERBATIM
   )
@@ -241,11 +253,10 @@ function (create_targets manifest)
   tarball_target()
   flatpak_target(${manifest})
   android_target()
-  if ("${BUILD_TYPE}" STREQUAL "" )
-    if ("${ARM_ARCH}" STREQUAL "")
-      add_dependencies(${PACKAGE_NAME} tarball)
-    else ()
-      add_dependencies(${PACKAGE_NAME} android)
-    endif ()
+  add_custom_target(default ALL)
+  if ("${ARM_ARCH}" STREQUAL "")
+    add_dependencies(default tarball)
+  else ()
+    add_dependencies(default android)
   endif ()
 endfunction ()

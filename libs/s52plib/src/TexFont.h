@@ -50,15 +50,16 @@ public:
   TexFont();
   ~TexFont();
 
-  void Build(wxFont &font, double dpi_factor, bool blur = false);
+  void Build(wxFont &font, double scale_factor, double dpi_factor, bool blur = false);
   void Delete();
 
   void GetTextExtent(const wxString &string, int *width, int *height);
-  void RenderString(const char *string, int x=0, int y=0);
-  void RenderString(const wxString &string, int x=0, int y=0);
+  void RenderString(const char *string, int x=0, int y=0, float angle = 0.0);
+  void RenderString(const wxString &string, int x=0, int y=0, float angle = 0.0);
   bool IsBuilt() { return m_built; }
   void SetColor(wxColor &color) { m_color = color; }
   void PrepareShader(int width, int height, double rotation);
+  void SetContentScaleFactor(double s){m_ContentScaleFactor = s;}
 
 private:
   void GetTextExtent(const char *string, int *width, int *height);
@@ -76,11 +77,14 @@ private:
   int m_maxglyphh;
   bool m_built;
 
-  float m_dx;
-  float m_dy;
+  float m_dx, m_dy;
+  float m_angle;
+  int m_vpwidth, m_vpheight;
+
   wxColor m_color;
 
   bool m_shadersLoaded;
+  double m_ContentScaleFactor;
 
 };
 

@@ -110,26 +110,37 @@ if (NOT "${_pre_rel}" STREQUAL "" AND _pre_rel MATCHES "^[^-]")
   string(PREPEND _pre_rel "-")
 endif ()
 if ("${_git_tag}" STREQUAL "")
-  set(pkg_semver "${PROJECT_VERSION}${_pre_rel}")
+  set(pkg_semver "${PROJECT_VERSION}${_pre_rel}+${_build_id}.${_gitversion}")
 else ()
-  set(pkg_semver "${_git_tag}")
+  set(pkg_semver "${PROJECT_VERSION}")
 endif ()
 
 # pkg_displayname: GUI name
 if (ARCH MATCHES "arm64|aarch64")
   set(_display_arch "-A64")
-elseif ("${plugin_target}" MATCHES "ubuntu" AND "${_pkg_arch}" MATCHES "armhf")
-  set(_display_arch "-armhf")
+elseif ("${_pkg_arch}" MATCHES "armhf")
+  set(_display_arch "-A32")
 endif()
 
+if (NOT "${OCPN_WX_ABI}" STREQUAL "")
+  set(_wx_abi ".${OCPN_WX_ABI}")
+endif ()
+
 if ("${_git_tag}" STREQUAL "")
+  message(STATUS "TAG test 0")
   set(pkg_displayname "${PLUGIN_API_NAME}-${VERSION_MAJOR}.${VERSION_MINOR}")
 else ()
-  set(pkg_displayname "${PLUGIN_API_NAME}-${_git_tag}")
+  message(STATUS "TAG test 1")
+  set(pkg_displayname "${PLUGIN_API_NAME}-${VERSION_MAJOR}.${VERSION_MINOR}")
 endif ()
+
+message(STATUS "pkg_displayname0: ${pkg_displayname}.")
+
 string(APPEND pkg_displayname
   "-${plugin_target}${_display_arch}-${plugin_target_version}"
 )
+
+message(STATUS "pkg_displayname1: ${pkg_displayname}.")
 
 # pkg_xmlname: XML metadata basename
 set(pkg_xmlname ${pkg_displayname})
@@ -137,7 +148,7 @@ set(pkg_xmlname ${pkg_displayname})
 # pkg_tarname: Tarball basename
 string(CONCAT pkg_tarname
   "${PLUGIN_API_NAME}-${pkg_semver}"
-  "_${plugin_target}-${plugin_target_version}-${_pkg_arch}"
+  "_${plugin_target}${_wx_abi}-${plugin_target_version}-${_pkg_arch}"
 )
 
 # pkg_tarball_url: Tarball location at cloudsmith
@@ -161,10 +172,16 @@ endif ()
 # pkg_target_arch: os + optional -arch suffix. See: Opencpn bug #2003
 if ("${BUILD_TYPE}" STREQUAL "flatpak")
   set(pkg_target_arch "flatpak-${ARCH}")
-elseif ("${plugin_target}" MATCHES "ubuntu|raspbian|debian|mingw|fedora")
+  if (NOT "${OCPN_WX_ABI}" STREQUAL "")
+    set(pkg_target_arch "${pkg_target_arch}")
+  endif ()
+elseif ("${plugin_target}" MATCHES "ubuntu|raspbian|debian|mingw")
   set(pkg_target_arch "${plugin_target}-${ARCH}")
 else ()
   set(pkg_target_arch "${plugin_target}")
 endif ()
+
+message(STATUS "OCPN_WX_ABI: ${OCPN_WX_ABI}.")
+message(STATUS "pkg_target_arch: ${pkg_target_arch}.")
 
 #cmake-format: on

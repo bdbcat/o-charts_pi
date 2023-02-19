@@ -21,6 +21,7 @@
   #include "wx/wx.h"
 #endif //precompiled headers
 
+#define GL_SILENCE_DEPRECATION 1
 
 //  Why are these not in wx/prec.h?
 #include "wx/dir.h"
@@ -64,7 +65,7 @@ typedef void (*PFNGLBINDBUFFERPROC) (GLenum target, GLuint buffer);
 typedef void (*PFNGLBUFFERDATAPROC) (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
 typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
 
-#elif defined(__OCPN__ANDROID__)
+#elif defined(__ANDROID__)
 // #include <qopengl.h>
 // #include <GLES/gl.h>
 
@@ -75,7 +76,7 @@ typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
 #endif
 
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 #include "qdebug.h"
 #include "androidSupport.h"
 #endif
@@ -152,16 +153,16 @@ WX_DEFINE_LIST(ListOfS57Obj);                // Implement a list of S57 Objects
 WX_DEFINE_LIST(ListOfObjRazRules);
 
 #ifndef __OCPN_USE_GLEW__
-extern PFNGLGENBUFFERSPROC                 s_glGenBuffers;
-extern PFNGLBINDBUFFERPROC                 s_glBindBuffer;
-extern PFNGLBUFFERDATAPROC                 s_glBufferData;
-extern PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
+//extern PFNGLGENBUFFERSPROC                 s_glGenBuffers;
+//extern PFNGLBINDBUFFERPROC                 s_glBindBuffer;
+//extern PFNGLBUFFERDATAPROC                 s_glBufferData;
+//extern PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
 
 #ifndef USE_ANDROID_GLES2
-#define glGenBuffers (s_glGenBuffers)
-#define glBindBuffer (s_glBindBuffer)
-#define glBufferData (s_glBufferData)
-#define glDeleteBuffers (s_glDeleteBuffers)
+//#define glGenBuffers (s_glGenBuffers)
+//#define glBindBuffer (s_glBindBuffer)
+//#define glBufferData (s_glBufferData)
+//#define glDeleteBuffers (s_glDeleteBuffers)
 #endif
 
 #endif
@@ -985,7 +986,7 @@ bool oesuChart::CreateChartInfoFile( wxString chartName, bool forceCreate )
     wxString l4 = _T("ChartInfoShow:");
     l4 += wxString(m_chartInfoShow.c_str());
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     // Create a  Chartinfo.txt file in the installBase directory
     wxString ciPath = installBase;
     ciPath += wxFileName::GetPathSeparator();
@@ -1866,7 +1867,7 @@ wxBitmap &eSENCChart::RenderRegionView(const PlugIn_ViewPort& VPoint, const wxRe
     //ps52plib->PrepareForRender(&m_cvp);
     PrepareForRender(&m_cvp, ps52plib);
 
-    if( m_plib_state_hash != PI_GetPLIBStateHash() ) {
+    if( m_plib_state_hash != ps52plib->GetStateHash() ) {
         m_bLinePrioritySet = false;                     // need to reset line priorities
         UpdateLUPs( this );                               // and update the LUPs
         ClearRenderedTextCache();                       // and reset the text renderer,
@@ -1876,7 +1877,7 @@ wxBitmap &eSENCChart::RenderRegionView(const PlugIn_ViewPort& VPoint, const wxRe
         ps52plib->FlushSymbolCaches();
         m_last_vp.bValid = 0;
 
-        m_plib_state_hash = PI_GetPLIBStateHash();
+        m_plib_state_hash = ps52plib->GetStateHash();
     }
 
     if( VPoint.view_scale_ppm != m_last_vp.view_scale_ppm ) {
@@ -2020,7 +2021,6 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
                           const wxRegion &Region, bool b_use_stencil )
 {
 
-
 #ifdef ocpnUSE_GL
 
     if(!g_GLOptionsSet)
@@ -2032,14 +2032,18 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
 
     SetVPParms( VPoint );
 
-    //qDebug() << "PI RenderTime1" << sw.GetTime();
+    //printf("RenderTime1 %g\n",sw.GetTime());
 
     //ps52plib->PrepareForRender(&m_cvp);
     PrepareForRender(&m_cvp, ps52plib);
 
+    //printf("RenderTime2 %g\n",sw.GetTime());
     //qDebug() << "PI RenderTime2" << sw.GetTime();
 
-    if( m_plib_state_hash != PI_GetPLIBStateHash() ) {
+    //printf("Check: %ld   plib: %ld\n", m_plib_state_hash, ps52plib->GetStateHash());
+
+    if( m_plib_state_hash != ps52plib->GetStateHash() ) {
+      //printf("    miss..\n");
         m_bLinePrioritySet = false;                     // need to reset line priorities
         UpdateLUPs( this );                             // and update the LUPs
         ClearRenderedTextCache();                       // and reset the text renderer,
@@ -2047,10 +2051,11 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
         SetSafetyContour();
         ps52plib->FlushSymbolCaches();
 
-        m_plib_state_hash = PI_GetPLIBStateHash();
+        m_plib_state_hash = ps52plib->GetStateHash();
 
     }
 
+    //printf("RenderTime2 %g\n",sw.GetTime());
 
     if( VPoint.view_scale_ppm != m_last_vp.view_scale_ppm ) {
         ResetPointBBoxes( m_last_vp, VPoint );
@@ -2058,6 +2063,7 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
 
     BuildLineVBO();
     SetLinePriorities();
+    //printf("RenderTime4 %g\n",sw.GetTime());
 
     //        Clear the text declutter list
     ps52plib->ClearTextList();
@@ -2120,7 +2126,11 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
             nrv++;
     }
 
+    //printf("RenderTime5 %g\n",sw.GetTime());
+
       DoRender2RectOnGL( glc, vp0, r0, vp1, r1, b_use_stencil);
+
+    //printf("RenderTime6 %g\n",sw.GetTime());
 
 #else
 
@@ -4750,6 +4760,7 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
         m_this_chart_context->chart = this;
         m_this_chart_context->chart_type = GetChartType();
         m_this_chart_context->vertex_buffer = GetLineVertexBuffer();
+        m_this_chart_context->chart_scale = GetNativeScale();
 
         //  Loop and populate all the objects
         for( int i = 0; i < PRIO_NUM; ++i ) {
@@ -5445,7 +5456,6 @@ void eSENCChart::SetSafetyContour(void)
     //    is greater than or equal to the current PLIB mariner parameter S52_MAR_SAFETY_CONTOUR
 
     double mar_safety_contour = S52_getMarinerParam(S52_MAR_SAFETY_CONTOUR);
-
     int i = 0;
     if( NULL != m_pvaldco_array ) {
         for( i = 0; i < m_nvaldco; i++ ) {
@@ -5737,12 +5747,12 @@ bool eSENCChart::DoRenderRegionViewOnDC( wxMemoryDC& dc, const PlugIn_ViewPort& 
     PI_PLIBSetRenderCaps( PLIB_CAPS_LINE_BUFFER | PLIB_CAPS_SINGLEGEO_BUFFER | PLIB_CAPS_OBJSEGLIST | PLIB_CAPS_OBJCATMUTATE);
     PI_PLIBPrepareForNewRender();
 
-    if( m_plib_state_hash != PI_GetPLIBStateHash() ) {
+    if( m_plib_state_hash != ps52plib->GetStateHash() ) {
         m_bLinePrioritySet = false;                     // need to reset line priorities
         UpdateLUPs( this );                             // and update the LUPs
         ResetPointBBoxes( m_last_vp, VPoint );
         SetSafetyContour();
-        m_plib_state_hash = PI_GetPLIBStateHash();
+        m_plib_state_hash = ps52plib->GetStateHash();
 
     }
 
@@ -5879,12 +5889,12 @@ bool eSENCChart::RenderViewOnDC( wxMemoryDC& dc, const PlugIn_ViewPort& VPoint )
     PI_PLIBSetRenderCaps( PLIB_CAPS_LINE_BUFFER | PLIB_CAPS_SINGLEGEO_BUFFER | PLIB_CAPS_OBJSEGLIST | PLIB_CAPS_OBJCATMUTATE);
     PI_PLIBPrepareForNewRender();
 
-    if( m_plib_state_hash != PI_GetPLIBStateHash() ) {
+    if( m_plib_state_hash != ps52plib->GetStateHash() ) {
         m_bLinePrioritySet = false;                     // need to reset line priorities
         UpdateLUPs( this );                             // and update the LUPs
         ResetPointBBoxes( m_last_vp, VPoint );
         SetSafetyContour();
-        m_plib_state_hash = PI_GetPLIBStateHash();
+        m_plib_state_hash = ps52plib->GetStateHash();
 
     }
 
@@ -7487,6 +7497,38 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
 
                     value = GetObjectAttributeValueAsString( current, attrCounter, curAttrName );
 
+                    if (curAttrName == _T("TS_TSP")) {  // Tidal current applet
+                      wxArrayString as;
+                      wxString ts, ts1;
+                      wxStringTokenizer tk(value, wxT(","));
+                      ts1 = tk.GetNextToken(); //get first token this will be skipped always
+                      long l;
+                      do { //Skip up upto the first non number. This is Port Name
+                        ts1= tk.GetNextToken().Trim(false);
+                      }while((ts1.Left(2).ToLong(&l)));
+                      ts = _T("Tidal Streams referred to<br><b>");
+                      ts.Append(tk.GetNextToken()).Append(_T("</b> at <b>")).Append(ts1);
+                      ts.Append( _T("</b><br><table >"));
+                      int i = -6;
+                      while (tk.HasMoreTokens()) {  // fill the current table
+                        ts.Append(_T("<tr><td>"));
+                        wxString s1(wxString::Format(_T("%+dh "), i));
+                        ts.Append(s1);
+                        ts.Append(_T("</td><td>"));
+                        s1 = tk.GetNextToken();
+                        ts.Append(s1);
+                        s1 = "&#176</td><td>";
+                        ts.Append(s1);
+                        s1 = tk.GetNextToken();
+                        ts.Append(s1);
+                        ts.Append(_T("</td></tr>"));
+                        i++;
+                      }
+                      ts.Append(_T("</table>"));
+                      value = ts;
+                    }
+
+
                     if( isLight ) {
                         curLight->attributeValues.Add( value );
                     } else {
@@ -9011,7 +9053,8 @@ PI_S57Obj::PI_S57Obj()
     geoPtz = NULL;
     geoPt = NULL;
     bIsClone = false;
-    Scamin = 10000000;                              // ten million enough?
+    Scamin = 1e8+2;  // Default is very large number, effectively unused.
+    //SuperScamin = -1;
     nRef = 0;
     pPolyTessGeo = NULL;
 
@@ -10143,7 +10186,8 @@ void S57Obj::Init()
     geoPtz = NULL;
     geoPt = NULL;
     bIsClone = false;
-    Scamin = 10000000;                              // ten million enough?
+    Scamin = 1e8+2;  // Default is very large number, effectively unused.
+    SuperScamin = -1;
     nRef = 0;
 
     bIsAton = false;

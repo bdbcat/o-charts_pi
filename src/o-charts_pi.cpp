@@ -74,13 +74,13 @@
 // #include "OpenGL/glext.h"
 // #include "OpenGL/glu.h"
 
-typedef void (*PFNGLGENBUFFERSPROC) (GLsizei n, GLuint *buffers);
-typedef void (*PFNGLBINDBUFFERPROC) (GLenum target, GLuint buffer);
-typedef void (*PFNGLBUFFERDATAPROC) (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
-typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
+//typedef void (*PFNGLGENBUFFERSPROC) (GLsizei n, GLuint *buffers);
+//typedef void (*PFNGLBINDBUFFERPROC) (GLenum target, GLuint buffer);
+//typedef void (*PFNGLBUFFERDATAPROC) (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
+//typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
 
 
-#elif defined(__OCPN__ANDROID__)
+#elif defined(__ANDROID__)
 // #include <qopengl.h>
 // #include <GLES/gl.h>
 // #include <EGL/egl.h>
@@ -110,7 +110,7 @@ typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
 #include <map>
 #include <unordered_map>
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 #include <QtAndroidExtras/QAndroidJniObject>
 #include "qdebug.h"
 wxString callActivityMethod_vs(const char *method);
@@ -233,10 +233,10 @@ bool g_GLSetupOK;
 oesencPrefsDialog               *g_prefs_dialog;
 
 #if 1
-PFNGLGENBUFFERSPROC                 s_glGenBuffers;
-PFNGLBINDBUFFERPROC                 s_glBindBuffer;
-PFNGLBUFFERDATAPROC                 s_glBufferData;
-PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
+//PFNGLGENBUFFERSPROC                 s_glGenBuffers;
+//PFNGLBINDBUFFERPROC                 s_glBindBuffer;
+//PFNGLBUFFERDATAPROC                 s_glBufferData;
+//PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
 #endif
 
 
@@ -279,7 +279,7 @@ OKeyHash *pAlternateKey;
 
 OESENC_HTMLMessageDialog *pinfoDlg;
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 extern JavaVM *java_vm;         // found in androidUtil.cpp, accidentally exported....
 
 // Older Android devices do not export atof from their libc.so
@@ -597,7 +597,7 @@ int o_charts_pi::Init(void)
 
 
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     wxString piLocn = GetPlugInPath(this); //*GetpSharedDataLocation();
     wxFileName fnl(piLocn);
     g_sencutil_bin = fnl.GetPath(wxPATH_GET_SEPARATOR) + _T("oexserverd");
@@ -658,7 +658,7 @@ int o_charts_pi::Init(void)
     g_ChartInfoArray.Clear();
     g_ChartInfoArrayUnified.Clear();
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     g_deviceInfo = callActivityMethod_vs("getDeviceInfo");
 
     wxStringTokenizer tkz(g_deviceInfo, _T("\n"));
@@ -961,6 +961,8 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
               ps52plib->m_bShowNationalTexts = root[_T("OpenCPN S52PLIB ShowNationalText")].AsBool();
             if(root[_T("OpenCPN S52PLIB UseSCAMIN")].IsBool())
               ps52plib->m_bUseSCAMIN = root[_T("OpenCPN S52PLIB UseSCAMIN")].AsBool();
+            if(root[_T("OpenCPN S52PLIB UseSUPER_SCAMIN")].IsBool())
+              ps52plib->m_bUseSUPER_SCAMIN = root[_T("OpenCPN S52PLIB UseSUPER_SCAMIN")].AsBool();
             if(root[_T("OpenCPN S52PLIB ShowImportantTextOnly")].IsBool())
               ps52plib->m_bShowS57ImportantTextOnly = root[_T("OpenCPN S52PLIB ShowImportantTextOnly")].AsBool();
 
@@ -970,8 +972,26 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
               ps52plib->m_nBoundaryStyle = (LUPname)root[_T("OpenCPN S52PLIB BoundaryStyle")].AsInt();
             if(root[_T("OpenCPN S52PLIB ColorShades")].IsDouble())
               S52_setMarinerParam( S52_MAR_TWO_SHADES, root[_T("OpenCPN S52PLIB ColorShades")].AsDouble());
+
+            if(root[_T("OpenCPN S52PLIB Safety Depth")].IsDouble())
+              S52_setMarinerParam( S52_MAR_SAFETY_CONTOUR, root[_T("OpenCPN S52PLIB Safety Depth")].AsDouble());
+            else if(root[_T("OpenCPN S52PLIB Safety Depth")].IsInt())
+              S52_setMarinerParam( S52_MAR_SAFETY_CONTOUR, root[_T("OpenCPN S52PLIB Safety Depth")].AsInt());
+
+            if(root[_T("OpenCPN S52PLIB Shallow Contour")].IsDouble())
+              S52_setMarinerParam( S52_MAR_SHALLOW_CONTOUR, root[_T("OpenCPN S52PLIB Shallow Contour")].AsDouble());
+            else if(root[_T("OpenCPN S52PLIB Shallow Contour")].IsInt())
+              S52_setMarinerParam( S52_MAR_SHALLOW_CONTOUR, root[_T("OpenCPN S52PLIB Shallow Contour")].AsInt());
+
+            if(root[_T("OpenCPN S52PLIB Deep Contour")].IsDouble())
+              S52_setMarinerParam( S52_MAR_DEEP_CONTOUR, root[_T("OpenCPN S52PLIB Deep Contour")].AsDouble());
+            else if(root[_T("OpenCPN S52PLIB Deep Contour")].IsInt())
+              S52_setMarinerParam( S52_MAR_DEEP_CONTOUR, root[_T("OpenCPN S52PLIB Deep Contour")].AsInt());
+
             if(root[_T("OpenCPN S52PLIB SoundingsFactor")].IsInt())
               ps52plib->m_nSoundingFactor = root[_T("OpenCPN S52PLIB SoundingsFactor")].AsInt();
+            if(root[_T("OpenCPN S52PLIB TextFactor")].IsInt())
+              ps52plib->m_nTextFactor = root[_T("OpenCPN S52PLIB TextFactor")].AsInt();
 
             int icat;
             if( root[_T("OpenCPN S52PLIB DisplayCategory")].AsInt(icat) ){
@@ -1000,8 +1020,20 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
 
          }
 
-        if(root[_T("OpenCPN Zoom Mod Vector")].IsInt())
-            g_chart_zoom_modifier_vector = root[_T("OpenCPN Zoom Mod Vector")].AsInt();
+        if(root[_T("OpenCPN Zoom Mod Vector")].IsInt()){
+          if (ps52plib)
+            ps52plib->SetScaleFactorZoomMod(root[_T("OpenCPN Zoom Mod Vector")].AsInt());
+        }
+
+        if(root[_T("OpenCPN Scale Factor Exp")].IsInt()){
+          if (ps52plib)
+            ps52plib->SetScaleFactorExp(root[_T("OpenCPN Scale Factor Exp")].AsInt());
+        }
+
+        if(root[_T("OpenCPN Scale Factor Exp")].IsDouble()){
+          if (ps52plib)
+            ps52plib->SetScaleFactorExp(root[_T("OpenCPN Scale Factor Exp")].AsDouble());
+        }
 
         if(root[_T("OpenCPN Display Width")].IsInt()){
             g_display_size_mm = (double)root[_T("OpenCPN Display Width")].AsInt();
@@ -1020,11 +1052,22 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
 
                 g_pix_per_mm = pix_per_mm;
 
-                wxString msg;
-                msg.Printf(_T("o_charts_pi:  Calculated pix/mm = %g"), g_pix_per_mm);
-                wxLogMessage(msg);
+//                 wxString msg;
+//                 msg.Printf(_T("o_charts_pi:  Calculated pix/mm = %g"), g_pix_per_mm);
+//                 wxLogMessage(msg);
             }
         }
+
+        if(root[_T("OpenCPN Content Scale Factor")].IsDouble()){
+          if (ps52plib)
+            ps52plib->SetContentScaleFactor(root[_T("OpenCPN Content Scale Factor")].AsDouble());
+        }
+
+        if(root[_T("OpenCPN Display DIP Scale Factor")].IsDouble()){
+          if (ps52plib)
+            ps52plib->SetDIPFactor(root[_T("OpenCPN Display DIP Scale Factor")].AsDouble());
+        }
+
 
         if(ps52plib)
             ps52plib->GenerateStateHash();
@@ -1120,7 +1163,7 @@ bool o_charts_pi::RenderGLOverlay(wxGLContext *pcontext, PlugIn_ViewPort *vp)
                                                         wxFONTSTYLE_NORMAL,
                                                         wxFONTWEIGHT_NORMAL);
         //FIXME (dave) DPI parameter from where?
-        m_TexFontMessage.Build(*pfont, 1);
+        m_TexFontMessage.Build(*pfont, 1, 1);
         int w, h;
         m_TexFontMessage.GetTextExtent( msg, &w, &h);
         h += 2;
@@ -1468,7 +1511,7 @@ bool o_charts_pi::SaveConfig( void )
         pConf->Write( _T("UserKey"), g_UserKey );
         pConf->Write( _T("LastFPRFile"), g_fpr_file);
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
         pConf->Write( _T("systemName"), g_systemName);
         pConf->Write( _T("loginUser"), g_loginUser);
         pConf->Write( _T("loginKey"), g_loginKey);
@@ -1556,7 +1599,7 @@ void o_charts_pi::ProcessChartManageResult( wxString result )
     if(g_prefs_dialog)
        g_prefs_dialog->EndModal(0);
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     qDebug() << "ProcessChartManageResult: " << result.mb_str();
     bool b_forceUpdate = false;
 
@@ -2453,6 +2496,7 @@ void LoadS57Config()
 
 #ifndef __OCPN_USE_GLEW__
 
+#if 0
 static GLboolean QueryExtension( const char *extName )
 {
     /*
@@ -2491,7 +2535,7 @@ typedef void (*GenericFunction)(void);
 #elif defined(__WXOSX__)
 #include <dlfcn.h>
 #define systemGetProcAddress(ADDR) dlsym( RTLD_DEFAULT, ADDR)
-#elif defined(__OCPN__ANDROID__)
+#elif defined(__ANDROID__)
 #define systemGetProcAddress(ADDR) eglGetProcAddress(ADDR)
 #else
 #define systemGetProcAddress(ADDR) glXGetProcAddress((const GLubyte*)ADDR)
@@ -2503,7 +2547,7 @@ GenericFunction ocpnGetProcAddress(const char *addr, const char *extension)
     if(!extension)
         return (GenericFunction)NULL;
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
         //  If this is an extension entry point,
         //  We look explicitly in the extensions list to confirm
         //  that the request is actually supported.
@@ -2535,7 +2579,7 @@ static bool GetglEntryPoints( void )
     // according to opengl spec, we cannot mix EXT and ARB extensions
     // (I don't know that it could ever happen, but if it did, bad things would happen)
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     const char *extensions[] = {"", "ARB", "EXT", 0 };
 #else
     const char *extensions[] = {"", "OES", 0 };
@@ -2580,6 +2624,7 @@ static bool GetglEntryPoints( void )
 }
 
 #endif  //__OCPN_USE_GLEW__
+#endif
 
 
 void init_S52Library(void)
@@ -2663,14 +2708,26 @@ void init_S52Library(void)
 
 bool init_GLExtensions(void) {
   // Initialize GLEW, as required
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
   #ifndef __WXOSX__
     #ifdef __OCPN_USE_GLEW__
       GLenum err = glewInit();
-      return (GLEW_OK == err);
+#ifdef GLEW_ERROR_NO_GLX_DISPLAY
+      if (GLEW_OK != err && GLEW_ERROR_NO_GLX_DISPLAY != err)
+#else
+      if (GLEW_OK != err)
+#endif
+      {
+        printf("GLEW init failed: %s\n", glewGetErrorString(err));
+        return false;
+      }
+      else
+        return true;
     #else
       return GetglEntryPoints();
     #endif
+  #else
+      return true;    //OSX
   #endif
 #else
   return true;
@@ -2699,6 +2756,9 @@ void init_GLLibrary(void) {
             strncpy( render_string, str, 79 );
             renderer = wxString( render_string, wxConvUTF8 );
         }
+
+        ps52plib->SetGLRendererString(renderer);
+
 
         if (!init_GLExtensions()){
             wxLogMessage(_T("o_charts_pi failed to initialize OpenGL Extensions"));
@@ -2740,14 +2800,15 @@ void init_GLLibrary(void) {
         // So, on MSW and MacOS platforms, Intel graphics, we override the core GL options and disable VBO
 
 #if defined( __WXMSW__ ) || defined(__WXOSX__)
-    if( renderer.Upper().Find( _T("INTEL") ) != wxNOT_FOUND )
-        g_b_EnableVBO = false;
+//     if( renderer.Upper().Find( _T("INTEL") ) != wxNOT_FOUND )
+//         g_b_EnableVBO = false;
 #endif
 
         //  Setup device dependent OpenGL options as communicated from core by JSON message
         ps52plib->SetGLOptions(g_b_useStencil, g_b_useStencilAP, g_b_useScissorTest, g_b_useFBO,  g_b_EnableVBO, g_texture_rectangle_format, 1, 1);
 
         g_bopengl = true;
+        ps52plib->SetUseGLSL(true);
         g_GLSetupOK = true;
     }
 }
@@ -2794,7 +2855,7 @@ bool validate_SENC_server(void)
 
     wxString bin_test = g_sencutil_bin;
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     //Verify that oeserverd actually exists, and runs.
     wxLogMessage(_T("Validation Path to oexserverd is: ") + g_sencutil_bin);
 
@@ -2985,7 +3046,7 @@ bool shutdown_SENC_server( void )
     }
 }
 
-#ifdef XXX__OCPN__ANDROID__
+#ifdef XXX__ANDROID__
 bool CheckPendingJNIException()
 {
     JNIEnv* jenv;
@@ -3337,7 +3398,7 @@ oesencPrefsDialog::oesencPrefsDialog( wxWindow* parent, wxWindowID id, const wxS
 {
     wxDialog::Create( parent, id, title, pos, size, style );
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     SetBackgroundColour(ANDROID_DIALOG_BACKGROUND_COLOR);
 #endif
 
@@ -3366,7 +3427,7 @@ oesencPrefsDialog::oesencPrefsDialog( wxWindow* parent, wxWindowID id, const wxS
         m_buttonShowEULA->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(o_charts_pi_event_handler::OnShowEULA), NULL, g_event_handler );
         bSizer2->AddSpacer( 20 );
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
         //  FPR File Permit
         wxStaticBoxSizer* sbSizerFPR= new wxStaticBoxSizer( new wxStaticBox( content, wxID_ANY, _("System Identification") ), wxHORIZONTAL );
         m_fpr_text = new wxStaticText(content, wxID_ANY, _T(" "));
@@ -3430,7 +3491,7 @@ oesencPrefsDialog::oesencPrefsDialog( wxWindow* parent, wxWindowID id, const wxS
         else
             bSizer2->AddSpacer( 10 );
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
         m_buttonClearSystemName = new wxButton( content, wxID_ANY, _("Reset System Name"), wxDefaultPosition, wxDefaultSize, 0 );
 
         bSizer2->AddSpacer( 10 );
@@ -3456,7 +3517,7 @@ oesencPrefsDialog::oesencPrefsDialog( wxWindow* parent, wxWindowID id, const wxS
 
         //m_buttonSendStatus->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(o_charts_pi_event_handler::OnSendStatus), NULL, g_event_handler );
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
         m_cbEnableRebuild = new wxCheckBox(content, ID_ENABLE_REBUILD, _("Enable full chart database rebuild after chart download"));
         m_cbEnableRebuild->SetValue(g_benableRebuild);
         bSizer2->Add( m_cbEnableRebuild, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
@@ -3500,7 +3561,7 @@ void oesencPrefsDialog::OnPrefsOkClick(wxCommandEvent& event)
     }
 #endif
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
 
     g_benableRebuild = m_cbEnableRebuild->GetValue();
 
@@ -3541,7 +3602,7 @@ o_charts_pi_event_handler::~o_charts_pi_event_handler()
 
 void o_charts_pi_event_handler::onTimerEvent(wxTimerEvent &event)
 {
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     if(ACTION_ARB_RESULT_POLL == m_timerAction){
         wxString status = callActivityMethod_vs("getArbActivityStatus");
         //qDebug() << status.mb_str();
@@ -3601,7 +3662,7 @@ void o_charts_pi_event_handler::OnClearSystemName( wxCommandEvent &event )
         pConf->Write( _T("systemName"), g_systemName);
     }
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     if(m_parent->m_shoppanel){
         m_parent->m_shoppanel->RefreshSystemName();
     }
@@ -3634,7 +3695,7 @@ extern void saveShopConfig();
 void o_charts_pi_event_handler::OnClearCredentials( wxCommandEvent &event )
 {
     g_loginKey.Clear();
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     g_systemName.Clear();
 #endif
     saveShopConfig();
@@ -3716,7 +3777,7 @@ void o_charts_pi_event_handler::OnSendStatus( wxCommandEvent &event )
 
 void o_charts_pi_event_handler::OnNewDFPRClick( wxCommandEvent &event )
 {
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     wxString msg = _("To obtain a chart set, you must generate a Unique System Identifier File.\n");
     msg += _("This file is also known as a\"fingerprint\" file.\n");
     msg += _("The fingerprint file contains information related to a connected USB key dongle.\n\n");
@@ -3764,7 +3825,7 @@ void o_charts_pi_event_handler::OnNewDFPRClick( wxCommandEvent &event )
 
 void o_charts_pi_event_handler::OnNewFPRClick( wxCommandEvent &event )
 {
-#ifndef x__OCPN__ANDROID__
+#ifndef x__ANDROID__
     wxString msg = _("To obtain a chart set, you must generate a Unique System Identifier File.\n");
     msg += _("This file is also known as a\"fingerprint\" file.\n");
     msg += _("The fingerprint file contains information to uniquely identify this computer.\n\n");
@@ -3919,7 +3980,7 @@ void o_charts_pi_event_handler::OnNewFPRClick( wxCommandEvent &event )
 void o_charts_pi_event_handler::OnManageShopClick( wxCommandEvent &event )
 {
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 
     g_deviceInfo = callActivityMethod_vs("getDeviceInfo");
 
@@ -3942,7 +4003,7 @@ void o_charts_pi_event_handler::OnManageShopClick( wxCommandEvent &event )
 
 void o_charts_pi_event_handler::OnGetHWIDClick( wxCommandEvent &event )
 {
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
 
 #else
 
@@ -4066,7 +4127,7 @@ bool ShowEULA( wxString fileName )
             return true;
     }
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     androidHideBusyIcon();
 #endif
     wxWindow *dialogWindow=GetOCPNCanvasWindow();
@@ -4222,7 +4283,7 @@ void o_charts_pi_about::Populate( void )
         aboutText.Append( _T("<i>") );
 
 #if 0
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     aboutText.Append( AboutText + OpenCPNVersionAndroid  + OpenCPNInfoAlt );
 #else
     aboutText.Append( AboutText + OpenCPNVersion + OpenCPNInfo );
@@ -4377,7 +4438,7 @@ void o_charts_pi_about::CreateControls( void )
     pST1->SetFont( *headerFont );
     mainSizer->Add( pST1, 0, wxALL | wxEXPAND, 8 );
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     wxSizer *buttonSizer = new wxBoxSizer( wxHORIZONTAL /*m_displaySize.x < m_displaySize.y ? wxVERTICAL : wxHORIZONTAL*/ );
     mainSizer->Add( buttonSizer, 0, wxALL, 0 );
 
@@ -4491,7 +4552,7 @@ void o_charts_pi_about::OnPageChange( wxNotebookEvent& event )
 }
 
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 void showChartinfoDialog( void )
 {
     androidHideBusyIcon();              // Leftover from startup/initial chart display
@@ -4595,7 +4656,7 @@ void showChartinfoDialog( void )
 }
 #endif
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
 void showChartinfoDialog( void )
 {
     if(g_binfoShown)
@@ -5033,7 +5094,7 @@ bool ShowAlwaysEULAs()
 
 void o_charts_pi::OnSetupOptions( void )
 {
-#ifdef x__OCPN__ANDROID__
+#ifdef x__ANDROID__
     m_pOptionsPage = AddOptionsPage( PI_OPTIONS_PARENT_CHARTS, _("o-charts") );
     if( ! m_pOptionsPage )
     {
@@ -5119,7 +5180,7 @@ void oesencPanel::ManageCharts( wxCommandEvent &evt )
 
 void oesencPanel::VisitOCharts( wxCommandEvent &evt )
 {
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     qDebug() << "VisitOCharts";
     callActivityMethod_ss("launchBrowser", _T("http://o-charts.org"));
 #endif
@@ -5260,7 +5321,7 @@ void pi_HTMLMessage::Populate( void )
         aboutText.Append( _T("<i>") );
 
 #if 0
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     aboutText.Append( AboutText + OpenCPNVersionAndroid  + OpenCPNInfoAlt );
 #else
     aboutText.Append( AboutText + OpenCPNVersion + OpenCPNInfo );
@@ -5434,7 +5495,7 @@ void pi_HTMLMessage::CreateControls( void )
     pST1->SetFont( *headerFont );
     mainSizer->Add( pST1, 0, wxALL | wxEXPAND, 8 );
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     wxSizer *buttonSizer = new wxBoxSizer( wxHORIZONTAL /*m_displaySize.x < m_displaySize.y ? wxVERTICAL : wxHORIZONTAL*/ );
     mainSizer->Add( buttonSizer, 0, wxALL, 0 );
 
@@ -5550,14 +5611,14 @@ void pi_HTMLMessage::OnPageChange( wxNotebookEvent& event )
 wxString GetDefaultChartInstallDirectory()
 {
     wxString rv;
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     wxStandardPaths& std_paths = wxStandardPaths::Get();
 #else
     wxStandardPaths& std_paths = *dynamic_cast<wxStandardPaths*>(&(wxTheApp->GetTraits())->GetStandardPaths());
 #endif
 
 
-#if defined( __UNIX__ ) && !defined(__WXOSX__) && !defined(__OCPN__ANDROID__)    // linux desktop
+#if defined( __UNIX__ ) && !defined(__WXOSX__) && !defined(__ANDROID__)    // linux desktop
      rv = std_paths.GetUserConfigDir() + _T("/Charts");
     //http://docs.wxwidgets.org/stable/wx_wxfilename.html#wxfilenamenormalize
 #endif
@@ -5572,7 +5633,7 @@ wxString GetDefaultChartInstallDirectory()
     rv = winChartDir + _T("\\Charts");
 #endif
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     if(g_SDK_INT > 28){                         // Android 10, and later
         rv = _T("/storage/emulated/0/Android/data/org.opencpn.opencpn/files/Charts");
         if(!::wxDirExists( rv ) ){

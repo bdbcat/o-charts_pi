@@ -67,6 +67,13 @@ endif(NOT QT_ANDROID AND NOT APPLE)
 
 if(OCPN_BUILD_USE_GLEW)
   add_definitions(-D__OCPN_USE_GLEW__)
+  include_directories("/app/extensions/o-charts_pi/include")
+
+  if (CMAKE_HOST_WIN32)
+    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/buildwin/include/glew")
+    link_libraries(${CMAKE_SOURCE_DIR}/buildwin/glew32.lib )
+  endif (CMAKE_HOST_WIN32)
+
 endif(OCPN_BUILD_USE_GLEW)
 
 
@@ -88,7 +95,6 @@ set(SRC
   src/oernc_inStream.cpp
   src/Osenc.cpp
   src/Osenc.h
-  src/DepthFont.cpp
   src/piScreenLog.cpp
   src/s57RegistrarMgr.cpp
   src/sha256.c
@@ -158,10 +164,10 @@ macro(add_plugin_libraries)
   add_subdirectory(libs/pugixml)
   target_link_libraries(${PACKAGE_NAME} ocpn::pugixml)
 
-if (MSVC)
-  add_subdirectory("libs/WindowsHeaders")
-  target_link_libraries(${PACKAGE_NAME} _windows_headers)
-endif ()
+#if (MSVC)
+#  add_subdirectory("libs/WindowsHeaders")
+#  target_link_libraries(${PACKAGE_NAME} _windows_headers)
+#endif ()
 
 
 #   add_subdirectory("libs/opencpn-glu")

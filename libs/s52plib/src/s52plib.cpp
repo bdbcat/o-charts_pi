@@ -54,7 +54,7 @@ static const double mercator_k0 = 0.9996;
 #include "poly_math.h"
 #include "LOD_reduce.h"
 #include "linmath.h"
-
+#include "Cs52_shaders.h"
 
 #include <wx/image.h>
 #include <wx/tokenzr.h>
@@ -79,26 +79,12 @@ wxFont *FindOrCreateFont_PlugIn(
 wxFont *GetOCPNScaledFont_PlugIn(wxString TextElement, int default_size = 0);
 float GetOCPNChartScaleFactor_Plugin();
 extern "C" wxString *GetpSharedDataLocation();
+
 #endif
 
 
 #ifdef __OCPN__ANDROID__
 #include "qdebug.h"
-#endif
-
-#ifndef __OCPN_USE_GLEW__
- extern PFNGLGENBUFFERSPROC                 s_glGenBuffers;
- extern PFNGLBINDBUFFERPROC                 s_glBindBuffer;
- extern PFNGLBUFFERDATAPROC                 s_glBufferData;
- extern PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
-
-#ifndef USE_ANDROID_GLES2
-#define glGenBuffers (s_glGenBuffers)
-#define glBindBuffer (s_glBindBuffer)
-#define glBufferData (s_glBufferData)
-#define glDeleteBuffers (s_glDeleteBuffers)
-#endif
-
 #endif
 
 float g_scaminScale;
@@ -347,6 +333,7 @@ s52plib::s52plib(const wxString &PLib, bool b_forceLegacy) {
   m_useStencilAP = false;
   m_useScissors = false;
   m_useFBO = false;
+  m_GLAC_VBO = false;
   m_useVBO = false;
   m_useGLSL = false;
   m_TextureFormat = -1;
@@ -360,14 +347,16 @@ s52plib::s52plib(const wxString &PLib, bool b_forceLegacy) {
   m_displayScale = 1.0;
 
   // Clear the TexFont cache
-  TexFont *f_cache = 0;
   unsigned int i;
   for (i = 0; i < TXF_CACHE; i++) {
      s_txf[i].key = 0;
      s_txf[i].cache = 0;
   }
-  m_dpifactor = 1.0;
-
+  m_dipfactor = 1.0;
+  m_ContentScaleFactor = 1.0;
+  m_FinalTextScaleFactor = 0;
+  m_TextScaleFactor = 1;
+  m_nTextFactor = 0;
 }
 
 s52plib::~s52plib() {
@@ -460,16 +449,15 @@ void s52plib::SetGLOptions(bool b_useStencil, bool b_useStencilAP,
 
 }
 
-void s52plib::SetDPIFactor( double factor) {
-  m_dpifactor = factor;
+void s52plib::SetDIPFactor( double factor) {
+  m_dipfactor = factor;
+}
+
+void s52plib::SetContentScaleFactor( double factor) {
+  m_ContentScaleFactor = factor;
 }
 
 void s52plib::SetPPMM(float ppmm) {
-
-// #ifdef __WXOSX__
-//   // Support Mac Retina displays.
-//   m_displayScale = GetOCPNCanvasWindow()->GetContentScaleFactor();
-// #endif
 
   canvas_pix_per_mm = ppmm;
 
@@ -498,13 +486,16 @@ void s52plib::SetPPMM(float ppmm) {
 
   m_display_size_mm /= m_displayScale;
 
-  wxString msg;
-  msg.Printf("Core s52plib:  ppmm: %g rv_scale_factor: %g  calc_display_size_mm: %g", ppmm, m_rv_scale_factor, m_display_size_mm);
-  wxLogMessage(msg);
+//   wxString msg;
+//   msg.Printf("Core s52plib:  ppmm: %g rv_scale_factor: %g  calc_display_size_mm: %g", ppmm, m_rv_scale_factor, m_display_size_mm);
+//   wxLogMessage(msg);
 }
 
-void s52plib::SetGuiScaleFactors(double ChartScaleFactorExp, int chart_zoom_modifier_vector) {
+void s52plib::SetScaleFactorExp(double ChartScaleFactorExp) {
   m_ChartScaleFactorExp = ChartScaleFactorExp;
+}
+
+void s52plib::SetScaleFactorZoomMod(int chart_zoom_modifier_vector) {
   m_chart_zoom_modifier_vector = chart_zoom_modifier_vector;
 }
 
@@ -610,7 +601,21 @@ bool s52plib::GetQualityOfData() {
   return (old_vis != 0);
 }
 
-void s52plib::SetGLRendererString(const wxString &renderer) {}
+void s52plib::SetGLRendererString(const wxString &renderer) {
+  m_renderer_string = renderer;
+
+  // No chart type in current use requires VBO for GLAC rendering
+  // Experimentation has shown that VBO is slower for GLAC rendering,
+  //  since the per-object state change of glBindBuffer() is slow
+  //  on most hardware, especially RPi.
+  // However, we have found that NVidea GPUs
+  //  perform much better with VBO on GLAC operations, so set that up.
+
+  if ((renderer.Upper().Contains("NVIDIA")) ||
+      (renderer.Upper().Contains("GEFORCE")))
+    m_GLAC_VBO = true;
+
+}
 
 /*
  Update the S52 Conditional Symbology Parameter Set to reflect the
@@ -635,8 +640,8 @@ void s52plib::GenerateStateHash() {
   unsigned char state_buffer[512];  // Needs to be at least this big...
   memset(state_buffer, 0, sizeof(state_buffer));
 
-  int time = ::wxGetUTCTime();
-  memcpy(state_buffer, &time, sizeof(int));
+//  int time = ::wxGetUTCTime();
+//  memcpy(state_buffer, &time, sizeof(int));
 
   size_t offset = sizeof(int);  // skipping the time int, first element
 
@@ -700,6 +705,10 @@ void s52plib::GenerateStateHash() {
     offset += sizeof(int);
   }
 
+  if (offset + sizeof(bool) < sizeof(state_buffer)) {
+    memcpy(&state_buffer[offset], &m_nTextFactor, sizeof(int));
+    offset += sizeof(int);
+  }
   m_state_hash = crc32buf(state_buffer, offset);
 }
 
@@ -1743,74 +1752,64 @@ bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
   double sfactor = 1; //vp_plib.ref_scale / vp_plib.chart_scale;
   double scale_factor = wxMax((sfactor) / 4., 1.);
 
-  //FIXME (plib)
-  //if (true/*!g_oz_vector_scale*/ || !vp_plib.b_quilt) scale_factor = 1.0;
-
   //  Place an upper bound on the scaled text size
   scale_factor = wxMin(scale_factor, 4);
+
+  scale_factor /= m_dipfactor;
+  scale_factor *= m_TextScaleFactor;
+
+  // Has there been a change in scale factor by UI?
+  if (scale_factor != m_FinalTextScaleFactor){
+    ptext->texobj = 0;    // This will leak, but only a little
+    m_FinalTextScaleFactor = scale_factor;
+
+    for (unsigned int i = 0; i < TXF_CACHE; i++) {
+     s_txf[i].key = 0;
+     s_txf[i].cache = 0;
+    }
+  }
+
 
   if (!pdc)  // OpenGL
   {
 #ifdef ocpnUSE_GL
 
-    bool b_force_no_texture = false;
-    if (scale_factor > 1.) {
-      b_force_no_texture = true;
+    bool b_force_no_texfont = false;
+    if (ptext->bspecial_char)
+      b_force_no_texfont = true;
 
-      int old_size = ptext->pFont->GetPointSize();
-      int new_size = old_size * scale_factor;
-      scaled_font = FindOrCreateFont_PlugIn(
-          new_size, ptext->pFont->GetFamily(), ptext->pFont->GetStyle(),
-          ptext->pFont->GetWeight(), false, ptext->pFont->GetFaceName());
-      wxScreenDC sdc;
-      sdc.GetTextExtent(ptext->frmtd, &w_scaled, &h_scaled, &descent, &exlead,
-                        scaled_font);  // measure the text
-
-      // Has font size changed?  If so, clear the cached bitmap, and rebuild it
-      if ((h_scaled - descent) != ptext->rendered_char_height) {
-        glDeleteTextures(1, (GLuint *)&ptext->texobj);
-        ptext->texobj = 0;
-      }
-
-      // We cannot get the font ascent value to remove the interline spacing
-      // from the font "height". So we have to estimate based on conventional
-      // Arial metrics
-      ptext->rendered_char_height = (h_scaled - descent) * 8 / 10;
-    }
-    // We render string with "special" characters the old, hard way, since we
-    // don't necessarily have the glyphs in our font, or if we do we would need
-    // a hashmap to cache and extract them And we also do this if the text is to
-    // be scaled up artificially.
-
-    //Fixme (dave)
+     //Fixme (dave)
     // We also do this the hard way for rotation of strings.  Very slow.
 //#ifdef __OCPN__ANDROID__
-    if (fabs(vp_plib.rotation) > .01) b_force_no_texture = true;
+    if (fabs(vp_plib.rotation) > .01)
+      b_force_no_texfont = true;
 //#endif
-    if ((ptext->bspecial_char) || b_force_no_texture) {
-      if (!ptext->texobj)  // is texture ready?
-      {
+
+    if (b_force_no_texfont) {
+      if (!ptext->texobj){  // is texture ready?
+
+        int old_size = ptext->pFont->GetPointSize();
+        int new_size = old_size * scale_factor / m_ContentScaleFactor;
+
+        scaled_font = FindOrCreateFont_PlugIn(
+          new_size, ptext->pFont->GetFamily(), ptext->pFont->GetStyle(),
+          ptext->pFont->GetWeight(), false, ptext->pFont->GetFaceName());
         wxScreenDC sdc;
+        sdc.GetTextExtent(ptext->frmtd, &w_scaled, &h_scaled, &descent, &exlead,
+                        scaled_font);  // measure the text
 
-        if (scale_factor <= 1.) {
-          sdc.GetTextExtent(ptext->frmtd, &w_scaled, &h_scaled, &descent,
-                            &exlead, scaled_font);  // measure the text
+        // We cannot get the font ascent value to remove the interline spacing
+        // from the font "height". So we have to estimate based on conventional
+        // Arial metrics
+        ptext->rendered_char_height = (h_scaled - descent) * 8 / 10 * m_dipfactor;
 
-          // We cannot get the font ascent value to remove the interline spacing
-          // from the font "height". So we have to estimate based on
-          // conventional Arial metrics
-          ptext->rendered_char_height = (h_scaled - descent) * 8 / 10;
-        }
-
-        ptext->text_width = w_scaled;
-        ptext->text_height = h_scaled;
+        ptext->text_width = w_scaled * m_dipfactor;
+        ptext->text_height = h_scaled * m_dipfactor;
 
         /* make power of 2 */
         int tex_w, tex_h;
-        for (tex_w = 1; tex_w < ptext->text_width; tex_w *= 2)
-          ;
-        for (tex_h = 1; tex_h < ptext->text_height; tex_h *= 2)
-          ;
+        for (tex_w = 1; tex_w < w_scaled; tex_w *= 2);
+        for (tex_h = 1; tex_h < h_scaled; tex_h *= 2);
 
         wxMemoryDC mdc;
         wxBitmap bmp(tex_w, tex_h);
@@ -1976,9 +1975,6 @@ bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
           uv[4] = 0;
           uv[5] = 1;
 
-          // w *= scale_factor;
-          // h *= scale_factor;
-
           // pixels
           coords[0] = 0;
           coords[1] = 0;
@@ -2063,6 +2059,7 @@ bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
       // rebuild font if needed
       TexFont *f_cache = 0;
       unsigned int i;
+
       for (i = 0; i < TXF_CACHE; i++) {
         if (s_txf[i].key == ptext->pFont) {
           f_cache = s_txf[i].cache;
@@ -2080,12 +2077,19 @@ bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
         if(s_txf[i].cache)
           delete s_txf[i].cache;
         s_txf[i].cache = new TexFont();
+        s_txf[i].cache->SetContentScaleFactor(m_ContentScaleFactor);
+
         f_cache = s_txf[i].cache;
-        f_cache->Build(*ptext->pFont, m_dpifactor);
+        f_cache->Build(*ptext->pFont, m_TextScaleFactor, m_dipfactor);
+
+        int wac;
+        f_cache->GetTextExtent(_T("M"), &wac, 0);
+        ptext->avgCharWidth = wac * m_dipfactor;
       }
 
       int w, h;
       f_cache->GetTextExtent(ptext->frmtd, &w, &h);
+      h *= m_dipfactor;
 
       // We don't store descent/ascent info for font texture cache
       // So we have to estimate based on conventional Arial metrics
@@ -2212,7 +2216,7 @@ bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
     yadjust += ptext->yoffs * (rendered_text_height);
 
     //  X offset specified in units of average char width
-    xadjust += ptext->xoffs * ptext->avgCharWidth;
+    xadjust += ptext->xoffs * ptext->avgCharWidth * m_dipfactor;
 
     // adjust for text justification
     switch (ptext->hjust) {
@@ -2391,7 +2395,7 @@ int s52plib::RenderT_All(ObjRazRules *rzRules, Rules *rules,
 
     //    Establish a font
     if (!text->pFont) {
-      // Process the font specifications from the LUP symbolizatio rule
+      // Process the font specifications from the LUP symbolization rule
       int spec_weight = text->weight - 0x30;
       wxFontWeight fontweight;
       if (spec_weight < 5)
@@ -2539,7 +2543,7 @@ int s52plib::RenderTE(ObjRazRules *rzRules, Rules *rules) {
 }
 
 bool s52plib::RenderHPGL(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
-                         float rot_angle) {
+                         float rot_angle, double uScale) {
   float fsf = 100 / canvas_pix_per_mm;
 
   float xscale = 1.0;
@@ -2567,7 +2571,7 @@ bool s52plib::RenderHPGL(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
     fsf *= xscale;
   }
 
-  xscale *= m_ChartScaleFactorExp;
+  xscale *= uScale;
 
   //  Special case for GEO_AREA objects with centred symbols
   if (rzRules->obj->Primitive_type == GEO_AREA) {
@@ -2799,10 +2803,21 @@ wxImage s52plib::RuleXBMToImage(Rule *prule) {
 //
 bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
                                  float rot_angle) {
+
   double scale_factor = 1.0;
 
   scale_factor *= m_ChartScaleFactorExp;
+
+    // Correct scale factor for symbolized soundings,
+    //  as sometimes found in objects OBSTRN, WRECKS, UWTROC
+  if (!strncmp(prule->name.SYNM, "SOUND", 5)) {
+      scale_factor /= m_ChartScaleFactorExp;
+      scale_factor *= m_SoundingsScaleFactor;
+  }
+
+
   scale_factor *= g_scaminScale;
+  scale_factor /= m_dipfactor;
 
   if (m_display_size_mm <
       200) {  // about 8 inches, implying some sort of smaller mobile device
@@ -3091,65 +3106,45 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
       coords[4] = 0;
       coords[5] = h;
 
-      glUseProgram(S52texture_2D_shader_program);
+      if (pCtexture_2D_shader_program[0]){
+        pCtexture_2D_shader_program[0]->Bind();
 
-      // Get pointers to the attributes in the program.
-      GLint mPosAttrib =
-          glGetAttribLocation(S52texture_2D_shader_program, "position");
-      GLint mUvAttrib =
-          glGetAttribLocation(S52texture_2D_shader_program, "aUV");
+        // Select the active texture unit.
+        glActiveTexture(GL_TEXTURE0);
 
-      // Select the active texture unit.
-      glActiveTexture(GL_TEXTURE0);
+        pCtexture_2D_shader_program[0]->SetUniform1i( "uTex", 0);
 
-      // Bind our texture to the texturing target.
-      glBindTexture(GL_TEXTURE_2D, texture);
+        // Disable VBO's (vertex buffer objects) for attributes.
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-      // Set up the texture sampler to texture unit 0
-      GLint texUni = glGetUniformLocation(S52texture_2D_shader_program, "uTex");
-      glUniform1i(texUni, 0);
+        pCtexture_2D_shader_program[0]->SetAttributePointerf( "position", coords);
+        pCtexture_2D_shader_program[0]->SetAttributePointerf( "aUV", uv);
 
-      // Disable VBO's (vertex buffer objects) for attributes.
-      glBindBuffer(GL_ARRAY_BUFFER, 0);
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        // Rotate
+        mat4x4 I, Q;
+        mat4x4_identity(I);
 
-      // Set the attribute mPosAttrib with the vertices in the screen
-      // coordinates...
-      glVertexAttribPointer(mPosAttrib, 2, GL_FLOAT, GL_FALSE, 0, coords);
-      // ... and enable it.
-      glEnableVertexAttribArray(mPosAttrib);
+        mat4x4_translate_in_place(I, r.x, r.y, 0);
+        if (abs(vp_plib.rotation) > 0)
+          mat4x4_rotate_Z(Q, I, -vp_plib.rotation);
+        else
+          mat4x4_dup(Q, I);
+        mat4x4_translate_in_place(Q, -pivot_x, -pivot_y, 0);
 
-      // Set the attribute mUvAttrib with the vertices in the GL coordinates...
-      glVertexAttribPointer(mUvAttrib, 2, GL_FLOAT, GL_FALSE, 0, uv);
-      // ... and enable it.
-      glEnableVertexAttribArray(mUvAttrib);
+        pCtexture_2D_shader_program[0]->SetUniformMatrix4fv( "TransformMatrix", (GLfloat *)Q);
 
-      // Rotate
-      mat4x4 I, Q;
-      mat4x4_identity(I);
+        // Perform the actual drawing.
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-      mat4x4_translate_in_place(I, r.x, r.y, 0);
-      mat4x4_rotate_Z(Q, I, -vp_plib.rotation);
-      mat4x4_translate_in_place(Q, -pivot_x, -pivot_y, 0);
+        // Restore the per-object transform to Identity Matrix
+        mat4x4 IM;
+        mat4x4_identity(IM);
+        pCtexture_2D_shader_program[0]->SetUniformMatrix4fv( "TransformMatrix", (GLfloat *)IM);
 
-      GLint matloc =
-          glGetUniformLocation(S52texture_2D_shader_program, "TransformMatrix");
-      glUniformMatrix4fv(matloc, 1, GL_FALSE, (const GLfloat *)Q);
-
-      // Perform the actual drawing.
-      glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-      // Restore the per-object transform to Identity Matrix
-      mat4x4 IM;
-      mat4x4_identity(IM);
-      GLint matlocf =
-          glGetUniformLocation(S52texture_2D_shader_program, "TransformMatrix");
-      glUniformMatrix4fv(matlocf, 1, GL_FALSE, (const GLfloat *)IM);
-
-      // Clean up the GL state
-      glDisableVertexAttribArray(mPosAttrib);
-      glDisableVertexAttribArray(mUvAttrib);
-      glUseProgram(0);
+        // Clean up the GL state
+        pCtexture_2D_shader_program[0]->UnBind();
+      }
 
 #endif  // GLES2
       glDisable(m_TextureFormat);
@@ -3282,7 +3277,7 @@ int s52plib::RenderSY(ObjRazRules *rzRules, Rules *rules) {
 
     //  Render a raster or vector symbol, as specified by LUP rules
     if (rules->razRule->definition.SYDF == 'V') {
-      RenderHPGL(rzRules, rules->razRule, r, angle);
+      RenderHPGL(rzRules, rules->razRule, r, angle, m_ChartScaleFactorExp);
     } else {
       if (rules->razRule->definition.SYDF == 'R')
         RenderRasterSymbol(rzRules, rules->razRule, r, angle);
@@ -3297,8 +3292,8 @@ bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
                                    float rot_angle) {
   double scale_factor = 1.0;
 
-  scale_factor *= m_ChartScaleFactorExp;
-  scale_factor *= g_scaminScale;
+  //scale_factor *= m_ChartScaleFactorExp;
+  //scale_factor *= g_scaminScale;
 
   if (m_display_size_mm <
       200) {  // about 8 inches, implying some sort of smaller mobile device
@@ -3395,12 +3390,13 @@ bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
     if (!m_texSoundings.IsBuilt() ||
         (fabs(m_texSoundings.GetScale() - scale_factor) > 0.1)) {
       m_texSoundings.Delete();
+      m_texSoundings.SetContentScaleFactor(m_ContentScaleFactor);
 
        m_soundFont = FindOrCreateFont_PlugIn(point_size, wxFONTFAMILY_SWISS,
                                              wxFONTSTYLE_NORMAL, fontWeight,
                                              false, fontFacename);
       m_texSoundings.Build(m_soundFont,
-                           scale_factor);  // texSounding owns the font
+                           scale_factor, m_dipfactor);  // texSounding owns the font
     }
   } else {
     m_soundFont = FindOrCreateFont_PlugIn(point_size, wxFONTFAMILY_SWISS,
@@ -3453,6 +3449,8 @@ bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
     pivot_x = -(pivotWidth / 4);
     pivot_y = pivotHeight / 5;
   }
+  pivot_x *= m_dipfactor;
+  pivot_y *= m_dipfactor;
 
   //        Get the bounding box for the to-be-drawn symbol
   int b_width, b_height;
@@ -3737,14 +3735,14 @@ int s52plib::RenderGLLS(ObjRazRules *rzRules, Rules *rules) {
     glBindBuffer(GL_ARRAY_BUFFER, rzRules->obj->auxParm2);
   }
 
-  glUseProgram(S52color_tri_shader_program);
+  CGLShaderProgram *shader = pCcolor_tri_shader_program[0/*GetCanvasIndex()*/];
+  shader->Bind();
 
   // Disable VBO's (vertex buffer objects) for attributes.
   if (!b_useVBO) glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-  GLint pos = glGetAttribLocation(S52color_tri_shader_program, "position");
-
+  GLint pos = shader->getAttributeLocation("position");
   float angle = 0;
 
   // We cannot use the prepared shader uniforms, as we can (and should for
@@ -3780,9 +3778,7 @@ int s52plib::RenderGLLS(ObjRazRules *rzRules, Rules *rules) {
   Q[3][0] += vp_plib.pix_width / 2;
   Q[3][1] += vp_plib.pix_height / 2;
 
-  GLint matloc =
-      glGetUniformLocation(S52color_tri_shader_program, "TransformMatrix");
-  glUniformMatrix4fv(matloc, 1, GL_FALSE, (const GLfloat *)Q);
+  shader->SetUniformMatrix4fv("TransformMatrix", (GLfloat *)Q);
 
   float colorv[4];
   colorv[0] = c->R / float(256);
@@ -3790,14 +3786,18 @@ int s52plib::RenderGLLS(ObjRazRules *rzRules, Rules *rules) {
   colorv[2] = c->B / float(256);
   colorv[3] = 1.0;
 
-  GLint colloc = glGetUniformLocation(S52color_tri_shader_program, "color");
-  glUniform4fv(colloc, 1, colorv);
+  shader->SetUniform4fv("color", colorv);
 
   if (!b_useVBO) {
     unsigned char *buffer = (unsigned char *)vertex_buffer;
     float *bufBase = (float *)buffer;
     glVertexAttribPointer(pos, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float),
                           bufBase);
+    glEnableVertexAttribArray(pos);
+  }
+  else {
+    glVertexAttribPointer(pos, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float),
+                                (GLvoid *)(0));
     glEnableVertexAttribArray(pos);
   }
 
@@ -3850,13 +3850,8 @@ int s52plib::RenderGLLS(ObjRazRules *rzRules, Rules *rules) {
       if (b_drawit) {
         // render the segment
 
-#if !defined(USE_ANDROID_GLES2) && !defined(ocpnUSE_GLSL)
-#else
         if (b_useVBO) {
-          glVertexAttribPointer(pos, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float),
-                                (GLvoid *)(seg_vbo_offset));
-          glEnableVertexAttribArray(pos);
-          glDrawArrays(GL_LINE_STRIP, 0, point_count);
+          glDrawArrays(GL_LINE_STRIP, seg_vbo_offset / (2 * sizeof(float)) , point_count);
         } else {
           unsigned char *buffer = (unsigned char *)vertex_buffer;
           buffer += seg_vbo_offset;
@@ -3866,25 +3861,18 @@ int s52plib::RenderGLLS(ObjRazRules *rzRules, Rules *rules) {
           glEnableVertexAttribArray(pos);
           glDrawArrays(GL_LINE_STRIP, 0, point_count);
         }
-#endif
       }
     }
     ls_list = ls_list->next;
   }
 
-  if (b_useVBO) glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+  if (b_useVBO) glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-#if !defined(USE_ANDROID_GLES2) && !defined(ocpnUSE_GLSL)
-#else
   // Restore shader TransForm Matrix to identity.
   mat4x4 IM;
   mat4x4_identity(IM);
-  GLint matlocf =
-      glGetUniformLocation(S52color_tri_shader_program, "TransformMatrix");
-  glUniformMatrix4fv(matlocf, 1, GL_FALSE, (const GLfloat *)IM);
-  glDisableVertexAttribArray(pos);
-  glUseProgram(0);
-#endif
+  shader->SetUniformMatrix4fv("TransformMatrix", (GLfloat *)IM);
+  shader->UnBind();
 
   glDisable(GL_LINE_STIPPLE);
   glDisable(GL_LINE_SMOOTH);
@@ -4175,10 +4163,11 @@ int s52plib::RenderLSLegacy(ObjRazRules *rzRules, Rules *rules) {
 
     VC_Element *pnode;
 
-    glUseProgram(S52color_tri_shader_program);
+    CGLShaderProgram *shader = pCcolor_tri_shader_program[0/*GetCanvasIndex()*/];
+    shader->Bind();
 
     float fBuf[4];
-    pos = glGetAttribLocation(S52color_tri_shader_program, "position");
+    pos = shader->getAttributeLocation("position");
     glVertexAttribPointer(pos, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), fBuf);
     glEnableVertexAttribArray(pos);
 
@@ -4188,8 +4177,7 @@ int s52plib::RenderLSLegacy(ObjRazRules *rzRules, Rules *rules) {
     colorv[2] = c->B / float(256);
     colorv[3] = 1.0;
 
-    GLint colloc = glGetUniformLocation(S52color_tri_shader_program, "color");
-    glUniform4fv(colloc, 1, colorv);
+    shader->SetUniform4fv("color", colorv);
 
     for (int iseg = 0; iseg < rzRules->obj->m_n_lsindex; iseg++) {
       int seg_index = iseg * 3;
@@ -4283,7 +4271,7 @@ int s52plib::RenderLSLegacy(ObjRazRules *rzRules, Rules *rules) {
     }   //for
 
     glDisableVertexAttribArray(pos);
-
+    shader->UnBind();
   }
   if (!m_pdc) {
     glDisable(GL_LINE_STIPPLE);
@@ -4365,7 +4353,8 @@ int s52plib::RenderLSPlugIn(ObjRazRules *rzRules, Rules *rules) {
 
   if (rzRules->obj->m_ls_list_legacy) {
 
-    glUseProgram(S52color_tri_shader_program);
+    CGLShaderProgram *shader = pCcolor_tri_shader_program[0/*GetCanvasIndex()*/];
+    shader->Bind();
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -4376,12 +4365,9 @@ int s52plib::RenderLSPlugIn(ObjRazRules *rzRules, Rules *rules) {
     colorv[2] = color.Blue() / float(256);
     colorv[3] = 1.0;  // transparency;
 
-    GLint colloc =
-         glGetUniformLocation(S52color_tri_shader_program, "color");
-    glUniform4fv(colloc, 1, colorv);
+    shader->SetUniform4fv("color", colorv);
 
-    GLint pos =
-        glGetAttribLocation(S52color_tri_shader_program, "position");
+    GLint pos = shader->getAttributeLocation("position");
     glEnableVertexAttribArray(pos);
 
     float *ppt;
@@ -4449,8 +4435,7 @@ int s52plib::RenderLSPlugIn(ObjRazRules *rzRules, Rules *rules) {
       ls = ls->next;
     }
 
-    glDisableVertexAttribArray(pos);
-    glUseProgram(0);
+    shader->UnBind();
   }
 
   return 1;
@@ -5500,15 +5485,11 @@ void s52plib::draw_lc_poly(wxDC *pdc, wxColor &color, int width, wxPoint *ptp,
           }
 #endif
 
-          glUseProgram(S52color_tri_shader_program);
+          CGLShaderProgram *shader = pCcolor_tri_shader_program[0/*GetCanvasIndex()*/];
+          shader->Bind();
 
           glBindBuffer(GL_ARRAY_BUFFER, 0);
           glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-          // GLint matloc =
-          // glGetUniformLocation(S52color_tri_shader_program,"MVMatrix");
-          // glUniformMatrix4fv( matloc, 1, GL_FALSE, (const
-          // GLfloat*)vp->vp_transform);
 
           float colorv[4];
           colorv[0] = color.Red() / float(256);
@@ -5516,9 +5497,7 @@ void s52plib::draw_lc_poly(wxDC *pdc, wxColor &color, int width, wxPoint *ptp,
           colorv[2] = color.Blue() / float(256);
           colorv[3] = 1.0;  // transparency;
 
-          GLint colloc =
-              glGetUniformLocation(S52color_tri_shader_program, "color");
-          glUniform4fv(colloc, 1, colorv);
+          shader->SetUniform4fv("color", colorv);
 
           float pts[4];
           pts[0] = xst1;
@@ -5526,15 +5505,14 @@ void s52plib::draw_lc_poly(wxDC *pdc, wxColor &color, int width, wxPoint *ptp,
           pts[2] = xst2;
           pts[3] = yst2;
 
-          GLint pos =
-              glGetAttribLocation(S52color_tri_shader_program, "position");
+          GLint pos = shader->getAttributeLocation("position");
           glVertexAttribPointer(pos, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float),
                                 pts);
           glEnableVertexAttribArray(pos);
 
           glDrawArrays(GL_LINES, 0, 2);
-          glDisableVertexAttribArray(pos);
-          glUseProgram(0);
+
+          shader->UnBind();
 
           glDisable(GL_LINE_SMOOTH);
           glDisable(GL_BLEND);
@@ -5571,7 +5549,8 @@ void s52plib::draw_lc_poly(wxDC *pdc, wxColor &color, int width, wxPoint *ptp,
           }
 
 #endif
-          glUseProgram(S52color_tri_shader_program);
+          CGLShaderProgram *shader = pCcolor_tri_shader_program[0/*GetCanvasIndex()*/];
+          shader->Bind();
 
           glBindBuffer(GL_ARRAY_BUFFER, 0);
           glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -5582,9 +5561,7 @@ void s52plib::draw_lc_poly(wxDC *pdc, wxColor &color, int width, wxPoint *ptp,
           colorv[2] = color.Blue() / float(256);
           colorv[3] = 1.0;  // transparency;
 
-          GLint colloc =
-              glGetUniformLocation(S52color_tri_shader_program, "color");
-          glUniform4fv(colloc, 1, colorv);
+          shader->SetUniform4fv("color", colorv);
 
           float pts[4];
           pts[0] = xs;
@@ -5592,16 +5569,14 @@ void s52plib::draw_lc_poly(wxDC *pdc, wxColor &color, int width, wxPoint *ptp,
           pts[2] = ptp[iseg + inc].x;
           pts[3] = ptp[iseg + inc].y;
 
-          GLint pos =
-              glGetAttribLocation(S52color_tri_shader_program, "position");
+          GLint pos = shader->getAttributeLocation("position");
           glVertexAttribPointer(pos, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float),
                                 pts);
           glEnableVertexAttribArray(pos);
 
           glDrawArrays(GL_LINES, 0, 2);
           glDisableVertexAttribArray(pos);
-
-          glUseProgram(0);
+          shader->UnBind();
 
           glDisable(GL_LINE_SMOOTH);
           glDisable(GL_BLEND);
@@ -5736,8 +5711,12 @@ int s52plib::RenderMPS(ObjRazRules *rzRules, Rules *rules) {
         if (!m_pdc && !strncmp(rules->razRule->name.SYNM, "SOUNDSA1", 8))
           dryAngle = -vp_plib.rotation * 180. / PI;
         // FIXME (dave) drying height symbol should be wider/bolder.
-        // Also does not rotate correctly
-        RenderHPGL(rzRules, rules->razRule, r, dryAngle);
+
+        //FIXME (dave) Patch to chartsymbols.xml
+        // Remove on Release of 5.8.0
+        rules->razRule->pos.symb.pivot_x.SYCL = 750;
+
+        RenderHPGL(rzRules, rules->razRule, r, dryAngle, m_SoundingsScaleFactor);
       } else if (rules->razRule->definition.SYDF == 'R') {
         // Parse the first rule to determine the color
         if (!bColorSet) {
@@ -5843,7 +5822,7 @@ int s52plib::RenderCARC_GLSL(ObjRazRules *rzRules, Rules *rules) {
 
   float arcw = arc_width * canvas_pix_per_mm;
   // On larger screens, make the arc_width 1.0 mm
-  if ( vp_plib.pix_width / canvas_pix_per_mm > 200)     //200 mm, about 8 inches
+  if ( m_display_size_mm > 200)     //200 mm, about 8 inches
     arcw = canvas_pix_per_mm;
 
 
@@ -5856,7 +5835,7 @@ int s52plib::RenderCARC_GLSL(ObjRazRules *rzRules, Rules *rules) {
   //   and scale it down when rendered if necessary.
 
   float xscale = 1.0;
-  if (rzRules->obj->Scamin > 10000000) {  // huge (unset) SCAMIN)
+  if (rzRules->obj->Scamin > 1e8) {  // huge (unset) SCAMIN)
     float radius_meters_target = 200;
 
     float radius_meters = (radius * canvas_pix_per_mm) / vp_plib.view_scale_ppm;
@@ -6011,7 +5990,7 @@ int s52plib::RenderCARC_GLSL(ObjRazRules *rzRules, Rules *rules) {
 
     wxPen thispen = *wxBLACK_PEN;
     thispen.SetDashes(2, dash1);
-    thispen.SetWidth(3);
+    thispen.SetWidth(2);
     thispen.SetStyle(wxPENSTYLE_USER_DASH);
 
     float a = (sectr1 - 90) * PI / 180;
@@ -6144,7 +6123,7 @@ int s52plib::RenderCARC_VBO(ObjRazRules *rzRules, Rules *rules) {
   //   and scale it down when rendered if necessary.
 
   float xscale = 1.0;
-  if (rzRules->obj->Scamin > 10000000) {  // huge (unset) SCAMIN)
+  if (rzRules->obj->Scamin > 1e8) {  // huge (unset) SCAMIN)
     float radius_meters_target = 200;
 
     float radius_meters = (radius * canvas_pix_per_mm) / vp_plib.view_scale_ppm;
@@ -6459,8 +6438,8 @@ int s52plib::RenderObjectToGLText(const wxGLContext &glcc, ObjRazRules *rzRules)
 
 int s52plib::DoRenderObject(wxDC *pdcin, ObjRazRules *rzRules) {
   // TODO  Debugging
-  //      if(rzRules->obj->Index != 6118)
-  //        return 0; //int yyp = 0;
+        //if(rzRules->obj->Index == 6775)
+        //  int yyp = 0;
 
   //        if(!strncmp(rzRules->obj->FeatureName, "berths", 6))
   //            int yyp = 0;
@@ -8042,7 +8021,8 @@ int s52plib::RenderToGLAC_GLSL(ObjRazRules *rzRules, Rules *rules) {
   double margin = BBView.GetLonRange() * .05;
   BBView.EnLarge(margin);
 
-  bool b_useVBO = m_useVBO && !rzRules->obj->auxParm1;
+  //  Use VBO if instructed by hardware renderer specification
+  bool b_useVBO = m_GLAC_VBO && !rzRules->obj->auxParm1;
 
   if (rzRules->obj->pPolyTessGeo) {
     bool b_temp_vbo = false;
@@ -8247,13 +8227,14 @@ int s52plib::RenderToGLAC_GLSL(ObjRazRules *rzRules, Rules *rules) {
       array_gl_type = GL_SHORT;
     }
 
-    glUseProgram(S52color_tri_shader_program);
+    CGLShaderProgram *shader = pCcolor_tri_shader_program[0/*GetCanvasIndex()*/];
+    shader->Bind();
 
     // Disable VBO's (vertex buffer objects) for attributes.
     if (!b_useVBO) glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    GLint pos = glGetAttribLocation(S52color_tri_shader_program, "position");
+    GLint pos = shader->getAttributeLocation("position");
     glEnableVertexAttribArray(pos);
 
     float angle = 0;
@@ -8310,9 +8291,7 @@ int s52plib::RenderToGLAC_GLSL(ObjRazRules *rzRules, Rules *rules) {
     Q[3][0] += vp_plib.pix_width / 2;
     Q[3][1] += vp_plib.pix_height / 2;
 
-    GLint matloc =
-        glGetUniformLocation(S52color_tri_shader_program, "TransformMatrix");
-    glUniformMatrix4fv(matloc, 1, GL_FALSE, (const GLfloat *)Q);
+    shader->SetUniformMatrix4fv("TransformMatrix", (GLfloat *)Q);
 
     float colorv[4];
     colorv[0] = c->R / float(256);
@@ -8320,11 +8299,17 @@ int s52plib::RenderToGLAC_GLSL(ObjRazRules *rzRules, Rules *rules) {
     colorv[2] = c->B / float(256);
     colorv[3] = 1.0;
 
-    GLint colloc = glGetUniformLocation(S52color_tri_shader_program, "color");
-    glUniform4fv(colloc, 1, colorv);
+    shader->SetUniform4fv("color", colorv);
 
-    if (b_useVBO)
+    if (b_useVBO){
       glBindBuffer(GL_ARRAY_BUFFER, rzRules->obj->auxParm0);
+      glVertexAttribPointer(pos, 2, array_gl_type, GL_FALSE, 0,
+                                (GLvoid *)(0));
+    }
+    else
+      glVertexAttribPointer(pos, 2, GL_FLOAT, GL_FALSE, 0,
+                            (GLvoid *)(ppg->single_buffer));
+   int VBO_offset_index = 0;
 
     while (p_tp) {
       LLBBox box;
@@ -8337,17 +8322,13 @@ int s52plib::RenderToGLAC_GLSL(ObjRazRules *rzRules, Rules *rules) {
       if (!BBView.IntersectOut(box)) {
 
         if (b_useVBO) {
-          glVertexAttribPointer(pos, 2, array_gl_type, GL_FALSE, 0,
-                                (GLvoid *)(vbo_offset));
-          glDrawArrays(p_tp->type, 0, p_tp->nVert);
+          glDrawArrays(p_tp->type, VBO_offset_index, p_tp->nVert);
         } else {
-          float *bufOffset = (float *)(&ppg->single_buffer[vbo_offset]);
-          glVertexAttribPointer(pos, 2, GL_FLOAT, GL_FALSE, 0, bufOffset);
-          glDrawArrays(p_tp->type, 0, p_tp->nVert);
+          glDrawArrays(p_tp->type, VBO_offset_index, p_tp->nVert);
         }
       }
 
-      vbo_offset += p_tp->nVert * 2 * array_data_size;
+      VBO_offset_index += p_tp->nVert;
 
       // pick up the next in chain
       if (!rzRules->obj->m_chart_context->chart) {  // This is a PlugIn Chart
@@ -8363,12 +8344,10 @@ int s52plib::RenderToGLAC_GLSL(ObjRazRules *rzRules, Rules *rules) {
 
     mat4x4 IM;
     mat4x4_identity(IM);
-    GLint matlocf =
-        glGetUniformLocation(S52color_tri_shader_program, "TransformMatrix");
-    glUniformMatrix4fv(matlocf, 1, GL_FALSE, (const GLfloat *)IM);
+    shader->SetUniformMatrix4fv("TransformMatrix", (GLfloat *)IM);
 
     glDisableVertexAttribArray(pos);
-    glUseProgram(0);
+    shader->UnBind();
 
     if (b_useVBO && b_temp_vbo) {
       glBufferData(GL_ARRAY_BUFFER, 0, NULL, GL_STATIC_DRAW);
@@ -9369,7 +9348,7 @@ bool s52plib::ObjectRenderCheckCat(ObjRazRules *rzRules) {
   if (m_nDisplayCategory == OTHER) {
     if (OTHER == obj_cat) {
       if (!strncmp(rzRules->LUP->OBCL, "M_", 2))
-        if (!m_bShowMeta /*&& strncmp(rzRules->LUP->OBCL, "M_QUAL", 6)*/)
+        if (!m_bShowMeta && strncmp(rzRules->LUP->OBCL, "M_QUAL", 6))
           return false;
     }
   } else {
@@ -9464,6 +9443,50 @@ bool s52plib::ObjectRenderCheckCat(ObjRazRules *rzRules) {
           if (vp_plib.chart_scale > rzRules->obj->Scamin) b_visible = false;
         }
       }
+
+      // Check for SUPER_SCAMIN, apply if enabled
+      if (m_bUseSUPER_SCAMIN){
+        if (rzRules->obj->SuperScamin < 0){
+          if ( (strncmp(rzRules->obj->FeatureName, "LNDARE", 6) &&
+                strncmp(rzRules->obj->FeatureName, "DEPARE", 6) &&
+                strncmp(rzRules->obj->FeatureName, "SWPARE", 6) &&
+                strncmp(rzRules->obj->FeatureName, "RECTRK", 6) &&
+                strncmp(rzRules->obj->FeatureName, "TSS",    3) &&
+                strncmp(rzRules->obj->FeatureName, "TSEZNE", 6) &&
+                strncmp(rzRules->obj->FeatureName, "DRGARE", 6) &&
+                strncmp(rzRules->obj->FeatureName, "COALNE", 6)) ||
+              (!strncmp(rzRules->obj->FeatureName, "LNDARE", 6) && (rzRules->LUP->ruleList->ruleType != RUL_ARE_CO))) {
+
+            double chart_ref_scale = rzRules->obj->m_chart_context->chart_scale;
+
+            // Is the ENC cell SCAMIN for this object un-defined?
+            if (rzRules->obj->Scamin > 1e8) {   // undefined default value is 1e8+2
+              // Get the scale of the ENC, and establish SUPERSCAMIN
+              double super_scamin = chart_ref_scale * 4;
+              rzRules->obj->SuperScamin = super_scamin;
+            }
+            if (rzRules->obj->Scamin > 9e6) {   // Presumed undefined value for Greek ENC Lights
+              // Get the scale of the ENC, and establish SUPERSCAMIN
+              double super_scamin = chart_ref_scale * 2;
+              rzRules->obj->SuperScamin = super_scamin;
+            }
+            if (!strncmp(rzRules->obj->FeatureName, "SOUNDG", 6)){
+                if (rzRules->obj->Scamin > 4e6) {   // Presumed undefined value for Greek ENC soundings
+                  // Get the scale of the ENC, and establish SUPERSCAMIN
+                  double super_scamin = chart_ref_scale * 2;
+                  rzRules->obj->SuperScamin = super_scamin;
+              }
+            }
+          }
+        }
+
+        // Make the test
+        if ((rzRules->obj->SuperScamin > 0) &&
+             (vp_plib.chart_scale > rzRules->obj->SuperScamin))
+            b_visible = false;
+
+      }
+
 
       //      On the other hand, $TEXTS features need not really be displayed at
       //      all scales, always To do so makes a very cluttered display
@@ -9888,8 +9911,9 @@ void s52plib::PrepareForRender(VPointCompat *vp) {
   lastLightLat = 0;
   lastLightLon = 0;
 
-  // Precalulate the ENC Soundings scale factor
+  // Precalulate the ENC scale factors
   m_SoundingsScaleFactor = exp(m_nSoundingFactor * (log(2.0) / 5.0));
+  m_TextScaleFactor = exp(m_nTextFactor * (log(2.0) / 5.0));
 }
 
 void s52plib::SetAnchorOn(bool val) {
@@ -10095,26 +10119,21 @@ void s52plib::DrawDashLine(wxPen &pen, wxCoord x1, wxCoord y1, wxCoord x2,
                            wxCoord y2) {
   glLineWidth(pen.GetWidth());
 
-  glUseProgram(S52color_tri_shader_program);
+  CGLShaderProgram *shader = pCcolor_tri_shader_program[0/*GetCanvasIndex()*/];
+  shader->Bind();
 
   float fBuf[4];
-  GLint pos = glGetAttribLocation(S52color_tri_shader_program, "position");
+  GLint pos = shader->getAttributeLocation("position");
   glVertexAttribPointer(pos, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), fBuf);
   glEnableVertexAttribArray(pos);
 
-  /*   GLint matloc =
-     glGetUniformLocation(S52color_tri_shader_program,"MVMatrix");
-     glUniformMatrix4fv( matloc, 1, GL_FALSE, (const
-     GLfloat*)cc1->GetpVP()->vp_transform);
-  */
   float colorv[4];
   colorv[0] = pen.GetColour().Red() / float(256);
   colorv[1] = pen.GetColour().Green() / float(256);
   colorv[2] = pen.GetColour().Blue() / float(256);
   colorv[3] = 1.0;
 
-  GLint colloc = glGetUniformLocation(S52color_tri_shader_program, "color");
-  glUniform4fv(colloc, 1, colorv);
+  shader->SetUniform4fv("color", colorv);
 
   if (fabs(vp_plib.rotation) > 0.01) {
     float cx = vp_plib.pix_width / 2.;
@@ -10183,8 +10202,7 @@ void s52plib::DrawDashLine(wxPen &pen, wxCoord x1, wxCoord y1, wxCoord x2,
     glDrawArrays(GL_LINES, 0, 2);
   }
 
-  glUseProgram(0);
-  glDisableVertexAttribArray(pos);
+  shader->UnBind();
 
 }
 
@@ -10488,7 +10506,8 @@ void RenderFromHPGL::Line(wxPoint from, wxPoint to) {
   }
 #ifdef ocpnUSE_GL
   if (renderToOpenGl) {
-    glUseProgram(S52color_tri_shader_program);
+    CGLShaderProgram *shader = pCcolor_tri_shader_program[0/*GetCanvasIndex()*/];
+    shader->Bind();
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -10499,8 +10518,7 @@ void RenderFromHPGL::Line(wxPoint from, wxPoint to) {
     colorv[2] = penColor.Blue() / float(256);
     colorv[3] = transparency / float(256);
 
-    GLint colloc = glGetUniformLocation(S52color_tri_shader_program, "color");
-    glUniform4fv(colloc, 1, colorv);
+    shader->SetUniform4fv("color", colorv);
 
     float pts[4];
     pts[0] = from.x;
@@ -10508,13 +10526,13 @@ void RenderFromHPGL::Line(wxPoint from, wxPoint to) {
     pts[2] = to.x;
     pts[3] = to.y;
 
-    GLint pos = glGetAttribLocation(S52color_tri_shader_program, "position");
+    GLint pos = shader->getAttributeLocation("position");
     glVertexAttribPointer(pos, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), pts);
     glEnableVertexAttribArray(pos);
 
     glDrawArrays(GL_LINES, 0, 2);
-    glUseProgram(0);
-    glDisableVertexAttribArray(pos);
+
+    shader->UnBind();
   }
 #endif
 #if wxUSE_GRAPHICS_CONTEXT
@@ -10852,11 +10870,11 @@ void RenderFromHPGL::DrawPolygon(int n, wxPoint points[], wxCoord xoffset,
         workBuf[i * 2 + 1] = (points[i].y * scale);  // + yoffset;
       }
 
-      glUseProgram(S52color_tri_shader_program);
+      CGLShaderProgram *shader = pCcolor_tri_shader_program[0/*GetCanvasIndex()*/];
+      shader->Bind();
 
       // Get pointers to the attributes in the program.
-      GLint mPosAttrib =
-          glGetAttribLocation(S52color_tri_shader_program, "position");
+      GLint mPosAttrib = shader->getAttributeLocation("position");
 
       // Disable VBO's (vertex buffer objects) for attributes.
       glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -10872,9 +10890,7 @@ void RenderFromHPGL::DrawPolygon(int n, wxPoint points[], wxCoord xoffset,
       bcolorv[2] = pen->GetColour().Blue() / float(256);
       bcolorv[3] = pen->GetColour().Alpha() / float(256);
 
-      GLint bcolloc =
-          glGetUniformLocation(S52color_tri_shader_program, "color");
-      glUniform4fv(bcolloc, 1, bcolorv);
+      shader->SetUniform4fv("color", bcolorv);
 
       // Perform the actual drawing.
       glDrawArrays(GL_LINE_LOOP, 0, n);
@@ -10885,7 +10901,7 @@ void RenderFromHPGL::DrawPolygon(int n, wxPoint points[], wxCoord xoffset,
       bcolorv[2] = brush->GetColour().Blue() / float(256);
       bcolorv[3] = brush->GetColour().Alpha() / float(256);
 
-      glUniform4fv(bcolloc, 1, bcolorv);
+      shader->SetUniform4fv("color", bcolorv);
 
       // For the simple common case of a convex rectangle...
       //  swizzle the array points to enable GL_TRIANGLE_STRIP
@@ -10902,7 +10918,7 @@ void RenderFromHPGL::DrawPolygon(int n, wxPoint points[], wxCoord xoffset,
         glDrawArrays(GL_TRIANGLES, 0, 3);
       }
 
-      glDisableVertexAttribArray(mPosAttrib);
+      shader->UnBind();
 
     }
 
@@ -10979,7 +10995,8 @@ void s52_endCallbackD_GLSL(void *data) {
 // s_odc_tess_vertex_idx << s_odc_tess_vertex_idx_this; End 5 100 10 0
   RenderFromHPGL *plib = (RenderFromHPGL *)data;
 
-  glUseProgram(S52color_tri_shader_program);
+  CGLShaderProgram *shader = pCcolor_tri_shader_program[0/*GetCanvasIndex()*/];
+  shader->Bind();
 
   // Disable VBO's (vertex buffer objects) for attributes.
   glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -10990,10 +11007,6 @@ void s52_endCallbackD_GLSL(void *data) {
   glVertexAttribPointer(pos, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), bufPt);
   glEnableVertexAttribArray(pos);
 
-  /// GLint matloc = glGetUniformLocation(color_tri_shader_program,"MVMatrix");
-  /// glUniformMatrix4fv( matloc, 1, GL_FALSE, (const
-  /// GLfloat*)s_tessVP.vp_transform);
-
   float colorv[4];
   wxColour c = plib->getBrush()->GetColour();
 
@@ -11002,10 +11015,10 @@ void s52_endCallbackD_GLSL(void *data) {
   colorv[2] = c.Blue() / float(256);
   colorv[3] = c.Alpha() / float(256);
 
-  GLint colloc = glGetUniformLocation(S52color_tri_shader_program, "color");
-  glUniform4fv(colloc, 1, colorv);
+  shader->SetUniform4fv("color", colorv);
 
   glDrawArrays(plib->s_odc_tess_mode, 0, plib->s_odc_nvertex);
+  shader->UnBind();
 }
 
 #endif  //#ifdef ocpnUSE_GL
@@ -11044,10 +11057,8 @@ void RenderFromHPGL::DrawPolygonTessellated(int n, wxPoint points[],
     gluTessBeginContour(m_tobj);
 
     //               ViewPort *pvp = cc1->GetpVP();
-
+    double *p = new double [n * 3];
     for (int i = 0; i < n; i++) {
-      double *p = new double[6];
-
       //                     if(fabs(pvp->rotation) > 0.01){
       //                         float cx = pvp->pix_width/2.;
       //                         float cy = pvp->pix_height/2.;
@@ -11060,9 +11071,9 @@ void RenderFromHPGL::DrawPolygonTessellated(int n, wxPoint points[],
       //                         p[2] = 0;
       //                     }
       //                     else
-      p[0] = points[i].x, p[1] = points[i].y, p[2] = 0;
+      p[3 * i] = points[i].x, p[3 * i + 1] = points[i].y, p[3 * i + 2] = 0;
 
-      gluTessVertex(m_tobj, p, p);
+      gluTessVertex(m_tobj, p + 3 * i, p + 3 * i);
     }
 
     gluTessEndContour(m_tobj);
@@ -11070,6 +11081,7 @@ void RenderFromHPGL::DrawPolygonTessellated(int n, wxPoint points[],
     //}
 
     gluDeleteTess(m_tobj);
+    delete[] p;
 
     //         for(std::list<double*>::iterator i =
     //         odc_combine_work_data.begin(); i!=odc_combine_work_data.end();
@@ -11096,17 +11108,17 @@ void PrepareS52ShaderUniforms(VPointCompat *vp) {
   mat4x4 I;
   mat4x4_identity(I);
 
-  glUseProgram(S52color_tri_shader_program);
-  GLint matloc = glGetUniformLocation(S52color_tri_shader_program, "MVMatrix");
-  glUniformMatrix4fv(matloc, 1, GL_FALSE, (const GLfloat *)Q);
-  GLint transloc =
-      glGetUniformLocation(S52color_tri_shader_program, "TransformMatrix");
-  glUniformMatrix4fv(transloc, 1, GL_FALSE, (const GLfloat *)I);
+//   glUseProgram(S52color_tri_shader_program);
+//   GLint matloc = glGetUniformLocation(S52color_tri_shader_program, "MVMatrix");
+//   glUniformMatrix4fv(matloc, 1, GL_FALSE, (const GLfloat *)Q);
+//   GLint transloc =
+//       glGetUniformLocation(S52color_tri_shader_program, "TransformMatrix");
+//   glUniformMatrix4fv(transloc, 1, GL_FALSE, (const GLfloat *)I);
 
   glUseProgram(S52texture_2D_shader_program);
-  matloc = glGetUniformLocation(S52texture_2D_shader_program, "MVMatrix");
+  GLint matloc = glGetUniformLocation(S52texture_2D_shader_program, "MVMatrix");
   glUniformMatrix4fv(matloc, 1, GL_FALSE, (const GLfloat *)Q);
-  transloc =
+  GLint transloc =
       glGetUniformLocation(S52texture_2D_shader_program, "TransformMatrix");
   glUniformMatrix4fv(transloc, 1, GL_FALSE, (const GLfloat *)I);
 
@@ -11144,6 +11156,23 @@ void PrepareS52ShaderUniforms(VPointCompat *vp) {
   glUniformMatrix4fv(transloc, 1, GL_FALSE, (const GLfloat *)I);
 
   glUseProgram(0);
+
+  // Load special shaders
+  loadCShaders(0);
+
+  CGLShaderProgram *shader = pCcolor_tri_shader_program[0];
+  shader->Bind();
+  shader->SetUniformMatrix4fv("MVMatrix", (GLfloat *)Q);
+  shader->SetUniformMatrix4fv("TransformMatrix", (GLfloat *)I);
+  shader->UnBind();
+
+  shader = pCtexture_2D_shader_program[0];
+  shader->Bind();
+  shader->SetUniformMatrix4fv("MVMatrix", (GLfloat *)Q);
+  shader->SetUniformMatrix4fv("TransformMatrix", (GLfloat *)I);
+  shader->UnBind();
+
+
 }
 
 //      CRC calculation for a byte buffer
