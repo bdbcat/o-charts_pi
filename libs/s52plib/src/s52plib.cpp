@@ -11028,10 +11028,10 @@ void xs52_endCallbackD_GLSL(void *data) {
 #endif  //#ifdef ocpnUSE_GL
 
 #ifdef __WXMSW__
-int filterException(int code, PEXCEPTION_POINTERS ex) {
-    //std::cout << "Filtering " << std::hex << code << std::endl;
-    return EXCEPTION_EXECUTE_HANDLER;
-}
+// int filterException(int code, PEXCEPTION_POINTERS ex) {
+//     //std::cout << "Filtering " << std::hex << code << std::endl;
+//     return EXCEPTION_EXECUTE_HANDLER;
+// }
 #endif
 
 void RenderFromHPGL::DrawPolygonTessellated(int n, wxPoint points[],
@@ -11053,13 +11053,13 @@ void RenderFromHPGL::DrawPolygonTessellated(int n, wxPoint points[],
     s_odc_tess_vertex_idx = 0;
 
     gluTessCallback(m_tobj, GLU_TESS_VERTEX_DATA,
-                    (_GLUfuncptr) &xs52_vertexCallbackD_GLSL);
+                    (_GLUfuncptrA) &xs52_vertexCallbackD_GLSL);
     gluTessCallback(m_tobj, GLU_TESS_BEGIN_DATA,
-                    (void(__stdcall *)())&xs52_beginCallbackD_GLSL);
+                    (_GLUfuncptrA)&xs52_beginCallbackD_GLSL);
     gluTessCallback(m_tobj, GLU_TESS_END_DATA,
-                    (void(__stdcall *)())&xs52_endCallbackD_GLSL);
+                    (_GLUfuncptrA)&xs52_endCallbackD_GLSL);
     gluTessCallback(m_tobj, GLU_TESS_COMBINE_DATA,
-                    (void(__stdcall *)())&xs52_combineCallbackD);
+                    (_GLUfuncptrA)&xs52_combineCallbackD);
 
     gluTessNormal(m_tobj, 0, 0, 1);
     gluTessProperty(m_tobj, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NONZERO);
