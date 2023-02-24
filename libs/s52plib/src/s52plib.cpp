@@ -11036,6 +11036,8 @@ void xs52_endCallbackD_GLSL(void *data) {
 
 void RenderFromHPGL::DrawPolygonTessellated(int n, wxPoint points[],
                                             wxCoord xoffset, wxCoord yoffset) {
+  return;
+
   //    if( 0 )
   // dc->DrawPolygon( n, points, xoffset, yoffset );
   // else
