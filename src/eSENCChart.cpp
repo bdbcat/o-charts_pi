@@ -2586,6 +2586,23 @@ bool eSENCChart::DoRenderRectOnGL( const wxGLContext &glc, const ViewPort& VPoin
 #endif
 extern int n_areaObjs;
 
+bool ObjectRenderCheckPosReduced(ObjRazRules *rzRules, LLBBox vpBox) {
+  if (rzRules->obj == NULL) return false;
+
+  // Of course, the object must be at least partly visible in the VPointCompat
+  const LLBBox &testBox = rzRules->obj->BBObj;
+
+  if (vpBox.GetMaxLat() < testBox.GetMinLat() ||
+      vpBox.GetMinLat() > testBox.GetMaxLat())
+    return false;
+
+  if (vpBox.GetMaxLon() >= testBox.GetMinLon() &&
+      vpBox.GetMinLon() <= testBox.GetMaxLon())
+    return true;
+
+  return false;
+}
+
 bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoint1, wxRect &rect1,
                               const ViewPort& VPoint2, wxRect &rect2, bool b_useStencil )
 {
@@ -2639,7 +2656,8 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
              glScissor(rect1.x, m_cvp.pix_height-rect1.height-rect1.y, rect1.width, rect1.height);
 #endif
 
-            ps52plib->RenderAreaToGL( glc, crnt );
+            if (ObjectRenderCheckPosReduced(crnt, tvp1.GetBBox()))
+              ps52plib->RenderAreaToGL( glc, crnt );
 
         }
     }
@@ -2676,6 +2694,7 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
               glEnable(GL_SCISSOR_TEST);
               glScissor(rect2.x, m_cvp.pix_height-rect2.height-rect2.y, rect2.width, rect2.height);
   #endif
+            if (ObjectRenderCheckPosReduced(crnt, tvp2.GetBBox()))
               ps52plib->RenderAreaToGL( glc, crnt );
           }
       }
@@ -2699,7 +2718,8 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
             top = top->next;               // next object
             crnt->sm_transform_parms = &vp_transform;
 
-           ps52plib->RenderObjectToGL( glc, crnt );
+            if (ObjectRenderCheckPosReduced(crnt, tvp1.GetBBox()))
+              ps52plib->RenderObjectToGL( glc, crnt );
         }
     }
 
@@ -2712,7 +2732,8 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
             top = top->next;
             crnt->sm_transform_parms = &vp_transform;
 
-            ps52plib->RenderObjectToGL( glc, crnt );
+            if (ObjectRenderCheckPosReduced(crnt, tvp1.GetBBox()))
+              ps52plib->RenderObjectToGL( glc, crnt );
          }
     }
 
@@ -2727,7 +2748,8 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
             top = top->next;
             crnt->sm_transform_parms = &vp_transform;
 
-            ps52plib->RenderObjectToGL( glc, crnt );
+            if (ObjectRenderCheckPosReduced(crnt, tvp1.GetBBox()))
+              ps52plib->RenderObjectToGL( glc, crnt );
         }
 
     }
@@ -2749,6 +2771,7 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
               top = top->next;               // next object
               crnt->sm_transform_parms = &vp_transform;
 
+            if (ObjectRenderCheckPosReduced(crnt, tvp2.GetBBox()))
               ps52plib->RenderObjectToGL( glc, crnt );
           }
       }
@@ -2762,6 +2785,7 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
               top = top->next;
               crnt->sm_transform_parms = &vp_transform;
 
+            if (ObjectRenderCheckPosReduced(crnt, tvp2.GetBBox()))
               ps52plib->RenderObjectToGL( glc, crnt );
           }
       }
@@ -2777,6 +2801,7 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
               top = top->next;
               crnt->sm_transform_parms = &vp_transform;
 
+            if (ObjectRenderCheckPosReduced(crnt, tvp2.GetBBox()))
               ps52plib->RenderObjectToGL( glc, crnt );
           }
       }
