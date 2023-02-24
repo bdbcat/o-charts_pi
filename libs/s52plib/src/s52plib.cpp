@@ -10953,7 +10953,7 @@ typedef union {
 
 
 static std::list<double *> odc_combine_work_data;
-static void s52_combineCallbackD(GLdouble coords[3], GLdouble *vertex_data[4],
+static void xs52_combineCallbackD(GLdouble coords[3], GLdouble *vertex_data[4],
                                  GLfloat weight[4], GLdouble **dataOut,
                                  void *data) {
   //     double *vertex = new double[3];
@@ -10962,7 +10962,7 @@ static void s52_combineCallbackD(GLdouble coords[3], GLdouble *vertex_data[4],
   //     *dataOut = vertex;
 }
 
-void s52_vertexCallbackD_GLSL(GLvoid *vertex, void *data) {
+void xs52_vertexCallbackD_GLSL(GLvoid *vertex, void *data) {
   RenderFromHPGL *plib = (RenderFromHPGL *)data;
 
   // Grow the work buffer if necessary
@@ -10987,14 +10987,14 @@ void s52_vertexCallbackD_GLSL(GLvoid *vertex, void *data) {
   plib->s_odc_nvertex++;
 }
 
-void s52_beginCallbackD_GLSL(GLenum mode, void *data) {
+void xs52_beginCallbackD_GLSL(GLenum mode, void *data) {
   RenderFromHPGL *plib = (RenderFromHPGL *)data;
   plib->s_odc_tess_vertex_idx_this = plib->s_odc_tess_vertex_idx;
   plib->s_odc_tess_mode = mode;
   plib->s_odc_nvertex = 0;
 }
 
-void s52_endCallbackD_GLSL(void *data) {
+void xs52_endCallbackD_GLSL(void *data) {
 // qDebug() << "End" << s_odc_nvertex << s_odc_tess_buf_len <<
 // s_odc_tess_vertex_idx << s_odc_tess_vertex_idx_this; End 5 100 10 0
   RenderFromHPGL *plib = (RenderFromHPGL *)data;
@@ -11027,6 +11027,13 @@ void s52_endCallbackD_GLSL(void *data) {
 
 #endif  //#ifdef ocpnUSE_GL
 
+#ifdef __WXMSW__
+int filterException(int code, PEXCEPTION_POINTERS ex) {
+    //std::cout << "Filtering " << std::hex << code << std::endl;
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+#endif
+
 void RenderFromHPGL::DrawPolygonTessellated(int n, wxPoint points[],
                                             wxCoord xoffset, wxCoord yoffset) {
   //    if( 0 )
@@ -11046,13 +11053,13 @@ void RenderFromHPGL::DrawPolygonTessellated(int n, wxPoint points[],
     s_odc_tess_vertex_idx = 0;
 
     gluTessCallback(m_tobj, GLU_TESS_VERTEX_DATA,
-                    (_GLUfuncptrA)s52_vertexCallbackD_GLSL);
+                    (_GLUfuncptr) &xs52_vertexCallbackD_GLSL);
     gluTessCallback(m_tobj, GLU_TESS_BEGIN_DATA,
-                    (_GLUfuncptrA)&s52_beginCallbackD_GLSL);
+                    (void(__stdcall *)())&xs52_beginCallbackD_GLSL);
     gluTessCallback(m_tobj, GLU_TESS_END_DATA,
-                    (_GLUfuncptrA)&s52_endCallbackD_GLSL);
+                    (void(__stdcall *)())&xs52_endCallbackD_GLSL);
     gluTessCallback(m_tobj, GLU_TESS_COMBINE_DATA,
-                    (_GLUfuncptrA)&s52_combineCallbackD);
+                    (void(__stdcall *)())&xs52_combineCallbackD);
 
     gluTessNormal(m_tobj, 0, 0, 1);
     gluTessProperty(m_tobj, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_NONZERO);
@@ -11081,11 +11088,22 @@ void RenderFromHPGL::DrawPolygonTessellated(int n, wxPoint points[],
     }
 
     gluTessEndContour(m_tobj);
+
+#ifdef __WXMSW__
+  __try{
     gluTessEndPolygon(m_tobj);
-    //}
+  }
+//   __except(filterException(GetExceptionCode(), GetExceptionInformation())) {
+  __except(EXCEPTION_EXECUTE_HANDLER) {
+    int yyp = 4;
+  }
+#else
+    gluTessEndPolygon(m_tobj);
+#endif
 
     gluDeleteTess(m_tobj);
     delete[] p;
+
 
     //         for(std::list<double*>::iterator i =
     //         odc_combine_work_data.begin(); i!=odc_combine_work_data.end();
