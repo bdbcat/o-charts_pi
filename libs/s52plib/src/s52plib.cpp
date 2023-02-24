@@ -11036,8 +11036,6 @@ void xs52_endCallbackD_GLSL(void *data) {
 
 void RenderFromHPGL::DrawPolygonTessellated(int n, wxPoint points[],
                                             wxCoord xoffset, wxCoord yoffset) {
-  return;
-
   //    if( 0 )
   // dc->DrawPolygon( n, points, xoffset, yoffset );
   // else
@@ -11089,21 +11087,22 @@ void RenderFromHPGL::DrawPolygonTessellated(int n, wxPoint points[],
       gluTessVertex(m_tobj, p + 3 * i, p + 3 * i);
     }
 
-    gluTessEndContour(m_tobj);
-
 #ifdef __WXMSW__
   __try{
+    gluTessEndContour(m_tobj);
     gluTessEndPolygon(m_tobj);
+    gluDeleteTess(m_tobj);
   }
 //   __except(filterException(GetExceptionCode(), GetExceptionInformation())) {
   __except(EXCEPTION_EXECUTE_HANDLER) {
     int yyp = 4;
   }
 #else
+    gluTessEndContour(m_tobj);
     gluTessEndPolygon(m_tobj);
+    gluDeleteTess(m_tobj);
 #endif
 
-    gluDeleteTess(m_tobj);
     delete[] p;
 
 
