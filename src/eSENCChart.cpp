@@ -7652,15 +7652,37 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
             lightsHtml << _T("<td><font size=-1>");
 
             wxString colorStr;
-            attrIndex = thisLight.attributeNames.Index( _T("COLOUR") );
-            if( attrIndex != wxNOT_FOUND ) {
-                wxString color = thisLight.attributeValues.Item( attrIndex );
-                if( color == _T("red (3)") )
-                    colorStr = _T("<table border=0><tr><td bgcolor=red>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
-                if( color == _T("green (4)") )
-                    colorStr = _T("<table border=0><tr><td bgcolor=green>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
-                if( color == _T("white (1)") )
-                    colorStr = _T("<table border=0><tr><td bgcolor=yellow>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
+            attrIndex = thisLight.attributeNames.Index(_T("COLOUR"));
+            if (attrIndex != wxNOT_FOUND) {
+              wxString color = thisLight.attributeValues.Item(attrIndex);
+              if (color == _T("red (3)") || color == _T("red(3)"))
+                colorStr =
+                    _T("<table border=0><tr><td ")
+                    _T("bgcolor=red>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
+              else if (color == _T("green (4)") || color == _T("green(4)"))
+                colorStr =
+                    _T("<table border=0><tr><td ")
+                    _T("bgcolor=green>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
+              else if (color == _T("white (1)") || color == _T("white(1)"))
+                colorStr =
+                    _T("<table border=0><tr><td ")
+                    _T("bgcolor=white>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
+              else if (color == _T("yellow (6)") || color == _T("yellow(6)"))
+                colorStr =
+                    _T("<table border=0><tr><td ")
+                    _T("bgcolor=yellow>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
+              else if (color == _T("blue (5)") || color == _T("blue(5)"))
+                colorStr =
+                    _T("<table border=0><tr><td ")
+                    _T("bgcolor=blue>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
+              else if (color == _T("magenta (12)") || color == _T("magenta(12)"))
+                colorStr =
+                    _T("<table border=0><tr><td ")
+                    _T("bgcolor=magenta>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
+              else
+                colorStr =
+                    _T("<table border=0><tr><td ")
+                    _T("bgcolor=grey>&nbsp;?&nbsp;</td></tr></table> ");
             }
 
             int visIndex = thisLight.attributeNames.Index( _T("LITVIS") );
@@ -7689,15 +7711,16 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
                 lightsHtml << character.BeforeFirst( wxChar( '(' ) ) << _T(" ");
             }
 
-            attrIndex = thisLight.attributeNames.Index( _T("COLOUR") );
-            if( attrIndex != wxNOT_FOUND ) {
-                lightsHtml << _T(" ") << thisLight.attributeValues.Item( attrIndex ).Upper()[0];
-                lightsHtml << _T(" ");
-            }
 
             attrIndex = thisLight.attributeNames.Index( _T("SIGGRP") );
             if( attrIndex != wxNOT_FOUND ) {
                 lightsHtml << thisLight.attributeValues.Item( attrIndex );
+                lightsHtml << _T(" ");
+            }
+
+            attrIndex = thisLight.attributeNames.Index( _T("COLOUR") );
+            if( attrIndex != wxNOT_FOUND ) {
+                lightsHtml << _T(" ") << thisLight.attributeValues.Item( attrIndex ).Upper()[0];
                 lightsHtml << _T(" ");
             }
 
@@ -7706,6 +7729,7 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
                 lightsHtml << thisLight.attributeValues.Item( attrIndex );
                 lightsHtml << _T(" ");
             }
+
 
             attrIndex = thisLight.attributeNames.Index( _T("HEIGHT") );
             if( attrIndex != wxNOT_FOUND ) {
