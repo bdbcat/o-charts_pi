@@ -7691,12 +7691,12 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
                 if(vis.Contains( _T("8"))){
                     if( attrIndex != wxNOT_FOUND ) {
                         wxString color = thisLight.attributeValues.Item( attrIndex );
-                        if( color == _T("red (3)") )
-                            colorStr = _T("<table border=0><tr><td bgcolor=DarkRed>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
-                        if( color == _T("green (4)") )
-                            colorStr = _T("<table border=0><tr><td bgcolor=DarkGreen>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
-                        if( color == _T("white (1)") )
-                            colorStr = _T("<table border=0><tr><td bgcolor=GoldenRod>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
+                        if (( color == _T("red (3)") || color == _T("red(3)")))
+                             colorStr = _T("<table border=0><tr><td bgcolor=DarkRed>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
+                        if (( color == _T("green (4)") || color == _T("green(4)")))
+                             colorStr = _T("<table border=0><tr><td bgcolor=DarkGreen>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
+                        if (( color == _T("white (1)") || color == _T("white(1)")))
+                             colorStr = _T("<table border=0><tr><td bgcolor=GoldenRod>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
                     }
                 }
             }
