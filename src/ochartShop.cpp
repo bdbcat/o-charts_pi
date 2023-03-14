@@ -671,32 +671,6 @@ int ShowScrollMessageDialog(wxWindow *parent, const wxString& message,  const wx
 
 
 #ifdef __OCPN_USE_CURL__
-size_t wxcurl_string_write_UTF8(void* ptr, size_t size, size_t nmemb, void* pcharbuf)
-{
-    size_t iRealSize = size * nmemb;
-    wxCharBuffer* pStr = (wxCharBuffer*) pcharbuf;
-
-//     if(pStr)
-//     {
-//         wxString str = wxString(*pStr, wxConvUTF8) + wxString((const char*)ptr, wxConvUTF8);
-//         *pStr = str.mb_str();
-//     }
-
-    if(pStr)
-    {
-#ifdef __WXMSW__
-        wxString str1a = wxString(*pStr);
-        wxString str2 = wxString((const char*)ptr, wxConvUTF8, iRealSize);
-        *pStr = (str1a + str2).mb_str();
-#else
-        wxString str = wxString(*pStr, wxConvUTF8) + wxString((const char*)ptr, wxConvUTF8, iRealSize);
-        *pStr = str.mb_str(wxConvUTF8);
-#endif
-    }
-
-    return iRealSize;
-}
-
 static int xferinfo(void *p,
                     curl_off_t dltotal, curl_off_t dlnow,
                     curl_off_t ultotal, curl_off_t ulnow)
@@ -707,6 +681,28 @@ static int xferinfo(void *p,
     }
 
     return 0;
+}
+
+struct memory {
+  char *response;
+  size_t size;
+};
+
+static size_t cb(void *data, size_t size, size_t nmemb, void *clientp)
+{
+  size_t realsize = size * nmemb;
+  struct memory *mem = (struct memory *)clientp;
+
+  char *ptr = (char *)realloc(mem->response, mem->size + realsize + 1);
+  if(ptr == NULL)
+    return 0;  /* out of memory! */
+
+  mem->response = ptr;
+  memcpy(&(mem->response[mem->size]), data, realsize);
+  mem->size += realsize;
+  mem->response[mem->size] = 0;
+
+  return realsize;
 }
 
 class wxCurlHTTPNoZIP : public wxCurlHTTP
@@ -727,6 +723,8 @@ public:
 protected:
     void SetCurlHandleToDefaults(const wxString& relativeURL);
 
+    struct memory m_chunk;
+
 };
 
 wxCurlHTTPNoZIP::wxCurlHTTPNoZIP(const wxString& szURL /*= wxEmptyString*/,
@@ -738,11 +736,14 @@ wxCurlHTTPNoZIP::wxCurlHTTPNoZIP(const wxString& szURL /*= wxEmptyString*/,
 : wxCurlHTTP(szURL, szUserName, szPassword, pEvtHandler, id, flags)
 
 {
+    m_chunk.response = 0;
+    m_chunk.size = 0;
 }
 
 wxCurlHTTPNoZIP::~wxCurlHTTPNoZIP()
 {
     ResetPostData();
+    free(m_chunk.response);
 }
 
 void wxCurlHTTPNoZIP::SetCurlHandleToDefaults(const wxString& relativeURL)
@@ -769,6 +770,9 @@ bool wxCurlHTTPNoZIP::Post(wxInputStream& buffer, const wxString& szRemoteFile /
 {
     curl_off_t iSize = 0;
 
+    m_chunk.response = 0;
+    m_chunk.size = 0;
+
     if(m_pCURL && buffer.IsOk())
     {
         SetCurlHandleToDefaults(szRemoteFile);
@@ -785,8 +789,8 @@ bool wxCurlHTTPNoZIP::Post(wxInputStream& buffer, const wxString& szRemoteFile /
 
         //  Use a private data write trap function to handle UTF8 content
         //SetStringWriteFunction(m_szResponseBody);
-        SetOpt(CURLOPT_WRITEFUNCTION, wxcurl_string_write_UTF8);         // private function
-        SetOpt(CURLOPT_WRITEDATA, (void*)&m_szResponseBody);
+        SetOpt(CURLOPT_WRITEFUNCTION, cb);         // private function
+        SetOpt(CURLOPT_WRITEDATA, (void*)&m_chunk);
 
         curl_easy_setopt(m_pCURL, CURLOPT_XFERINFOFUNCTION, xferinfo);
         curl_easy_setopt(m_pCURL, CURLOPT_NOPROGRESS, 0L);
@@ -803,14 +807,7 @@ bool wxCurlHTTPNoZIP::Post(wxInputStream& buffer, const wxString& szRemoteFile /
 
 std::string wxCurlHTTPNoZIP::GetResponseBody() const
 {
-#ifndef __arm__
-    wxString s = wxString((const char *)m_szResponseBody, wxConvLibc);
-    return std::string(s.mb_str());
-
-#else
-    return std::string((const char *)m_szResponseBody);
-#endif
-
+  return std::string(m_chunk.response, m_chunk.size);
 }
 #endif          //__OCPN_USE_CURL__
 
@@ -4039,7 +4036,7 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
 
     wxColour c;
 
-    wxString nameString = m_pChart->chartName;
+    wxString nameString = wxString::FromUTF8( m_pChart->chartName.c_str());
     //if(!m_pChart->quantityId.IsSameAs(_T("1")))
       //  nameString += _T(" (") + m_pChart->quantityId + _T(")");
 
