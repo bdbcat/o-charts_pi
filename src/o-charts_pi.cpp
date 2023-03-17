@@ -940,6 +940,13 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
             }
 
             // Per canvas values can be overriden here.
+            int icat;
+            if( root[_T("OpenCPN S52PLIB DisplayCategory")].IsInt())
+              if( root[_T("OpenCPN S52PLIB DisplayCategory")].AsInt(icat) ){
+                _DisCat dcat = (_DisCat)icat;
+                ps52plib->SetDisplayCategory( dcat );
+            }
+
             if(root[_T("OpenCPN S52PLIB ShowText")].IsBool())
               ps52plib->m_bShowS57Text = root[_T("OpenCPN S52PLIB ShowText")].AsBool();
             if(root[_T("OpenCPN S52PLIB ShowSoundings")].IsBool())
@@ -993,13 +1000,7 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
             if(root[_T("OpenCPN S52PLIB TextFactor")].IsInt())
               ps52plib->m_nTextFactor = root[_T("OpenCPN S52PLIB TextFactor")].AsInt();
 
-            int icat;
-            if( root[_T("OpenCPN S52PLIB DisplayCategory")].AsInt(icat) ){
-                _DisCat dcat = (_DisCat)icat;
-                ps52plib->SetDisplayCategory( dcat );
-            }
-
-                            // Detect and manage "LIGHTS" toggle
+                             // Detect and manage "LIGHTS" toggle
             if(root[_T("OpenCPN S52PLIB ShowLights")].IsBool()){
                 bool bNewVal = root[_T("OpenCPN S52PLIB ShowLights")].AsBool();
                 if(bNewVal != !ps52plib->GetLightsOff()){
