@@ -124,6 +124,7 @@ class PixelCache;
 
 class RenderFromHPGL;
 class TexFont;
+class wxFileConfig;
 
 class noshow_element {
 public:
@@ -394,8 +395,8 @@ public:
 
   ChartSymbols m_chartSymbols;
 
-  void PLIB_LoadS57GlobalConfig();
-  void PLIB_LoadS57ObjectConfig();
+  void PLIB_LoadS57GlobalConfig(wxFileConfig *pconfig);
+  void PLIB_LoadS57ObjectConfig(wxFileConfig *pconfig);
   void SetReducedBBox(LLBBox box){ reducedBBox = box;}
 
 private:

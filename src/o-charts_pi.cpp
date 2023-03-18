@@ -930,12 +930,11 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
             if(root[_T("OpenCPN S52PLIB GlobalReconfig")].IsBool()){
                 bool needReconfig = root[_T("OpenCPN S52PLIB GlobalReconfig")].AsBool();
                 if(needReconfig){
-//FIXME (dave) Think about this...
-//                    ps52plib->PLIB_LoadS57GlobalConfig();
-//                    ps52plib->PLIB_LoadS57ObjectConfig();
+                  ps52plib->PLIB_LoadS57GlobalConfig(GetOCPNConfigObject());
+                  ps52plib->PLIB_LoadS57ObjectConfig(GetOCPNConfigObject());
 
-                    // Set the chart object scale factor, it may have changed.
-                    g_ChartScaleFactorExp = GetOCPNChartScaleFactor_Plugin();
+                  // Set the chart object scale factor, it may have changed.
+                  g_ChartScaleFactorExp = GetOCPNChartScaleFactor_Plugin();
                 }
             }
 

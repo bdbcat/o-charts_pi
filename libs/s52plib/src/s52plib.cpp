@@ -9768,12 +9768,10 @@ void s52plib::PLIB_LoadS57Config() {
     }
   }
 }
+#endif
 
-void s52plib::PLIB_LoadS57GlobalConfig()
+void s52plib::PLIB_LoadS57GlobalConfig(wxFileConfig *pconfig)
 {
-    //    Get a pointer to the opencpn configuration object
-    wxFileConfig *pconfig = GetOCPNConfigObject();
-
     int read_int;
     double dval;
 
@@ -9827,14 +9825,8 @@ void s52plib::PLIB_LoadS57GlobalConfig()
 }
 
 
-void s52plib::PLIB_LoadS57ObjectConfig()
+void s52plib::PLIB_LoadS57ObjectConfig(wxFileConfig *pconfig)
 {
-    //    Get a pointer to the opencpn configuration object
-    wxFileConfig *pconfig = GetOCPNConfigObject();
-
-    //int read_int;
-    //double dval;
-
     //    S57 Object Class Visibility
 
     OBJLElement *pOLE;
@@ -9878,7 +9870,6 @@ void s52plib::PLIB_LoadS57ObjectConfig()
         }
     }
 }
-#endif
 
 //    Do all those things necessary to prepare for a new rendering
 void s52plib::PrepareForRender(void) { PrepareForRender( &vp_plib); }
