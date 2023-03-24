@@ -23,7 +23,6 @@ include(GetArch)
 include(PluginSetup)
 
 # some helper vars (_ prefix)
-git config --global --add safe.directory /ci-source
 
 execute_process(
   COMMAND git log -1 --format=%h
