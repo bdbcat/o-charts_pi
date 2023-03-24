@@ -1510,7 +1510,7 @@ void o_charts_pi::ShowPreferencesDialog( wxWindow* parent )
 #endif
 
     g_prefs_dialog = new oesencPrefsDialog( parent, wxID_ANY, titleString, wxPoint( 20, 20), wxDefaultSize, style );
-    g_prefs_dialog->Fit();
+    //g_prefs_dialog->Fit();
 //    g_prefs_dialog->SetSize(wxSize(300, -1));
     //wxColour cl;
     //GetGlobalColor(_T("DILG1"), &cl);
@@ -3348,22 +3348,40 @@ oesencPrefsDialog::oesencPrefsDialog( wxWindow* parent, wxWindowID id, const wxS
 
         wxBoxSizer* bSizerTop = new wxBoxSizer( wxVERTICAL );
 
-        wxPanel *content = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBG_STYLE_ERASE );
-        bSizerTop->Add(content, 0, wxALL|wxEXPAND, WXC_FROM_DIP(10));
+        wxScrolledWindow *scrollWin = new wxScrolledWindow(
+          this, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), wxVSCROLL);
 
-        wxBoxSizer* bSizer2 = new wxBoxSizer( wxVERTICAL );
-        content->SetSizer(bSizer2);
+        scrollWin->SetScrollRate(1, 1);
+        bSizerTop->Add(scrollWin, 1, wxEXPAND | wxALL, 0);
+
+//         m_sdbSizerBtns = new wxStdDialogButtonSizer();
+//         m_sdbSizerBtnsOK = new wxButton(this, wxID_OK);
+//         m_sdbSizerBtns->AddButton(m_sdbSizerBtnsOK);
+//         m_sdbSizerBtnsCancel = new wxButton(this, wxID_CANCEL, _("Cancel"));
+//         m_sdbSizerBtns->AddButton(m_sdbSizerBtnsCancel);
+//         m_sdbSizerBtns->Realize();
+//
+//         bSizerTop->Add(m_sdbSizerBtns, 0, wxALL | wxEXPAND, 5);
+
+        wxBoxSizer *bSizer2 = new wxBoxSizer(wxVERTICAL);
+        scrollWin->SetSizer(bSizer2);
+
+//         wxPanel *content = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBG_STYLE_ERASE );
+//         bSizerTop->Add(content, 0, wxALL|wxEXPAND, WXC_FROM_DIP(10));
+//
+//         wxBoxSizer* bSizer2 = new wxBoxSizer( wxVERTICAL );
+//         content->SetSizer(bSizer2);
 
         // Plugin Version
         wxString extVersion;
         extVersion.Printf(_T("%d.%d.%d.%d"), PLUGIN_VERSION_MAJOR, PLUGIN_VERSION_MINOR, PLUGIN_VERSION_PATCH, PLUGIN_VERSION_TWEAK);
 
         wxString versionText = _(" o-charts Version: ") + extVersion;
-        wxStaticText *versionTextBox = new wxStaticText(content, wxID_ANY, versionText);
+        wxStaticText *versionTextBox = new wxStaticText(scrollWin, wxID_ANY, versionText);
         bSizer2->Add(versionTextBox, 1, wxALL | wxALIGN_CENTER_HORIZONTAL, 20 );
 
         //  Show EULA
-        m_buttonShowEULA = new wxButton( content, wxID_ANY, _("Show EULA"), wxDefaultPosition, wxDefaultSize, 0 );
+        m_buttonShowEULA = new wxButton( scrollWin, wxID_ANY, _("Show EULA"), wxDefaultPosition, wxDefaultSize, 0 );
         bSizer2->AddSpacer( 10 );
         bSizer2->Add( m_buttonShowEULA, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
         m_buttonShowEULA->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(o_charts_pi_event_handler::OnShowEULA), NULL, g_event_handler );
@@ -3371,8 +3389,8 @@ oesencPrefsDialog::oesencPrefsDialog( wxWindow* parent, wxWindowID id, const wxS
 
 #ifndef __OCPN__ANDROID__
         //  FPR File Permit
-        wxStaticBoxSizer* sbSizerFPR= new wxStaticBoxSizer( new wxStaticBox( content, wxID_ANY, _("System Identification") ), wxHORIZONTAL );
-        m_fpr_text = new wxStaticText(content, wxID_ANY, _T(" "));
+        wxStaticBoxSizer* sbSizerFPR= new wxStaticBoxSizer( new wxStaticBox( scrollWin, wxID_ANY, _("System Identification") ), wxHORIZONTAL );
+        m_fpr_text = new wxStaticText(scrollWin, wxID_ANY, _T(" "));
         if(g_fpr_file.Len())
              m_fpr_text->SetLabel( wxFileName::FileName(g_fpr_file).GetFullName() );
         else
@@ -3381,14 +3399,14 @@ oesencPrefsDialog::oesencPrefsDialog( wxWindow* parent, wxWindowID id, const wxS
         sbSizerFPR->Add(m_fpr_text, wxEXPAND);
         bSizer2->Add(sbSizerFPR, 0, wxEXPAND, 50 );
 
-        m_buttonNewFPR = new wxButton( content, wxID_ANY, _("Create System Identifier file..."), wxDefaultPosition, wxDefaultSize, 0 );
+        m_buttonNewFPR = new wxButton( scrollWin, wxID_ANY, _("Create System Identifier file..."), wxDefaultPosition, wxDefaultSize, 0 );
 
         bSizer2->AddSpacer( 5 );
         bSizer2->Add( m_buttonNewFPR, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
 
         m_buttonNewFPR->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(o_charts_pi_event_handler::OnNewFPRClick), NULL, g_event_handler );
 
-        m_buttonNewDFPR = new wxButton( content, wxID_ANY, _("Create USB key dongle System ID file..."), wxDefaultPosition, wxDefaultSize, 0 );
+        m_buttonNewDFPR = new wxButton( scrollWin, wxID_ANY, _("Create USB key dongle System ID file..."), wxDefaultPosition, wxDefaultSize, 0 );
 
         bSizer2->AddSpacer( 5 );
         bSizer2->Add( m_buttonNewDFPR, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
@@ -3396,9 +3414,9 @@ oesencPrefsDialog::oesencPrefsDialog( wxWindow* parent, wxWindowID id, const wxS
         m_buttonNewDFPR->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(o_charts_pi_event_handler::OnNewDFPRClick), NULL, g_event_handler );
 
 #ifdef __WXMAC__
-        m_buttonShowFPR = new wxButton( content, wxID_ANY, _("Show In Finder"), wxDefaultPosition, wxDefaultSize, 0 );
+        m_buttonShowFPR = new wxButton( scrollWin, wxID_ANY, _("Show In Finder"), wxDefaultPosition, wxDefaultSize, 0 );
 #else
-        m_buttonShowFPR = new wxButton( content, wxID_ANY, _("Show on disk"), wxDefaultPosition, wxDefaultSize, 0 );
+        m_buttonShowFPR = new wxButton( scrollWin, wxID_ANY, _("Show on disk"), wxDefaultPosition, wxDefaultSize, 0 );
 #endif
         bSizer2->AddSpacer( 20 );
         bSizer2->Add( m_buttonShowFPR, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
@@ -3426,7 +3444,7 @@ oesencPrefsDialog::oesencPrefsDialog( wxWindow* parent, wxWindowID id, const wxS
 
         if(sn.Length()){
             wxString nameText = _T(" ") + sn;
-            m_nameTextBox = new wxStaticText(content, wxID_ANY, nameText);
+            m_nameTextBox = new wxStaticText(scrollWin, wxID_ANY, nameText);
             bSizer2->AddSpacer( 20 );
             bSizer2->Add(m_nameTextBox, 1, wxTOP | wxBOTTOM | wxALIGN_CENTER_HORIZONTAL, 10 );
         }
@@ -3434,7 +3452,7 @@ oesencPrefsDialog::oesencPrefsDialog( wxWindow* parent, wxWindowID id, const wxS
             bSizer2->AddSpacer( 10 );
 
 #ifndef __OCPN__ANDROID__
-        m_buttonClearSystemName = new wxButton( content, wxID_ANY, _("Reset System Name"), wxDefaultPosition, wxDefaultSize, 0 );
+        m_buttonClearSystemName = new wxButton( scrollWin, wxID_ANY, _("Reset System Name"), wxDefaultPosition, wxDefaultSize, 0 );
 
         bSizer2->AddSpacer( 10 );
         bSizer2->Add( m_buttonClearSystemName, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
@@ -3444,7 +3462,7 @@ oesencPrefsDialog::oesencPrefsDialog( wxWindow* parent, wxWindowID id, const wxS
         if(!g_systemName.Length())
             m_buttonClearSystemName->Disable();
 #endif
-        m_buttonClearCreds = new wxButton( content, wxID_ANY, _("Reset o-charts credentials"), wxDefaultPosition, wxDefaultSize, 0 );
+        m_buttonClearCreds = new wxButton( scrollWin, wxID_ANY, _("Reset o-charts credentials"), wxDefaultPosition, wxDefaultSize, 0 );
 
         bSizer2->AddSpacer( 10 );
         bSizer2->Add( m_buttonClearCreds, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
@@ -3460,26 +3478,43 @@ oesencPrefsDialog::oesencPrefsDialog( wxWindow* parent, wxWindowID id, const wxS
         //m_buttonSendStatus->Connect( wxEVT_COMMAND_BUTTON_CLICKED,wxCommandEventHandler(o_charts_pi_event_handler::OnSendStatus), NULL, g_event_handler );
 
 #ifndef __OCPN__ANDROID__
-        m_cbEnableRebuild = new wxCheckBox(content, ID_ENABLE_REBUILD, _("Enable full chart database rebuild after chart download"));
+        m_cbEnableRebuild = new wxCheckBox(scrollWin, ID_ENABLE_REBUILD, _("Enable full chart database rebuild after chart download"));
         m_cbEnableRebuild->SetValue(g_benableRebuild);
         bSizer2->Add( m_cbEnableRebuild, 0, wxALIGN_CENTER_HORIZONTAL, 50 );
 #endif
 
         m_sdbSizer1 = new wxStdDialogButtonSizer();
-        m_sdbSizer1OK = new wxButton( content, wxID_OK );
+        m_sdbSizer1OK = new wxButton( this, wxID_OK );
         m_sdbSizer1->AddButton( m_sdbSizer1OK );
-        m_sdbSizer1Cancel = new wxButton( content, wxID_CANCEL );
+        m_sdbSizer1Cancel = new wxButton( this, wxID_CANCEL );
         m_sdbSizer1->AddButton( m_sdbSizer1Cancel );
         m_sdbSizer1->Realize();
 
-        bSizer2->Add( m_sdbSizer1, 0, wxBOTTOM|wxEXPAND|wxTOP, 20 );
+        bSizerTop->Add( m_sdbSizer1, 0, wxBOTTOM|wxEXPAND|wxTOP, 20 );
 
 
         this->SetSizer( bSizerTop );
-        this->Layout();
-        bSizerTop->Fit( this );
+//         this->Layout();
+//         bSizerTop->Fit( this );
+//
+//         this->Centre( wxBOTH );
+        Fit();
 
-        this->Centre( wxBOTH );
+        // Constrain size on small displays
+        int display_width, display_height;
+        wxDisplaySize(&display_width, &display_height);
+
+        wxSize canvas_size = GetOCPNCanvasWindow()->GetSize();
+        if(display_height < 600){
+          SetMaxSize(GetOCPNCanvasWindow()->GetSize());
+          SetSize(wxSize(60 * GetCharWidth(), canvas_size.y * 8 / 10));
+        }
+        else {
+          SetSize(wxSize(60 * GetCharWidth(), canvas_size.y * 8 / 10));
+        }
+
+        this->CentreOnScreen();
+
 }
 
 oesencPrefsDialog::~oesencPrefsDialog()
