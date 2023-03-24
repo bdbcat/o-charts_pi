@@ -23,6 +23,7 @@ include(GetArch)
 include(PluginSetup)
 
 # some helper vars (_ prefix)
+git config --global --add safe.directory /ci-source
 
 execute_process(
   COMMAND git log -1 --format=%h
@@ -38,6 +39,8 @@ execute_process(
   RESULT_VARIABLE error_code
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+
+message(STATUS "Tag at HEAD: ${_git_tag}")
 
 if (NOT "$ENV{CIRCLE_BUILD_NUM}" STREQUAL "")
   set(_build_id "$ENV{CIRCLE_BUILD_NUM}")
