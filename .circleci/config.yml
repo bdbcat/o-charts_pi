@@ -216,12 +216,6 @@ workflows:
   build_all:
     jobs:
 
-      - build-flatpak-arm64:
-          <<: *std-filters
-
-      - build-flatpak-x86-2008:
-          <<: *std-filters
-
       - build-macos:
           <<: *std-filters
 
