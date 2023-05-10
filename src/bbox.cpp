@@ -330,6 +330,7 @@ wxBoundingBox& wxBoundingBox::operator=( const wxBoundingBox &other)
     return *this;
 }
 
+#ifndef __OCPN__ANDROID__
 void wxBoundingBox::MapBbox( const wxTransformMatrix& matrix)
 {
     assert (m_validbbox == TRUE);
@@ -363,6 +364,7 @@ void wxBoundingBox::MapBbox( const wxTransformMatrix& matrix)
     m_maxx = xmax;
     m_maxy = ymax;
 }
+#endif
 
 //----------------------------------------------------------------
 //    LLBBox Implementation
@@ -378,7 +380,7 @@ void LLBBox::Set(double minlat, double minlon, double maxlat, double maxlon)
     if(minlon + maxlon <= -360)
         minlon += 360, maxlon += 360;
 #endif
-    
+
     m_minlat = minlat;
     m_minlon = minlon;
     m_maxlat = maxlat;
@@ -402,7 +404,7 @@ void LLBBox::SetFromSegment(double lat1, double lon1, double lat2, double lon2)
             lon[i][2] = lon[i][0] - 360;
         }
     }
-    
+
     double d[3];
     for(int k=0; k<3; k++) {
         minlon[k] = wxMin(lon[0][k], lon[1][k]);
@@ -534,7 +536,7 @@ bool LLBBox::IntersectIn( const LLBBox &other ) const
 
     if((m_maxlat <= other.m_maxlat) || (m_minlat >= other.m_minlat))
         return false;
-    
+
     double minlon = m_minlon, maxlon = m_maxlon;
     if(m_maxlon < other.m_minlon)
         minlon += 360, maxlon += 360;
@@ -549,7 +551,7 @@ bool LLBBox::IntersectOutGetBias( const LLBBox &other, double bias ) const
     // allow -180 to 180 or 0 to 360
     if( !GetValid() || !other.GetValid() )
         return true;
-    
+
     if((m_maxlat < other.m_minlat) || (m_minlat > other.m_maxlat))
         return true;
 
