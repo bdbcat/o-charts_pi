@@ -89,6 +89,7 @@ set(SRC
   src/s52utils.cpp
   src/s57RegistrarMgr.cpp
   src/sha256.c
+  src/shaders.cpp
   src/TexFont.cpp
   src/TexFont.h
   src/uKey.cpp

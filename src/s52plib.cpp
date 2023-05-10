@@ -47,7 +47,7 @@
 #include "ocpn_plugin.h"
 #include "cpl_csv.h"
 #include "eSENCChart.h"
-
+#include "shaders.h"
 #include <wx/image.h>
 #include <wx/tokenzr.h>
 #include <wx/fileconf.h>
@@ -13263,6 +13263,18 @@ void PrepareS52ShaderUniforms(ViewPort *vp)
     glUniformMatrix4fv( matloc, 1, GL_FALSE, (const GLfloat*)Q);
     transloc = glGetUniformLocation(S52AP_shader_program,"TransformMatrix");
     glUniformMatrix4fv( transloc, 1, GL_FALSE, (const GLfloat*)I);
+
+#ifdef __OCPN__ANDROID__
+    loadTextShaders();
+    if (texture_2DA_shader_program){
+      glUseProgram(texture_2DA_shader_program);
+      matloc = glGetUniformLocation(texture_2DA_shader_program,"MVMatrix");
+      glUniformMatrix4fv( matloc, 1, GL_FALSE, (const GLfloat*)Q);
+      transloc = glGetUniformLocation(texture_2DA_shader_program,"TransformMatrix");
+      glUniformMatrix4fv( transloc, 1, GL_FALSE, (const GLfloat*)I);
+    }
+#endif
+
 }
 
 #endif
