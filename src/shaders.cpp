@@ -383,4 +383,5 @@ void unloadShaders() {
   bShadersLoaded = false;
 }
 
+#endif
 
