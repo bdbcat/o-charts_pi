@@ -347,7 +347,6 @@ bool loadTextShaders() {
       ret_val = false;
     }
   }
-#endif
 
 
 #if 0
