@@ -1923,6 +1923,12 @@ bool s52plib::RenderText( wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRe
 #ifdef ocpnUSE_GL
 
         bool b_force_no_texture = false;
+#ifdef __OCPN__ANDROID__
+        // Character-at-a-time rendering should be much
+        // slower than full-string rendering to texture.
+        b_force_no_texture = true;
+#endif
+
         if(scale_factor > 1.){
             b_force_no_texture = true;
 
