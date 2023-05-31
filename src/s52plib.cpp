@@ -567,16 +567,7 @@ void s52plib::SetPPMM( float ppmm )
     canvas_pix_per_mm = ppmm;
 
     // We need a supplemental scale factor for HPGL vector symbol rendering.
-    //  This will cause raster and vector symbols to be rendered harmoniously
-
-    //  We do this by making an arbitrary measurement and declaration:
-    // We declare that the nominal size of a "flare" light rendered as HPGL vector should be roughly twice the
-    // size of a simplified lateral bouy rendered as raster.
-
-    // Referring to the chartsymbols.xml file, we find that the dimension of a flare light is 810 units,
-    // and a raster BOYLAT is 16 pix.
-
-    m_rv_scale_factor = 2.0 * (1600. / (810 * ppmm));
+    m_rv_scale_factor = 0.8;
 
     // Estimate the display size
 
@@ -2815,7 +2806,7 @@ bool s52plib::RenderHPGL( ObjRazRules *rzRules, Rule *prule, wxPoint &r, ViewPor
         //double fac1 = scaled_length / fsf;
 
 
-        float target_length = 1852;
+        float target_length = 800;
 
         xscale = target_length / scaled_length;
         xscale = wxMin(xscale, 1.0);
@@ -2850,8 +2841,10 @@ bool s52plib::RenderHPGL( ObjRazRules *rzRules, Rule *prule, wxPoint &r, ViewPor
     if(rzRules->obj->bIsAton && (!strncmp(rzRules->obj->FeatureName, "LIGHTS", 6))  && (fabs(rot_angle - 135.0) < 1.) ){
         render_angle -= vp->rotation * 180./PI;
 
-        //  And, due to popular request, we make the flare lights a little bit smaller than S52 specifications
-        xscale = xscale * 6. / 7.;
+#ifdef __OCPN__ANDROID__
+    //  And, due to popular request, we make the flare lights a little bit smaller than S52 specifications
+    xscale = xscale * 5. / 7.;
+#endif
     }
 
     int width = prule->pos.symb.bnbox_x.SBXC + prule->pos.symb.bnbox_w.SYHL;
