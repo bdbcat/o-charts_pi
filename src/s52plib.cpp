@@ -2837,7 +2837,7 @@ bool s52plib::RenderHPGL( ObjRazRules *rzRules, Rule *prule, wxPoint &r, ViewPor
 #endif
 
       if( fabs(rot_angle - 135.0) < 1.)
-        render_angle -= vp_plib.rotation * 180. / PI;
+        render_angle -= vp->rotation * 180. / PI;
     }
 
     int width = prule->pos.symb.bnbox_x.SBXC + prule->pos.symb.bnbox_w.SYHL;
