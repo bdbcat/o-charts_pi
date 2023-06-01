@@ -993,6 +993,10 @@ void o_charts_pi::SetPluginMessage(wxString &message_id, wxString &message_body)
                 double max_physical = wxMax(sx, sy);
 
                 double pix_per_mm = ( max_physical ) / ( (double) display_size_mm );
+#ifdef __OCPN__ANDROID__
+                pix_per_mm = ( wxMin(sx, sy) ) / ( (double) g_display_size_mm );
+                qDebug() << "Setting A" << max_physical << display_size_mm << g_display_size_mm;
+#endif
                 if(ps52plib)
                     ps52plib->SetPPMM( pix_per_mm );
 

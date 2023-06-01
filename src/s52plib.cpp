@@ -573,7 +573,7 @@ void s52plib::SetPPMM( float ppmm )
 
     int ww, hh;
     ::wxDisplaySize( &ww, &hh);
-    m_display_size_mm = wxMax(ww, hh) / GetPPMM();        // accurate enough for internal use
+    m_display_size_mm = ww / GetPPMM();        // accurate enough for internal use
 
     m_display_size_mm /= m_displayScale;
 }
