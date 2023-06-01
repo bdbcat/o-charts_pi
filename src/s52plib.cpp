@@ -11684,6 +11684,7 @@ RenderFromHPGL::RenderFromHPGL( s52plib* plibarg )
     renderToDC = false;
     renderToOpenGl = false;
     renderToGCDC = false;
+    brush = 0;
 
     if(plib)
         scaleFactor = 100.0 / plib->GetPPMM();
@@ -11775,6 +11776,8 @@ void RenderFromHPGL::SetPen()
     if( renderToOpenGl ) {
         if( plib->GetGLPolygonSmoothing() )
             glEnable( GL_POLYGON_SMOOTH );
+
+        brush = wxTheBrushList->FindOrCreateBrush( penColor, wxBRUSHSTYLE_SOLID );
 
 #ifndef USE_ANDROID_GLES2
         glColor4ub( penColor.Red(), penColor.Green(), penColor.Blue(), transparency );
@@ -11901,6 +11904,97 @@ void RenderFromHPGL::Circle( wxPoint center, int radius, bool filled )
         targetGCDC->SetPen( *pen );
     }
 #endif
+
+#else
+  if (renderToOpenGl) {
+    if (!m_vp)  // oops, forgot to set the VP parameters
+      return;
+
+    //      Enable anti-aliased lines, at best quality
+    glEnable(GL_BLEND);
+
+    float coords[8];
+    coords[0] = center.x - radius;
+    coords[1] = center.y + radius;
+    coords[2] = center.x + radius;
+    coords[3] = center.y + radius;
+    coords[4] = center.x - radius;
+    coords[5] = center.y - radius;
+    coords[6] = center.x + radius;
+    coords[7] = center.y - radius;
+
+    glUseProgram(S52circle_filled_shader_program);
+
+    // Get pointers to the attributes in the program.
+    GLint mPosAttrib =
+        glGetAttribLocation(S52circle_filled_shader_program, "aPos");
+
+    // Disable VBO's (vertex buffer objects) for attributes.
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    glVertexAttribPointer(mPosAttrib, 2, GL_FLOAT, GL_FALSE, 0, coords);
+    glEnableVertexAttribArray(mPosAttrib);
+
+    //  Circle radius
+    GLint radiusloc =
+        glGetUniformLocation(S52circle_filled_shader_program, "circle_radius");
+    glUniform1f(radiusloc, radius);
+
+    //  Circle center point
+    GLint centerloc =
+        glGetUniformLocation(S52circle_filled_shader_program, "circle_center");
+    float ctrv[2];
+    ctrv[0] = center.x;
+    ctrv[1] = m_vp->pix_height - center.y;
+    glUniform2fv(centerloc, 1, ctrv);
+
+    //  Circle fill color
+    float colorv[4];
+    colorv[3] = 0.0;  // transparent default
+
+    if (filled){
+      if (brush) {
+        colorv[0] = brush->GetColour().Red() / float(256);
+        colorv[1] = brush->GetColour().Green() / float(256);
+        colorv[2] = brush->GetColour().Blue() / float(256);
+        colorv[3] = 1.0;
+      }
+    }
+
+    GLint colloc =
+        glGetUniformLocation(S52circle_filled_shader_program, "circle_color");
+    glUniform4fv(colloc, 1, colorv);
+
+    //  Border color
+    float bcolorv[4];
+    bcolorv[0] = penColor.Red() / float(256);
+    bcolorv[1] = penColor.Green() / float(256);
+    bcolorv[2] = penColor.Blue() / float(256);
+    bcolorv[3] = penColor.Alpha() / float(256);
+
+    GLint bcolloc =
+        glGetUniformLocation(S52circle_filled_shader_program, "border_color");
+    glUniform4fv(bcolloc, 1, bcolorv);
+
+    //  Border Width
+    float nominal_line_width_pix =
+        wxMax(1.0, floor(plib->GetPPMM() /
+                         5.0));  // 0.2 mm nominal, but not less than 1 pixel
+    float line_width =
+        wxMax(1/*g_GLMinSymbolLineWidth*/, (float)penWidth * nominal_line_width_pix);
+
+    GLint borderWidthloc =
+        glGetUniformLocation(S52circle_filled_shader_program, "border_width");
+    glUniform1f(borderWidthloc, line_width);
+
+    // Perform the actual drawing.
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    //      Enable anti-aliased lines, at best quality
+    glDisable(GL_BLEND);
+
+  }
 
 #endif
 }
