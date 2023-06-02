@@ -2862,6 +2862,8 @@ bool s52plib::RenderHPGL( ObjRazRules *rzRules, Rule *prule, wxPoint &r, ViewPor
 
     if( !m_pdc ) { // OpenGL Mode, do a direct render
         HPGL->SetTargetOpenGl();
+        HPGL->SetVP(vp);
+
         HPGL->Render( str, col, r, pivot, origin, xscale, render_angle, true );
 
         //  Update the object Bounding box
