@@ -68,6 +68,7 @@ if (MSYS)
 endif ()
 include(${wxWidgets_USE_FILE})
 target_link_libraries(${PACKAGE_NAME} ${wxWidgets_LIBRARIES})
+message(STATUS  "******wxWidgets_LIBRARIES: ${wxWidgets_LIBRARIES}")
 
 if (WIN32)
   if (EXISTS "${PROJECT_SOURCE_DIR}/libs/WindowsHeaders")
