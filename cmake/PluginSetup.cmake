@@ -77,7 +77,14 @@ if (plugin_target STREQUAL "ubuntu")
   else ()
     find_program(_WX_CONFIG_PROG NAMES $ENV{WX_CONFIG} wx-config )
   endif ()
+
   if (_WX_CONFIG_PROG)
+    execute_process(
+      COMMAND ${_WX_CONFIG_PROG} --list
+      OUTPUT_VARIABLE _WX_LIST
+    )
+    message(STATUS  "******_WX_LIST: ${_WX_LIST}")
+
     execute_process(
       COMMAND ${_WX_CONFIG_PROG} --selected-config
       OUTPUT_VARIABLE _WX_SELECTED_CONFIG
