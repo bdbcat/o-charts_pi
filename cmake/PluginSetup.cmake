@@ -86,6 +86,12 @@ if (plugin_target STREQUAL "ubuntu")
     message(STATUS  "******_WX_LIST: ${_WX_LIST}")
 
     execute_process(
+      COMMAND ${_WX_CONFIG_PROG} --toolkit=gtk3-unicode-3.0
+      OUTPUT_VARIABLE _WX_TKIT
+    )
+    message(STATUS  "******_WX_TKIT: ${_WX_TKIT}")
+
+    execute_process(
       COMMAND ${_WX_CONFIG_PROG} --selected-config
       OUTPUT_VARIABLE _WX_SELECTED_CONFIG
       OUTPUT_STRIP_TRAILING_WHITESPACE
