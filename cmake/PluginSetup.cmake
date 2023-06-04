@@ -86,7 +86,7 @@ if (plugin_target STREQUAL "ubuntu")
     message(STATUS  "******_WX_LIST: ${_WX_LIST}")
 
     execute_process(
-      COMMAND ${_WX_CONFIG_PROG} --toolkit=gtk3-unicode-3.0
+      COMMAND ${_WX_CONFIG_PROG} --toolkit=gtk3
       OUTPUT_VARIABLE _WX_TKIT
     )
     message(STATUS  "******_WX_TKIT: ${_WX_TKIT}")
@@ -110,5 +110,4 @@ if (plugin_target STREQUAL "ubuntu")
   endif ()
 endif ()
 
-set(plugin_target ubuntu-gtk3)
 message(STATUS  "******(Revised) Building for plugin_target: ${plugin_target}")
