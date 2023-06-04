@@ -24,7 +24,7 @@ flatpak-steps: &flatpak-steps
 
 jobs:
 
-  build-bionic-armhf:
+  build-bionic-gtk3-armhf:
     machine:
       image: ubuntu-2004:202101-01
     resource_class: arm.medium
@@ -241,7 +241,7 @@ workflows:
       - build-android-armhf:
           <<: *std-filters
 
-      - build-bionic-armhf:
+      - build-bionic-gtk3-armhf:
           <<: *std-filters
 
       - build-focal-armhf:

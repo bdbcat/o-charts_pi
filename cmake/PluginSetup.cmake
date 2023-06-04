@@ -83,6 +83,8 @@ if (plugin_target STREQUAL "ubuntu")
       OUTPUT_VARIABLE _WX_SELECTED_CONFIG
       OUTPUT_STRIP_TRAILING_WHITESPACE
     )
+    message(STATUS  "******_WX_SELECTED_CONFIG: ${_WX_SELECTED_CONFIG}")
+
     if (_WX_SELECTED_CONFIG MATCHES gtk3)
       if (${plugin_target_version} VERSION_LESS 22.04)
             set(plugin_target ubuntu-gtk3)
@@ -95,4 +97,5 @@ if (plugin_target STREQUAL "ubuntu")
   endif ()
 endif ()
 
+set(plugin_target ubuntu-gtk3)
 message(STATUS  "******(Revised) Building for plugin_target: ${plugin_target}")
