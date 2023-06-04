@@ -60,6 +60,7 @@ fi
 docker run --rm --privileged multiarch/qemu-user-static:register --reset || :
 docker run --platform linux/arm/v7 --privileged \
     -e "OCPN_TARGET=$OCPN_TARGET" \
+    -e "OCPN_TARGET_TUPLE=$OCPN_TARGET_TUPLE" \
     -e "CLOUDSMITH_STABLE_REPO=$CLOUDSMITH_STABLE_REPO" \
     -e "CLOUDSMITH_BETA_REPO=$OCPN_BETA_REPO" \
     -e "CLOUDSMITH_UNSTABLE_REPO=$CLOUDSMITH_UNSTABLE_REPO" \
