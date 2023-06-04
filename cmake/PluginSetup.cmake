@@ -69,6 +69,8 @@ string(TOLOWER "${plugin_target}" plugin_target)
 string(STRIP "${plugin_target_version}" plugin_target_version)
 string(TOLOWER "${plugin_target_version}" plugin_target_version)
 
+message(STATUS  "******Building for plugin_target: ${plugin_target}")
+
 if (plugin_target STREQUAL "ubuntu")
   if (DEFINED wxWidgets_CONFIG_EXECUTABLE)
     set(_WX_CONFIG_PROG ${wxWidgets_CONFIG_EXECUTABLE})
@@ -92,3 +94,5 @@ if (plugin_target STREQUAL "ubuntu")
     message(WARNING "Cannot locate wx-config utility")
   endif ()
 endif ()
+
+message(STATUS  "******(Revised) Building for plugin_target: ${plugin_target}")

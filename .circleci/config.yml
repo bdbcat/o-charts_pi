@@ -30,7 +30,7 @@ jobs:
     resource_class: arm.medium
     environment:
       - OCPN_TARGET: ubuntu-gtk3-armhf
-      - OCPN_TARGET_TUPLE: ubuntu-gtk3-armhf;18.04
+      - OCPN_TARGET_TUPLE: ubuntu;18.04;armhf
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     parameters:
       cache-key:
