@@ -47,6 +47,7 @@ if (TARGET OpenGL::OpenGL OR TARGET OpenGL::GL)
 endif ()
 
 set(BUILD_SHARED_LIBS TRUE)
+set(wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
 
 set(_bad_win_env_msg [=[
 %WXWIN% is not present in environment, win_deps.bat has not been run.
