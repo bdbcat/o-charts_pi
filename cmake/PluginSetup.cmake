@@ -80,23 +80,15 @@ if (plugin_target STREQUAL "ubuntu")
 
   if (_WX_CONFIG_PROG)
     execute_process(
-      COMMAND ${_WX_CONFIG_PROG} --list
-      OUTPUT_VARIABLE _WX_LIST
-    )
-    message(STATUS  "******_WX_LIST: ${_WX_LIST}")
-
-    execute_process(
-      COMMAND ${_WX_CONFIG_PROG} --toolkit=gtk3
-      OUTPUT_VARIABLE _WX_TKIT
-    )
-    message(STATUS  "******_WX_TKIT: ${_WX_TKIT}")
-
-    execute_process(
       COMMAND ${_WX_CONFIG_PROG} --selected-config
       OUTPUT_VARIABLE _WX_SELECTED_CONFIG
       OUTPUT_STRIP_TRAILING_WHITESPACE
     )
     message(STATUS  "******_WX_SELECTED_CONFIG: ${_WX_SELECTED_CONFIG}")
+
+    if (${plugin_target_version} VERSION_LESS 20.04)
+      set(_WX_SELECTED_CONFIG "gtk3")
+    endif()
 
     if (_WX_SELECTED_CONFIG MATCHES gtk3)
       if (${plugin_target_version} VERSION_LESS 22.04)
