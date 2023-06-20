@@ -52,7 +52,8 @@ extern InProgressIndicator *g_ipGauge;
 
 std::vector < itemChartData *> installedChartListData;
 std::vector < itemChartDataKeys *> installedKeyFileData;
-
+bool g_valWarning;
+bool g_valError;
 
 
 // Utility Functions, some using global static memory
@@ -268,12 +269,29 @@ void ocValidator::LogMessage( wxString msg)
 
 void ocValidator::startValidation()
 {
+    g_valError = false;
+    g_valWarning = false;
+    wxString countMsg;
+    wxArrayString keyFileList;
+    wxString searchString;
+    wxString serverVersion;
+    bool bAssignedToDongle;
+    itemSlot *slot;
+    std::string installLocation;
+    wxString installDirectory;
+    wxString dirType;
+    wxString chartsetBaseDirectory;
+    wxString ChartListFile;
+    wxString extension;
+    wxArrayString fileList;
+
     installedChartListData.clear();
     installedKeyFileData.clear();
 
     if(!m_chart){
         LogMessage(_("No chartset selected.\n"));
-        return;
+        g_valError = true;
+        goto exit_point;
     }
 
     LogMessage(_("Starting chartset validation.\n"));
@@ -281,15 +299,17 @@ void ocValidator::startValidation()
     LogMessage(_("  Checking server installation."));
     if(!g_sencutil_bin.Length()){
         LogMessage(_("  Server not installed."));
-        return;
+        g_valError = true;
+        goto exit_point;
     }
 
     LogMessage(_("  Server execute command: ") + g_sencutil_bin);
 
-    wxString serverVersion = GetServerVersionString();
+    serverVersion = GetServerVersionString();
     if(!serverVersion.Length()){
         LogMessage(_("  Server unavailable."));
-        return;
+        g_valError = true;
+        goto exit_point;
     }
     else{
         LogMessage(_("  Server reports version:  ") + serverVersion);
@@ -316,7 +336,7 @@ void ocValidator::startValidation()
     LogMessage(_T("\n"));
 
     int nslot, qId;
-    bool bAssignedToDongle = false;
+    bAssignedToDongle = false;
 
     // If dongle is available, look for slot assigned
     if(g_dongleName.Len()){
@@ -341,41 +361,44 @@ void ocValidator::startValidation()
 
     if( nslot < 0 ){
         LogMessage(_("  Unable to validate unassigned chartset."));
-        return;
+        g_valError = true;
+        goto exit_point;
     }
 
     // Find the slot
-    itemSlot *slot = m_chart->GetSlotPtr( nslot, qId );
+    slot = m_chart->GetSlotPtr( nslot, qId );
     if( !slot ){
         LogMessage(_("  Unable to find slot assignment."));
-        return;
+        g_valError = true;
+        goto exit_point;
     }
 
     //  Extract the installation directory name from the slot
-    std::string installLocation = slot->installLocation;
+    installLocation = slot->installLocation;
     if(!installLocation.size()){
         if(bAssignedToDongle)
             LogMessage(_("  Selected chartset is not installed for dongle."));
         else
             LogMessage(_("  Selected chartset is not installed."));
 
-        return;
+        g_valError = true;
+        goto exit_point;
     }
 
-    wxString installDirectory = wxString(installLocation.c_str());
+    installDirectory = wxString(installLocation.c_str());
     LogMessage(_("  Installation directory: ") + installDirectory );
 
-    wxString dirType = _T("oeuSENC-");
+    dirType = _T("oeuSENC-");
     if(m_chart->chartType == CHART_TYPE_OERNC)
         dirType = _T("oeuRNC-");
 //    wxString chartsetBaseDirectory = installDirectory + wxFileName::GetPathSeparator() + dirType + wxString(m_chart->chartID.c_str()) + wxFileName::GetPathSeparator();
 
-    wxString chartsetBaseDirectory = installDirectory + wxFileName::GetPathSeparator() \
+    chartsetBaseDirectory = installDirectory + wxFileName::GetPathSeparator() \
           + slot->chartDirName + wxFileName::GetPathSeparator();
 
     LogMessage(_("  ProcessingChartList.XML") );
 
-    wxString ChartListFile = chartsetBaseDirectory + _T("ChartList.XML");
+    ChartListFile = chartsetBaseDirectory + _T("ChartList.XML");
 
     LogMessage(_("    Checking for ChartList.XML at: ") + ChartListFile );
 
@@ -383,14 +406,16 @@ void ocValidator::startValidation()
 
     if(!::wxFileExists(ChartListFile)){
         LogMessage(_("    ChartList.XML not found in installation directory."));
-        return;
+        g_valError = true;
+        goto exit_point;
     }
 
     LogMessage(_("    Loading ChartList.XML") );
 
     if( !LoadChartList( ChartListFile )){
         LogMessage(_("    Error loading ChartList.XML") );
-        return;
+        g_valError = true;
+        goto exit_point;
     }
 
     // Good ChartList, so check for consistency....
@@ -399,7 +424,7 @@ void ocValidator::startValidation()
     // For each chart in the ChartList, does an oeRNC file exist?
     LogMessage(_("    Checking ChartList for presence of each chart referenced") );
 
-    wxString extension = _T(".oesu");
+    extension = _T(".oesu");
     if(m_chart->chartType == CHART_TYPE_OERNC)
         extension = _T(".oernc");
 
@@ -409,7 +434,8 @@ void ocValidator::startValidation()
         wxString targetChartFILE = chartsetBaseDirectory + wxString(cData->ID.c_str()) + extension;
         if(!::wxFileExists(targetChartFILE) ){
             LogMessage(_("    Referenced chart is not present: ") + targetChartFILE );
-            return;
+        g_valError = true;
+        goto exit_point;
         }
 
         if(g_ipGauge)
@@ -422,8 +448,7 @@ void ocValidator::startValidation()
     // Is every file found in the base directory referenced in the ChartList.XML file?
     LogMessage(_("    Checking all charts for reference in ChartList") );
 
-    wxArrayString fileList;
-    wxString searchString = _T("*") + extension;
+    searchString = _T("*") + extension;
     wxDir::GetAllFiles(chartsetBaseDirectory, &fileList, searchString );
     for( unsigned int i=0 ; i < fileList.GetCount() ; i++){
         wxFileName fn(fileList.Item(i));
@@ -444,7 +469,8 @@ void ocValidator::startValidation()
         else{
             LogMessage(_("    Found chart file not referenced in ChartList: ") + fileList.Item(i) );
             g_ipGauge->Stop();
-            return;
+            g_valError = true;
+            goto exit_point;
         }
 
         if(g_ipGauge)
@@ -460,7 +486,6 @@ void ocValidator::startValidation()
     LogMessage(_("  Checking chart key files.") );
 
     // For each key file found...
-    wxArrayString keyFileList;
     wxDir::GetAllFiles(chartsetBaseDirectory, &keyFileList, _T("*.XML") );
     for( unsigned int i=0 ; i < keyFileList.GetCount() ; i++){
         wxFileName keyfn(keyFileList.Item(i));
@@ -473,7 +498,8 @@ void ocValidator::startValidation()
         if( !LoadKeyFile( keyFileList.Item(i) )){
             LogMessage(_("    Error loading keyFile: ")  + keyFileList.Item(i));
             g_ipGauge->Stop();
-            return;
+            g_valError = true;
+            goto exit_point;
         }
 
         // There must be a key for each file found in the ChartList
@@ -498,7 +524,8 @@ void ocValidator::startValidation()
             else{
                 LogMessage(_("    Key not found for chart file: ") + fileList.Item(i) );
                 g_ipGauge->Stop();
-                return;
+                g_valError = true;
+                goto exit_point;
             }
 
             if(g_ipGauge)
@@ -518,7 +545,6 @@ void ocValidator::startValidation()
 
     // Try a read of some charts....
     LogMessage(_("  Starting chart test load.") );
-    wxString countMsg;
     countMsg.Printf(_T(" %zu"), fileList.GetCount());
     LogMessage(_("  Chart count: ") + countMsg );
 
@@ -537,10 +563,17 @@ void ocValidator::startValidation()
         }
 
         if(rv){
-            wxString errMsg;
-            errMsg.Printf(_T(" %d"), rv);
-            LogMessage(_("  Chart load error ") + "( " + chartFile + " ) : " + errMsg );
-            //return;
+            if (rv == PI_INIT_FAIL_NOERROR){
+              wxString errMsg(_("Chart has been cancelled"));
+              LogMessage(_("  Chart load warning ") + "( " + chartFile + " ) : " + errMsg );
+              g_valWarning = true;
+            }
+            else {
+              wxString errMsg;
+              errMsg.Printf(_T(" %d"), rv);
+              LogMessage(_("  Chart load error ") + "( " + chartFile + " ) : " + errMsg );
+              g_valError = true;
+            }
         }
 
         if(g_ipGauge)
@@ -548,13 +581,25 @@ void ocValidator::startValidation()
         wxYield();
     }
 
-    LogMessage(_("  Chart test load OK.") );
+exit_point:
+    if (g_valError){
+      LogMessage(_("  Chart test load ERROR.") );
+      LogMessage(_T("\n"));
+      LogMessage(_("Chartset installation does not validate.") );
+    }
+    else if (g_valWarning){
+      LogMessage(_("  Chart test load WARNING.") );
+      LogMessage(_T("\n"));
+      LogMessage(_("Chartset installation validates with Warnings.") );
+    }
+    else{
+      LogMessage(_("  Chart test load OK.") );
+      LogMessage(_T("\n"));
+      LogMessage(_("Chartset installation validates OK.") );
+    }
 
-    LogMessage(_T("\n"));
-
-    LogMessage(_("Chartset installation validates OK.") );
-
-    g_ipGauge->Stop();
+    if (g_ipGauge)
+      g_ipGauge->Stop();
 
 }
 
