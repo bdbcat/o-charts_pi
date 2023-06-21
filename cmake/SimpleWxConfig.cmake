@@ -13,18 +13,26 @@ macro(SimpleWxConfig)
         SET(wxWidgets_EXCLUDE_COMMON_LIBRARIES TRUE)
     endif(MSVC)
     set(wxWidgets_USE_LIBS base core xml html)
-    find_package(GTK2)
-    if(GTK2_FOUND)
+
+    if(FORCE_GTK3)
+      set (wxWidgets_CONFIG_OPTIONS ${wxWidgets_CONFIG_OPTIONS} --toolkit=gtk3)
+    else(FORCE_GTK3)
+      find_package(GTK2)
+      if(GTK2_FOUND)
         set(wxWidgets_CONFIG_OPTIONS
             ${wxWidgets_CONFIG_OPTIONS} --toolkit=gtk2)
-    else ()
+      else ()
         find_package(GTK3)
         if(GTK3_FOUND)
             set(wxWidgets_CONFIG_OPTIONS
                 ${wxWidgets_CONFIG_OPTIONS} --toolkit=gtk3)
         endif ()
-    endif ()
-    find_package(wxWidgets REQUIRED)
+      endif ()
+    endif(FORCE_GTK3)
+
+
+
+      find_package(wxWidgets REQUIRED)
     INCLUDE(${wxWidgets_USE_FILE})
  endif(NOT QT_ANDROID)
 endmacro(SimpleWxConfig)
