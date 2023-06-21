@@ -50,6 +50,8 @@ wget --no-verbose \
     $url/deb/debian/pool/buster/main/c/cm/cmake_3.19.3-0.1_armhf.deb
 apt install -y ./cmake_3.19.3-0.1_armhf.deb ./cmake-data_3.19.3-0.1_all.deb
 
+wx-config --list
+
 cd /ci-source
 rm -rf build-debian; mkdir build-debian; cd build-debian
 git config --global --add safe.directory /ci-source
