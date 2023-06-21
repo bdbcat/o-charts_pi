@@ -75,6 +75,10 @@ if (TARGET OpenGL::OpenGL OR TARGET OpenGL::GL)
   list(APPEND WX_COMPONENTS gl)
 endif ()
 
+if(FORCE_GTK3)
+  set (wxWidgets_CONFIG_OPTIONS ${wxWidgets_CONFIG_OPTIONS} --toolkit=gtk3)
+endif(FORCE_GTK3)
+
 find_package(wxWidgets REQUIRED ${WX_COMPONENTS})
 include(${wxWidgets_USE_FILE})
 target_link_libraries(${PACKAGE_NAME} ${wxWidgets_LIBRARIES})
