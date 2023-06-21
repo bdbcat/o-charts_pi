@@ -304,7 +304,7 @@ void TexFont::RenderGlyph(int c) {
   colorv[2] = m_color.Blue() / float(256);
   colorv[3] = 0;
 
-  m_TexFontShader->SetUniformMatrix4fv( "color", colorv);
+  m_TexFontShader->SetUniform4fv( "color", colorv);
 
   // Rotate
   //float angle = 0;
