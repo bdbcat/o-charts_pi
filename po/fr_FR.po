@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-06-19 16:18-0400\n"
-"PO-Revision-Date: 2023-06-21 14:30\n"
+"PO-Revision-Date: 2023-06-22 17:43\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -467,11 +467,11 @@ msgstr "  Nombre de cartes : "
 
 #: src/validator.cpp:567
 msgid "Chart has been cancelled"
-msgstr ""
+msgstr "La carte a été retirée"
 
 #: src/validator.cpp:568
 msgid "  Chart load warning "
-msgstr ""
+msgstr "  Avertissement de chargement de la carte "
 
 #: src/validator.cpp:574
 msgid "  Chart load error "
@@ -479,19 +479,19 @@ msgstr "  Erreur de chargement de la carte : "
 
 #: src/validator.cpp:586
 msgid "  Chart test load ERROR."
-msgstr ""
+msgstr "  ERREUR de chargement lors du test de la carte."
 
 #: src/validator.cpp:588
 msgid "Chartset installation does not validate."
-msgstr ""
+msgstr "L'installation du jeu de cartes n'est pas validée."
 
 #: src/validator.cpp:591
 msgid "  Chart test load WARNING."
-msgstr ""
+msgstr "Alerte de chargement lors du test de la carte."
 
 #: src/validator.cpp:593
 msgid "Chartset installation validates with Warnings."
-msgstr ""
+msgstr "L'installation du jeu de cartes valide avec des avertissements."
 
 #: src/validator.cpp:596
 msgid "  Chart test load OK."
@@ -1063,15 +1063,15 @@ msgstr "Nom du systèmes"
 
 #: src/ochartShop.cpp:7644
 msgid "Status: Error"
-msgstr ""
+msgstr "Statut : Erreur"
 
 #: src/ochartShop.cpp:7647
 msgid "File Download error"
-msgstr ""
+msgstr "Erreur de téléchargement de fichier"
 
 #: src/ochartShop.cpp:7649
 msgid "ResponseCode: "
-msgstr ""
+msgstr "Code de réponse : "
 
 #: src/ochartShop.cpp:7816 src/ochartShop.cpp:7865
 msgid "Login to o-charts.org"

@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-06-19 16:18-0400\n"
-"PO-Revision-Date: 2023-06-21 14:30\n"
+"PO-Revision-Date: 2023-06-22 17:43\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Language: cs_CZ\n"
@@ -19,11 +19,11 @@ msgstr ""
 
 #: src/o-charts_pi.h:226 src/o-charts_pi.cpp:1571
 msgid "o-charts_pi Preferences"
-msgstr ""
+msgstr "Nastavení o-charts_pi"
 
 #: src/o-charts_pi.h:345
 msgid "o-charts_pi Information"
-msgstr ""
+msgstr "o-charts_pi informace"
 
 #: src/o-charts_pi.cpp:364 src/o-charts_pi.cpp:4240 src/o-charts_pi.cpp:4303
 #: src/o-charts_pi.cpp:4469 src/o-charts_pi.cpp:5278 src/o-charts_pi.cpp:5341
@@ -32,15 +32,15 @@ msgstr ""
 #: src/ochartShop.cpp:7294 src/ochartShop.cpp:7404 src/ochartShop.cpp:7429
 #: src/ochartShop.cpp:7746
 msgid "Dialog"
-msgstr ""
+msgstr "Dialogové okno"
 
 #: src/o-charts_pi.cpp:725
 msgid "The o-charts plugin replaces the oeSENC plugin chart display functions.\n"
-msgstr ""
+msgstr "Plugin o-charts nahrazuje funkce pluginu oeSENC.\n"
 
 #: src/o-charts_pi.cpp:726
 msgid "It is recommended that you disable any existing oeSENC plugin, and restart OpenCPN.\n"
-msgstr ""
+msgstr "Je doporučeno vypnout jakýkoli existující oeSENC plugin a restartovat OpenCPN.\n"
 
 #: src/o-charts_pi.cpp:727 src/o-charts_pi.cpp:733 src/o-charts_pi.cpp:1215
 #: src/o-charts_pi.cpp:2193 src/o-charts_pi.cpp:2233 src/o-charts_pi.cpp:2879
@@ -59,48 +59,48 @@ msgstr ""
 #: src/ochartShop.cpp:6398 src/ochartShop.cpp:6457 src/ochartShop.cpp:7132
 #: src/ochartShop.cpp:7653
 msgid "o-charts_pi Message"
-msgstr ""
+msgstr "o-charts_pi zpráva"
 
 #: src/o-charts_pi.cpp:731
 msgid "The o-charts plugin replaces the oeRNC plugin chart display functions.\n"
-msgstr ""
+msgstr "Plugin o-charts nahrazuje funkce pluginu oeRNC.\n"
 
 #: src/o-charts_pi.cpp:732
 msgid "It is recommended that you disable any existing oeRNC plugin, and restart OpenCPN.\n"
-msgstr ""
+msgstr "Je doporučeno vypnout jakýkoli existující oeRNC plugin a restartovat OpenCPN.\n"
 
 #: src/o-charts_pi.cpp:877 src/o-charts_pi.cpp:5133 src/o-charts_pi.cpp:5148
 msgid "o-charts"
-msgstr ""
+msgstr "o-charts"
 
 #: src/o-charts_pi.cpp:883
 msgid "PlugIn for OpenCPN o-charts charts"
-msgstr ""
+msgstr "PlugIn OpenCPN pro o-charts mapy"
 
 #: src/o-charts_pi.cpp:889
 msgid "PlugIn for OpenCPN\n"
 "Provides support of o-charts charts.\n\n"
-msgstr ""
+msgstr "PlugIn pro OpenCPN poskytující podporu o-charts map.\n\n"
 
 #: src/o-charts_pi.cpp:1209
 msgid "To obtain a User Key, you must generate a unique System Identifier File.\n"
-msgstr ""
+msgstr "Chceš-li získat uživatelský klíč (User Key), je nutné vygenerovat soubor s jedinečným identifikátorem systému.\n"
 
 #: src/o-charts_pi.cpp:1210 src/o-charts_pi.cpp:3817 src/o-charts_pi.cpp:3865
 msgid "This file is also known as a\"fingerprint\" file.\n"
-msgstr ""
+msgstr "Tento soubor je také známý jako \"otisk (fingerprint)\" soubor.\n"
 
 #: src/o-charts_pi.cpp:1211
 msgid "The fingerprint file contains information to uniquely identifiy this computer.\n\n"
-msgstr ""
+msgstr "Soubor otisu obsahuje informace, které jednoznačně identifikují tento počítač.\n\n"
 
 #: src/o-charts_pi.cpp:1212
 msgid "After creating this file, you will need it to obtain your User Key at the o-charts.org shop.\n\n"
-msgstr ""
+msgstr "Po vytvoření tohoto souboru ho budeš potřebovat k získání svého uživatelského klíče v obchodě o-charts.org.\n\n"
 
 #: src/o-charts_pi.cpp:1213 src/o-charts_pi.cpp:3820 src/o-charts_pi.cpp:3868
 msgid "Proceed to create Fingerprint file?"
-msgstr ""
+msgstr "Přejít k vytvoření souboru otisku?"
 
 #: src/o-charts_pi.cpp:2184
 msgid "This chart cannot be loaded due to any of the following reasons:\n\n"
@@ -110,146 +110,154 @@ msgid "This chart cannot be loaded due to any of the following reasons:\n\n"
 "- This chart set was prepared for a USB key dongle, but dongle is not detected.\n"
 "- There are corrupted files due to errors during download or unzip.\n\n"
 "Please contact info@o-charts.org if the problem persists.\n"
-msgstr ""
+msgstr "Tuto mau nelze načíst z jednoho z následujících důvodů:\n\n"
+"- Provedli jste důležité změny hardwaru na vašem počítači.\n"
+"- Váš OS byl aktualizován a vaše licence byla pozastavena.\n"
+"- Tato sada map byla připravena pro jiný systém.\n"
+"- Tato sada map byla připravena pro USB klíč, ale není detekován.\n"
+"- Existují poškozené soubory kvůli chybám během stahování nebo rozbalování.\n\n"
+"Pokud problém přetrvává, kontaktuj prosím info@o-charts.org.\n"
 
 #: src/o-charts_pi.cpp:2203
 msgid "This chart will soon no longer display due to time restricted license requirements."
-msgstr ""
+msgstr "Tato mapa se brzy nezobrazí z důvodu časově omezených licenčních požadavků."
 
 #: src/o-charts_pi.cpp:2204
 msgid "This chart will no longer display due to time restricted license requirements."
-msgstr ""
+msgstr "Tato mapa se nezobrazí z důvodu časově omezených licenčních požadavků."
 
 #: src/o-charts_pi.cpp:2205
 msgid "Days until expiration:"
-msgstr ""
+msgstr "Dny do skončení platnosti:"
 
 #: src/o-charts_pi.cpp:2206
 msgid "Grace days available after expiration:"
-msgstr ""
+msgstr "Dnů k dispozici po skončení platnosti:"
 
 #: src/o-charts_pi.cpp:2207
 msgid "Please re-license the charts at o-charts.org."
-msgstr ""
+msgstr "Prosím obnov licenci na mapy na o-charts.org."
 
 #: src/o-charts_pi.cpp:2208 src/ochartShop.cpp:4351
 msgid "Expired"
-msgstr ""
+msgstr "Platnost vypršela"
 
 #: src/o-charts_pi.cpp:2875
 msgid "Cannot find the oexserverd utility at \n"
-msgstr ""
+msgstr "Nelze najít nástroj oexserverd na \n"
 
 #: src/o-charts_pi.cpp:3020
 msgid "oexserverd utility at \n"
-msgstr ""
+msgstr "oexserverd nástroj na \n"
 
 #: src/o-charts_pi.cpp:3024
 msgid " could not be started.\n\n"
-msgstr ""
+msgstr " nelze spustit.\n\n"
 
 #: src/o-charts_pi.cpp:3437
 msgid " o-charts Version: "
-msgstr ""
+msgstr " Verze o-charts: "
 
 #: src/o-charts_pi.cpp:3442
 msgid "Show EULA"
-msgstr ""
+msgstr "Zobrazit smlouvu EULA"
 
 #: src/o-charts_pi.cpp:3450
 msgid "System Identification"
-msgstr ""
+msgstr "Identifikace systému"
 
 #: src/o-charts_pi.cpp:3460
 msgid "Create System Identifier file..."
-msgstr ""
+msgstr "Vytvoř soubor systémového identifikátoru..."
 
 #: src/o-charts_pi.cpp:3467
 msgid "Create USB key dongle System ID file..."
-msgstr ""
+msgstr "Vytvořit soubor systémového ID USB klíče..."
 
 #: src/o-charts_pi.cpp:3475
 msgid "Show In Finder"
-msgstr ""
+msgstr "Zobrazit ve Finderu"
 
 #: src/o-charts_pi.cpp:3477
 msgid "Show on disk"
-msgstr ""
+msgstr "Zobrazit na disku"
 
 #: src/o-charts_pi.cpp:3490 src/o-charts_pi.cpp:3495 src/ochartShop.cpp:4485
 #: src/ochartShop.cpp:4687 src/ochartShop.cpp:4693 src/ochartShop.cpp:4970
 #: src/ochartShop.cpp:4981
 msgid "System Name:"
-msgstr ""
+msgstr "Název systému:"
 
 #: src/o-charts_pi.cpp:3492 src/ochartShop.cpp:1853 src/ochartShop.cpp:3124
 #: src/ochartShop.cpp:4689 src/ochartShop.cpp:6966 src/ochartShop.cpp:6972
 #: src/ochartShop.cpp:7473 src/ochartShop.cpp:7486
 msgid "USB Key Dongle"
-msgstr ""
+msgstr "Klíč USB"
 
 #: src/o-charts_pi.cpp:3498
 msgid "Pending chart refresh"
-msgstr ""
+msgstr "Čeká na obnovu map"
 
 #: src/o-charts_pi.cpp:3513
 msgid "Reset System Name"
-msgstr ""
+msgstr "Resetovat jméno systému"
 
 #: src/o-charts_pi.cpp:3523
 msgid "Reset o-charts credentials"
-msgstr ""
+msgstr "Resetovat přístupové údaje o-charts"
 
 #: src/o-charts_pi.cpp:3539
 msgid "Enable full chart database rebuild after chart download"
-msgstr ""
+msgstr "Povolit kompletní obnovu databáze map po stažení"
 
 #: src/o-charts_pi.cpp:3679
 msgid "System name RESET shall be performed only by request from o-charts technical support staff."
-msgstr ""
+msgstr "Resetování názvu systému by se mělo provádět pouze na vyžádání pracovníků technické podpory o-charts."
 
 #: src/o-charts_pi.cpp:3681
 msgid "Proceed to RESET?"
-msgstr ""
+msgstr "Pokračovat v resetování?"
 
 #: src/o-charts_pi.cpp:3738
 msgid "Credential Reset Successful"
-msgstr ""
+msgstr "Obnovení přihlašovacích údaju bylo úspěšné"
 
 #: src/o-charts_pi.cpp:3816 src/o-charts_pi.cpp:3864
 msgid "To obtain a chart set, you must generate a Unique System Identifier File.\n"
-msgstr ""
+msgstr "Chcete-li získat sadu map, musíte vygenerovat soubor jedinečného systémového identifikátoru.\n"
 
 #: src/o-charts_pi.cpp:3818
 msgid "The fingerprint file contains information related to a connected USB key dongle.\n\n"
-msgstr ""
+msgstr "Soubor otisku obsahuje údaje o připojeném USB klíči.\n\n"
 
 #: src/o-charts_pi.cpp:3819 src/o-charts_pi.cpp:3867
 msgid "After creating this file, you will need it to obtain your chart sets at the o-charts.org shop.\n\n"
-msgstr ""
+msgstr "Po vytvoření tohoto souboru ho budeš potřebovat k získání svého uživatelského klíče v obchodě o-charts.org.\n\n"
 
 #: src/o-charts_pi.cpp:3833
 msgid "ERROR Creating Fingerprint file\n"
 " USB key dongle not detected."
-msgstr ""
+msgstr "CHYBA vytváření souboru otisku\n"
+" USB klíč nebyl detekován."
 
 #: src/o-charts_pi.cpp:3838 src/o-charts_pi.cpp:3879
 msgid "Fingerprint file created.\n"
-msgstr ""
+msgstr "Soubor otisku vytvořen.\n"
 
 #: src/o-charts_pi.cpp:3842 src/o-charts_pi.cpp:3883
 msgid "\n\n"
 " Fingerprint file is also copied to desktop."
-msgstr ""
+msgstr "\n\nSoubor otisku je také zkopírován na plochu."
 
 #: src/o-charts_pi.cpp:3850
 msgid "ERROR Creating Fingerprint file\n"
 " Check OpenCPN log file."
-msgstr ""
+msgstr "CHYBA vytváření souboru otisku\n"
+" Zkontroluj soubor logu OpenCPN."
 
 #: src/o-charts_pi.cpp:3866
 msgid "The fingerprint file contains information to uniquely identify this computer.\n\n"
-msgstr ""
+msgstr "Soubor otisu obsahuje informace, které jednoznačně identifikují tento počítač.\n\n"
 
 #: src/o-charts_pi.cpp:4393 src/o-charts_pi.cpp:5432
 msgid "Could not open o-charts_pi EULA: "
@@ -454,11 +462,11 @@ msgstr ""
 
 #: src/validator.cpp:549
 msgid "  Chart count: "
-msgstr ""
+msgstr "  Počet map: "
 
 #: src/validator.cpp:567
 msgid "Chart has been cancelled"
-msgstr ""
+msgstr "Mapa byla zrušena."
 
 #: src/validator.cpp:568
 msgid "  Chart load warning "

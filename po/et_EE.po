@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: opencpn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-06-19 16:18-0400\n"
-"PO-Revision-Date: 2023-06-21 14:30\n"
+"PO-Revision-Date: 2023-06-22 17:43\n"
 "Last-Translator: \n"
 "Language-Team: Estonian\n"
 "Language: et_EE\n"
@@ -468,11 +468,11 @@ msgstr "  Kaartide kogus: "
 
 #: src/validator.cpp:567
 msgid "Chart has been cancelled"
-msgstr ""
+msgstr "Kaart on tühistatud"
 
 #: src/validator.cpp:568
 msgid "  Chart load warning "
-msgstr ""
+msgstr "  Hoiatus kaardi laadimisel "
 
 #: src/validator.cpp:574
 msgid "  Chart load error "
@@ -480,19 +480,19 @@ msgstr "  Kaardi laadimise viga "
 
 #: src/validator.cpp:586
 msgid "  Chart test load ERROR."
-msgstr ""
+msgstr "  Kaardi testlaadimise VIGA."
 
 #: src/validator.cpp:588
 msgid "Chartset installation does not validate."
-msgstr ""
+msgstr "Kaardikomplekt paigaldus ei valideeru."
 
 #: src/validator.cpp:591
 msgid "  Chart test load WARNING."
-msgstr ""
+msgstr "  Kaardi testlaadimise HOIATUS."
 
 #: src/validator.cpp:593
 msgid "Chartset installation validates with Warnings."
-msgstr ""
+msgstr "Kaardikomplekti paigaldus valideerub hoiatusega."
 
 #: src/validator.cpp:596
 msgid "  Chart test load OK."
@@ -1065,15 +1065,15 @@ msgstr "Süsteemi nimed"
 
 #: src/ochartShop.cpp:7644
 msgid "Status: Error"
-msgstr ""
+msgstr "Staatus: viga"
 
 #: src/ochartShop.cpp:7647
 msgid "File Download error"
-msgstr ""
+msgstr "Faili allalaadimise viga"
 
 #: src/ochartShop.cpp:7649
 msgid "ResponseCode: "
-msgstr ""
+msgstr "Vastuskood: "
 
 #: src/ochartShop.cpp:7816 src/ochartShop.cpp:7865
 msgid "Login to o-charts.org"
