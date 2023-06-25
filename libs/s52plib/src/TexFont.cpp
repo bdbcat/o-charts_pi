@@ -452,6 +452,8 @@ void TexFont::PrepareShader(int width, int height, double rotation){
   m_TexFontShader->SetUniformMatrix4fv( "MVMatrix", (GLfloat *)Q);
   m_TexFontShader->SetUniformMatrix4fv( "TransformMatrix", (GLfloat *)I);
 
+  m_TexFontShader->UnBind();
+
 }
 
 
