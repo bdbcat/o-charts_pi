@@ -54,6 +54,7 @@
 #include "tinyxml.h"
 #include "poly_math.h"
 #include "dychart.h"
+#include "LOD_reduce.h"
 
 #ifdef __WXOSX__
 // #include <OpenGL/gl.h>
@@ -1716,6 +1717,53 @@ PI_InitReturn eSENCChart::CreateHeaderDataFromeSENC( void )
 
     return (PI_InitReturn) retCode;
 }
+int eSENCChart::reduceLOD(double LOD_meters, int nPoints, double *source,
+                       wxPoint2DDouble **dest, int *maskIn, int **maskOut) {
+  //      Reduce the LOD of this linestring
+  std::vector<int> index_keep;
+  if (nPoints > 5 && (LOD_meters > 0)) {
+    index_keep.push_back(0);
+    index_keep.push_back(nPoints - 1);
+    index_keep.push_back(nPoints - 2);
+
+    DouglasPeucker(source, 0, nPoints - 2, LOD_meters, &index_keep);
+
+  } else {
+    index_keep.resize(nPoints);
+    // Consider using std::iota here when there is C++11 support.
+    for (int i = 0; i < nPoints; i++) index_keep[i] = i;
+  }
+
+  wxPoint2DDouble *pReduced =
+      (wxPoint2DDouble *)malloc((index_keep.size()) * sizeof(wxPoint2DDouble));
+  *dest = pReduced;
+
+  int *pmaskOut = NULL;
+  if (maskIn) {
+    *maskOut = (int *)malloc((index_keep.size()) * sizeof(int));
+    pmaskOut = *maskOut;
+  }
+
+  double *ppr = source;
+  int ir = 0;
+  for (int ip = 0; ip < nPoints; ip++) {
+    double x = *ppr++;
+    double y = *ppr++;
+    int maskval = 1;
+    if (maskIn) maskval = maskIn[ip];
+    // printf("LOD:  %10g  %10g\n", x, y);
+
+    for (unsigned int j = 0; j < index_keep.size(); j++) {
+      if (index_keep[j] == ip) {
+        if (pmaskOut) pmaskOut[ir] = maskval;
+        pReduced[ir++] = wxPoint2DDouble(x, y);
+        break;
+      }
+    }
+  }
+
+  return index_keep.size();
+}
 
 bool eSENCChart::ProcessHeader(Osenc &senc)
 {
@@ -1750,10 +1798,117 @@ bool eSENCChart::ProcessHeader(Osenc &senc)
         m_pCOVRTable = (float **) malloc( m_nCOVREntries * sizeof(float *) );
 
         for( unsigned int j = 0; j < (unsigned int) m_nCOVREntries; j++ ) {
-            m_pCOVRTablePoints[j] = AuxCntArray.Item( j );
-            m_pCOVRTable[j] = (float *) malloc( AuxCntArray.Item( j ) * 2 * sizeof(float) );
-            memcpy( m_pCOVRTable[j], AuxPtrArray.Item( j ),
+
+          // Some cells have complex outlines, sometimes with thousands of points
+          // This complexity really reduces performance of quilting logic.
+          // Detect this case, and reduce complexity if possible
+            if (AuxCntArray.Item(j) > 1000){
+              int np = AuxCntArray.Item(j);
+#if 0
+              // Plan on LOD reduction of this point string.
+              // Idea is to reduce so that the error is less than n pixels
+              // when displayed at native scale on "reasonable" monitor
+              // Calculations:
+              // LOD reduction (meters) = scale / (pix/meter)
+              // Estimate pix/meter on average display as 1pix/.27 mm, or 1pix/.00027 m
+              // or, about 3700 pixels per meter.
+              double LOD_meters = (double)m_Chart_Scale / 3700;    // LOD in meters, for one pixel
+              // Working in degrees, so convert LOD_meters to degrees, roughly
+              LOD_meters /= (1852. * 60.);
+
+              LOD_meters *= 20;   // empirically derived
+
+              double scaler = 10000;
+              float *source = AuxPtrArray.Item( j );
+              float *run = source;
+
+              double *dsource = (double *) malloc(np * 2 * sizeof(double) );
+              double *drun = dsource;
+              for (unsigned int k=0; k < np; k++){
+                float a = *run++;
+                *drun++ = (double)a * scaler;
+                float b = *run++;
+                *drun++ = (double)b * scaler;
+              }
+
+              wxPoint2DDouble *pReduced = 0;
+
+              int nReduced = reduceLOD(LOD_meters * scaler, np, dsource,
+                       &pReduced, NULL, NULL);
+
+              if(nReduced < 10) {       // some error in LOD algorithm
+                double new_LOD = LOD_meters * scaler;
+                while (nReduced < 10){
+                  new_LOD *= 0.5;
+                  delete pReduced;        // so re-run with reduced LOD
+                  pReduced = 0;
+                  nReduced = reduceLOD(new_LOD, np, dsource,
+                       &pReduced, NULL, NULL);
+                }
+              }
+
+              m_pCOVRTablePoints[j] = nReduced;
+              m_pCOVRTable[j] = (float *) malloc( nReduced * 2 * sizeof(float) );
+              float *rrun = m_pCOVRTable[j];
+              wxPoint2DDouble *rdrun = pReduced;
+
+              for (unsigned int k=0; k < nReduced; k++){
+                wxPoint2DDouble g = *rdrun;
+                double x = g.m_x;
+                *rrun++ = (float)x/scaler;
+                double y = g.m_y;
+                *rrun++ = (float)y/scaler;
+                rdrun++;
+              }
+#else
+            // Another approach
+            // Scan the points, calculating extents.
+            // Then make a simple rectangular outline.
+
+              double LatMax = -100;
+              double LatMin = 100;
+              double LonMax = -180;
+              double LonMin = 180;
+
+              float *source = AuxPtrArray.Item( j );
+              float *run = source;
+
+              for (unsigned int k=0; k < np; k++){
+                float lat = *run++;
+                LatMax = wxMax(LatMax, lat);
+                LatMin = wxMin(LatMin, lat);
+                float lon = *run++;
+                LonMax = wxMax(LonMax, lon);
+                LonMin = wxMin(LonMin, lon);
+              }
+              //Create the rectangular entry
+              m_nCOVREntries = 1;
+              m_pCOVRTablePoints = (int *)malloc(sizeof(int));
+              *m_pCOVRTablePoints = 4;
+              m_pCOVRTable = (float **)malloc(sizeof(float *));
+              float *pf = (float *)malloc(2 * 4 * sizeof(float));
+              *m_pCOVRTable = pf;
+              float *pfe = pf;
+
+              *pfe++ = LatMax;
+              *pfe++ = LonMin;
+
+              *pfe++ = LatMax;
+              *pfe++ = LonMax;
+
+              *pfe++ = LatMin;
+              *pfe++ = LonMax;
+
+              *pfe++ = LatMin;
+              *pfe++ = LonMin;
+#endif
+            }
+            else {
+              m_pCOVRTablePoints[j] = AuxCntArray.Item( j );
+              m_pCOVRTable[j] = (float *) malloc( AuxCntArray.Item( j ) * 2 * sizeof(float) );
+              memcpy( m_pCOVRTable[j], AuxPtrArray.Item( j ),
                     AuxCntArray.Item( j ) * 2 * sizeof(float) );
+            }
         }
 
         // NoCoverage areas
@@ -1769,10 +1924,16 @@ bool eSENCChart::ProcessHeader(Osenc &senc)
 
             for( unsigned int j = 0; j < (unsigned int) m_nNoCOVREntries; j++ ) {
                 int npoints = NoCovrCntArray.Item( j );
-                m_pNoCOVRTablePoints[j] = npoints;
-                m_pNoCOVRTable[j] = (float *) malloc( npoints * 2 * sizeof(float) );
-                memcpy( m_pNoCOVRTable[j], NoCovrPtrArray.Item( j ),
+                if (npoints < 1000){
+                  m_pNoCOVRTablePoints[j] = npoints;
+                  m_pNoCOVRTable[j] = (float *) malloc( npoints * 2 * sizeof(float) );
+                  memcpy( m_pNoCOVRTable[j], NoCovrPtrArray.Item( j ),
                         npoints * 2 * sizeof(float) );
+                }
+                else{
+                  m_pNoCOVRTablePoints[j] = 0;
+                  m_pNoCOVRTable[j] = 0;
+                }
             }
         }
 

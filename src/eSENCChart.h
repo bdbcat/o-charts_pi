@@ -144,6 +144,8 @@ class  eSENCChart : public PlugInChartBaseExtended
       wxString GetFileSearchMask(void);
 
       bool ProcessHeader(Osenc &senc);
+      int reduceLOD(double LOD_meters, int nPoints, double *source,
+                       wxPoint2DDouble **dest, int *maskIn, int **maskOut);
 
       //    Accessors
 
