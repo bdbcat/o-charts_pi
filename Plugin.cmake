@@ -165,11 +165,14 @@ macro(add_plugin_libraries)
   target_link_libraries(${PACKAGE_NAME} ocpn::pugixml)
 
 # For OCPN 5.6.2, which does not use GLES in core, we need to add it here.
-if (UNIX AND NOT APPLE AND NOT QT_ANDROID)   # linux
-  if(OCPN_BUILD_USE_GLEW)
-    target_link_libraries(${PACKAGE_NAME} "GLEW")
-  endif(OCPN_BUILD_USE_GLEW)
-endif(UNIX AND NOT APPLE)
+if (NOT OCPN_NOGLEW)
+  if (UNIX AND NOT APPLE AND NOT QT_ANDROID)   # linux
+    if(OCPN_BUILD_USE_GLEW)
+      target_link_libraries(${PACKAGE_NAME} "GLEW")
+    endif(OCPN_BUILD_USE_GLEW)
+  endif(UNIX AND NOT APPLE)
+endif (NOT OCPN_NOGLEW)
+
 
 #if (MSVC)
 #  add_subdirectory("libs/WindowsHeaders")

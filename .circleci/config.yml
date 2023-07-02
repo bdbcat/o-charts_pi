@@ -60,6 +60,7 @@ jobs:
       - OCPN_TARGET: bullseye
       - BUILD_WX32: true
       - TARGET_TUPLE: debian-wx32;11;x86_64
+      - NO_LINK_GLEW: true
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
     <<: *debian-steps
 
