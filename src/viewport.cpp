@@ -120,7 +120,7 @@ sigjmp_buf env_ocharts;         // the context saved by sigsetjmp();
 // Useful Prototypes
 // ----------------------------------------------------------------------------
 
-
+#ifndef __WXMSW__
 void catch_signals_ocharts(int signo) {
     switch (signo) {
     case SIGSEGV:
@@ -130,6 +130,7 @@ void catch_signals_ocharts(int signo) {
         break;
     }
 }
+#endif
 
 
 //------------------------------------------------------------------------------
