@@ -88,9 +88,7 @@ target_include_directories(WXCURL_IF
 )
 target_link_libraries(WXCURL_SRC PUBLIC ${CURL_LIBRARIES})
 
-if (WIN32)
-  target_link_libraries(WXCURL_IF INTERFACE WXCURL_SRC)
-endif (WIN32)
+target_link_libraries(WXCURL_IF INTERFACE WXCURL_SRC)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
   set_property(TARGET WXCURL_SRC PROPERTY COMPILE_FLAGS "-fvisibility=hidden")

@@ -164,6 +164,9 @@ macro(add_plugin_libraries)
   add_subdirectory(libs/pugixml)
   target_link_libraries(${PACKAGE_NAME} ocpn::pugixml)
 
+  add_subdirectory("libs/wxcurl")
+  target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
+
 # For OCPN 5.6.2, which does not use GLES in core, we need to add it here.
 if (NOT OCPN_NOGLEW)
   if (UNIX AND NOT APPLE AND NOT QT_ANDROID)   # linux
@@ -172,19 +175,6 @@ if (NOT OCPN_NOGLEW)
     endif(OCPN_BUILD_USE_GLEW)
   endif(UNIX AND NOT APPLE)
 endif (NOT OCPN_NOGLEW)
-
-
-#if (MSVC)
-#  add_subdirectory("libs/WindowsHeaders")
-#  target_link_libraries(${PACKAGE_NAME} _windows_headers)
-#endif ()
-
-
-#   add_subdirectory("libs/opencpn-glu")
-#   target_link_libraries(${PACKAGE_NAME} opencpn::glu)
-
-  add_subdirectory("libs/wxcurl")
-  target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
 
   add_subdirectory("libs/oeserverd")
 
