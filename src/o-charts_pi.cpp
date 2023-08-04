@@ -532,7 +532,6 @@ o_charts_pi::o_charts_pi(void *ppimgr)
       g_bEULA_Rejected = false;
       g_bEULA_Rejected = !ShowAlwaysEULAs();
 
-
       //        Set up a common data location,
       //        Using a config file specified location if found
       if( g_CommonDataDir.Len()){
@@ -557,7 +556,6 @@ o_charts_pi::~o_charts_pi()
 
 int o_charts_pi::Init(void)
 {
-
     //  Get the path of the PlugIn itself
     g_pi_filename = GetPlugInPath(this);
 
@@ -1301,6 +1299,9 @@ bool o_charts_pi::ScrubChartinfoList( void )
 
     if(g_debugLevel) wxLogMessage(_T("Scrub1: "));
 
+    if(!pConf)
+        return false;
+
     pConf->SetPath( _T ( "/ChartDirectories" ) );
     int iDirMax = pConf->GetNumberOfEntries();
     if( iDirMax ) {
@@ -1383,7 +1384,6 @@ bool o_charts_pi::ScrubChartinfoList( void )
         else{
             if(g_debugLevel) wxLogMessage(_T("  Candidate does not exist: ") + strt);
         }
-
 
         //  Did not find the directory, so remove corresponding entry from the hashmap.
         //  This means that the entry will not be written to config file on app exit, so it is gone.
