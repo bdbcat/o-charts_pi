@@ -110,8 +110,7 @@
 
 
 struct sigaction sa_o_charts;
-
-extern sigjmp_buf           env;                    // the context saved by sigsetjmp();
+sigjmp_buf env_ocharts;         // the context saved by sigsetjmp();
 #endif
 
 #include <vector>
@@ -121,7 +120,17 @@ extern sigjmp_buf           env;                    // the context saved by sigs
 // Useful Prototypes
 // ----------------------------------------------------------------------------
 
-extern void catch_signals(int signo);
+
+void catch_signals_ocharts(int signo) {
+    switch (signo) {
+    case SIGSEGV:
+        siglongjmp(env_ocharts, 1);  // jump back to the setjmp() point
+        break;
+    default:
+        break;
+    }
+}
+
 
 //------------------------------------------------------------------------------
 //    ViewPort Implementation
@@ -756,7 +765,7 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoi
     struct sigaction temp;
     sigaction(SIGSEGV, NULL, &temp);// inspect existing action for this signal
 
-    temp.sa_handler = catch_signals;// point to my handler
+    temp.sa_handler = catch_signals_ocharts;// point to my handler
     sigemptyset(&temp.sa_mask);// make the blocking set
     // empty, so that all
     // other signals will be
@@ -764,7 +773,7 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoi
     temp.sa_flags = 0;
     sigaction(SIGSEGV, &temp, NULL);
 
-    if(sigsetjmp(env, 1))//  Something in the below code block faulted....
+    if(sigsetjmp(env_ocharts, 1))//  Something in the below code block faulted....
     {
         sigaction(SIGSEGV, &sa_o_charts, NULL);        // reset signal handler
 
