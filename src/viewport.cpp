@@ -109,9 +109,7 @@
 #include <setjmp.h>
 
 
-//extern ChartCanvas *cc1;
-extern struct sigaction sa_all;
-extern struct sigaction sa_all_old;
+struct sigaction sa_o_charts;
 
 extern sigjmp_buf           env;                    // the context saved by sigsetjmp();
 #endif
@@ -753,7 +751,7 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoi
 
 
 #ifdef __WXGTK__
-    sigaction(SIGSEGV, NULL, &sa_all_old);             // save existing action for this signal
+    sigaction(SIGSEGV, NULL, &sa_o_charts);             // save existing action for this signal
 
     struct sigaction temp;
     sigaction(SIGSEGV, NULL, &temp);// inspect existing action for this signal
@@ -768,7 +766,7 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoi
 
     if(sigsetjmp(env, 1))//  Something in the below code block faulted....
     {
-        sigaction(SIGSEGV, &sa_all_old, NULL);        // reset signal handler
+        sigaction(SIGSEGV, &sa_o_charts, NULL);        // reset signal handler
 
         return Region;
 
@@ -781,7 +779,7 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoi
         if(NULL == ppoints)
             free(pp);
 
-        sigaction(SIGSEGV, &sa_all_old, NULL);        // reset signal handler
+        sigaction(SIGSEGV, &sa_o_charts, NULL);        // reset signal handler
         r.Intersect(Region);
         return r;
     }
