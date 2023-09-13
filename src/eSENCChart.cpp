@@ -1802,7 +1802,7 @@ bool eSENCChart::ProcessHeader(Osenc &senc)
           // Some cells have complex outlines, sometimes with thousands of points
           // This complexity really reduces performance of quilting logic.
           // Detect this case, and reduce complexity if possible
-            if (AuxCntArray.Item(j) > 1000){
+            if (AuxCntArray.Item(j) > 2000){
               int np = AuxCntArray.Item(j);
 #if 0
               // Plan on LOD reduction of this point string.
