@@ -182,4 +182,8 @@ endif (NOT OCPN_NOGLEW)
 
   add_subdirectory("libs/oeserverd")
 
+  if(QT_ANDROID)
+    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
+  endif(QT_ANDROID)
+
 endmacro ()
