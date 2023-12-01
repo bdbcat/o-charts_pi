@@ -135,6 +135,7 @@ S52_TextC::~S52_TextC() {
   }
 }
 
+#if 0
 // This is a verbatim copy of same struct found in ocpn_plugin.h
 // Used for some types of plugin charts
 class PI_line_segment_element {
@@ -151,7 +152,7 @@ public:
 
   PI_line_segment_element *next;
 };
-
+#endif
 
 //-----------------------------------------------------------------------------
 //      Comparison Function for LUPArray sorting
