@@ -36,7 +36,7 @@ if (NOT EXISTS ${OCPN_ANDROID_CACHEDIR}/master.zip)
       https://github.com/bdbcat/OCPNAndroidCommon/archive/master.zip
       ${OCPN_ANDROID_CACHEDIR}/master.zip
     EXPECTED_HASH
-      SHA256=a15ebd49fd4e7c0f2d6e99328ed6a9fdb8ed7c8fcaa993cab585fc9d8aab4f56
+      SHA256=b6359260ecfb44b96c0dd4052e41aac505c9e3c4eb7a798b29c17ddbc3c939b3
     SHOW_PROGRESS
   )
 endif ()
