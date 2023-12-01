@@ -35,3 +35,7 @@ target_include_directories(S52PLIB PRIVATE ../geoprim/src)
 target_include_directories(S52PLIB PRIVATE ../pugixml)
 target_include_directories(S52PLIB PRIVATE ../../include)
 target_include_directories(S52PLIB PRIVATE ../api-17)
+
+if(QT_ANDROID)
+    target_include_directories(S52PLIB PRIVATE ../../src)
+endif(QT_ANDROID)
