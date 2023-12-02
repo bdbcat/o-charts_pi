@@ -36,12 +36,11 @@
 
 #include <vector>
 
-#ifndef MyPoint
+
 typedef struct  {
       double x;
       double y;
 } MyPoint;
-#endif
 
 typedef struct {
       float y;
