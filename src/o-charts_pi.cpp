@@ -104,6 +104,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #include <shlobj.h>
+#include "cutil.h"
 #endif
 
 #include <string>
