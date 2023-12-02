@@ -55,6 +55,7 @@
 #include "poly_math.h"
 #include "dychart.h"
 #include "LOD_reduce.h"
+#include "cutil.h"
 
 #ifdef __WXOSX__
 // #include <OpenGL/gl.h>
