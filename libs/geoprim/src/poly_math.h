@@ -29,10 +29,12 @@
 #ifndef __POLYMATH_H__
 #define __POLYMATH_H__
 
+#ifndef MyPoint
 typedef struct {
   double x;
   double y;
 } MyPoint;
+#endif
 
 typedef struct {
   float y;
