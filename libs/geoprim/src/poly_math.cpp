@@ -33,11 +33,11 @@
 #include "poly_math.h"
 #include "vector2D.h"
 
-int Intersect(MyPoint, MyPoint, MyPoint, MyPoint);
-int CCW(MyPoint, MyPoint, MyPoint);
+int Intersect(MyPMPoint, MyPMPoint, MyPMPoint, MyPMPoint);
+int CCW(MyPMPoint, MyPMPoint, MyPMPoint);
 
-int Intersect_FL(float_2Dpt, float_2Dpt, float_2Dpt, float_2Dpt);
-int CCW_FL(float_2Dpt, float_2Dpt, float_2Dpt);
+int Intersect_FL(PMfloat_2Dpt, PMfloat_2Dpt, PMfloat_2Dpt, PMfloat_2Dpt);
+int CCW_FL(PMfloat_2Dpt, PMfloat_2Dpt, PMfloat_2Dpt);
 
 /*************************************************************************
 
@@ -56,10 +56,10 @@ int CCW_FL(float_2Dpt, float_2Dpt, float_2Dpt);
  * (bool) TRUE if the point is inside the polygon, FALSE if not.
  *************************************************************************/
 
-int G_PtInPolygon(MyPoint *rgpts, int wnumpts, float x, float y) {
-  MyPoint *ppt, *ppt1;
+int G_PtInPolygon(MyPMPoint *rgpts, int wnumpts, float x, float y) {
+    MyPMPoint *ppt, *ppt1;
   int i;
-  MyPoint pt1, pt2, pt0;
+  MyPMPoint pt1, pt2, pt0;
   int wnumintsct = 0;
 
   pt0.x = x;
@@ -94,7 +94,7 @@ int G_PtInPolygon(MyPoint *rgpts, int wnumpts, float x, float y) {
  * TRUE if they intersect, FALSE if not.
  *************************************************************************/
 
-int Intersect(MyPoint p1, MyPoint p2, MyPoint p3, MyPoint p4) {
+int Intersect(MyPMPoint p1, MyPMPoint p2, MyPMPoint p3, MyPMPoint p4) {
   int i;
   i = CCW(p1, p2, p3);
   i = CCW(p1, p2, p4);
@@ -117,7 +117,7 @@ int Intersect(MyPoint p1, MyPoint p2, MyPoint p3, MyPoint p4) {
  * not.
  *************************************************************************/
 
-int CCW(MyPoint p0, MyPoint p1, MyPoint p2) {
+int CCW(MyPMPoint p0, MyPMPoint p1, MyPMPoint p2) {
   double dx1, dx2;
   double dy1, dy2;
 
@@ -133,10 +133,10 @@ int CCW(MyPoint p0, MyPoint p1, MyPoint p2) {
   return ((dx1 * dy2 > dy1 * dx2) ? 1 : -1);
 }
 
-int G_PtInPolygon_FL(float_2Dpt *rgpts, int wnumpts, float x, float y) {
-  float_2Dpt *ppt, *ppt1;
+int G_PtInPolygon_FL(PMfloat_2Dpt *rgpts, int wnumpts, float x, float y) {
+  PMfloat_2Dpt *ppt, *ppt1;
   int i;
-  float_2Dpt pt1, pt2, pt0;
+  PMfloat_2Dpt pt1, pt2, pt0;
   int wnumintsct = 0;
 
   pt0.x = x;
@@ -170,7 +170,7 @@ int G_PtInPolygon_FL(float_2Dpt *rgpts, int wnumpts, float x, float y) {
  * TRUE if they intersect, FALSE if not.
  *************************************************************************/
 
-int Intersect_FL(float_2Dpt p1, float_2Dpt p2, float_2Dpt p3, float_2Dpt p4) {
+int Intersect_FL(PMfloat_2Dpt p1, PMfloat_2Dpt p2, PMfloat_2Dpt p3, PMfloat_2Dpt p4) {
   int i;
   i = CCW_FL(p1, p2, p3);
   i = CCW_FL(p1, p2, p4);
@@ -193,7 +193,7 @@ int Intersect_FL(float_2Dpt p1, float_2Dpt p2, float_2Dpt p3, float_2Dpt p4) {
  * not.
  *************************************************************************/
 
-int CCW_FL(float_2Dpt p0, float_2Dpt p1, float_2Dpt p2) {
+int CCW_FL(PMfloat_2Dpt p0, PMfloat_2Dpt p1, PMfloat_2Dpt p2) {
   double dx1, dx2;
   double dy1, dy2;
 

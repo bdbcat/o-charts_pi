@@ -31,6 +31,7 @@
 
 #include <vector>
 
+#ifdef __cplusplus
 void DouglasPeucker(double *PointList, int fp, int lp,
                                double epsilon, std::vector<int> *keep);
 void DouglasPeuckerF(float *PointList, int fp, int lp,
@@ -41,6 +42,9 @@ void DouglasPeuckerFI(float *PointList, int fp, int lp,
                                  double epsilon, std::vector<bool> &keep);
 void DouglasPeuckerDI(double *PointList, int fp, int lp,
                                  double epsilon, std::vector<bool> &keep);
+
+#else
+#endif
 
 
 #endif    // guard
