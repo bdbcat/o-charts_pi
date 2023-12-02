@@ -51,6 +51,21 @@ bool GetDoubleAttr(S57Obj *obj, const char *AttrName, double &val);
   }
 #endif
 
+/*          Replacement for __MSVC__ in absence of snprintf or _snprintf  */
+#ifdef __MSVC__
+extern int mysnprintf( char *buffer, int count, const char *format, ... )
+{
+    int ret;
+
+    va_list arg;
+    va_start(arg, format);
+    ret = _vsnprintf(buffer, count, format, arg);
+
+    va_end(arg);
+    return ret;
+}
+#endif
+
 WX_DEFINE_ARRAY_DOUBLE(double, ArrayOfSortedDoubles);
 
 // size of attributes value list buffer
