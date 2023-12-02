@@ -179,7 +179,7 @@
  #include <GLES2/gl2.h>
 #elif defined(_WIN32)
  #include "glew.h"
- //typedef void (__stdcall *  _GLUfuncptr)();
+ typedef void (__stdcall *  _GLUfuncptr)();
 #elif defined(__WXOSX__)
  #include <OpenGL/gl.h>
  #include <OpenGL/glu.h>
