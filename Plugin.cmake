@@ -76,6 +76,9 @@ if(OCPN_BUILD_USE_GLEW)
 
 endif(OCPN_BUILD_USE_GLEW)
 
+if (CMAKE_HOST_WIN32)
+  add_definitions(-D__MSVC__)
+endif (CMAKE_HOST_WIN32)
 
 
 set(SRC
