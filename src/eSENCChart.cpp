@@ -52,9 +52,9 @@
 #include "s52utils.h"
 #include "uKey.h"
 #include "tinyxml.h"
-#include "poly_math.h"
+//#include "poly_math.h"
 #include "dychart.h"
-#include "LOD_reduce.h"
+//#include "LOD_reduce.h"
 #include "cutil.h"
 
 #ifdef __WXOSX__

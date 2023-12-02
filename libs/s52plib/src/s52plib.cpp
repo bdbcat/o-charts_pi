@@ -6871,7 +6871,7 @@ bool s52plib::inter_tri_rect(wxPoint *ptp, render_canvas_parms *pb_spec) {
   //    triangle
 
   double p[6];
-  MyPoint *pmp = (MyPoint *)p;
+  MyPMPoint *pmp = (MyPMPoint *)p;
 
   for (int i = 0; i < 3; i++) {
     pmp[i].x = ptp[i].x;
