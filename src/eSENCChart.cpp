@@ -85,7 +85,8 @@ typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
 
 
 
-#ifdef __MSVC__
+//#ifdef __MSVC__
+#if defined(_WIN32)
 #define strncasecmp(x,y,z) _strnicmp(x,y,z)
 
 //    __MSVC__ randomly does not link snprintf, or _snprintf
