@@ -136,10 +136,10 @@ macro(late_init)
   string(TOLOWER "${OCPN_TARGET_TUPLE}" _lc_target)
   message(STATUS "late_init: ${OCPN_TARGET_TUPLE}.")
 
-  if ( (NOT "${_lc_target}" MATCHES "debian;10;x86_64") AND
-       (NOT "${_lc_target}" MATCHES "android*") )
-    add_definitions(-D__OCPN_USE_CURL__)
-  endif()
+  #if ( (NOT "${_lc_target}" MATCHES "debian;10;x86_64") AND
+  #     (NOT "${_lc_target}" MATCHES "android*") )
+  #  add_definitions(-D__OCPN_USE_CURL__)
+  #endif()
 
 endmacro ()
 
