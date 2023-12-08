@@ -193,10 +193,12 @@ endif (NOT OCPN_NOGLEW)
   #   plugin API for network access.
   # And, Android always uses plugin API for network access
   string(TOLOWER "${OCPN_TARGET_TUPLE}" _lc_target)
-  message(STATUS "late_init: ${OCPN_TARGET_TUPLE}.")
+  message(STATUS "add_plugin_libraries: ${_lc_target}.")
 
   if ( (NOT "${_lc_target}" MATCHES "debian;10;x86_64") AND
-  (NOT "${_lc_target}" MATCHES "android*") )
+  (NOT "${_lc_target}" MATCHES "android*") AND
+  (NOT "${_lc_target}" MATCHES "darwin*") )
+    message(STATUS "add_plugin_libraries: Using CURL.")
     add_definitions(-D__OCPN_USE_CURL__)
   endif()
 
