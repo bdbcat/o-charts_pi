@@ -127,19 +127,6 @@ macro(late_init)
   # and ocpn::api is available.
   target_include_directories(${PACKAGE_NAME} PRIVATE libs/gdal/src src)
 
-  # A specific target requires special handling
-  # When OCPN core is a ubuntu-bionic build, and the debian-10 plugin is loaded,
-  #   then there is conflict between wxCurl in core, vs plugin
-  # So, in this case, disable the plugin's use of wxCurl directly, and revert to
-  #   plugin API for network access.
-  # And, Android always uses plugin API for network access
-  string(TOLOWER "${OCPN_TARGET_TUPLE}" _lc_target)
-  message(STATUS "late_init: ${OCPN_TARGET_TUPLE}.")
-
-  #if ( (NOT "${_lc_target}" MATCHES "debian;10;x86_64") AND
-  #     (NOT "${_lc_target}" MATCHES "android*") )
-  #  add_definitions(-D__OCPN_USE_CURL__)
-  #endif()
 
 endmacro ()
 
@@ -180,7 +167,7 @@ if (NOT OCPN_NOGLEW)
     if(OCPN_BUILD_USE_GLEW)
       target_link_libraries(${PACKAGE_NAME} "GLEW")
     endif(OCPN_BUILD_USE_GLEW)
-  endif(UNIX AND NOT APPLE)
+  endif(UNIX AND NOT APPLE AND NOT QT_ANDROID)
 endif (NOT OCPN_NOGLEW)
 
   add_subdirectory("libs/oeserverd")
@@ -188,5 +175,29 @@ endif (NOT OCPN_NOGLEW)
   if(QT_ANDROID)
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/includeAndroid")
   endif(QT_ANDROID)
+
+  #  Some code has alignment problems on ARMHF
+  #  mygeom63.cpp, s63chart.cpp
+  #  Make sure to set the correct compile definition
+  if(NOT APPLE)
+    if (${ARCH} MATCHES "armhf")
+      message(STATUS "Building for armhf")
+      ADD_DEFINITIONS( -DARMHF )
+    endif()
+  endif(NOT APPLE)
+
+  # A specific target requires special handling
+  # When OCPN core is a ubuntu-bionic build, and the debian-10 plugin is loaded,
+  #   then there is conflict between wxCurl in core, vs plugin
+  # So, in this case, disable the plugin's use of wxCurl directly, and revert to
+  #   plugin API for network access.
+  # And, Android always uses plugin API for network access
+  string(TOLOWER "${OCPN_TARGET_TUPLE}" _lc_target)
+  message(STATUS "late_init: ${OCPN_TARGET_TUPLE}.")
+
+  if ( (NOT "${_lc_target}" MATCHES "debian;10;x86_64") AND
+  (NOT "${_lc_target}" MATCHES "android*") )
+    add_definitions(-D__OCPN_USE_CURL__)
+  endif()
 
 endmacro ()
