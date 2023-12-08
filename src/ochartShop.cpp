@@ -1397,10 +1397,17 @@ wxBitmap& itemChart::GetChartThumbnail(int size, bool bDL_If_Needed)
 
                     wxString filetmp = g_PrivateDataDir + fileKeytmp;
 
-                    wxString file_URI = _T("file://") + filetmp;
+                    wxString file_URI = /*_T("file://") + */ filetmp;
 
                     s_dlbusy = 1;
-                    _OCPN_DLStatus ret = OCPN_downloadFile( wxString(thumbLink), file_URI, _T(""), _T(""), wxNullBitmap, NULL /*g_shopPanel*/, 0/*OCPN_DLDS_DEFAULT_STYLE*/, 15);
+                    _OCPN_DLStatus ret = OCPN_downloadFile( wxString(thumbLink),
+                                                file_URI,
+                                                    _T(""),
+                                                _T(""),
+                                                    wxNullBitmap,
+                                                    NULL /*g_shopPanel*/,
+                                                    OCPN_DLDS_AUTO_CLOSE/*OCPN_DLDS_DEFAULT_STYLE*/,
+                                                15);
 
                     wxLogMessage(_T("DLRET"));
                     //qDebug() << "DL done";
