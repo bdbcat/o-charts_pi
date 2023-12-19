@@ -124,7 +124,7 @@ WX_DECLARE_OBJARRAY(ChartSetEULA *, EULAArray);
 //    The PlugIn Class Definition
 //----------------------------------------------------------------------------------------------------------
 
-class o_charts_pi : public opencpn_plugin_111
+class o_charts_pi : public opencpn_plugin_117
 {
 public:
       o_charts_pi(void *ppimgr);
@@ -138,6 +138,8 @@ public:
     int GetAPIVersionMinor();
     int GetPlugInVersionMajor();
     int GetPlugInVersionMinor();
+    int GetPlugInVersionPatch();
+    int GetPlugInVersionPost();
     wxBitmap *GetPlugInBitmap();
     wxString GetCommonName();
     wxString GetShortDescription();

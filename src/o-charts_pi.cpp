@@ -479,7 +479,7 @@ void OESENC_HTMLMessageDialog::OnTimer(wxTimerEvent &evt)
 //---------------------------------------------------------------------------------------------------------
 
 o_charts_pi::o_charts_pi(void *ppimgr)
-      :opencpn_plugin_111(ppimgr)
+      :opencpn_plugin_117(ppimgr)
 {
       wxString vs;
       vs.Printf(_T("%d.%d.%d"), PLUGIN_VERSION_MAJOR, PLUGIN_VERSION_MINOR, PLUGIN_VERSION_PATCH);
@@ -865,6 +865,10 @@ int o_charts_pi::GetPlugInVersionMinor()
 {
       return PLUGIN_VERSION_MINOR;
 }
+
+int o_charts_pi::GetPlugInVersionPatch() { return PLUGIN_VERSION_PATCH; }
+
+int o_charts_pi::GetPlugInVersionPost() { return PLUGIN_VERSION_TWEAK; };
 
 wxBitmap *o_charts_pi::GetPlugInBitmap()
 {
