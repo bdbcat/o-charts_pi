@@ -91,6 +91,10 @@ if [ -n "$TARGET_TUPLE" ]; then
   TARGET_OPT="-DOCPN_TARGET_TUPLE=$TARGET_TUPLE";
 fi
 
+if [ -n "$NO_LINK_GLEW" ]; then
+  TARGET_NOGLEW="-DOCPN_NOGLEW=ON";
+fi
+
 sudo apt install -q \
     python3-pip python3-setuptools python3-dev python3-wheel \
     build-essential libssl-dev libffi-dev
@@ -101,7 +105,7 @@ python3 -m pip install --user -q cloudsmith-cli cryptography cmake
 
 cd $builddir
 
-cmake "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-RelWithDbgInfo}" $TARGET_OPT ..
+cmake "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-RelWithDbgInfo}" $TARGET_OPT $TARGET_NOGLEW ..
 make VERBOSE=1 tarball
 ldd app/*/lib/opencpn/*.so
 if [ -d /ci-source ]; then
