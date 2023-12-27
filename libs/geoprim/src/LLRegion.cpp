@@ -84,7 +84,7 @@ LLRegion::LLRegion(float minlat, float minlon, float maxlat, float maxlon) {
 }
 
 LLRegion::LLRegion(const LLBBox &llbbox) {
-  xInitBox(llbbox.GetMinLat(), llbbox.GetMinLon(), llbbox.GetMaxLat(),
+  InitBox(llbbox.GetMinLat(), llbbox.GetMinLon(), llbbox.GetMaxLat(),
           llbbox.GetMaxLon());
 }
 
