@@ -357,7 +357,7 @@ void ViewPort::GetLLFromPix( const wxPoint2DDouble &p, double *lat, double *lon 
     *lon = slon;
 }
 
-#if 0
+#if 1
 LLRegion ViewPort::GetLLRegion( const OCPNRegion &region )
 {
     // todo: for these projecetions, improve this calculation by using the
@@ -367,7 +367,9 @@ LLRegion ViewPort::GetLLRegion( const OCPNRegion &region )
 #else
 
     //if(!glChartCanvas::CanClipViewport(*this))
-        return LLRegion(GetBBox());
+    LLRegion lret(GetBBox());
+    return lret;
+        //return LLRegion(GetBBox());
 
 #if 0
     OCPNRegionIterator it( region );
