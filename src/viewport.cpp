@@ -357,6 +357,7 @@ void ViewPort::GetLLFromPix( const wxPoint2DDouble &p, double *lat, double *lon 
     *lon = slon;
 }
 
+#if 0
 LLRegion ViewPort::GetLLRegion( const OCPNRegion &region )
 {
     // todo: for these projecetions, improve this calculation by using the
@@ -428,6 +429,8 @@ LLRegion ViewPort::GetLLRegion( const OCPNRegion &region )
 #endif
 #endif
 }
+#endif
+
 
 struct ContourRegion
 {
