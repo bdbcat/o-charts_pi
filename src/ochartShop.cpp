@@ -2378,6 +2378,8 @@ int checkResult(wxString &result, bool bShowLoginErrorDialog = true)
             msg = _("Something has changed in the device assigned to this system name.");
         else if(result.IsSameAs("8j"))
             msg = _("There is already a system name for this device.");
+        else
+            msg = result;
 
         OCPNMessageBox_PlugIn(NULL, _("o-Charts shop interface error") + _T("\n") + result + _T("\n") + msg, _("o-charts_pi Message"), wxOK);
     }
