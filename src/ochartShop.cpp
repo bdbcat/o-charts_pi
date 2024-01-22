@@ -481,8 +481,10 @@ void OERNCMessageDialog::OnClose( wxCloseEvent& event )
 int ShowOERNCMessageDialog(wxWindow *parent, const wxString& message,  const wxString& caption, long style)
 {
 #ifdef __ANDROID__
+    androidDisableRotation();
     OERNCMessageDialog dlg( parent, message, caption, style);
     dlg.ShowModal();
+    androidEnableRotation();
     return dlg.GetReturnCode();
 #else
     return OCPNMessageBox_PlugIn(parent, message, caption, style);
@@ -2387,13 +2389,17 @@ int checkResult(wxString &result, bool bShowLoginErrorDialog = true)
     return 98;
 }
 
-int checkResponseCode(int iResponseCode)
+int checkResponseCode(int iResponseCode, wxString extendedMessage = "")
 {
     if(iResponseCode != 200){
         wxString msg = _("internet communications error code: ");
         wxString msg1;
         msg1.Printf(_T("\n{%d}\n "), iResponseCode);
         msg += msg1;
+        if(extendedMessage.Length()){
+            msg += extendedMessage;
+            msg += "\n";
+        }
         msg += _("Check your connection and try again.");
         ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
         g_shopPanel->ClearChartOverrideStatus();
@@ -2469,6 +2475,7 @@ int doLogin( wxWindow *parent )
     loginParms += _T("&version=") + g_systemOS + g_versionString;
 
     long iResponseCode =0;
+    wxString postresult;
     TiXmlDocument *doc = 0;
     size_t res = 0;
 #ifdef __OCPN_USE_CURL__
@@ -2488,7 +2495,6 @@ int doLogin( wxWindow *parent )
     //qDebug() << url.mb_str();
     //qDebug() << loginParms.mb_str();
 
-    wxString postresult;
     _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
 
     //qDebug() << "doLogin Post Stat: " << stat;
@@ -2503,7 +2509,9 @@ int doLogin( wxWindow *parent )
         iResponseCode = 200;
         res = 1;
     }
-
+    else {
+        iResponseCode = -1;
+    }
 #endif
 
     if(iResponseCode == 200){
@@ -2556,7 +2564,7 @@ int doLogin( wxWindow *parent )
         }
     }
     else
-        return checkResponseCode(iResponseCode);
+        return checkResponseCode(iResponseCode, "postresult");
 
 }
 
@@ -2935,6 +2943,7 @@ int getChartList( bool bShowErrorDialogs = true){
 
     long iResponseCode = 0;
     std::string responseBody;
+    wxString postresult;
 
 #ifdef __OCPN_USE_CURL__
     wxCurlHTTPNoZIP post;
@@ -2956,7 +2965,6 @@ int getChartList( bool bShowErrorDialogs = true){
     //wxString tt(post.GetResponseBody().data(), wxConvUTF8);
     //wxLogMessage(tt);
 #else
-     wxString postresult;
     //qDebug() << url.mb_str();
     //qDebug() << loginParms.mb_str();
 
@@ -2971,6 +2979,9 @@ int getChartList( bool bShowErrorDialogs = true){
         //qDebug() << response.c_str();
         responseBody = response.c_str();
         iResponseCode = 200;
+    }
+    else{
+        iResponseCode = -2;
     }
 
 #endif
@@ -2990,7 +3001,7 @@ int getChartList( bool bShowErrorDialogs = true){
         return checkResult( result, bShowErrorDialogs );
     }
     else
-        return checkResponseCode(iResponseCode);
+        return checkResponseCode(iResponseCode, postresult);
 }
 
 wxArrayString breakPath( wxWindow *win, wxString path, int pix_width)
@@ -4699,7 +4710,7 @@ void shopPanel::RefreshSystemName()
         m_staticTextSystemName->SetLabel( sn );
     }
     else{
-        sn = _("System Name:");
+        sn = _("Test1 System Name:");
         sn += _T(" ");
         sn += g_systemName;
     }
@@ -4799,6 +4810,8 @@ wxString shopPanel::GetDongleName()
 
 void shopPanel::OnButtonUpdate( wxCommandEvent& event )
 {
+  doUploadXFPR(false);
+
     m_shopLog->ClearLog();
 
     // Deselect any selected chart
