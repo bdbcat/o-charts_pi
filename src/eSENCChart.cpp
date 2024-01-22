@@ -1806,7 +1806,7 @@ bool eSENCChart::ProcessHeader(Osenc &senc)
           // Detect this case, and reduce complexity if possible
             if (AuxCntArray.Item(j) > 2000){
               int np = AuxCntArray.Item(j);
-#if 0
+#if 1
               // Plan on LOD reduction of this point string.
               // Idea is to reduce so that the error is less than n pixels
               // when displayed at native scale on "reasonable" monitor
@@ -1818,9 +1818,11 @@ bool eSENCChart::ProcessHeader(Osenc &senc)
               // Working in degrees, so convert LOD_meters to degrees, roughly
               LOD_meters /= (1852. * 60.);
 
-              LOD_meters *= 20;   // empirically derived
+              LOD_meters *= 4;   // empirically derived
+                                    // equivalent to viewing the
+                                    // chart at 4X
 
-              double scaler = 10000;
+              double scaler = 1;
               float *source = AuxPtrArray.Item( j );
               float *run = source;
 
@@ -1839,13 +1841,19 @@ bool eSENCChart::ProcessHeader(Osenc &senc)
                        &pReduced, NULL, NULL);
 
               if(nReduced < 10) {       // some error in LOD algorithm
+                // Try to correct by reducing the LOD, by steps.
+                // If not corrected in 4 steps, bail out.
+                // This will normally result in non-display of the chart,
+                // due to sanity checks elsewhere
                 double new_LOD = LOD_meters * scaler;
-                while (nReduced < 10){
+                int nsteps = 0;
+                while ((nReduced < 10) && (nsteps < 4)){
                   new_LOD *= 0.5;
                   delete pReduced;        // so re-run with reduced LOD
                   pReduced = 0;
                   nReduced = reduceLOD(new_LOD, np, dsource,
                        &pReduced, NULL, NULL);
+                  nsteps++;
                 }
               }
 
