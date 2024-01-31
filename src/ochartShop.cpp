@@ -3484,8 +3484,10 @@ int doUploadXFPR(bool bDongle)
         responseBody = post.GetResponseBody();
         //printf("%s", post.GetResponseBody().c_str());
 
-        //wxString tt(post.GetResponseBody().data(), wxConvUTF8);
-        //wxLogMessage(tt);
+
+        wxLogMessage("doUploadXFPR:CURL: response");
+        wxString tt(post.GetResponseBody().data(), wxConvUTF8);
+        wxLogMessage(tt);
 #else
         wxString postresult;
         //qDebug() << url.mb_str();
@@ -3503,8 +3505,10 @@ int doUploadXFPR(bool bDongle)
             responseBody = response.c_str();
             iResponseCode = 200;
         }
+        wxLogMessage("doUploadXFPR:CORE: response");
+        wxString tt(responseBody().data(), wxConvUTF8);
+        wxLogMessage(tt);
 #endif
-
         if(iResponseCode == 200){
             wxString result = ProcessResponse(responseBody);
 
@@ -4710,7 +4714,7 @@ void shopPanel::RefreshSystemName()
         m_staticTextSystemName->SetLabel( sn );
     }
     else{
-        sn = _("Test1 System Name:");
+        sn = _("System Name:");
         sn += _T(" ");
         sn += g_systemName;
     }
@@ -4810,8 +4814,6 @@ wxString shopPanel::GetDongleName()
 
 void shopPanel::OnButtonUpdate( wxCommandEvent& event )
 {
-  doUploadXFPR(false);
-
     m_shopLog->ClearLog();
 
     // Deselect any selected chart
@@ -5174,9 +5176,9 @@ int shopPanel::GetShopNameFromFPR()
 
     if(iResponseCode == 200){
 //        const char *rr = doc->Parse( post.GetResponseBody().c_str());
-//         wxString p = wxString(post.GetResponseBody().c_str(), wxConvUTF8);
-//         wxLogMessage(_T("doLogin results:"));
-//         wxLogMessage(p);
+         wxString p = wxString(post.GetResponseBody().c_str(), wxConvUTF8);
+         wxLogMessage(_T("GetShopNameFromFPR results:"));
+         wxLogMessage(p);
 
         wxString queryResult;
         wxString tsystemName;
@@ -5218,6 +5220,7 @@ int shopPanel::GetShopNameFromFPR()
         }
         else{
             if(queryResult == _T("8l")){                // system name not found, must be new, not an error
+                wxLogMessage("GetShopNameFromFPR: systemName not found on server, new GUI name required");
                 g_lastQueryResult = queryResult;
                 return 0;                              // Avoid showing "error" dialog
             }
