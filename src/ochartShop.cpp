@@ -3506,7 +3506,7 @@ int doUploadXFPR(bool bDongle)
             iResponseCode = 200;
         }
         wxLogMessage("doUploadXFPR:CORE: response");
-        wxString tt(responseBody().data(), wxConvUTF8);
+        wxString tt(responseBody.data(), wxConvUTF8);
         wxLogMessage(tt);
 #endif
         if(iResponseCode == 200){
@@ -5150,6 +5150,10 @@ int shopPanel::GetShopNameFromFPR()
         doc = new TiXmlDocument();
         doc->Parse( post.GetResponseBody().c_str());
     }
+    wxString p = wxString(post.GetResponseBody().c_str(), wxConvUTF8);
+    wxLogMessage(_T("GetShopNameFromFPR: CURL: results:"));
+    wxLogMessage(p);
+
 
 #else
 
@@ -5171,14 +5175,14 @@ int shopPanel::GetShopNameFromFPR()
         iResponseCode = 200;
         res = 1;
     }
+    wxString p = wxString(response.c_str(), wxConvUTF8);
+    wxLogMessage(_T("GetShopNameFromFPR: Core:  results:"));
+    wxLogMessage(p);
 
 #endif
 
     if(iResponseCode == 200){
 //        const char *rr = doc->Parse( post.GetResponseBody().c_str());
-         wxString p = wxString(post.GetResponseBody().c_str(), wxConvUTF8);
-         wxLogMessage(_T("GetShopNameFromFPR results:"));
-         wxLogMessage(p);
 
         wxString queryResult;
         wxString tsystemName;
