@@ -3224,132 +3224,7 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
         return checkResponseCode(iResponseCode);
 }
 
-#if 0
-int doUploadXFPR(bool bDongle)
-{
-    wxString err;
 
-    // Generate the FPR file
-    bool b_copyOK = false;
-
-    wxString fpr_file = getFPR( false, b_copyOK, bDongle);              // No copy needed
-
-    fpr_file = fpr_file.Trim(false);            // Trim leading spaces...
-
-    if(fpr_file.Len()){
-
-        wxString stringFPR;
-
-        //Read the file, convert to ASCII hex, and build a string
-        if(::wxFileExists(fpr_file)){
-            wxString stringFPR;
-            wxFileInputStream stream(fpr_file);
-            while(stream.IsOk() && !stream.Eof() ){
-                unsigned char c = stream.GetC();
-                if(!stream.Eof()){
-                    wxString sc;
-                    sc.Printf(_T("%02X"), c);
-                    stringFPR += sc;
-                }
-            }
-
-            // And delete the xfpr file
-            ::wxRemoveFile(fpr_file);
-
-            // Prepare the upload command string
-            wxString url = userURL;
-            if(g_admin)
-                url = adminURL;
-
-            url +=_T("?fc=module&module=occharts&controller=apioesu");
-
-            wxFileName fnxpr(fpr_file);
-            wxString fprName = fnxpr.GetFullName();
-
-            wxString loginParms;
-            loginParms += _T("taskId=xfpr");
-            loginParms += _T("&username=") + g_loginUser;
-            loginParms += _T("&key=") + g_loginKey;
-            if(g_debugShop.Len())
-                loginParms += _T("&debug=") + g_debugShop;
-
-            if(!bDongle)
-                loginParms += _T("&systemName=") + g_systemName;
-            else
-                loginParms += _T("&systemName=") + g_dongleName;
-
-            loginParms += _T("&xfpr=") + stringFPR;
-            loginParms += _T("&xfprName=") + fprName;
-            loginParms += _T("&version=") + g_systemOS + g_versionString;
-
-            wxLogMessage(loginParms);
-
-            long iResponseCode = 0;
-            size_t res = 0;
-            std::string responseBody;
-
-#ifdef __OCPN_USE_CURL__
-            wxCurlHTTPNoZIP post;
-            post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
-            res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
-
-            // get the response code of the server
-            post.GetInfo(CURLINFO_RESPONSE_CODE, &iResponseCode);
-            if(iResponseCode == 200)
-                responseBody = post.GetResponseBody();
-
-#else
-            qDebug() << "do xfpr upload";
-            wxString postresult;
-            _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
-
-            qDebug() << "doUploadXFPR Post Stat: " << stat;
-
-
-            if(stat != OCPN_DL_FAILED){
-                wxCharBuffer buf = postresult.ToUTF8();
-                std::string response(buf.data());
-
-                qDebug() << response.c_str();
-                responseBody = response.c_str();
-
-                iResponseCode = 200;
-            }
-
-#endif
-            if(iResponseCode == 200){
-                wxString result = ProcessResponse(responseBody);
-                g_lastQueryResult = result;
-
-                int iret = checkResult(result);
-
-                return iret;
-            }
-            else
-                return checkResponseCode(iResponseCode);
-
-        }
-        else if(fpr_file.IsSameAs(_T("DONGLE_NOT_PRESENT")))
-            err = _("  {USB Dongle not found.}");
-
-        else
-            err = _("  {fpr file not found.}");
-    }
-    else{
-        err = _("  {fpr file not created.}");
-    }
-
-    if(err.Len()){
-        wxString msg = _("ERROR Creating Fingerprint file") + _T("\n");
-        msg += _("Check OpenCPN log file.") + _T("\n");
-        msg += err;
-        ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
-        return 1;
-    }
-
-    return 0;
-}
-#endif
 
 int doUploadXFPR(bool bDongle)
 {
@@ -3379,7 +3254,6 @@ int doUploadXFPR(bool bDongle)
             }
             wxFileName fnxpr(fpr_file);
             fprName = fnxpr.GetFullName();
-            ::wxRemoveFile(fpr_file);
 
         }
         else if(fpr_file.IsSameAs(_T("DONGLE_NOT_PRESENT"))){
@@ -3434,6 +3308,10 @@ int doUploadXFPR(bool bDongle)
 
 
 #endif
+
+    // And delete the xfpr file
+    if(::wxFileExists(fpr_file))
+        ::wxRemoveFile(fpr_file);
 
     if(stringFPR.Length()){
 
@@ -5097,15 +4975,16 @@ int shopPanel::GetShopNameFromFPR()
                     stringFPR += sc;
                 }
             }
-
-            // And delete the xfpr file
-            ::wxRemoveFile(fpr_file);
         }
         else if(fpr_file.IsSameAs(_T("DONGLE_NOT_PRESENT")))
             err = _("  {USB Dongle not found.}");
 
         else
             err = _("  {fpr file not found.}");
+
+        // And delete the xfpr file
+        if(::wxFileExists(fpr_file))
+            ::wxRemoveFile(fpr_file);
     }
     else{
         err = _("  {fpr file not created.}");
