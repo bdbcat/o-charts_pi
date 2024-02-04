@@ -3267,6 +3267,11 @@ int doUploadXFPR(bool bDongle)
     else{
             err = _("[fpr file not created.]");
     }
+
+    // And delete the xfpr file
+    if(::wxFileExists(fpr_file))
+            ::wxRemoveFile(fpr_file);
+
 #else   // Android
 
     // Get the FPR directly from the helper oexserverd, in ASCII HEX
@@ -3309,9 +3314,6 @@ int doUploadXFPR(bool bDongle)
 
 #endif
 
-    // And delete the xfpr file
-    if(::wxFileExists(fpr_file))
-        ::wxRemoveFile(fpr_file);
 
     if(stringFPR.Length()){
 
@@ -5043,11 +5045,10 @@ int shopPanel::GetShopNameFromFPR()
     _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
 
     //qDebug() << "doLogin Post Stat: " << stat;
+    wxCharBuffer buf = postresult.ToUTF8();
+    std::string response(buf.data());
 
     if(stat != OCPN_DL_FAILED){
-        wxCharBuffer buf = postresult.ToUTF8();
-        std::string response(buf.data());
-
         //qDebug() << response.c_str();
         doc = new TiXmlDocument();
         doc->Parse( response.c_str());
