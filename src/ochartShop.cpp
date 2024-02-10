@@ -5541,9 +5541,8 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             itest++;
         }
 
-#endif
         tmp_Zipdir = tmp_Zipdir_test;
-
+#endif
         wxFileName fn(tmp_Zipdir);
         if( !fn.DirExists() ){
             if( !wxFileName::Mkdir(fn.GetPath(), 0755, wxPATH_MKDIR_FULL) ){
