@@ -5513,10 +5513,36 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         tmp_Zipdir += wxFileName::GetPathSeparator();
 
 #else
-        wxString tmp_Zipdir = wxFileName::CreateTempFileName( _T("") );                    // Be careful, this method actually create a file
+        wxString tmp_Zipdir = g_PrivateDataDir;
         tmp_Zipdir += _T("zipTemp");
-        //tmp_dir += wxFileName::GetPathSeparator();
+
+        // Create random final rwmporary directory name, ensure no duplicate
+        wxString tmp_Zipdir_test = tmp_Zipdir;
+        tmp_Zipdir_test += wxFileName::GetPathSeparator();
+        int irand = rand() %10000;
+        wxString srd;
+        srd.Printf("zd%0d", irand);
+        tmp_Zipdir_test += srd;
+        wxString tmp_Zipdir_test_name = tmp_Zipdir_test;
+        tmp_Zipdir_test_name += wxFileName::GetPathSeparator();
+        tmp_Zipdir_test_name += "a";
+        wxFileName fc(tmp_Zipdir_test_name);
+        int itest = 0;
+        while (fc.DirExists() && itest < 10) {
+            tmp_Zipdir_test = tmp_Zipdir;
+            tmp_Zipdir_test += wxFileName::GetPathSeparator();
+            int irand = rand() % 10000;
+            srd.Printf("zd%0d", irand);
+            tmp_Zipdir_test += srd;
+            tmp_Zipdir_test_name = tmp_Zipdir_test;
+            tmp_Zipdir_test_name += wxFileName::GetPathSeparator();
+            tmp_Zipdir_test_name += "a";
+            fc.Assign(tmp_Zipdir_test_name);
+            itest++;
+        }
+
 #endif
+        tmp_Zipdir = tmp_Zipdir_test;
 
         wxFileName fn(tmp_Zipdir);
         if( !fn.DirExists() ){
