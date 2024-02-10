@@ -244,13 +244,6 @@ jobs:
       - run: ci/circleci-build-android.sh
       - run: ci/maybe-push-upload.sh
 
-  build-local-runner:
-    docker:
-      - image: cimg/base:current
-    resource_class: opencpn/linux
-    steps:
-      - run: echo "Hi I'm on a Container Runner!"
-
 std-filters: &std-filters
   filters:
     branches:
@@ -310,5 +303,3 @@ workflows:
 
       - build-buster-armhf:
           <<: *std-filters
-
-      - build-local-runner
