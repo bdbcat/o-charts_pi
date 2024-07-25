@@ -74,10 +74,10 @@ fi
 make VERBOSE=1 tarball || make VERBOSE=1 tarball
 
 # Install cloudsmith needed by upload script
-python3 -m pip install -q --user --break-system-packages cloudsmith-cli
+python3 -m pip install -q --user cloudsmith-cli
 
 # Required by git-push
-python3 -m pip install -q --user --break-system-packages cryptography
+python3 -m pip install -q --user cryptography
 
 # python3 installs in odd place not on PATH, teach upload.sh to use it:
 pyvers=$(python3 --version | awk '{ print $2 }')
