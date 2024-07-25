@@ -32,10 +32,11 @@ if not exist "%HomeDrive%%HomePath%\.local\bin\pathman.exe" (
     pushd "%HomeDrive%%HomePath%\.local\bin"
     powershell /? >nul 2>&1
     if errorlevel 1 set "PATH=%PATH%;C:\Windows\System32\WindowsPowerShell\v1.0"
-    curl.exe -sA "windows/10 x86"  -o webi-pwsh-install.ps1 ^
-        https://webi.ms/packages/_webi/webi-pwsh.ps1
-    powershell.exe -ExecutionPolicy Bypass -File webi-pwsh-install.ps1
-    webi.bat pathman
+::    curl.exe -sA "windows/10 x86"  -o webi-pwsh-install.ps1 ^
+::        https://webi.ms/packages/_webi/webi-pwsh.ps1
+::    powershell.exe -ExecutionPolicy Bypass -File webi-pwsh-install.ps1
+::    webi.bat pathman
+    curl.exe -sA "MS" https://webinstall.dev/pathman | powershell
     popd
 )
 pathman list > nul 2>&1
