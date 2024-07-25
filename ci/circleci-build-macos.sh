@@ -85,6 +85,11 @@ pyvers=$(echo $pyvers | sed -E 's/[\.][0-9]+$//')    # drop last .z in x.y.z
 py_dir=$(ls -d  /Users/*/Library/Python/$pyvers/bin)
 echo "export PATH=\$PATH:$py_dir" >> ~/.uploadrc
 
+# and for installed cloudsmith
+cloudsmith_dir="/Users/distiller/.local/bin"
+echo "export PATH=\$PATH:$cloudsmith_dir" >> ~/.uploadrc
+
+
 # Create the cached /usr/local archive
 if [ -n "$CI"  ]; then
   tar -C /usr -cf /tmp/local.cache.tar  local
