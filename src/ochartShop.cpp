@@ -3144,10 +3144,18 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
         msg += _T(" (") + _("USB Key Dongle") + _T(")");
     }
 
-    msg += _T("\n\n");
-    msg += _("Proceed?");
+    msg += "\n\n";
+    msg += "PERMANENTLY implies that an assignment cannot be undone or \
+        \n reverted.  Nor moved to a third device.  Even when a device gets \
+        \n lost or suffers damages and has to be replaced. \
+        \n Major hardware changes or re-install of the OS will convert the \
+        \n system into a different, new one and hence render the assignment \
+        \n invalid.";
 
-    int ret = ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxYES_NO);
+    msg += _T("\n\n");
+    msg += _("Accept and Proceed?");
+
+    int ret = ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxYES_NO | wxICON_WARNING);
 
     if(ret != wxID_YES){
         return 1;
