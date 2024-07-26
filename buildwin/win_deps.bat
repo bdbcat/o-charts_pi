@@ -124,3 +124,5 @@ if not exist "%WXWIN%" (
 )
 
 refreshenv
+set
+echo Done win_deps.bat
