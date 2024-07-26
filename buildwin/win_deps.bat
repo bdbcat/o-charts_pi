@@ -24,7 +24,7 @@
 :: Fix PATH so it can be used in this script
 ::
 
-@echo off
+@echo on
 
 setlocal enabledelayedexpansion
 
@@ -65,6 +65,10 @@ if errorlevel 1 (
 set "POEDIT_HOME=C:\Program Files (x86)\Poedit\Gettexttools"
 if not exist "%POEDIT_HOME%" choco install -y poedit
 pathman add "%POEDIT_HOME%\bin" > nul
+
+set
+set "PATH=%PATH%;C:\Program Files (x86)\Poedit\Gettexttools\bin"
+set
 
 :: Update required python stuff
 ::
