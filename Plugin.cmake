@@ -117,8 +117,15 @@ set(SRC
 )
 
 if(QT_ANDROID)
-  set(SRC ${SRC} src/androidSupport.cpp)
+  set(SRC ${SRC}
+          src/androidSupport.cpp)
 endif(QT_ANDROID)
+
+if(QT_ANDROID AND (${ARM_ARCH} MATCHES "aarch64"))
+  set(SRC ${SRC}
+          src/comparetf2.c)
+endif(QT_ANDROID)
+
 
 if(NOT QT_ANDROID)
 add_compile_definitions( ocpnUSE_GLSL )
