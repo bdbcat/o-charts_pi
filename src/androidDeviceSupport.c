@@ -29,6 +29,7 @@
 //  We do not use exceptions in native code, so sufficient to just stub
 //  the subroutine
 
+#include <stdlib.h>
 
 #ifdef __OCPN__ANDROID__
 void
