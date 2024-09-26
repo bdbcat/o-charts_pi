@@ -2873,8 +2873,10 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
     //printf("TVP2 nobjs: %d\n",n_areaObjs);
 
 
+#ifdef USE_ANDROID_GLES2
+    glDisable( GL_SCISSOR_TEST );
+#endif
 
-#if 1  //FIXME
     //    Render the lines and points Rect 1
     PrepareForRender(&tvp1, ps52plib);
     ps52plib->SetReducedBBox(tvp1.GetBBox());
@@ -2924,7 +2926,6 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
         }
 
     }
-#endif
 
     // Rect2 Lines and points
     if (!rect2.IsEmpty()){
