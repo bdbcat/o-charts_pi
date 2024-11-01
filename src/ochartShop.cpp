@@ -2906,14 +2906,14 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
                     int index = findOrderRefChartId(pChart->orderRef, pChart->chartID);
                     if(index < 0){
                         pChart->bshopValidated = true;
-                        printf("Process new chart: %s\n", pChart->chartName.c_str());
+                        wxLogMessage(wxString("Process new chart: ") + wxString(pChart->chartName.c_str()));
 
                         ChartVector.push_back(pChart);
                     }
                     else{
                         ChartVector[index]->Update(pChart);
                         ChartVector[index]->bshopValidated = true;
-                        printf("Process existing chart: %s\n", pChart->chartName.c_str());
+                        wxLogMessage(wxString("Process existing chart: ") + wxString(pChart->chartName.c_str()));
 
                         delete pChart;
                     }
@@ -3952,6 +3952,7 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
     wxColour c;
 
     wxString nameString = wxString::FromUTF8( m_pChart->chartName.c_str());
+    wxLogMessage(wxString("Panel nameString") + nameString);
     //if(!m_pChart->quantityId.IsSameAs(_T("1")))
       //  nameString += _T(" (") + m_pChart->quantityId + _T(")");
 
@@ -4062,7 +4063,7 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
             bfit = nameWidth < nameWidthAvail;
         }
 
-        dc.SetFont( *dFont );
+        dc.SetFont( *qFont );
         dc.SetTextForeground(wxColour(0,0,0));
         dc.DrawText(nameString, text_x, height * 5 / 100);
 
@@ -4247,7 +4248,7 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
             bfit = nameWidth < nameWidthAvail;
         }
 
-        dc.SetFont( *dFont );
+        dc.SetFont( *qFont );
         dc.SetTextForeground(wxColour(64, 64, 64));
         if( m_pChart->isChartsetFullyAssigned()  &&  !m_pChart->isChartsetAssignedToMe())
             dc.SetTextForeground(wxColour(128,128,128));
@@ -6855,7 +6856,8 @@ void shopPanel::UpdateChartList( )
 
     // Add new panels
     for(unsigned int i=0 ; i < ChartVector.size() ; i++){
-        printf("Panel: %s\n", ChartVector[i]->chartName.c_str());
+        wxLogMessage(wxString("Making Panel: ") + wxString(ChartVector[i]->chartName.c_str()));
+
         if( ChartVector[i]->isChartsetShow() ){
             ChartVector[i]->GetChartThumbnail(100, true );              // attempt download if necessary
             oeXChartPanel *chartPanel = new oeXChartPanel( m_scrollWinChartList, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), ChartVector[i], this);
