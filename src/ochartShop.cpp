@@ -3953,6 +3953,8 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
 
     wxString nameString = wxString::FromUTF8( m_pChart->chartName.c_str());
     wxLogMessage(wxString("Panel nameString") + nameString);
+    wxString nameString1 = wxString( m_pChart->chartName.c_str());
+    wxLogMessage(wxString("Panel nameString1") + nameString1);
     //if(!m_pChart->quantityId.IsSameAs(_T("1")))
       //  nameString += _T(" (") + m_pChart->quantityId + _T(")");
 
