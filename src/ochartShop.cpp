@@ -2623,10 +2623,10 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
 
          wxString p = wxString(body.c_str(), wxConvUTF8);
          //  wxMSW does not like trying to format this string containing "%" characters
-#ifdef __WXGTK__
+//#ifdef __WXGTK__
          wxLogMessage(_T("ProcessResponse results:"));
          wxLogMessage(p);
-#endif
+//#endif
 
             TiXmlElement * root = doc->RootElement();
             if(!root){
@@ -2906,7 +2906,7 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
                     int index = findOrderRefChartId(pChart->orderRef, pChart->chartID);
                     if(index < 0){
                         pChart->bshopValidated = true;
-                        wxLogMessage(wxString("Process new chart: ") + wxString(pChart->chartName.c_str()));
+                        wxLogMessage(wxString("Process new chart: ") + wxString::FromUTF8(pChart->chartName.c_str()));
 
                         ChartVector.push_back(pChart);
                     }
