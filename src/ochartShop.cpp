@@ -1937,7 +1937,7 @@ void loadShopConfig()
         pConf->Read( _T("LastUpdate"), &g_lastShopUpdate);
         pConf->Read( _T("ShowExpiredCharts"), &g_bShowExpired, 0);
 
-#if 0
+#if 1
         // Get the list of charts
         wxArrayString chartIDArray;
 
@@ -2040,7 +2040,7 @@ void loadShopConfig()
         }
 #endif
 
-#if 0
+#if 1
         // Get the list of charts
         chartIDArray.Clear();
 
