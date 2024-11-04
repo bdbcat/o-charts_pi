@@ -2623,13 +2623,14 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
 
          wxString p = wxString(body.c_str());
          //  wxMSW does not like trying to format this string containing "%" characters
-//#ifdef __WXGTK__
-         wxLogMessage(_T("ProcessResponse results:"));
-         wxLogMessage(p);
-//#endif
+
+         //wxLogMessage(_T("ProcessResponse results:"));
+         //wxLogMessage(p);
 
             TiXmlElement * root = doc->RootElement();
             if(!root){
+                wxLogMessage(_T("ProcessResponse results on (57):"));
+                wxLogMessage(p);
                 return _T("57");                              // undetermined error??
             }
 
@@ -3953,8 +3954,6 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
 
     wxString nameString = wxString::FromUTF8( m_pChart->chartName.c_str());
     wxLogMessage(wxString("Panel nameString") + nameString);
-    wxString nameString1 = wxString( m_pChart->chartName.c_str());
-    wxLogMessage(wxString("Panel nameString1") + nameString1);
     //if(!m_pChart->quantityId.IsSameAs(_T("1")))
       //  nameString += _T(" (") + m_pChart->quantityId + _T(")");
 
