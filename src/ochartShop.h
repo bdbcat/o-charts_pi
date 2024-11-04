@@ -489,6 +489,7 @@ public:
     int processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *task);
     bool validateSHA256(std::string fileName, std::string shaSum);
     int GetShopNameFromFPR();
+    bool GetAndValidateSystemName();
 
     void onDLEvent(OCPN_downloadEvent &evt);
 

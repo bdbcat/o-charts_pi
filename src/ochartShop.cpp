@@ -4704,6 +4704,104 @@ wxString shopPanel::GetDongleName()
   return wxString(sName);
 }
 
+bool shopPanel::GetAndValidateSystemName()
+{
+  bool bNeedSystemName = false;
+  if (!g_systemName.Len() && !g_dongleName.Len())
+    bNeedSystemName = true;
+
+  if (bNeedSystemName) {
+        // Check the dongle
+    bool bDongleFound = false;
+    g_dongleName.Clear();
+    if(IsDongleAvailable()){
+            g_dongleName = GetDongleName();
+            bDongleFound = true;
+    }
+
+    // Check shop to see if systemName is already known for this system
+    int nGSN = GetShopNameFromFPR();
+
+    bool selectedDisabledName = true;
+    while (selectedDisabledName) {
+            // If the shop does not know about this system yet, then select an existing or new name by user GUI
+            if (!g_systemName.Len() && !g_dongleName.Len()) {
+                if (g_lastQueryResult.IsSameAs(
+                        _T("8l"))) { // very special case, new system, no match
+                    if (!bDongleFound) // no dongle, so only a systemName is expected
+                        g_systemName = doGetNewSystemName();
+                    else
+                        g_dongleName = GetDongleName(); // predetermined
+                } else if (nGSN == 83) { // system name exists, but is disabled.
+                    g_systemName.Clear();
+                    g_dongleName.Clear();
+                    return false; // Full message sent, no further action needed
+                } else
+                    g_systemName = doGetNewSystemName();
+            } else
+                bNeedSystemName = false;
+
+            // User entered/selected disabled name?
+            if (g_systemName.Len()) {
+                if (g_systemNameDisabledArray.Index(g_systemName)
+                    == wxNOT_FOUND) {
+                    selectedDisabledName = false; // OK, break the loop
+                } else {
+                    g_systemName.Clear();
+                    g_dongleName.Clear();
+                    wxString msg
+                        = _("This System Name has been disabled\nPlease create another System Name");
+                    ShowOERNCMessageDialog(
+                        NULL, msg, _("o-charts_pi Message"), wxOK);
+                }
+            } else {
+                selectedDisabledName
+                    = false; // Break loop on empty name from cancel button.
+            }
+    }
+  }
+
+  // If a new systemName was selected, verify on the server
+  // If the server already has a systemName associated with this FPR, cancel the operation.
+  if (bNeedSystemName && !g_systemName.IsEmpty()) {
+    int uploadResult = doUploadXFPR(false);
+    if (uploadResult != 0) {
+
+            //  The system name may be disabled, giving error {10}
+            //  Loop a few times, trying to let the user enter a valid and unoccupied system name
+            if (uploadResult == 10) {
+                int nTry = 0; // backstop
+                while (nTry < 4) {
+                    g_systemName = doGetNewSystemName();
+                    if (!g_systemName.Length()) // User cancel
+                        break;
+                    int uploadResultA = doUploadXFPR(false);
+                    if (uploadResultA == 0)
+                        break; // OK result
+                    nTry++;
+                }
+                wxString sn = _("System Name:");
+                m_staticTextSystemName->SetLabel(sn);
+                m_staticTextSystemName->Refresh();
+
+                setStatusText(_("Status: Ready"));
+                return true;
+            }
+
+            g_systemName.Clear();
+            saveShopConfig(); // Record the blank systemName
+
+            wxString sn = _("System Name:");
+            m_staticTextSystemName->SetLabel(sn);
+            m_staticTextSystemName->Refresh();
+
+            setStatusText(_("Status: Ready"));
+            return true;
+    }
+  }
+  return true;
+}
+
 
 void shopPanel::OnButtonUpdate( wxCommandEvent& event )
 {
@@ -4801,109 +4899,6 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     }
 
     SortChartList();
-
-    bool bNeedSystemName = false;
-
-    // Has this systemName been disabled?
-    if(g_dongleName.Len()){
-        if(g_systemNameDisabledArray.Index(g_dongleName) != wxNOT_FOUND){
-            bNeedSystemName = true;
-            g_dongleName.Clear();
-        }
-    }
-    if(g_systemName.Len()){
-        if(g_systemNameDisabledArray.Index(g_systemName) != wxNOT_FOUND){
-            bNeedSystemName = true;
-            g_systemName.Clear();
-        }
-    }
-
-    // User reset system name, and removed dongle
-    if(!g_systemName.Len() && !g_dongleName.Len())
-         bNeedSystemName = true;
-
-    if(bNeedSystemName ){
-        // Check shop to see if systemName is already known for this system
-        int nGSN = GetShopNameFromFPR();
-
-        bool selectedDisabledName = true;
-        while( selectedDisabledName){
-            // If the shop does not know about this system yet, then select an existing or new name by user GUI
-            if(!g_systemName.Len() && !g_dongleName.Len()){
-                if(g_lastQueryResult.IsSameAs(_T("8l"))){           // very special case, new system, no match
-                    if(!bDongleFound)                               // no dongle, so only a systemName is expected
-                        g_systemName = doGetNewSystemName( );
-                    else
-                        g_dongleName = GetDongleName();             // predetermined
-                }
-                else if(nGSN == 83){                                // system name exists, but is disabled.
-                    g_systemName.Clear();
-                    g_dongleName.Clear();
-                    return;                                         // Full message sent, no further action needed
-                }
-                else
-                    g_systemName = doGetNewSystemName( );
-            }
-            else
-                bNeedSystemName = false;
-
-            // User entered/selected disabled name?
-            if(g_systemName.Len()){
-                if(g_systemNameDisabledArray.Index(g_systemName) == wxNOT_FOUND){
-                    selectedDisabledName = false;               // OK, break the loop
-                }
-                else{
-                    g_systemName.Clear();
-                    g_dongleName.Clear();
-                    wxString msg = _("This System Name has been disabled\nPlease create another System Name");
-                    ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
-                }
-            }
-            else{
-                selectedDisabledName = false;               // Break loop on empty name from cancel button.
-            }
-        }
-    }
-
-    // If a new systemName was selected, verify on the server
-    // If the server already has a systemName associated with this FPR, cancel the operation.
-    if(bNeedSystemName && !g_systemName.IsEmpty()){
-        int uploadResult = doUploadXFPR( false );
-        if( uploadResult != 0){
-
-            //  The system name may be disabled, giving error {10}
-            //  Loop a few times, trying to let the user enter a valid and unoccupied system name
-            if( uploadResult == 10){
-                int nTry = 0;                                           // backstop
-                while(nTry < 4){
-                    g_systemName = doGetNewSystemName( );
-                    if(!g_systemName.Length())                          // User cancel
-                        break;
-                    int uploadResultA = doUploadXFPR( false );
-                    if( uploadResultA == 0)
-                        break;                                          // OK result
-                    nTry++;
-                }
-                wxString sn = _("System Name:");
-                m_staticTextSystemName->SetLabel( sn );
-                m_staticTextSystemName->Refresh();
-
-                setStatusText( _("Status: Ready"));
-                return;
-            }
-
-            g_systemName.Clear();
-            saveShopConfig();           // Record the blank systemName
-
-            wxString sn = _("System Name:");
-            m_staticTextSystemName->SetLabel( sn );
-            m_staticTextSystemName->Refresh();
-
-            setStatusText( _("Status: Ready"));
-            return;
-        }
-    }
-
 
     RefreshSystemName();
 
@@ -6433,6 +6428,10 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
 
     g_LastErrorMessage.Clear();
     SetErrorMessage();
+
+    //  System name is required to install
+    if (!GetAndValidateSystemName())
+        return;
 
     SetChartOverrideStatus( _("Installing...") );
 
