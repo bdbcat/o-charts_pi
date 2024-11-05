@@ -2622,7 +2622,11 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
         itemSlot *activeSlot = NULL;
 
          wxString p = wxString(body.c_str());
-         //  wxMSW does not like trying to format this string containing "%" characters
+         if (p.IsEmpty()) {
+            wxLogMessage(" Results empty");
+            return _T("58"); // empty results
+         }
+
 
          //wxLogMessage(_T("ProcessResponse results:"));
          //wxLogMessage(p);
@@ -2930,6 +2934,7 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
 
 int getChartList( bool bShowErrorDialogs = true){
 
+     wxLogMessage("getChartList");
     // We query the server for the list of charts associated with our account
     wxString url = userURL;
     if(g_admin)
@@ -2944,6 +2949,8 @@ int getChartList( bool bShowErrorDialogs = true){
     if(g_debugShop.Len())
         loginParms += _T("&debug=") + g_debugShop;
     loginParms += _T("&version=") + g_systemOS + g_versionString;
+
+    wxLogMessage(loginParms);
 
     long iResponseCode = 0;
     std::string responseBody;
@@ -2991,7 +2998,7 @@ int getChartList( bool bShowErrorDialogs = true){
 #endif
 
     if(iResponseCode == 200){
-        wxString result = ProcessResponse(responseBody);
+        wxString result = ProcessResponse(responseBody);    //getChartList
 
         //  Scan for and delete any chartsets that are not recognized in server response
         for (auto it = ChartVector.begin(); it != ChartVector.end(); ) {
@@ -3219,7 +3226,7 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
 #endif
 
     if(iResponseCode == 200){
-        wxString result = ProcessResponse(responseBody);
+        wxString result = ProcessResponse(responseBody); //doAssign
 
         if(result.IsSameAs(_T("1"))){                    // Good result
             // Create a new slot and record the assigned slotUUID, etc
@@ -3240,6 +3247,7 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
 
 int doUploadXFPR(bool bDongle)
 {
+    wxLogMessage("doUploadXFPR");
     wxString err;
     wxString stringFPR;
     wxString fprName;
@@ -3354,7 +3362,7 @@ int doUploadXFPR(bool bDongle)
         loginParms += _T("&xfprName=") + fprName;
         loginParms += _T("&version=") + g_systemOS + g_versionString;
 
-        //wxLogMessage(loginParms);
+        wxLogMessage(loginParms);
 
         long iResponseCode = 0;
         std::string responseBody;
@@ -3402,7 +3410,7 @@ int doUploadXFPR(bool bDongle)
         wxLogMessage(tt);
 #endif
         if(iResponseCode == 200){
-            wxString result = ProcessResponse(responseBody);
+            wxString result = ProcessResponse(responseBody); //doUploadXFPR
 
             int iret = checkResult(result);
             return iret;
@@ -3498,7 +3506,7 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
 
     if(iResponseCode == 200){
         // Expecting complex links with embedded entities, so process the "&" correctly
-        wxString result = ProcessResponse(responseBody, true);
+        wxString result = ProcessResponse(responseBody, true); //doPrepare
 
         return checkResult(result);
     }
@@ -3953,7 +3961,7 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
     wxColour c;
 
     wxString nameString = wxString::FromUTF8( m_pChart->chartName.c_str());
-    wxLogMessage(wxString("Panel nameString") + nameString);
+    //wxLogMessage(wxString("Panel nameString") + nameString);
     //if(!m_pChart->quantityId.IsSameAs(_T("1")))
       //  nameString += _T(" (") + m_pChart->quantityId + _T(")");
 
