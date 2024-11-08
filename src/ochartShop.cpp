@@ -3961,9 +3961,14 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
     wxColour c;
 
     wxString nameString = wxString::FromUTF8( m_pChart->chartName.c_str());
-    //wxLogMessage(wxString("Panel nameString") + nameString);
-    //if(!m_pChart->quantityId.IsSameAs(_T("1")))
-      //  nameString += _T(" (") + m_pChart->quantityId + _T(")");
+    wxLogMessage(wxString("Panel nameString ") + nameString);
+    const char *p = m_pChart->chartName.data();
+    while (*p) {
+        wxString sp;
+        sp.Printf("%03X", *p);
+        wxLogMessage(sp);
+        p++;
+    }
 
     // Thumbnail border color depends on chart type and status
     wxColor thumbColor;
