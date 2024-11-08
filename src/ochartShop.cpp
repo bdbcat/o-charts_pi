@@ -2813,6 +2813,21 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
                         }
                         else if(!strcmp(chartVal, "chartName")){
                             TiXmlNode *childVal = childChart->FirstChild();
+
+                                                        const char *p = childVal->Value();
+                                                        while ( p && *p) {
+                                                            wxString m;
+                                                            for (int i = 0; i < 16; i++) {
+                                                                if (*p) {
+                                                                    wxString sp;
+                                                                    sp.Printf("%03X ", *p);
+                                                                    m += sp;
+                                                                    p++;
+                                                                }
+                                                            }
+                                                            wxLogMessage(m);
+                                                        }
+
                             if(childVal) pChart->chartName = childVal->Value();
                         }
                         else if(!strcmp(chartVal, "expired")){
@@ -2971,6 +2986,22 @@ int getChartList( bool bShowErrorDialogs = true){
     std::string c = post.GetResponseBody();
 
     responseBody = post.GetResponseBody();
+
+    const char *p = responseBody.data();
+    while ( p && *p) {
+        wxString m;
+        for (int i = 0; i < 16; i++) {
+                    if (*p) {
+                        wxString sp;
+                        sp.Printf("%03X ", *p);
+                        m += sp;
+                        p++;
+                    }
+        }
+        wxLogMessage(m);
+    }
+
+
     //printf("%s", post.GetResponseBody().c_str());
 
     //wxString tt(post.GetResponseBody().data(), wxConvUTF8);
@@ -3962,13 +3993,6 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
 
     wxString nameString = wxString::FromUTF8( m_pChart->chartName.c_str());
     wxLogMessage(wxString("Panel nameString ") + nameString);
-    const char *p = m_pChart->chartName.data();
-    while (*p) {
-        wxString sp;
-        sp.Printf("%03X", *p);
-        wxLogMessage(sp);
-        p++;
-    }
 
     // Thumbnail border color depends on chart type and status
     wxColor thumbColor;
