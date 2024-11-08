@@ -2972,6 +2972,7 @@ int getChartList( bool bShowErrorDialogs = true){
     wxString postresult;
 
 #ifdef __OCPN_USE_CURL__
+    wxLogMessage("USING CURL");
     wxCurlHTTPNoZIP post;
     post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
 
@@ -2987,28 +2988,10 @@ int getChartList( bool bShowErrorDialogs = true){
 
     responseBody = post.GetResponseBody();
 
-    const char *p = responseBody.data();
-    while ( p && *p) {
-        wxString m;
-        for (int i = 0; i < 16; i++) {
-                    if (*p) {
-                        wxString sp;
-                        sp.Printf("%03X ", *p);
-                        m += sp;
-                        p++;
-                    }
-        }
-        wxLogMessage(m);
-    }
-
-
-    //printf("%s", post.GetResponseBody().c_str());
-
-    //wxString tt(post.GetResponseBody().data(), wxConvUTF8);
-    //wxLogMessage(tt);
 #else
     //qDebug() << url.mb_str();
     //qDebug() << loginParms.mb_str();
+    wxLogMessage("USING OCPN_postDataHttp");
 
     _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
 
@@ -3027,6 +3010,23 @@ int getChartList( bool bShowErrorDialogs = true){
     }
 
 #endif
+
+    const char *p = responseBody.data();
+    while ( p && *p) {
+        wxString m;
+        for (int i = 0; i < 16; i++) {
+                    if (*p) {
+                        wxString sp;
+                        sp.Printf("%03X ", *p);
+                        m += sp;
+                        p++;
+                    }
+        }
+        wxLogMessage(m);
+    }
+
+    wxString tt(post.GetResponseBody().data(), wxConvUTF8);
+    wxLogMessage(tt);
 
     if(iResponseCode == 200){
         wxString result = ProcessResponse(responseBody);    //getChartList
