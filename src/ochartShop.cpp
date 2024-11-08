@@ -3025,7 +3025,7 @@ int getChartList( bool bShowErrorDialogs = true){
         wxLogMessage(m);
     }
 
-    wxString tt(post.GetResponseBody().data(), wxConvUTF8);
+    wxString tt(responseBody.data(), wxConvUTF8);
     wxLogMessage(tt);
 
     if(iResponseCode == 200){
