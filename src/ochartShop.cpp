@@ -2813,21 +2813,6 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
                         }
                         else if(!strcmp(chartVal, "chartName")){
                             TiXmlNode *childVal = childChart->FirstChild();
-
-                                                        const char *p = childVal->Value();
-                                                        while ( p && *p) {
-                                                            wxString m;
-                                                            for (int i = 0; i < 16; i++) {
-                                                                if (*p) {
-                                                                    wxString sp;
-                                                                    sp.Printf("%03X ", *p);
-                                                                    m += sp;
-                                                                    p++;
-                                                                }
-                                                            }
-                                                            wxLogMessage(m);
-                                                        }
-
                             if(childVal) pChart->chartName = childVal->Value();
                         }
                         else if(!strcmp(chartVal, "expired")){
@@ -2926,15 +2911,11 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
                     int index = findOrderRefChartId(pChart->orderRef, pChart->chartID);
                     if(index < 0){
                         pChart->bshopValidated = true;
-                        wxLogMessage(wxString("Process new chart: ") + wxString(pChart->chartName.c_str()));
-
                         ChartVector.push_back(pChart);
                     }
                     else{
                         ChartVector[index]->Update(pChart);
                         ChartVector[index]->bshopValidated = true;
-                        wxLogMessage(wxString("Process existing chart: ") + wxString(pChart->chartName.c_str()));
-
                         delete pChart;
                     }
 
@@ -2965,21 +2946,20 @@ int getChartList( bool bShowErrorDialogs = true){
         loginParms += _T("&debug=") + g_debugShop;
     loginParms += _T("&version=") + g_systemOS + g_versionString;
 
-    wxLogMessage(loginParms);
+    //wxLogMessage(loginParms);
 
     long iResponseCode = 0;
     std::string responseBody;
     wxString postresult;
 
 #ifdef __OCPN_USE_CURL__
-    wxLogMessage("USING CURL");
+    wxLogMessage("o-charts USING CURL");
     wxCurlHTTPNoZIP post;
     post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
 
     post.Post( loginParms.ToAscii(), loginParms.Len(), url );
 
     // get the response code of the server
-
     post.GetInfo(CURLINFO_RESPONSE_CODE, &iResponseCode);
 
     std::string a = post.GetDetailedErrorString();
@@ -2991,7 +2971,7 @@ int getChartList( bool bShowErrorDialogs = true){
 #else
     //qDebug() << url.mb_str();
     //qDebug() << loginParms.mb_str();
-    wxLogMessage("USING OCPN_postDataHttp");
+    wxLogMessage("o-chars USING OCPN_postDataHttp");
 
     _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
 
@@ -3011,22 +2991,8 @@ int getChartList( bool bShowErrorDialogs = true){
 
 #endif
 
-    const char *p = responseBody.data();
-    while ( p && *p) {
-        wxString m;
-        for (int i = 0; i < 16; i++) {
-                    if (*p) {
-                        wxString sp;
-                        sp.Printf("%03X ", *p);
-                        m += sp;
-                        p++;
-                    }
-        }
-        wxLogMessage(m);
-    }
-
-    wxString tt(responseBody.data(), wxConvUTF8);
-    wxLogMessage(tt);
+    //wxString tt(responseBody.data(), wxConvUTF8);
+    //wxLogMessage(tt);
 
     if(iResponseCode == 200){
         wxString result = ProcessResponse(responseBody);    //getChartList
@@ -3500,7 +3466,7 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
     loginParms += _T("&currentVersion=") + chart->taskCurrentEdition;
     loginParms += _T("&version=") + g_systemOS + g_versionString;
 
-    wxLogMessage(loginParms);
+    //wxLogMessage(loginParms);
 
     long iResponseCode = 0;
     std::string responseBody;
@@ -3992,7 +3958,6 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
     wxColour c;
 
     wxString nameString = wxString::FromUTF8( m_pChart->chartName.c_str());
-    wxLogMessage(wxString("Panel nameString ") + nameString);
 
     // Thumbnail border color depends on chart type and status
     wxColor thumbColor;
@@ -5076,9 +5041,6 @@ int shopPanel::GetShopNameFromFPR()
         doc = new TiXmlDocument();
         doc->Parse( post.GetResponseBody().c_str());
     }
-    wxString p = wxString(post.GetResponseBody().c_str(), wxConvUTF8);
-    wxLogMessage(_T("GetShopNameFromFPR: CURL: results:"));
-    wxLogMessage(p);
 
 
 #else
@@ -6893,7 +6855,6 @@ void shopPanel::UpdateChartList( )
 
     // Add new panels
     for(unsigned int i=0 ; i < ChartVector.size() ; i++){
-        wxLogMessage(wxString("Making Panel: ") + wxString(ChartVector[i]->chartName.c_str()));
 
         if( ChartVector[i]->isChartsetShow() ){
             ChartVector[i]->GetChartThumbnail(100, true );              // attempt download if necessary

@@ -213,8 +213,7 @@ endif (NOT OCPN_NOGLEW)
   message(STATUS "add_plugin_libraries: ${_lc_target}.")
 
   if ( (NOT "${_lc_target}" MATCHES "debian;10;x86_64") AND
-  (NOT "${_lc_target}" MATCHES "android*")
-   )
+  (NOT "${_lc_target}" MATCHES "android*"))
     message(STATUS "add_plugin_libraries: Using CURL.")
     add_definitions(-D__OCPN_USE_CURL__)
   endif()
