@@ -36,6 +36,8 @@
 
 #include "wx/tokenzr.h"
 
+//#include "../../libs/gdal/src/ogr_s57.h"
+#include "../../../src/eSENCChart.h"
 #include "s52plib.h"
 #include "s52utils.h"
 
@@ -66,7 +68,7 @@ extern int mysnprintf( char *buffer, int count, const char *format, ... )
 }
 #endif
 
-WX_DEFINE_ARRAY_DOUBLE(double, ArrayOfSortedDoubles);
+//WX_DEFINE_ARRAY_DOUBLE(double, ArrayOfSortedDoubles);
 
 // size of attributes value list buffer
 #define LISTSIZE 32  // list size
@@ -547,6 +549,11 @@ static wxString *_UDWHAZ03(S57Obj *obj, double depth_value,
   double safety_contour = S52_getMarinerParam(S52_MAR_SAFETY_CONTOUR);
   bool b_promote = false;
 
+  if (depth_value > safety_contour){
+    wxString *ret_str = new wxString(udwhaz03str);
+    return ret_str;
+  }
+
   if (depth_value == UNKNOWN) {
     GetIntAttr(obj, "EXPSOU", expsou);
     if (expsou != 1) danger = TRUE;
@@ -557,15 +564,14 @@ static wxString *_UDWHAZ03(S57Obj *obj, double depth_value,
 
     // get area DEPARE & DRGARE that intersect this point/line/area
 
-    std::list<S57Obj*> *pobj_list = NULL;
-//FIXME plib
-//     if (obj->m_chart_context->chart)
-//       pobj_list = obj->m_chart_context->chart->GetAssociatedObjects(obj);
-//     else
-    {
+    ListOfS57Obj *pobj_list = NULL;
+
+    if (obj->m_chart_context->chart) {
+      pobj_list = ((eSENCChart*)(obj->m_chart_context->chart))
+                      ->GetAssociatedObjects(obj);
+    }
+    else {
       danger = false;
-      //            wxString *ret_str = new wxString(udwhaz03str);
-      //            return ret_str;
     }
 
     if (pobj_list) {
@@ -590,7 +596,7 @@ static wxString *_UDWHAZ03(S57Obj *obj, double depth_value,
                         b_promote = true;
 #endif
 
-          if (drval1 >= safety_contour && expsou != 1) {
+          if (drval1 >= depth_value && expsou != 1) {
             danger = TRUE;
             break;
           }
@@ -615,15 +621,6 @@ static wxString *_UDWHAZ03(S57Obj *obj, double depth_value,
 
     //  Move this object to DisplayBase category
     rzRules->obj->m_DisplayCat = DISPLAYBASE;
-
-    /*
-                GString *watlevstr = S57_getAttVal(geo, "WATLEV");
-                if (NULL != watlevstr && ('1' == *watlevstr->str || '2' ==
-       *watlevstr->str)) udwhaz03str = g_string_new(";OP(--D14050"); else {
-                    udwhaz03str = g_string_new(";OP(8OD14010);SY(ISODGR01)");
-                    S57_setAtt(geo, "SCAMIN", "INFINITE");
-                }
-    */
   }
 
   if (promote_return) *promote_return = b_promote;
@@ -3273,7 +3270,6 @@ static void *WRECKS02(void *param)
   wxString *quapnt01str = NULL;
   double least_depth = UNKNOWN;
   double depth_value = UNKNOWN;
-  //    GString *valsoustr   = S57_getAttVal(geo, "VALSOU");
   double valsou = UNKNOWN;
   bool b_promote = false;
 
@@ -3301,50 +3297,13 @@ static void *WRECKS02(void *param)
     if (GEO_AREA == obj->Primitive_type)
       least_depth = _DEPVAL01(obj, least_depth);
 
-    if (least_depth == UNKNOWN)
-    /*
-            {
-                // WARNING: ambiguity removed in WRECKS03 (see update)
-
-                if (-9 == watlev) // default
-                    depth_value = -15.0;
-                else
-                    switch (watlev)
-                      { // ambiguous
-                        case 1:
-                        case 2: depth_value = -15.0 ; break;
-                        case 3: depth_value =   0.01; break;
-                        case 4: depth_value = -15.0 ; break;
-                        case 5: depth_value =   0.0 ; break;
-                        case 6: depth_value = -15.0 ; break;
-                        default :
-                              {
-                                  if (-9 != catwrk)
-                                  {
-                                        switch (catwrk)
-                                        {
-                                              case 1: depth_value =  20.0;
-       break; case 2: depth_value =   0.0; break; case 4: case 5: depth_value =
-       -15.0; break;
-                                        }
-                                   }
-                              }
-                      }
-            }
-    */
-    ////////////////////////////////////////////////
-    //    DSR New Logic Here  (FIXME)
-    {
+    if (least_depth == UNKNOWN) {
       if (-9 != catwrk) {
         switch (catwrk) {
           case 1:
-            depth_value = 20.0;
+            depth_value = 20.1;
             break;  // safe
-          case 2:
-            depth_value = 0.0;
-            break;  // dangerous
-          case 4:
-          case 5:
+          default:
             depth_value = -15.0;
             break;
         }
@@ -3353,27 +3312,15 @@ static void *WRECKS02(void *param)
           depth_value = -15.0;
         else
           switch (watlev) {
-            case 1:
-            case 2:
-              depth_value = -15.0;
-              break;
             case 3:
-              depth_value = 0.01;
-              break;
-            case 4:
-              depth_value = -15.0;
-              break;
             case 5:
               depth_value = 0.0;
               break;
-            case 6:
-              depth_value = -15.0;
+            default:
               break;
           }
       }
-
     }
-
     else
       depth_value = least_depth;
   }
@@ -3400,36 +3347,24 @@ static void *WRECKS02(void *param)
     } else {
       // Continuation A (POINT_T)
       if (UNKNOWN != valsou) {
-        ///////////////////////////////////////////
-        //    DSR New logic here, FIXME check s52 specs
-
-        /*
-                        if (valsou <= 20.0)
-                        {
-                            wrecks02str = wxString(";SY(DANGER51)");
-                            if (NULL != sndfrm02str)
-                                wrecks02str.Append(sndfrm02str);
-                        }
-                        else
-                            wrecks02str = wxString(";SY(DANGER52)");
-        */
-        if ((valsou <
-             safety_contour) /* || (2 == catwrk)*/)  // maybe redundant, seems
-                                                     // like wrecks with valsou
-                                                     // < 20 are always coded as
-                                                     // "dangerous wrecks"
-                                                     // Excluding (2 == catwrk)
-                                                     // matches Caris logic
+        if ((valsou < safety_contour) )  // maybe redundant, seems
+                                         // like wrecks with valsou
+                                         // < 20 are always coded as
+                                         // "dangerous wrecks"
+                                         // Excluding (2 == catwrk)
+                                         // matches Caris logic
           wrecks02str = wxString(_T(";SY(DANGER51)"));
         else
           wrecks02str = wxString(_T(";SY(DANGER52)"));
-        wrecks02str.Append(_T(";TX('Wk',2,1,2,'15110',1,0,CHBLK,21)"));
+
+        //  Non-standard text field "Wk", sometimes seen on ENC renderers
+        //  Excluded here
+        //wrecks02str.Append(_T(";TX('Wk',2,1,2,'15110',-2,1,CHBLK,21)"));
+
         if (7 == quasou)  // Fixes FS 165
           wrecks02str.Append(_T(";SY(WRECKS07)"));
 
         wrecks02str.Append(sndfrm02str);  // always show valsou depth
-        ///////////////////////////////////////////
-
         wrecks02str.Append(*udwhaz03str);
         wrecks02str.Append(*quapnt01str);
 
