@@ -6377,8 +6377,8 @@ int s52plib::RenderObjectToGLText(const wxGLContext &glcc, ObjRazRules *rzRules)
 
 int s52plib::DoRenderObject(wxDC *pdcin, ObjRazRules *rzRules) {
   // TODO  Debugging
-        //if(rzRules->obj->Index == 6775)
-        //  int yyp = 0;
+        if(rzRules->obj->Index == 515)
+          int yyp = 0;
 
   //        if(!strncmp(rzRules->obj->FeatureName, "berths", 6))
   //            int yyp = 0;
@@ -9383,14 +9383,27 @@ bool s52plib::ObjectRenderCheckCat(ObjRazRules *rzRules) {
     //      = 022608187ED20ACC. We shall explicitly ignore SCAMIN filtering for
     //      these types of objects.
 
+    g_scaminScale = 1.0;
     if (m_bUseSCAMIN) {
       if ((DISPLAYBASE == rzRules->LUP->DISC) ||
           (PRIO_GROUP1 == rzRules->LUP->DPRI))
         b_visible = true;
       else {
-        //                if( vp->chart_scale > rzRules->obj->Scamin ) b_visible
-        //                = false;
+        if (vp_plib.chart_scale > rzRules->obj->Scamin)
+          b_visible = false;
+      }
 
+      // Reduce the size of some symbols slightly
+      double chart_ref_scale = rzRules->obj->m_chart_context->chart_scale;
+      double SCAMIN = rzRules->obj->Scamin;
+      g_scaminScale = 1.0
+          - (vp_plib.chart_scale - chart_ref_scale)
+              / (SCAMIN = chart_ref_scale);
+      g_scaminScale = wxMin(g_scaminScale, 1.0);
+      g_scaminScale = wxMax(g_scaminScale, 0.5);
+
+
+#if 0
         double zoom_mod = (double)m_chart_zoom_modifier_vector;
 
         double modf = zoom_mod / 5.;  // -1->1
@@ -9418,6 +9431,7 @@ bool s52plib::ObjectRenderCheckCat(ObjRazRules *rzRules) {
         }
       }
 
+#endif
       // Check for SUPER_SCAMIN, apply if enabled
       if (m_bUseSUPER_SCAMIN){
         if (rzRules->obj->SuperScamin < 0){
