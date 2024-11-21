@@ -386,6 +386,7 @@ protected:
       int         m_nvaldco_alloc;
       double       *m_pvaldco_array;
       double      m_next_safe_cnt;
+      double      m_set_mar_safety_contour;
 
       wxDateTime  m_date000;                    // extracted from DSID:ISDT
       wxString    m_edtn000;                    // extracted from DSID:EDTN

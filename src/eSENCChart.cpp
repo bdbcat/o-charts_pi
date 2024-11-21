@@ -1194,6 +1194,7 @@ eSENCChart::eSENCChart()
     //m_pcontour_array = new ArrayOfSortedDoubles;
 
     m_next_safe_contour = 1e6;
+    m_set_mar_safety_contour = 1e6;
     m_LineVBO_name = -1;
 
     m_plib_state_hash = 0;
@@ -5669,25 +5670,43 @@ void eSENCChart::SetSafetyContour(void)
     //    is greater than or equal to the current PLIB mariner parameter S52_MAR_SAFETY_CONTOUR
 
     double mar_safety_contour = S52_getMarinerParam(S52_MAR_SAFETY_CONTOUR);
-    int i = 0;
-    if( NULL != m_pvaldco_array ) {
-        for( i = 0; i < m_nvaldco; i++ ) {
-            if( m_pvaldco_array[i] >= mar_safety_contour )
-                break;
+    if (mar_safety_contour != m_set_mar_safety_contour) {
+
+        int i = 0;
+        if (NULL != m_pvaldco_array) {
+            for (i = 0; i < m_nvaldco; i++) {
+                if (m_pvaldco_array[i] >= mar_safety_contour)
+                    break;
+            }
+
+            if (i < m_nvaldco)
+                m_next_safe_cnt = m_pvaldco_array[i];
+            else
+                m_next_safe_cnt = (double)1e6;
+        } else {
+            m_next_safe_cnt = (double)1e6;
         }
 
-        if( i < m_nvaldco )
-            m_next_safe_cnt = m_pvaldco_array[i];
-        else
-            m_next_safe_cnt = (double) 1e6;
-    } else {
-        m_next_safe_cnt = (double) 1e6;
+        // A safety contour greater than "Deep Depth" makes no sense...
+        // So, declare "no suitable safety depth contour"
+        if (m_next_safe_cnt > S52_getMarinerParam(S52_MAR_DEEP_CONTOUR))
+            m_next_safe_cnt = (double)1e6;
+
+        //  Loop and populate all the objects with the calculated safety contour
+        for (int i = 0; i < PRIO_NUM; ++i) {
+            for (int j = 0; j < LUPNAME_NUM; j++) {
+                ObjRazRules* top = razRules[i][j];
+                while (top != NULL) {
+                    S57Obj* obj = top->obj;
+                    obj->m_chart_context->safety_contour = m_next_safe_cnt;
+                    top = top->next;
+                }
+            }
+        }
+        m_set_mar_safety_contour = mar_safety_contour;
+
     }
 
-    // A safety contour greater than "Deep Depth" makes no sense...
-    // So, declare "no suitable safety depth contour"
-    if(m_next_safe_cnt > S52_getMarinerParam(S52_MAR_DEEP_CONTOUR))
-        m_next_safe_cnt = (double) 1e6;
 
 }
 

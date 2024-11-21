@@ -6377,11 +6377,11 @@ int s52plib::RenderObjectToGLText(const wxGLContext &glcc, ObjRazRules *rzRules)
 
 int s52plib::DoRenderObject(wxDC *pdcin, ObjRazRules *rzRules) {
   // TODO  Debugging
-        if(rzRules->obj->Index == 515)
-          int yyp = 0;
+        //if(rzRules->obj->Index == 515)
+          //int yyp = 0;
 
-  //        if(!strncmp(rzRules->obj->FeatureName, "berths", 6))
-  //            int yyp = 0;
+          //if(!strncmp(rzRules->obj->FeatureName, "DEPCNT", 6))
+            //  int yyp = 0;
 
   //return 0;
   if (!ObjectRenderCheckRules(rzRules, true)) return 0;
@@ -9393,45 +9393,6 @@ bool s52plib::ObjectRenderCheckCat(ObjRazRules *rzRules) {
           b_visible = false;
       }
 
-      // Reduce the size of some symbols slightly
-      double chart_ref_scale = rzRules->obj->m_chart_context->chart_scale;
-      double SCAMIN = rzRules->obj->Scamin;
-      g_scaminScale = 1.0
-          - (vp_plib.chart_scale - chart_ref_scale)
-              / (SCAMIN = chart_ref_scale);
-      g_scaminScale = wxMin(g_scaminScale, 1.0);
-      g_scaminScale = wxMax(g_scaminScale, 0.5);
-
-
-#if 0
-        double zoom_mod = (double)m_chart_zoom_modifier_vector;
-
-        double modf = zoom_mod / 5.;  // -1->1
-        double mod = pow(8., modf);
-        mod = wxMax(mod, .2);
-        mod = wxMin(mod, 8.0);
-
-        if (mod > 1) {
-          if (vp_plib.chart_scale > rzRules->obj->Scamin * mod)
-            b_visible = false;  // definitely invisible
-          else {
-            //  Theoretically invisible, however...
-            //  In the "zoom modified" scale region,
-            //  we render the symbol at reduced size, scaling down to no less
-            //  than half normal size.
-
-            if (vp_plib.chart_scale > rzRules->obj->Scamin) {
-              double xs = vp_plib.chart_scale - rzRules->obj->Scamin;
-              double xl = (rzRules->obj->Scamin * mod) - rzRules->obj->Scamin;
-              g_scaminScale = 1.0 - (0.5 * xs / xl);
-            }
-          }
-        } else {
-          if (vp_plib.chart_scale > rzRules->obj->Scamin) b_visible = false;
-        }
-      }
-
-#endif
       // Check for SUPER_SCAMIN, apply if enabled
       if (m_bUseSUPER_SCAMIN){
         if (rzRules->obj->SuperScamin < 0){

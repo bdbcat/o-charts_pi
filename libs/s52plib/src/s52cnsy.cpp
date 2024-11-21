@@ -596,7 +596,7 @@ static wxString *_UDWHAZ03(S57Obj *obj, double depth_value,
                         b_promote = true;
 #endif
 
-          if (drval1 >= depth_value && expsou != 1) {
+          if (drval1 >= safety_contour && expsou != 1) {
             danger = TRUE;
             break;
           }
