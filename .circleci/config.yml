@@ -5,7 +5,7 @@ debian-steps: &debian-steps
   steps:
     - checkout
     - run: ci/circleci-build-debian.sh
-    - run: sh -c "cd /build-$OCPN_TARGET; /bin/bash < upload.sh"
+    - run: sh -c "cd project/build-$OCPN_TARGET; /bin/bash < upload.sh"
     - run: sh -c "ci/git-push.sh /build-$OCPN_TARGET"
 
 flatpak-steps: &flatpak-steps
