@@ -2985,12 +2985,18 @@ bool validate_SENC_server(void)
     // Check to see if the server function is available
     if(g_serverProc){
         bool bAvail = false;
-        int nLoop = 5;
+        int nLoop = 10;
 
+        wxString tmsg;
         while(nLoop){
             Osenc_instream testAvail_One;
-            if(!testAvail_One.isAvailable(_T("?")))
+            if(!testAvail_One.isAvailable(_T("?"))) {
+                tmsg.Printf(_T(" nLoop: %d"), nLoop);
+                if (g_debugLevel)
+                    printf("      validate_SENC_server, retry: %d \n", nLoop);
+                wxLogMessage(_T("Available FALSE, retry...") + tmsg);
                 wxSleep(1);
+            }
             else{
                 bAvail = true;
                 break;
