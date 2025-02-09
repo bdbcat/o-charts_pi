@@ -4831,6 +4831,9 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
       g_dongleName = GetDongleName();
       bDongleFound = true;
     }
+    else if (!g_systemName.Length()) {
+      GetShopNameFromFPR();
+    }
 
     RefreshSystemName();
 
