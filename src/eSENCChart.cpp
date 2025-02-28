@@ -1801,75 +1801,11 @@ bool eSENCChart::ProcessHeader(Osenc &senc)
         m_pCOVRTable = (float **) malloc( m_nCOVREntries * sizeof(float *) );
 
         for( unsigned int j = 0; j < (unsigned int) m_nCOVREntries; j++ ) {
-            if(AuxCntArray.Item(j) > 10000) {
-      int np = AuxCntArray.Item(j);
 
-      float* pf = NULL;
-      float* pfr = NULL;
-      wxPoint2DDouble last_p;
-      wxPoint2DDouble p;
-      double scaler = 1;
-      float* source = AuxPtrArray.Item(j);
-      float* run = source;
-      int used_pts = 0;
-      double* dsource = (double*)malloc(np * 2 * sizeof(double));
-      double* drun = dsource;
-      for (unsigned int k = 0; k < np; k++) {
-        float a = *run++;   // lat
-        *drun++ = (double)a * scaler;
-        float b = *run++;   // lon
-        *drun++ = (double)b * scaler;
-      }
-
-      for (int i = 0; i < np; i++) {
-        p.m_y = dsource[i * 2];     // lat
-        p.m_x = dsource[i * 2 + 1];     // lon
-        if (i > 3) { // We need at least 3 points
-                    float xdelta
-                        = fmax(last_p.m_x, p.m_x) - fmin(last_p.m_x, p.m_x);
-                    float ydelta
-                        = fmax(last_p.m_y, p.m_y) - fmin(last_p.m_y, p.m_y);
-                    if (xdelta < 0.001
-                        && ydelta < 0.001) { // Magic number, 0.001 degrees ~= 111 meters on
-                        // the equator...
-                        continue;
-                    }
-        }
-        last_p = p;
-        used_pts++;
-
-        pf = (float*)realloc(pf, 2 * used_pts * sizeof(float));
-        pfr = &pf[2 * (used_pts - 1)];
-        pfr[0] = p.m_y; // lat
-        pfr[1] = p.m_x; // lon
-      }
-
-      m_pCOVRTablePoints[j] = used_pts;
-      m_pCOVRTable[j] = (float *) malloc( used_pts * 2 * sizeof(float) );
-      float *rrun = m_pCOVRTable[j];
-      float *rdrun = pf;
-
-      for (unsigned int k=0; k < used_pts; k++){
-        float y = *rdrun++;     // lat
-        *rrun++ = y/scaler;
-        float x = *rdrun++;     // lon
-        *rrun++ = x/scaler;
-      }
-
-      free(dsource);
-      free(pf);
-
-    }
-
-
-
-
-
-#if 0
-      // Some cells have complex outlines, sometimes with thousands of points
+          // Some cells have complex outlines, sometimes with thousands of points
           // This complexity really reduces performance of quilting logic.
           // Detect this case, and reduce complexity if possible
-            if (AuxCntArray.Item(j) > 20000){
+            if (AuxCntArray.Item(j) > 2000){
               int np = AuxCntArray.Item(j);
 #if 1
               // Plan on LOD reduction of this point string.
@@ -1978,7 +1914,6 @@ bool eSENCChart::ProcessHeader(Osenc &senc)
               *pfe++ = LonMin;
 #endif
             }
-#endif
             else {
               m_pCOVRTablePoints[j] = AuxCntArray.Item( j );
               m_pCOVRTable[j] = (float *) malloc( AuxCntArray.Item( j ) * 2 * sizeof(float) );
