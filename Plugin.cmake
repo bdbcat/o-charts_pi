@@ -125,7 +125,7 @@ if(QT_ANDROID AND (${ARM_ARCH} MATCHES "aarch64"))
   set(SRC ${SRC}
           src/comparetf2.c
           src/androidDeviceSupport.c)
-endif(QT_ANDROID)
+endif()
 
 
 if(NOT QT_ANDROID)
