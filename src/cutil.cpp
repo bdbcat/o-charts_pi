@@ -434,30 +434,64 @@ int NextPow2(int size)
     return n + 1;
 }
 
+struct Point {
+    double x, y;
+};
+
+double perpendicularDistance(const Point& p, const Point& lineStart, const Point& lineEnd) {
+    double dx = lineEnd.x - lineStart.x;
+    double dy = lineEnd.y - lineStart.y;
+
+    if (dx == 0.0 && dy == 0.0) {
+        dx = p.x - lineStart.x;
+        dy = p.y - lineStart.y;
+        return std::sqrt(dx * dx + dy * dy);
+    }
+
+    double t = ((p.x - lineStart.x) * dx + (p.y - lineStart.y) * dy) / (dx * dx + dy * dy);
+
+    if (t < 0) {
+        dx = p.x - lineStart.x;
+        dy = p.y - lineStart.y;
+    } else if (t > 1) {
+        dx = p.x - lineEnd.x;
+        dy = p.y - lineEnd.y;
+    } else {
+        dx = p.x - (lineStart.x + t * dx);
+        dy = p.y - (lineStart.y + t * dy);
+    }
+    return std::sqrt(dx * dx + dy * dy);
+}
+void douglasPeucker(const std::vector<Point>& points, double epsilon, std::vector<Point>& result, int start, int end)
+{
+    if (end <= start + 1) {
+        return;
+    }
+}
 void DouglasPeucker(double *PointList, int fp, int lp, double epsilon, std::vector<int> *keep)
 {
     // Find the point with the maximum distance
     double dmax = 0;
     int index = 0;
-    
-    vector2D va(PointList[2*fp] - PointList[2*lp],
-                PointList[2*fp+1] - PointList[2*lp+1]);
-    
-    double da = va.x*va.x + va.y*va.y;
-    for(int i = fp+1 ; i < lp ; ++i) {
-        vector2D vb(PointList[2*i] - PointList[2*fp],
-                    PointList[2*i + 1] - PointList[2*fp+1]);
-        
-        double dab = va.x*vb.x + va.y*vb.y;
-        double db = vb.x*vb.x + vb.y*vb.y;
-        double d = da - dab*dab/db;
-        if ( d > dmax ) {
+
+    Point start, end;
+    start.x = PointList[2*fp];
+    start.y = PointList[2*fp +1];
+    end.x = PointList[2*lp];
+    end.y = PointList[2*lp +1];
+
+    for (int i = fp + 1; i < lp; ++i) {
+        Point prun;
+        prun.x = PointList[2*i];
+        prun.y = PointList[2*i +1];
+        double distance = perpendicularDistance(prun, start, end);
+        if (distance > dmax) {
+            dmax = distance;
             index = i;
-            dmax = d;
         }
     }
     // If max distance is greater than epsilon, recursively simplify
-    if ( dmax > epsilon*epsilon ) {
+    if ( dmax > epsilon ) {
         keep->push_back(index);
         
         // Recursive call
