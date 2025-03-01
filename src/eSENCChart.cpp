@@ -2759,21 +2759,30 @@ bool eSENCChart::DoRenderRectOnGL( const wxGLContext &glc, const ViewPort& VPoin
 extern int n_areaObjs;
 
 bool ObjectRenderCheckPosReduced(ObjRazRules *rzRules, LLBBox vpBox) {
-  if (rzRules->obj == NULL) return false;
+    if (rzRules->obj == NULL) return false;
 
-  // Of course, the object must be at least partly visible in the VPointCompat
-  const LLBBox &testBox = rzRules->obj->BBObj;
+    // Of course, the object must be at least partly visible in the VPointCompat
+    const LLBBox &testBox = rzRules->obj->BBObj;
 
-  if (vpBox.GetMaxLat() < testBox.GetMinLat() ||
-      vpBox.GetMinLat() > testBox.GetMaxLat())
+    if (vpBox.GetMaxLat() < testBox.GetMinLat() ||
+        vpBox.GetMinLat() > testBox.GetMaxLat())
+        return false;
+
+    if (vpBox.GetMaxLon() >= testBox.GetMinLon() &&
+        vpBox.GetMinLon() <= testBox.GetMaxLon())
+        return true;
+
+    if (vpBox.GetMaxLon() >= testBox.GetMinLon() + 360 &&
+        vpBox.GetMinLon() <= testBox.GetMaxLon() + 360)
+        return true;
+
+    if (vpBox.GetMaxLon() >= testBox.GetMinLon() - 360 &&
+        vpBox.GetMinLon() <= testBox.GetMaxLon() - 360)
+        return true;
+
     return false;
-
-  if (vpBox.GetMaxLon() >= testBox.GetMinLon() &&
-      vpBox.GetMinLon() <= testBox.GetMaxLon())
-    return true;
-
-  return false;
 }
+
 
 bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoint1, wxRect &rect1,
                               const ViewPort& VPoint2, wxRect &rect2, bool b_useStencil )
