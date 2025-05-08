@@ -1,0 +1,1 @@
+/usr/lib64/ccache/cc -O3 -DNDEBUG -rdynamic -Wl,--dependency-file=CMakeFiles/visualinfo.dir/link.d "CMakeFiles/visualinfo.dir/home/mk/src/o-charts_pi/libs/glew/glew-2.2.0/src/visualinfo.c.o" -o bin/visualinfo  lib/libGLEW.a -lSM -lICE -lX11 -lXext -lGL -lGLU -lSM -lICE -lX11 -lXext

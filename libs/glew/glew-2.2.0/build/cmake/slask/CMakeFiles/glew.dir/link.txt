@@ -1,0 +1,1 @@
+/usr/lib64/ccache/cc -fPIC -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/glew.dir/link.d -shared -Wl,-soname,libGLEW.so.2.2 -o lib/libGLEW.so.2.2.0 "CMakeFiles/glew.dir/home/mk/src/o-charts_pi/libs/glew/glew-2.2.0/src/glew.c.o"  -lGL -lGLU -lSM -lICE -lX11 -lXext

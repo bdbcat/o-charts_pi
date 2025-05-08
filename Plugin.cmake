@@ -158,6 +158,9 @@ macro(add_plugin_libraries)
   add_subdirectory(libs/pugixml)
   target_link_libraries(${PACKAGE_NAME} ocpn::pugixml)
 
+  add_subdirectory(libs/glew)
+  target_link_libraries(${PACKAGE_NAME} glew2::glew2)
+
 if (MSVC)
   add_subdirectory("libs/WindowsHeaders")
   target_link_libraries(${PACKAGE_NAME} _windows_headers)

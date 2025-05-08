@@ -31,19 +31,6 @@ if (NOT OPENGL_GLU_FOUND)
   message(WARNING "Cannot find OpenGL GLU extension.")
 endif ()
 
-if (OCPN_BUILD_USE_GLEW)
-if (NOT WIN32)
-  find_package(GLEW REQUIRED)
-  include_directories(${GLEW_INCLUDE_DIRS})
-  target_link_libraries(${PACKAGE_NAME} ${GLEW_LIBRARIES})
-else (NOT WIN32)
-  include_directories("${PROJECT_SOURCE_DIR}/libs/glew/windows")
-  target_link_libraries(${PACKAGE_NAME} "${PROJECT_SOURCE_DIR}/libs/glew/windows/glew32.lib")
-endif (NOT WIN32)
-
-  message(STATUS "Using GLEW, libraries:  ${GLEW_LIBRARIES}")
-endif (OCPN_BUILD_USE_GLEW)
-
 if (APPLE)
   # As of 3.19.2, cmake's FindOpenGL does not link to the directory
   # containing gl.h. cmake bug? Intended due to missing subdir GL/gl.h?

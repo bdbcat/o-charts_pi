@@ -1,14 +1,14 @@
 #
 # Branches and runtimes:
-#   - master     Nigthly builds, 18.08 runtime
-#   - beta       Flathub beta branch, aarch64 with 20.08 runtime.
-#   - stable     Flathub main branch, x86_64 with 18.08 runtime.
+#   - master     Nigthly builds, 24.08 runtime
+#   - beta       Flathub beta branch
+#   - stable     Flathub main branch
 #
 id: org.opencpn.OpenCPN.Plugin.o-charts
 runtime: org.opencpn.OpenCPN
 runtime-version: stable
 #runtime-version: master   # for nightly builds
-sdk: org.freedesktop.Sdk//20.08
+sdk: org.freedesktop.Sdk//24.08
 build-extension: true
 separate-locales: false
 appstream-compose: false
@@ -42,8 +42,8 @@ modules:
   - name: iproute2
     sources:
       - type: archive
-        url: https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/iproute2-5.7.0.tar.xz
-        sha256: 725dc7ba94aae54c6f8d4223ca055d9fb4fe89d6994b1c03bfb4411c4dd10f21
+        url: https://mirrors.edge.kernel.org/pub/linux/utils/net/iproute2/iproute2-6.9.0.tar.xz
+        sha256: 2f643d09ea11a4a2a043c92e2b469b5f73228cbf241ae806760296ed0ec413d0
     no-autogen: true
     buildsystem: autotools
     make-args:
@@ -57,6 +57,29 @@ modules:
         rm -f bridge genl if* *stat route* rt* ss tc libusb-config
       - cd /app/extensions/o-charts; rm -rf include etc lib/pkgconfig lib/*.la
 
+  - name: glew2
+    no-autogen: true
+    sources:
+      - type: archive
+        url: https://downloads.sourceforge.net/project/glew/glew/2.2.0/glew-2.2.0.tgz
+        sha256: d4fc82893cfb00109578d0a1a2337fb8ca335b3ceccf97b97e5cc7f08e4353e1
+    make-args: 
+      - GLEW_PREFIX=${FLATPAK_DEST}
+      - GLEW_DEST=${FLATPAK_DEST}
+      - LIBDIR=${FLATPAK_DEST}/lib
+      - CFLAGS.EXTRA:=${CFLAGS} -fPIC
+      - LDFLAGS.EXTRA=${LDFLAGS}
+      - glew.lib.static
+    make-install-args: 
+      - GLEW_PREFIX=${FLATPAK_DEST}
+      - GLEW_DEST=${FLATPAK_DEST}
+      - LIBDIR=${FLATPAK_DEST}/lib
+      - CFLAGS.EXTRA:=${CFLAGS} -fPIC
+      - LDFLAGS.EXTRA=${LDFLAGS}
+    cleanup: 
+      - /include
+      - /lib/pkgconfig
+ 
   - name: o-charts
     no-autogen: true
     cmake: true

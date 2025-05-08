@@ -1,0 +1,11 @@
+/home/mk/src/o-charts_pi/libs/glew/glew-2.2.0/build/cmake/slask/CMakeFiles/glew.dir
+/home/mk/src/o-charts_pi/libs/glew/glew-2.2.0/build/cmake/slask/CMakeFiles/glew_s.dir
+/home/mk/src/o-charts_pi/libs/glew/glew-2.2.0/build/cmake/slask/CMakeFiles/glewinfo.dir
+/home/mk/src/o-charts_pi/libs/glew/glew-2.2.0/build/cmake/slask/CMakeFiles/visualinfo.dir
+/home/mk/src/o-charts_pi/libs/glew/glew-2.2.0/build/cmake/slask/CMakeFiles/uninstall.dir
+/home/mk/src/o-charts_pi/libs/glew/glew-2.2.0/build/cmake/slask/CMakeFiles/edit_cache.dir
+/home/mk/src/o-charts_pi/libs/glew/glew-2.2.0/build/cmake/slask/CMakeFiles/rebuild_cache.dir
+/home/mk/src/o-charts_pi/libs/glew/glew-2.2.0/build/cmake/slask/CMakeFiles/list_install_components.dir
+/home/mk/src/o-charts_pi/libs/glew/glew-2.2.0/build/cmake/slask/CMakeFiles/install.dir
+/home/mk/src/o-charts_pi/libs/glew/glew-2.2.0/build/cmake/slask/CMakeFiles/install/local.dir
+/home/mk/src/o-charts_pi/libs/glew/glew-2.2.0/build/cmake/slask/CMakeFiles/install/strip.dir
