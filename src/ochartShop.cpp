@@ -4824,6 +4824,13 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     g_LastErrorMessage.Clear();
     SetErrorMessage();
 
+    //  Do we need an initial login to get the persistent key?
+    if(g_loginKey.Len() == 0){
+        if(doLogin( g_shopPanel ) != 1)
+            return;
+        saveShopConfig();
+    }
+
     // Check the dongle
     bool bDongleFound = false;
     g_dongleName.Clear();
@@ -4836,13 +4843,6 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     }
 
     RefreshSystemName();
-
-    //  Do we need an initial login to get the persistent key?
-    if(g_loginKey.Len() == 0){
-        if(doLogin( g_shopPanel ) != 1)
-            return;
-        saveShopConfig();
-    }
 
      setStatusText( _("Contacting o-charts server..."));
      g_ipGauge->Start();
