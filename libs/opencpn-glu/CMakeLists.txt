@@ -6,7 +6,7 @@
 # - On Windows: Link to utility library and use WindowsHeaders.
 # - On Android: Provide a header, qt libraries provide the functions.
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 
 if (TARGET opencpn::glu)
   return ()
