@@ -36,25 +36,6 @@ modules:
 
     - @include opencpn-libs/flatpak/libusb.yaml
 
-    - name: glew
-      no-autogen: true
-      make-args:
-        - GLEW_PREFIX=/app/extensions/o-charts_pi
-        - GLEW_DEST=/app/extensions/o-charts_pi
-        - LIBDIR=/app/extensions/o-charts_pi/lib
-      make-install-args:
-        - GLEW_PREFIX=/app/extensions/o-charts_pi
-        - GLEW_DEST=/app/extensions/o-charts_pi
-        - LIBDIR=/app/extensions/o-charts_pi/lib
-      sources:
-        - type: archive
-          url: https://downloads.sourceforge.net/project/glew/glew/2.1.0/glew-2.1.0.tgz
-          sha256: 04de91e7e6763039bc11940095cd9c7f880baba82196a7765f727ac05a993c95
-      cleanup:
-        - /include"
-        - /lib/pkgconfig"
-        - /lib/*.a"
-
     - name: libusb-compat-0.1
       config-opts:
         - --disable-static
