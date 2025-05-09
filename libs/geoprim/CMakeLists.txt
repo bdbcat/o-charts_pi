@@ -35,6 +35,7 @@ set_property(TARGET GEOPRIM PROPERTY COMPILE_FLAGS "${OBJ_VISIBILITY}")
 target_include_directories(GEOPRIM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_include_directories(GEOPRIM PRIVATE ${wxWidgets_INCLUDE_DIRS})
 target_include_directories(GEOPRIM PRIVATE ../../include)
+target_link_libraries(GEOPRIM PRIVATE glew2::glew2)
 
 if(QT_ANDROID)
     target_include_directories(GEOPRIM PRIVATE ../../includeAndroid)
