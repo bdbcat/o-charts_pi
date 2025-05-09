@@ -4,7 +4,7 @@
 # Copyright (c) 2021 Alec Leamas
 # ~~~
 
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.5)
 
 if (TARGET ocpn::tinyxml)
     return ()
