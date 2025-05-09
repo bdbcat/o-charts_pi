@@ -166,6 +166,9 @@ macro(add_plugin_libraries)
   add_subdirectory("libs/zlib")
   target_link_libraries(${PACKAGE_NAME} ocpn::zlib)
 
+  add_subdirectory(libs/glew)
+  target_link_libraries(${PACKAGE_NAME} glew2::glew2)
+
   add_subdirectory(libs/s52plib)
   target_link_libraries(${PACKAGE_NAME} ocpn::s52plib)
 

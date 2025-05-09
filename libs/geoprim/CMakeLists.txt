@@ -35,19 +35,8 @@ set_property(TARGET GEOPRIM PROPERTY COMPILE_FLAGS "${OBJ_VISIBILITY}")
 target_include_directories(GEOPRIM PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 target_include_directories(GEOPRIM PRIVATE ${wxWidgets_INCLUDE_DIRS})
 target_include_directories(GEOPRIM PRIVATE ../../include)
+target_link_libraries(GEOPRIM PRIVATE glew2::glew2)
 
 if(QT_ANDROID)
     target_include_directories(GEOPRIM PRIVATE ../../includeAndroid)
 endif(QT_ANDROID)
-
-find_package(OpenGL)
-if (OPENGL_FOUND)
-    target_include_directories(GEOPRIM PRIVATE ${OPENGL_INCLUDE_DIR})
-
-    message(STATUS "Found OpenGL....")
-    message(STATUS "    GL Lib: " ${OPENGL_LIBRARIES})
-    message(STATUS "    GL Include: " ${OPENGL_INCLUDE_DIR})
-
-    target_link_libraries(GEOPRIM PRIVATE ${OPENGL_LIBRARIES} )
-endif (OPENGL_FOUND)
-
