@@ -78,10 +78,10 @@ if(OCPN_BUILD_USE_GLEW)
   add_definitions(-D__OCPN_USE_GLEW__)
   include_directories("/app/extensions/o-charts_pi/include")
 
-  if (CMAKE_HOST_WIN32)
-    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/buildwin/include/glew")
-    link_libraries(${CMAKE_SOURCE_DIR}/buildwin/glew32.lib )
-  endif (CMAKE_HOST_WIN32)
+  #if (CMAKE_HOST_WIN32)
+  #  include_directories("${CMAKE_CURRENT_SOURCE_DIR}/buildwin/include/glew")
+  #  link_libraries(${CMAKE_SOURCE_DIR}/buildwin/glew32.lib )
+  #endif (CMAKE_HOST_WIN32)
 
 endif(OCPN_BUILD_USE_GLEW)
 
