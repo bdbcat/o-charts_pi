@@ -34,7 +34,7 @@
 #if 0
 #ifdef __OCPN_USE_GLEW__
   #if defined(_WIN32)
-    #include "glew.h"
+    #include "GL/glew.h"
   #elif defined(__WXQT__) || defined(__WXGTK__)
    #include <GL/glew.h>
   #endif
@@ -47,7 +47,7 @@
  #include <GL/gl_private.h>  // this is a cut-down version of gl.h
  #include <GLES2/gl2.h>
 #elif defined(_WIN32)
- #include "glew.h"
+ #include "GL/glew.h"
 #elif defined(__WXOSX__)
  #include <OpenGL/gl.h>
  #include <OpenGL/glu.h>

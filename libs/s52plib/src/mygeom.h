@@ -39,7 +39,7 @@
  #include <GL/gl_private.h>  // this is a cut-down version of gl.h
  #include <GLES2/gl2.h>
 #elif defined(__MSVC__)
- #include "glew.h"
+ #include "GL/glew.h"
 #elif defined(__WXOSX__)
  #include <OpenGL/gl.h>
  #include <OpenGL/glu.h>
