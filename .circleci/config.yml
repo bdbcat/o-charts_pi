@@ -154,7 +154,7 @@ jobs:
     environment:
       - OCPN_TARGET: flatpak-arm64
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
-      - BRANCH: stable
+      - BRANCH: beta
     parameters:
       cache-key:
         type: string
@@ -184,7 +184,7 @@ jobs:
     environment:
       - OCPN_TARGET: flatpak
       - CMAKE_BUILD_PARALLEL_LEVEL: 2
-      - BRANCH: stable
+      - BRANCH: beta
     parameters:
       cache-key:
         type: string
