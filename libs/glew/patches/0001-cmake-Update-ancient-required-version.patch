@@ -1,0 +1,25 @@
+From 1874e1613205fb1c3995789bd117afdd8ee7f4fe Mon Sep 17 00:00:00 2001
+From: Alec Leamas <leamas.alec@gmail.com>
+Date: Fri, 9 May 2025 17:39:59 +0200
+Subject: [PATCH] cmake: Update ancient required version
+
+---
+ build/cmake/CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/build/cmake/CMakeLists.txt b/build/cmake/CMakeLists.txt
+index 419c243..d0f55a1 100644
+--- a/build/cmake/CMakeLists.txt
++++ b/build/cmake/CMakeLists.txt
+@@ -4,7 +4,7 @@ endif ()
+ 
+ project (glew C)
+ 
+-cmake_minimum_required (VERSION 2.8.12)
++cmake_minimum_required (VERSION 3.10)
+ 
+ include(GNUInstallDirs)
+ 
+-- 
+2.49.0
+
