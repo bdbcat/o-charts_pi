@@ -23,7 +23,10 @@ set(
 )
 set(src_hash MD5=3579164bccaef09e36c0af7f4fd5c7c7)
 
-list(APPEND patches 0001-cmake-Update-ancient-required-version.patch)
+list(APPEND patches
+  0001-cmake-Update-ancient-required-version.patch
+  0002-build-cmake-windows-Don-t-install-pdb-file-on-static.patch
+)
 
 if (POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
