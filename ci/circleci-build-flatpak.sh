@@ -80,6 +80,11 @@ manifest=$(ls ../flatpak/org.opencpn.OpenCPN.Plugin*yaml)
 sed -i  '/^runtime-version/s/:.*/:'" ${BRANCH:-stable}/"  $manifest
 sed -i  '/^sdk:/s|//.*|//'"${SDK:-22.08}|"  $manifest
 
+if [[ "$SDK" = 22.08 ]]; then
+  # For 22.08 builds, add a local glew dependency
+  patch -p1 $manifest < $HOME/project/ci/flatpak-22.08-glew.patch
+fi
+
 flatpak install --user -y --or-update --noninteractive \
     ${FLATHUB_REPO:-flathub}  org.opencpn.OpenCPN
 
