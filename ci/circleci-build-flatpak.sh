@@ -92,6 +92,7 @@ flatpak install --user -y --or-update --noninteractive \
 cmake \
     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release} \
     -DOCPN_TARGET_TUPLE="flatpak-$(uname -m);${SDK};$(uname -m)" \
+    -DOCPN_NOGLEW=ON \
     ..
 # Do not build flatpak in parallel; make becomes unreliable
 make -j 1 VERBOSE=1 flatpak
