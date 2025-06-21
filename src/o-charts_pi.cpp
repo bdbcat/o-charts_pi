@@ -5681,7 +5681,8 @@ wxString GetDefaultChartInstallDirectory()
 
 #ifdef __ANDROID__
     if(g_SDK_INT > 28){                         // Android 10, and later
-        rv = _T("/storage/emulated/0/Android/data/org.opencpn.opencpn/files/Charts");
+        rv = *GetpPrivateApplicationDataLocation();
+        rv += "/Charts";
         if(!::wxDirExists( rv ) ){
             if(!wxMkdir( rv ))
                 wxLogMessage(_T("Cannot create default chart directory on A10+"));
