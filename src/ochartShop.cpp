@@ -1314,7 +1314,7 @@ void itemChart::Update(itemChart *other)
 
     updateChartListArray.Clear();
     for(unsigned int i = 0 ; i < other->updateChartListArray.GetCount() ; i++)
-        updateChartListArray.Add(other->baseChartListArray.Item(i));
+        updateChartListArray.Add(other->updateChartListArray.Item(i));
 
     std::vector<itemQuantity> quantityListTemp;
 
