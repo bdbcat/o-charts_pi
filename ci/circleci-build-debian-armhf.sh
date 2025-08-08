@@ -83,7 +83,7 @@ debian_rel=$(lsb_release -sc)
 if [ "$debian_rel" = bookworm ]; then
     apt-get install -y cmake
 elif [ "$debian_rel" = bullseye ]; then
-    echo "deb http://deb.debian.org/debian bullseye-backports main" \
+    echo "deb http://archive.debian.org/debian bullseye-backports main" \
       >> /etc/apt/sources.list
     apt update
     apt install -y cmake/bullseye-backports
