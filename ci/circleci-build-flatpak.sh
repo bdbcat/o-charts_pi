@@ -16,13 +16,13 @@ MANIFEST=$(cd flatpak; ls org.opencpn.OpenCPN.Plugin*yaml)
 echo "Using manifest file: $MANIFEST"
 set -x
 
-if [[ "$BRANCH" == beta ]]; then
+#if [[ "$BRANCH" == beta ]]; then
+#  export SDK=24.08
+#  export FLATHUB_REPO=flathub-beta
+#else
   export SDK=24.08
-  export FLATHUB_REPO=flathub-beta
-else
-  export SDK=22.08
   export FLATHUB_REPO=flathub
-fi
+#fi
 
 
 # Load local environment if it exists i. e., this is a local build
@@ -70,7 +70,7 @@ flatpak remote-add --user --if-not-exists flathub-beta \
 flatpak remote-add --user --if-not-exists \
     flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 flatpak install --user -y --noninteractive \
-    flathub org.freedesktop.Sdk//${SDK:-22.08}
+    flathub org.freedesktop.Sdk//${SDK:-24.08}
 
 set -x
 cd $builddir
@@ -78,12 +78,12 @@ cd $builddir
 # Patch the manifest to use correct branch and runtime unconditionally
 manifest=$(ls ../flatpak/org.opencpn.OpenCPN.Plugin*yaml)
 sed -i  '/^runtime-version/s/:.*/:'" ${BRANCH:-stable}/"  $manifest
-sed -i  '/^sdk:/s|//.*|//'"${SDK:-22.08}|"  $manifest
+sed -i  '/^sdk:/s|//.*|//'"${SDK:-24.08}|"  $manifest
 
-if [[ "$SDK" = 22.08 ]]; then
+#if [[ "$SDK" = 22.08 ]]; then
   # For 22.08 builds, add a local glew dependency
-  patch -p1 $manifest < $HOME/project/ci/flatpak-22.08-glew.patch
-fi
+#  patch -p1 $manifest < $HOME/project/ci/flatpak-22.08-glew.patch
+#fi
 
 flatpak install --user -y --or-update --noninteractive \
     ${FLATHUB_REPO:-flathub}  org.opencpn.OpenCPN
