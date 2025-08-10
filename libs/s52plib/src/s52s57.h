@@ -532,8 +532,11 @@ class connector_segment {
 public:
   int vbo_offset;
   int max_priority_cs;
-  float cs_lat_avg;  // segment centroid
-  float cs_lon_avg;
+  float               lat_max; // segment bounding box
+  float               lat_min;
+  float               lon_max;
+  float               lon_min;
+
 };
 
 class line_segment_element {

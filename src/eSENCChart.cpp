@@ -8405,12 +8405,16 @@ void eSENCChart::AssembleLineGeometry( void )
                                 pcs->vbo_offset = seg_pair_index;               // use temporarily
                                 seg_pair_index ++;
 
-                                // calculate the centroid of this connector segment, used for viz testing
-                                double lat, lon;
-                                fromSM_Plugin( (pair.e0 + pair.e1)/2, (pair.n0 + pair.n1)/2, m_ref_lat, m_ref_lon, &lat, &lon );
-                                pcs->cs_lat_avg = lat;
-                                pcs->cs_lon_avg = lon;
-
+                                // Get the box limits of this connector segment, used for viz testing
+                                double lat0, lon0, lat1, lon1;
+                                fromSM_Plugin( pair.e0 , pair.n0, m_ref_lat, m_ref_lon,
+                                    &lat0, &lon0 );
+                                fromSM_Plugin( pair.e1 , pair.n1, m_ref_lat, m_ref_lon,
+                                    &lat1, &lon1 );
+                                pcs->lat_min = wxMin(lat0, lat1);
+                                pcs->lat_max = wxMax(lat0, lat1);
+                                pcs->lon_min = wxMin(lon0, lon1);
+                                pcs->lon_max = wxMax(lon0, lon1);
                             }
                             else
                                 pcs = itce->second;
@@ -8488,12 +8492,16 @@ void eSENCChart::AssembleLineGeometry( void )
                                     pcs->vbo_offset = seg_pair_index;               // use temporarily
                                     seg_pair_index ++;
 
-                                    // calculate the centroid of this connector segment, used for viz testing
-                                    double lat, lon;
-                                    fromSM_Plugin( (pair.e0 + pair.e1)/2, (pair.n0 + pair.n1)/2, m_ref_lat, m_ref_lon, &lat, &lon );
-                                    pcs->cs_lat_avg = lat;
-                                    pcs->cs_lon_avg = lon;
-
+                                    // Get the box limits of this connector segment, used for viz testing
+                                    double lat0, lon0, lat1, lon1;
+                                    fromSM_Plugin( pair.e0 , pair.n0, m_ref_lat, m_ref_lon,
+                                        &lat0, &lon0 );
+                                    fromSM_Plugin( pair.e1 , pair.n1, m_ref_lat, m_ref_lon,
+                                        &lat1, &lon1 );
+                                    pcs->lat_min = wxMin(lat0, lat1);
+                                    pcs->lat_max = wxMax(lat0, lat1);
+                                    pcs->lon_min = wxMin(lon0, lon1);
+                                    pcs->lon_max = wxMax(lon0, lon1);
                                 }
                                 else
                                     pcs = itec->second;
@@ -8544,12 +8552,16 @@ void eSENCChart::AssembleLineGeometry( void )
                                     pcs->vbo_offset = seg_pair_index;               // use temporarily
                                     seg_pair_index ++;
 
-                                    // calculate the centroid of this connector segment, used for viz testing
-                                    double lat, lon;
-                                    fromSM_Plugin( (pair.e0 + pair.e1)/2, (pair.n0 + pair.n1)/2, m_ref_lat, m_ref_lon, &lat, &lon );
-                                    pcs->cs_lat_avg = lat;
-                                    pcs->cs_lon_avg = lon;
-
+                                    // Get the box limits of this connector segment, used for viz testing
+                                    double lat0, lon0, lat1, lon1;
+                                    fromSM_Plugin( pair.e0 , pair.n0, m_ref_lat, m_ref_lon,
+                                        &lat0, &lon0 );
+                                    fromSM_Plugin( pair.e1 , pair.n1, m_ref_lat, m_ref_lon,
+                                        &lat1, &lon1 );
+                                    pcs->lat_min = wxMin(lat0, lat1);
+                                    pcs->lat_max = wxMax(lat0, lat1);
+                                    pcs->lon_min = wxMin(lon0, lon1);
+                                    pcs->lon_max = wxMax(lon0, lon1);
                                 }
                                 else
                                     pcs = itcc->second;

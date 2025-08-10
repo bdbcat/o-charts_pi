@@ -3790,10 +3790,10 @@ int s52plib::RenderGLLS(ObjRazRules *rzRules, Rules *rules) {
         }
 
       } else {
-        if(BBView.GetMinLat() < ls_list->pcs->cs_lat_avg &&
-           BBView.GetMaxLat() > ls_list->pcs->cs_lat_avg &&
-           BBView.GetMinLon() <= ls_list->pcs->cs_lon_avg &&
-           BBView.GetMaxLon() >= ls_list->pcs->cs_lon_avg)
+        if(BBView.GetMinLat() < ls_list->pcs->lat_max &&
+           BBView.GetMaxLat() > ls_list->pcs->lat_min &&
+           BBView.GetMinLon() <= ls_list->pcs->lon_max &&
+           BBView.GetMaxLon() >= ls_list->pcs->lon_min)
         {
           // render the segment
           b_drawit = true;
@@ -5685,11 +5685,11 @@ int s52plib::RenderMPS(ObjRazRules *rzRules, Rules *rules) {
       }
 
       // Debug
-      if(m_pdc){
-        m_pdc->SetPen(wxPen(*wxRED, 1));
-        m_pdc->SetBrush(wxBrush(*wxRED, wxTRANSPARENT));
-        m_pdc->DrawRectangle(rr);
-      }
+      //if(m_pdc){
+        //m_pdc->SetPen(wxPen(*wxRED, 1));
+        //m_pdc->SetBrush(wxBrush(*wxRED, wxTRANSPARENT));
+        //m_pdc->DrawRectangle(rr);
+      //}
 
       rules = rules->next;
     }
