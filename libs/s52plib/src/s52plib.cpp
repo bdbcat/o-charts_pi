@@ -3286,9 +3286,7 @@ int s52plib::RenderSY(ObjRazRules *rzRules, Rules *rules) {
   return 0;
 }
 
-bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
-                                   wxPoint &r, wxColor symColor,
-                                   float rot_angle) {
+void s52plib::SetupSoundingFont() {
   double scale_factor = 1.0;
 
   //scale_factor *= m_ChartScaleFactorExp;
@@ -3376,8 +3374,6 @@ bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
     point_size = m_SoundingsPointSize;
     point_size /= m_dipfactor;    // Apply Windows display scaling.
   }
-
-
   double postmult = m_SoundingsScaleFactor;
   if ((postmult <= 2.0) && (postmult >= 0.5)) {
     point_size *= postmult;
@@ -3392,9 +3388,9 @@ bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
       m_texSoundings.Delete();
       m_texSoundings.SetContentScaleFactor(m_ContentScaleFactor);
 
-       m_soundFont = FindOrCreateFont_PlugIn(point_size, wxFONTFAMILY_SWISS,
-                                             wxFONTSTYLE_NORMAL, fontWeight,
-                                             false, fontFacename);
+      m_soundFont = FindOrCreateFont_PlugIn(point_size, wxFONTFAMILY_SWISS,
+                                            wxFONTSTYLE_NORMAL, fontWeight,
+                                            false, fontFacename);
       m_texSoundings.Build(m_soundFont,
                            scale_factor, m_dipfactor);  // texSounding owns the font
     }
@@ -3404,6 +3400,18 @@ bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
                                           fontFacename);
     m_pdc->SetFont(*m_soundFont);
   }
+}
+
+
+bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
+                                   wxPoint &r, wxColor symColor,
+                                   float rot_angle) {
+
+  // Get some metrics
+  int charWidth, charHeight, charDescent;
+  wxScreenDC sdc;
+  sdc.GetTextExtent(_T("0"), &charWidth, &charHeight, &charDescent, NULL,
+                    m_soundFont);  // measure the text
 
   int pivot_x;
   int pivot_y;
@@ -3442,7 +3450,7 @@ bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
   if (symPivot < 4) {
     pivot_x = (pivotWidth * symPivot); // - (pivotWidth / 4);
     pivot_y = pivotHeight / 2;
-  } else if (symPivot == 4) {
+  } else if (symPivot == 4){
     pivot_x = -pivotWidth; // - (pivotWidth / 4);
     pivot_y = pivotHeight / 2;
   } else {
@@ -5598,13 +5606,12 @@ int s52plib::RenderMPS(ObjRazRules *rzRules, Rules *rules) {
   //VPointCompat vp_local = *vp;
   //vp_local.SetRotationAngle(0.);
 
-  //  We may be rendering the soundings symbols scaled up, so
-  //  adjust the inclusion test bounding box
-
-  double scale_factor = vp_plib.ref_scale / vp_plib.chart_scale;
-
-  double box_mult = wxMax((scale_factor), 1);
-  int box_dim = 32 * box_mult;
+  SetupSoundingFont();
+  // Measure the size of a character
+  int charWidth, charHeight;
+  wxScreenDC sdc;
+  sdc.GetTextExtent("0", &charWidth, &charHeight, NULL, NULL, m_soundFont);
+  wxRect soundBox = wxRect(0, 0, charWidth * 4, charHeight * 3/2);
 
   // We need a pixel bounding rectangle of the passed ViewPort.
   // Very important for partial screen renders, as with dc mode pans or OpenGL
@@ -5633,16 +5640,13 @@ int s52plib::RenderMPS(ObjRazRules *rzRules, Rules *rules) {
     if (!screen_box.ContainsMarge(lat, lon, box_margin))
       continue;
 
-    wxPoint r = GetPixFromLLROT(lat, lon, 0);
-
     // Some simple inclusion tests
-    if((r.x < 0) || (r.y < 0))
-      continue;
+    wxPoint r = GetPixFromLLROT(lat, lon, 0);
     if ((r.x == INVALID_COORD) || (r.y == INVALID_COORD))
       continue;
 
-    //      Use estimated symbol size
-    wxRect rr(r.x - (box_dim / 2), r.y - (box_dim / 2), box_dim, box_dim);
+    // Use measured symbol size
+    wxRect rr(r.x - (soundBox.width / 2), r.y - (soundBox.height / 2), soundBox.width, soundBox.height);
 
     //      After all the setup, the render inclusion test is trivial....
     if (!clip_rect.Intersects(rr)) continue;
@@ -5680,20 +5684,29 @@ int s52plib::RenderMPS(ObjRazRules *rzRules, Rules *rules) {
           RenderSoundingSymbol(rzRules, rules->razRule, r, symColor, angle);
       }
 
+      // Debug
+      if(m_pdc){
+        m_pdc->SetPen(wxPen(*wxRED, 1));
+        m_pdc->SetBrush(wxBrush(*wxRED, wxTRANSPARENT));
+        m_pdc->DrawRectangle(rr);
+      }
+
       rules = rules->next;
     }
   }
-
   return 1;
 }
 
 int s52plib::RenderCARC(ObjRazRules *rzRules, Rules *rules) {
+#ifdef ocpnUSE_GL
   if (m_useGLSL)
     return RenderCARC_GLSL(rzRules, rules);
   else
+#endif
     return RenderCARC_VBO(rzRules, rules);
 }
 
+#ifdef ocpnUSE_GL
 int s52plib::RenderCARC_GLSL(ObjRazRules *rzRules, Rules *rules) {
 
   //    glDisable( GL_SCISSOR_TEST );
@@ -5786,6 +5799,7 @@ int s52plib::RenderCARC_GLSL(ObjRazRules *rzRules, Rules *rules) {
     arcw = wxMin(arcw, rad / 10);
     sec_rad *= xscale;
   }
+
   //      Enable anti-aliased lines, at best quality
   glEnable(GL_BLEND);
 
@@ -5961,6 +5975,7 @@ int s52plib::RenderCARC_GLSL(ObjRazRules *rzRules, Rules *rules) {
 
   return 1;
 }
+#endif
 
 int s52plib::RenderCARC_VBO(ObjRazRules *rzRules, Rules *rules) {
 
