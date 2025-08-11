@@ -2240,7 +2240,6 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
     //        Clear the text declutter list
     ps52plib->ClearTextList();
 
-#if 1
     // Prepare the rectangles and associated viewports
     // There may be either one or two rectangles in the region, no more.
     int nrv = 0;
@@ -2299,83 +2298,8 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
     }
 
     //printf("RenderTime5 %g\n",sw.GetTime());
-
       DoRender2RectOnGL( glc, vp0, r0, vp1, r1, b_use_stencil);
-
     //printf("RenderTime6 %g\n",sw.GetTime());
-
-#else
-
-    wxRegionIterator upd( Region ); // get the Region rect list
-        while( upd.HaveRects() ) {
-            wxRect rect = upd.GetRect();
-//            printf("  wSENCChart::RRVGL:  rect: %d %d %d %d \n", rect.x, rect.y, rect.width, rect.height);
-
-            //qDebug() << "Rect" << rect.x << rect.y << rect.width << rect.height;
-
-
-            //  Build synthetic ViewPort on this rectangle
-            //  Especially, we want the BBox to be accurate in order to
-            //  render only those objects actually visible in this region
-
-            ViewPort temp_vp = m_cvp;
-            double temp_lon_left, temp_lat_bot, temp_lon_right, temp_lat_top;
-
-            //TODO
-            //  This is much slower on rotated cases.  We can do better
-            //  It is slow because the inclusion test on geo location is very broad, covers the whole rotated screen
-            if(fabs(VPoint.rotation) > 0.01){
-                wxPoint p;
-                p.x = VPoint.rv_rect.x;
-                p.y = VPoint.rv_rect.y;
-
-                PlugIn_ViewPort vpbox = VPoint;
-                vpbox.rotation = 0;
-                GetCanvasLLPix( &vpbox, p, &temp_lat_top, &temp_lon_left);
-
-                p.x += VPoint.rv_rect.width;
-                p.y += VPoint.rv_rect.height;
-                GetCanvasLLPix( &vpbox, p, &temp_lat_bot, &temp_lon_right);
-            }
-            else{
-                wxPoint p;
-                p.x = rect.x;
-                p.y = rect.y;
-
-                GetCanvasLLPix( (PlugIn_ViewPort *)&VPoint, p, &temp_lat_top, &temp_lon_left);
-
-                p.x += rect.width;
-                p.y += rect.height;
-                GetCanvasLLPix( (PlugIn_ViewPort *)&VPoint, p, &temp_lat_bot, &temp_lon_right);
-            }
-
-            if( temp_lon_right < temp_lon_left )        // presumably crossing Greenwich
-                temp_lon_right += 360.;
-
-
-            temp_vp.GetBBox().Set(temp_lat_bot, temp_lon_left, temp_lat_top, temp_lon_right);
-
-            //SetClipRegionGL( glc, temp_vp, rect, true /*!b_overlay*/, b_use_stencil );
-            ps52plib->m_last_clip_rect = rect;
-
-#ifdef USE_ANDROID_GLES2
-             glEnable(GL_SCISSOR_TEST);
-             glScissor(rect.x, m_cvp.pix_height-rect.height-rect.y, rect.width, rect.height);
-             //qDebug() << "Scissor" << rect.x << m_cvp.pix_height-rect.height-rect.y << rect.width << rect.height;
-
-#endif
-
-
-            DoRenderRectOnGL( glc, temp_vp, rect, b_use_stencil);
-            //qDebug() << "PI RenderTime4" << sw.GetTime();
-
-#ifdef USE_ANDROID_GLES2
-             glDisable( GL_SCISSOR_TEST );
-#endif
-
-            upd++;
-        }  //while
-#endif
 
     //      Update last_vp to reflect current state
     m_last_vp = VPoint;
@@ -2459,184 +2383,8 @@ int eSENCChart::RenderRegionViewOnGLTextOnly( const wxGLContext &glc, const Plug
     return true;
 }
 
-#if 0
-void eSENCChart::SetClipRegionGL( const wxGLContext &glc, const PlugIn_ViewPort& VPoint,
-        const wxRegion &Region, bool b_render_nodta, bool b_useStencil )
-{
-#ifdef ocpnUSE_GL
 
-    if( b_useStencil ) {
-        //    Create a stencil buffer for clipping to the region
-        glEnable( GL_STENCIL_TEST );
-        glStencilMask( 0x1 );                 // write only into bit 0 of the stencil buffer
-        glClear( GL_STENCIL_BUFFER_BIT );
 
-        //    We are going to write "1" into the stencil buffer wherever the region is valid
-        glStencilFunc( GL_ALWAYS, 1, 1 );
-        glStencilOp( GL_KEEP, GL_KEEP, GL_REPLACE );
-    }
-#ifndef USE_ANDROID_GLES2
-
-    else              //  Use depth buffer for clipping
-    {
-        glEnable( GL_DEPTH_TEST ); // to enable writing to the depth buffer
-        glDepthFunc( GL_ALWAYS );  // to ensure everything you draw passes
-        glDepthMask( GL_TRUE );    // to allow writes to the depth buffer
-
-        glClear( GL_DEPTH_BUFFER_BIT ); // for a fresh start
-    }
-#endif
-
-    //    As a convenience, while we are creating the stencil or depth mask,
-    //    also render the default "NODTA" background if selected
-    if( b_render_nodta ) {
-        wxColour color = GetBaseGlobalColor( _T ( "NODTA" ) );
-        float r, g, b;
-        if( color.IsOk() ) {
-            r = color.Red() / 255.;
-            g = color.Green() / 255.;
-            b = color.Blue() / 255.;
-        } else
-            r = g = b = 0;
-
-        glColor3f( r, g, b );
-        glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );  // enable color buffer
-
-    } else {
-        glColorMask( GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE );   // disable color buffer
-    }
-
-    wxRegionIterator upd( Region ); // get the Region rect list
-    while( upd.HaveRects() ) {
-        wxRect rect = upd.GetRect();
-
-        if( b_useStencil ) {
-            glBegin( GL_QUADS );
-
-            glVertex2f( rect.x, rect.y );
-            glVertex2f( rect.x + rect.width, rect.y );
-            glVertex2f( rect.x + rect.width, rect.y + rect.height );
-            glVertex2f( rect.x, rect.y + rect.height );
-            glEnd();
-
-        } else              //  Use depth buffer for clipping
-        {
-//            if( g_bDebugS57 ) printf( "   Depth buffer Region rect:  %d %d %d %d\n", rect.x, rect.y,
-//                    rect.width, rect.height );
-
-            glBegin( GL_QUADS );
-
-            //    Depth buffer runs from 0 at z = 1 to 1 at z = -1
-            //    Draw the clip geometry at z = 0.5, giving a depth buffer value of 0.25
-            //    Subsequent drawing at z=0 (depth = 0.5) will pass if using glDepthFunc(GL_GREATER);
-            glVertex3f( rect.x, rect.y, 0.5 );
-            glVertex3f( rect.x + rect.width, rect.y, 0.5 );
-            glVertex3f( rect.x + rect.width, rect.y + rect.height, 0.5 );
-            glVertex3f( rect.x, rect.y + rect.height, 0.5 );
-            glEnd();
-
-        }
-
-        upd++;
-
-    }
-    if( b_useStencil ) {
-        //    Now set the stencil ops to subsequently render only where the stencil bit is "1"
-        glStencilFunc( GL_EQUAL, 1, 1 );
-        glStencilOp( GL_KEEP, GL_KEEP, GL_KEEP );
-
-    } else {
-        glDepthFunc( GL_GREATER );                          // Set the test value
-        glDepthMask( GL_FALSE );                            // disable depth buffer
-    }
-
-    glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );  // re-enable color buffer
-#endif
-}
-
-void eSENCChart::SetClipRegionGL( const wxGLContext &glc, const PlugIn_ViewPort& VPoint, const wxRect &Rect,
-                                bool b_render_nodta, bool b_useStencil )
-{
-#ifdef ocpnUSE_GL
-
-    if( b_useStencil ) {
-        //    Create a stencil buffer for clipping to the region
-        glEnable( GL_STENCIL_TEST );
-        glStencilMask( 0x1 );                 // write only into bit 0 of the stencil buffer
-        glClear( GL_STENCIL_BUFFER_BIT );
-
-        //    We are going to write "1" into the stencil buffer wherever the region is valid
-        glStencilFunc( GL_ALWAYS, 1, 1 );
-        glStencilOp( GL_KEEP, GL_KEEP, GL_REPLACE );
-
-    } else              //  Use depth buffer for clipping
-    {
-        glEnable( GL_DEPTH_TEST ); // to enable writing to the depth buffer
-        glDepthFunc( GL_ALWAYS );  // to ensure everything you draw passes
-        glDepthMask( GL_TRUE );    // to allow writes to the depth buffer
-        glClear( GL_DEPTH_BUFFER_BIT ); // for a fresh start
-    }
-
-    //    As a convenience, while we are creating the stencil or depth mask,
-    //    also render the default "NODTA" background if selected
-    if( b_render_nodta ) {
-        wxColour color = GetBaseGlobalColor( _T ( "NODTA" ) );
-        float r, g, b;
-        if( color.IsOk() ) {
-            r = color.Red() / 255.;
-            g = color.Green() / 255.;
-            b = color.Blue() / 255.;
-        } else
-            r = g = b = 0;
-        glColor3f( r, g, b );
-        glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );  // enable color buffer
-
-    } else {
-        glColorMask( GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE );   // disable color buffer
-    }
-
-    if( b_useStencil ) {
-        glBegin( GL_QUADS );
-
-        glVertex2f( Rect.x, Rect.y );
-        glVertex2f( Rect.x + Rect.width, Rect.y );
-        glVertex2f( Rect.x + Rect.width, Rect.y + Rect.height );
-        glVertex2f( Rect.x, Rect.y + Rect.height );
-        glEnd();
-
-    } else              //  Use depth buffer for clipping
-    {
-//        if( g_bDebugS57 ) printf( "   Depth buffer rect:  %d %d %d %d\n", Rect.x, Rect.y,
-//                Rect.width, Rect.height );
-
-        glBegin( GL_QUADS );
-
-        //    Depth buffer runs from 0 at z = 1 to 1 at z = -1
-        //    Draw the clip geometry at z = 0.5, giving a depth buffer value of 0.25
-        //    Subsequent drawing at z=0 (depth = 0.5) will pass if using glDepthFunc(GL_GREATER);
-        glVertex3f( Rect.x, Rect.y, 0.5 );
-        glVertex3f( Rect.x + Rect.width, Rect.y, 0.5 );
-        glVertex3f( Rect.x + Rect.width, Rect.y + Rect.height, 0.5 );
-        glVertex3f( Rect.x, Rect.y + Rect.height, 0.5 );
-        glEnd();
-
-    }
-
-    if( b_useStencil ) {
-        //    Now set the stencil ops to subsequently render only where the stencil bit is "1"
-        glStencilFunc( GL_EQUAL, 1, 1 );
-        glStencilOp( GL_KEEP, GL_KEEP, GL_KEEP );
-
-    } else {
-        glDepthFunc( GL_GREATER );                          // Set the test value
-        glDepthMask( GL_FALSE );                            // disable depth buffer
-    }
-
-    glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );  // re-enable color buffer
-#endif
-}
-
-#endif
 
 #if 0
 bool eSENCChart::DoRenderRectOnGL( const wxGLContext &glc, const ViewPort& VPoint, wxRect &rect, bool b_useStencil )
@@ -2803,13 +2551,16 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
     // Areas forRect1
     PrepareForRender(&tvp1, ps52plib);
     ps52plib->SetReducedBBox(tvp1.GetBBox());
+#ifdef USE_ANDROID_GLES2
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(rect1.x, m_cvp.pix_height-rect1.height-rect1.y, rect1.width, rect1.height);
+#endif
 
 //   printf("TVP1:  %g %g       %g %g\n",
 //          tvp1.GetBBox().GetMinLat(),
 //          tvp1.GetBBox().GetMaxLat(),
 //          tvp1.GetBBox().GetMinLon(),
 //          tvp1.GetBBox().GetMaxLon());
-    n_areaObjs = 0;
 
     for( i = 0; i < PRIO_NUM; ++i ) {
         if( PI_GetPLIBBoundaryStyle() == SYMBOLIZED_BOUNDARIES )
@@ -2822,32 +2573,19 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
             top = top->next;               // next object
             crnt->sm_transform_parms = &vp_transform;
 
-            // This may be a deferred tesselation
-            // Don't pre-process the geometry unless the object is to be actually rendered
-//FIXME (dave)
-//             if(!crnt->obj->pPolyTessGeo->IsOk() ){
-//                 if((ps52plib->ObjectRenderCheckRules( crnt, &tvp1, true )) ||
-//                     (ps52plib->ObjectRenderCheckRules( crnt, &tvp2, true ))){
-//                    if(!crnt->obj->pPolyTessGeo->m_pxgeom)
-//                         crnt->obj->pPolyTessGeo->m_pxgeom = buildExtendedGeom( crnt->obj );
-//                 }
-//             }
-#ifdef USE_ANDROID_GLES2
-             glEnable(GL_SCISSOR_TEST);
-             glScissor(rect1.x, m_cvp.pix_height-rect1.height-rect1.y, rect1.width, rect1.height);
-#endif
-
             if (ObjectRenderCheckPosReduced(crnt, tvp1.GetBBox()))
               ps52plib->RenderAreaToGL( glc, crnt );
-
         }
     }
-//     printf("TVP1 nobjs: %d\n",n_areaObjs);
-    n_areaObjs = 0;
+
     //Areas Rect2
     if (!rect2.IsEmpty()){
       PrepareForRender(&tvp2, ps52plib);
       ps52plib->SetReducedBBox(tvp2.GetBBox());
+#ifdef USE_ANDROID_GLES2
+      glEnable(GL_SCISSOR_TEST);
+      glScissor(rect2.x, m_cvp.pix_height-rect2.height-rect2.y, rect2.width, rect2.height);
+#endif
 
       for( i = 0; i < PRIO_NUM; ++i ) {
           if( PI_GetPLIBBoundaryStyle() == SYMBOLIZED_BOUNDARIES )
@@ -2860,36 +2598,19 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
               top = top->next;               // next object
               crnt->sm_transform_parms = &vp_transform;
 
-              // This may be a deferred tesselation
-              // Don't pre-process the geometry unless the object is to be actually rendered
-  //FIXME (dave)
-  //             if(!crnt->obj->pPolyTessGeo->IsOk() ){
-  //                 if((ps52plib->ObjectRenderCheckRules( crnt, &tvp1, true )) ||
-  //                     (ps52plib->ObjectRenderCheckRules( crnt, &tvp2, true ))){
-  //                    if(!crnt->obj->pPolyTessGeo->m_pxgeom)
-  //                         crnt->obj->pPolyTessGeo->m_pxgeom = buildExtendedGeom( crnt->obj );
-  //                 }
-  //             }
-
-  #ifdef USE_ANDROID_GLES2
-              glEnable(GL_SCISSOR_TEST);
-              glScissor(rect2.x, m_cvp.pix_height-rect2.height-rect2.y, rect2.width, rect2.height);
-  #endif
-            if (ObjectRenderCheckPosReduced(crnt, tvp2.GetBBox()))
+             if (ObjectRenderCheckPosReduced(crnt, tvp2.GetBBox()))
               ps52plib->RenderAreaToGL( glc, crnt );
           }
       }
     }
-    //printf("TVP2 nobjs: %d\n",n_areaObjs);
-
-
-#ifdef USE_ANDROID_GLES2
-    glDisable( GL_SCISSOR_TEST );
-#endif
 
     //    Render the lines and points Rect 1
     PrepareForRender(&tvp1, ps52plib);
     ps52plib->SetReducedBBox(tvp1.GetBBox());
+#ifdef USE_ANDROID_GLES2
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(rect1.x, m_cvp.pix_height-rect1.height-rect1.y, rect1.width, rect1.height);
+#endif
 
     for( i = 0; i < PRIO_NUM; ++i ) {
         if( ps52plib->m_nBoundaryStyle == SYMBOLIZED_BOUNDARIES )
@@ -2908,7 +2629,6 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
 
 
     for( i = 0; i < PRIO_NUM; ++i ) {
-
         top = razRules[i][2];           //LINES
         while( top != NULL ) {
             ObjRazRules *crnt = top;
@@ -2934,13 +2654,16 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
             if (ObjectRenderCheckPosReduced(crnt, tvp1.GetBBox()))
               ps52plib->RenderObjectToGL( glc, crnt );
         }
-
     }
 
     // Rect2 Lines and points
     if (!rect2.IsEmpty()){
       PrepareForRender(&tvp2, ps52plib);
       ps52plib->SetReducedBBox(tvp2.GetBBox());
+#ifdef USE_ANDROID_GLES2
+      glEnable(GL_SCISSOR_TEST);
+      glScissor(rect2.x, m_cvp.pix_height-rect2.height-rect2.y, rect2.width, rect2.height);
+#endif
 
       //    Render the lines and points for Rect2
       for( i = 0; i < PRIO_NUM; ++i ) {
@@ -2953,14 +2676,12 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
               top = top->next;               // next object
               crnt->sm_transform_parms = &vp_transform;
 
-            if (ObjectRenderCheckPosReduced(crnt, tvp2.GetBBox()))
-              ps52plib->RenderObjectToGL( glc, crnt );
+              if (ObjectRenderCheckPosReduced(crnt, tvp2.GetBBox()))
+                ps52plib->RenderObjectToGL( glc, crnt );
           }
       }
 
-
       for( i = 0; i < PRIO_NUM; ++i ) {
-
           top = razRules[i][2];           //LINES
           while( top != NULL ) {
               ObjRazRules *crnt = top;
@@ -2988,10 +2709,6 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
           }
       }
     }
-
-#ifdef USE_ANDROID_GLES2
-    glDisable( GL_SCISSOR_TEST );
-#endif
 
     glDisable( GL_STENCIL_TEST );
     glDisable( GL_DEPTH_TEST );
