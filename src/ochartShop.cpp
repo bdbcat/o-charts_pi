@@ -589,7 +589,7 @@ OCP_ScrolledMessageDialog::OCP_ScrolledMessageDialog( wxWindow *parent,
     int nMax = screenSize.y / GetCharHeight();
     qDebug() << "nMax" << nMax;
 
-    scroll->SetMinSize(wxSize(-1, (nMax - 3) * GetCharHeight()));
+    scroll->SetMinSize(wxSize(-1, (nMax - 7) * GetCharHeight()));
 #else
     scroll->SetMinSize(wxSize(-1, 15 * GetCharHeight()));
 #endif
