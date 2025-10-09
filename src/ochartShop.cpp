@@ -617,7 +617,10 @@ OCP_ScrolledMessageDialog::OCP_ScrolledMessageDialog( wxWindow *parent,
     topsizer->Fit( this );
 #else
     wxSize sz = getAndroidDisplayDimensions();
-    SetSize( g_shopPanel->GetSize().x * 9 / 10, sz/*g_shopPanel->GetSize()*/.y * 9 / 10);
+    int yfract = 9;
+    if (sz.y > sz.x)
+        yfract = 7;
+    SetSize( g_shopPanel->GetSize().x * 9 / 10, sz.y * yfract / 10);
 #endif
 
     Centre( wxBOTH /*| wxCENTER_FRAME*/);
@@ -4504,7 +4507,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     gridSizerActionButtons = new wxBoxSizer(wxVERTICAL);
     staticBoxSizerAction->Add(gridSizerActionButtons, 1, wxALL|wxEXPAND, WXC_FROM_DIP(2));
 
-    m_buttonInstall = new wxButton(this, ID_CMD_BUTTON_INSTALL, _("Reinstall Selection"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+    m_buttonInstall = new wxButton(this, ID_CMD_BUTTON_INSTALL, "Reinstall Selection  ", wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     gridSizerActionButtons->Add(m_buttonInstall, 1, wxTOP | wxBOTTOM , WXC_FROM_DIP(2));
 
     m_buttonCancelOp = new wxButton(this, wxID_ANY, _("Cancel Operation"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
