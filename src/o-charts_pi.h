@@ -76,6 +76,15 @@ enum {
     ID_NOTEBOOK
 };
 
+typedef enum tpm_state_t {
+    TPMSTATE_UNKNOWN = 0,
+    TPMSTATE_UNABLE,
+    TPMSTATE_REJECTED,
+    TPMSTATE_ACCPTED_UNVERIFIED,
+    TPMSTATE_ACCPTED_VERIFIED
+} _tpm_state_t;
+
+
 #define ID_ENABLE_REBUILD       23543
 
 //      Private logging functions

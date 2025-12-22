@@ -33,7 +33,6 @@
 #include "wx/tokenzr.h"
 #include "wx/dir.h"
 #include <wx/textfile.h>
-
 #ifdef _WIN32
 #include <windows.h>
 #include <shlobj.h>
@@ -41,6 +40,7 @@
 
 #include "fpr.h"
 #include "ocpn_plugin.h"
+#include "tpm/tpmUtil.h"
 
 #ifdef __ANDROID__
 #include "androidSupport.h"
@@ -207,6 +207,8 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
             if( (major == 5) && (minor == 1) )
                 fpr_dir = _T("C:\\");
 #endif
+
+            TPMInit();
 
             if( fpr_dir.Last() != wxFileName::GetPathSeparator() )
                 fpr_dir += wxFileName::GetPathSeparator();

@@ -114,6 +114,7 @@ set(SRC
   src/validator.cpp
   src/viewport.cpp
   libs/gdal/src/s57classregistrar.cpp
+  src/tpm/tpmUtil.cpp
 )
 
 if(QT_ANDROID)

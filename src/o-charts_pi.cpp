@@ -231,6 +231,8 @@ bool g_b_useScissorTest;
 bool g_b_useFBO;
 bool g_GLSetupOK;
 
+tpm_state_t g_TPMState;
+
 oesencPrefsDialog               *g_prefs_dialog;
 
 #if 1
@@ -529,6 +531,11 @@ o_charts_pi::o_charts_pi(void *ppimgr)
       m_pOptionsPage = 0;
 
       LoadConfig();
+      // Handle first time run on legacy systems that already have FPR
+      // uploaded to shop, and so should not need TPM
+      if ((g_TPMState == TPMSTATE_UNKNOWN) && (g_systemName.Length()))
+          g_TPMState = TPMSTATE_UNABLE;
+
       ScrubChartinfoList(  );
       g_bEULA_Rejected = false;
       g_bEULA_Rejected = !ShowAlwaysEULAs();
@@ -1428,6 +1435,10 @@ bool o_charts_pi::LoadConfig( void )
         pConf->Read( _T("ADMIN"), &g_admin);
         pConf->Read( _T("DEBUG_SHOP"), &g_debugShop);
 
+        int tmpt;
+        pConf->Read("TPMState", &tmpt, 0);
+        g_TPMState = (tpm_state_t)tmpt;
+
         pConf->SetPath( _T("/PlugIns/ocharts/oesenc") );
         pConf->Read( _T("LastFPRFile"), &g_fpr_file);
         pConf->Read( _T("DEBUG_SERVER"), &g_serverDebug);
@@ -1511,6 +1522,10 @@ bool o_charts_pi::SaveConfig( void )
     wxFileConfig *pConf = (wxFileConfig *) g_pconfig;
 
     if( pConf ) {
+
+        pConf->SetPath( _T("/PlugIns/ocharts") );
+        pConf->Write( _T("TPMState"), (int) g_TPMState );
+
         pConf->SetPath( _T("/PlugIns/ocharts/oesenc") );
 
         pConf->Write( _T("UserKey"), g_UserKey );
