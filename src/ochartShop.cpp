@@ -271,7 +271,9 @@ wxString getPassEncode( wxString passClearText ){
 
   wxString encodedPW;
 #ifndef __ANDROID__
+  encodedPW = stringHex;    // Simplify, no need for ebcoding clear password
 
+#if 0
     wxString cmd = g_sencutil_bin;
     cmd += _T(" -w ");
     cmd += stringHex;
@@ -286,6 +288,7 @@ wxString getPassEncode( wxString passClearText ){
             break;
         }
     }
+#endif
 #else
     encodedPW = _T("???");
 #endif
