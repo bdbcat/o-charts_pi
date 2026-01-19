@@ -46,8 +46,47 @@
 #include "ocpn_plugin.h"
 
 extern tpm_state_t g_TPMState;
+extern wxString g_sencutil_bin;
 
 #ifdef __WXGTK__
+
+bool IsTPMFunctional()
+{
+#ifndef __ANDROID__
+///
+    wxString cmd = g_sencutil_bin;
+    cmd += _T(" -p ");                  // Available?
+
+    wxArrayString ret_array, err_array;
+    wxExecute(cmd, ret_array, err_array );
+
+    wxLogMessage(_T("oexserverd results:"));
+    for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
+        wxString line = ret_array[i];
+        wxLogMessage(line);
+
+        if(line.IsSameAs(_T("1")))
+            return true;
+        if(line.IsSameAs(_T("0")))
+            return false;
+    }
+
+    // Show error in log
+    if(err_array.GetCount()){
+        wxLogMessage(_T("oexserverd execution error:"));
+        for(unsigned int i=0 ; i < err_array.GetCount() ; i++){
+            wxString line = err_array[i];
+            wxLogMessage(line);
+        }
+    }
+
+#endif
+
+    return false;
+}
+
+
+
 // UI Dialogs to manage TPM access
 
 OCCopyableText::OCCopyableText(wxWindow* parent, const wxString &text)
@@ -163,10 +202,33 @@ static int TPMUIMessage3() {
         "To enable TPM security features for o-charts, your linux user account\n\
         must be added to the 'tss' group.\n\n\
         Please exit OpenCPN and add your user name to 'tss' group, like this:",
+
         "$ sudo usermod -aG tss $USER",
+
         "Log out of linux desktop, wait 30 seconds, and log back in\n\
         to linux desktop in order to acrivate the new group setting.\n\n\
         Or, press CANCEL to disable o-charts support of TPM\n",
+
+        "o-charts Message", wxOK | wxCANCEL);
+
+    dialog->ShowModal();
+    dret = dialog->GetRetVal();
+    dialog->Destroy();
+    return dret;
+}
+
+static int TPMUIMessage4() {
+
+    int dret = wxID_OK;
+    auto dialog = new TPMMessageDialog(NULL,
+        "To enable TPM security features for o-charts,\n\
+        you must install the required system libraries.\n\n\
+        Please exit OpenCPN and add these libraries, like this:",
+
+        "$ sudo apt install libtss2-esys-* libtss2-tctildr0",
+
+        "Or, press CANCEL to disable o-charts support of TPM\n",
+
         "o-charts Message", wxOK | wxCANCEL);
 
     dialog->ShowModal();
@@ -180,27 +242,9 @@ static int TPMUIMessage3() {
    UI / Policy STUBS
    ============================ */
 
-// Called when TPM exists but user lacks permission.
-// Should:
-//  - Explain why TPM access is needed
-//  - Ask for consent
-//  - Trigger platform-specific group-add flow
-//  - Tell user to re-login
-void UI_RequestAddUserToTssGroup(const std::string& userName)
-{
-    // STUB: implement UI or CLI prompt here
-    // Example text:
-    //
-    // "TPM hardware is present, but your user account does not have permission
-    //  to access it. To enable TPM-backed security features, your account
-    //  must be added to the 'tss' group. This requires admin approval.
-    //  You will need to log out and log back in afterward."
-}
-
 // Optional: Informational message stub
-void UI_Notify(const std::string& message)
-{
-    // STUB: log or display message
+void UI_Notify(const std::string& message) {
+    wxLogMessage(wxString(message.c_str()));
 }
 
 static bool DirExistsAndNonEmpty(const char* path)
@@ -340,36 +384,33 @@ static bool IsRunningInFlatpak()
 
 bool DetectTPMAndPrepareAccess()
 {
-    if ((g_TPMState == TPMSTATE_REJECTED) ||
-            (g_TPMState ==TPMSTATE_UNABLE))
+    if ((g_TPMState == TPMSTATE_REJECTED) || (g_TPMState == TPMSTATE_UNABLE))
         return false;
 
     if (g_TPMState == TPMSTATE_ACCPTED_VERIFIED)
         return true;
 
     const char* sysTpmPath = "/sys/class/tpm";
-    const char* tpmrmPath  = "/dev/tpmrm0";
+    const char* tpmrmPath = "/dev/tpmrm0";
     const char* legacyPath = "/dev/tpm0";
 
     const std::string user = CurrentUserName();
     const bool inFlatpak = IsRunningInFlatpak();
 
     /* ---- Step 1: Detect TPM hardware ---- */
-    if (!DirExistsAndNonEmpty(sysTpmPath))
-    {
+    if (!DirExistsAndNonEmpty(sysTpmPath)) {
         UI_Notify("No TPM hardware detected or TPM disabled in firmware.");
         g_TPMState = TPMSTATE_UNABLE;
         return false;
     }
 
     /* ---- Step 2: Verify TPM generation ---- */
-    if (!IsTPM2Device())
-    {
+    if (!IsTPM2Device()) {
         UI_Notify("TPM detected, but TPM 2.0 is required.");
         return false;
     }
 
-    if (g_TPMState == TPMSTATE_UNKNOWN){
+    if (g_TPMState == TPMSTATE_UNKNOWN) {
         int tpmr1 = TPMUIMessage1();
         if (tpmr1 != wxID_OK) {
             g_TPMState = TPMSTATE_REJECTED; // don't ask again
@@ -378,54 +419,54 @@ bool DetectTPMAndPrepareAccess()
         }
     }
 
-    g_TPMState = TPMSTATE_ACCPTED_UNVERIFIED;
+    if (g_TPMState != TPMSTATE_ACCPTED_UNVERIFIEDPACKAGE)
+        g_TPMState = TPMSTATE_ACCPTED_UNVERIFIED;
 
-    /* ---- Step 3: Try direct device access ---- */
-    if (CanOpenReadWrite(tpmrmPath) ||
-        CanOpenReadWrite(legacyPath))
-    {
-        g_TPMState = TPMSTATE_ACCPTED_VERIFIED;
-        return true;
-    }
-
-    /* ---- Step 4: Flatpak mediation ---- */
-    if (inFlatpak)
-    {
-        //UI_Notify(
-        //    "TPM device detected, but access is blocked by Flatpak sandboxing.\n\n"
-        //    "This application must be granted TPM device access, e.g.:\n"
-        //    "  flatpak override --user --device=tpm <app-id>\n"
-        //    "or run with:\n"
-        //    "  flatpak run --device=tpm <app-id>"
-        //);
-        return false;
-    }
-
-
-    /* ---- Step 5: Group-based access resolution ---- */
-
-#if 0
-    if (UserHasEffectiveGroup("tss"))
-    {
-        UI_Notify(
-            "TPM device detected, but access is still denied.\n"
-            "This usually indicates a udev, ACL, or policy configuration issue."
-        );
-        return false;
-    }
-#endif
-
-    if (UserIsAssignedToGroup("tss", user))
-    {
-        int tpmr2 = TPMUIMessage2();
-        return false;  // ⬅ MUST terminate here
-    }
 
     /* ---- Step 6: Request group membership ---- */
+    if (!UserIsAssignedToGroup("tss", user)) {
+        int retv3 = TPMUIMessage3();
+        if (retv3 != wxID_OK) {
+            g_TPMState = TPMSTATE_REJECTED; // don't ask again
+            return false;
+        } else {
+            g_TPMState = TPMSTATE_ACCPTED_UNVERIFIED;
+            UI_Notify("TPM: Request add user to group tss.");
+            return false;
+        }
+    }
 
-    int retv3 = TPMUIMessage3();
-    if (retv3 != wxID_OK) {
-        g_TPMState = TPMSTATE_REJECTED; // don't ask again
+    // Here, user is known to be in group tss
+
+    /* ---- Step 3: Try direct device access ---- */
+    //  Verifies the user is in group tss
+    if (CanOpenReadWrite(tpmrmPath) || CanOpenReadWrite(legacyPath)) {
+
+        // Try to actually read TPM here
+        if (IsTPMFunctional()) {
+            g_TPMState = TPMSTATE_ACCPTED_VERIFIED;
+            return true;
+        } else {
+            if (g_TPMState == TPMSTATE_ACCPTED_UNVERIFIEDPACKAGE) {
+                g_TPMState = TPMSTATE_UNABLE;
+                UI_Notify("TPM: Fail after ask install packages");
+                return false;
+            } else {
+                int retv4 = TPMUIMessage4();
+                if (retv4 != wxID_OK) {
+                    g_TPMState = TPMSTATE_REJECTED; // don't ask again
+                    return false;
+                }
+                g_TPMState == TPMSTATE_ACCPTED_UNVERIFIEDPACKAGE;
+                UI_Notify("TPM: Ask for packaes");
+                return false;
+
+            }
+        }
+    } else {
+        g_TPMState = TPMSTATE_UNABLE;
+        UI_Notify("TPM: Cannot r/w /dev/tpm*");
+        return false;
     }
 
     return false;

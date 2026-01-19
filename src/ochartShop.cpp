@@ -57,6 +57,7 @@
 #include "o-charts_pi.h"
 #include "eSENCChart.h"
 #include "chart.h"
+#include "tpm/tpmUtil.h"
 
 #include <wx/arrimpl.cpp>
 WX_DEFINE_OBJARRAY(ArrayOfCharts);
@@ -102,6 +103,7 @@ extern wxFileConfig *g_pconfig;
 extern wxArrayString  g_ChartInfoArray;
 extern std::map<std::string, ChartInfoItem *> info_hash;
 extern wxString g_DefaultChartInstallDir;
+extern tpm_state_t g_TPMState;
 
 shopPanel *g_shopPanel;
 oesu_piScreenLogContainer *g_shopLogFrame;
@@ -4813,6 +4815,12 @@ bool shopPanel::GetAndValidateSystemName()
 
 void shopPanel::OnButtonUpdate( wxCommandEvent& event )
 {
+    if (g_TPMState == TPMSTATE_UNKNOWN) {
+          setStatusText(_("Status: Preparing TPM system."));
+          TPMInit();
+          setStatusText(_("Status: Ready"));
+    }
+
     m_shopLog->ClearLog();
 
     // Deselect any selected chart

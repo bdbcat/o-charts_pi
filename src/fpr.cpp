@@ -39,6 +39,7 @@
 #endif
 
 #include "fpr.h"
+#include "o-charts_pi.h"
 #include "ocpn_plugin.h"
 #include "tpm/tpmUtil.h"
 
@@ -49,6 +50,7 @@
 extern wxString g_sencutil_bin;
 extern wxString g_deviceInfo;
 extern wxString g_systemName;
+extern tpm_state_t g_TPMState;
 
 #ifdef __ANDROID__
 void androidGetDeviceName()
@@ -90,7 +92,10 @@ bool IsDongleAvailable()
 #endif
 ///
     wxString cmd = g_sencutil_bin;
-    cmd += _T(" -s ");                  // Available?
+    if (g_TPMState == TPMSTATE_REJECTED)
+        cmd += " -b ";
+
+    cmd += " -s ";                  // Available?
 
     wxArrayString ret_array, err_array;
     wxExecute(cmd, ret_array, err_array );
@@ -126,6 +131,8 @@ unsigned int GetDongleSN()
 
 #ifndef __ANDROID__
     wxString cmd = g_sencutil_bin;
+    if (g_TPMState == TPMSTATE_REJECTED)
+        cmd += " -b ";
     cmd += _T(" -t ");                  // SN
 
     wxArrayString ret_array;
@@ -208,12 +215,13 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
                 fpr_dir = _T("C:\\");
 #endif
 
-            TPMInit();
-
             if( fpr_dir.Last() != wxFileName::GetPathSeparator() )
                 fpr_dir += wxFileName::GetPathSeparator();
 
             wxString cmd = g_sencutil_bin;
+            if (g_TPMState == TPMSTATE_REJECTED)
+                cmd += " -b ";
+
             if(extra_info.Length()){
                 cmd += " -y ";
                 cmd += "\'";
@@ -257,7 +265,7 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
             wxExecute(cmd, ret_array, err_array );
 
             ::wxEndBusyCursor();
-            wxLogMessage(_T("Create FPR oeaserverd results:"));
+            wxLogMessage(_T("Create FPR oexserverd results:"));
 
             bool berr = false;
             for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
@@ -274,7 +282,7 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
             }
 
             if(err_array.GetCount()){
-                wxLogMessage(_T("Create FPR oeaserverd execution error:"));
+                wxLogMessage(_T("Create FPR oexserverd execution error:"));
                 for(unsigned int i=0 ; i < err_array.GetCount() ; i++){
                     wxString line = err_array[i];
                     wxLogMessage(line);
@@ -403,7 +411,7 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
                     bCopyOK = true;
         }
         else if(berr){
-            wxLogMessage(_T("oernc_pi: oeaserverd results:"));
+            wxLogMessage(_T("oernc_pi: oexserverd results:"));
             for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
                 wxString line = ret_array[i];
                 wxLogMessage( line );

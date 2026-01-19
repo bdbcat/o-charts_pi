@@ -531,10 +531,6 @@ o_charts_pi::o_charts_pi(void *ppimgr)
       m_pOptionsPage = 0;
 
       LoadConfig();
-      // Handle first time run on legacy systems that already have FPR
-      // uploaded to shop, and so should not need TPM
-      if ((g_TPMState == TPMSTATE_UNKNOWN) && (g_systemName.Length()))
-          g_TPMState = TPMSTATE_UNABLE;
 
       ScrubChartinfoList(  );
       g_bEULA_Rejected = false;
@@ -2912,6 +2908,8 @@ bool validate_SENC_server(void)
     // now start the server...
     wxString cmds = g_sencutil_bin;
 
+    if (g_TPMState == TPMSTATE_REJECTED)
+        cmds += " -b ";
 
     wxString pipeParm;
 
@@ -3756,6 +3754,8 @@ extern void saveShopConfig();
 void o_charts_pi_event_handler::OnClearCredentials( wxCommandEvent &event )
 {
     g_loginKey.Clear();
+    g_TPMState = TPMSTATE_UNKNOWN;
+
 #ifdef __ANDROID__
     g_systemName.Clear();
 #endif
