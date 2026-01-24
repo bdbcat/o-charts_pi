@@ -180,7 +180,7 @@ static int TPMUIMessage1() {
         Fingerprints using TPM are more secure and persistent than\n\
         other fingerprint methods, and are recommended for new users.\n\n\
         Use TPM fingerprint?"),
-        "o-charts Message", wxOK | wxCANCEL);
+        "o-charts Message", wxYES | wxNO);
 
     return dret;
 }
@@ -414,7 +414,7 @@ bool DetectTPMAndPrepareAccess()
 
     if (g_TPMState == TPMSTATE_UNKNOWN) {
         int tpmr1 = TPMUIMessage1();
-        if (tpmr1 != wxID_OK) {
+        if (tpmr1 != wxID_YES) {
             g_TPMState = TPMSTATE_REJECTED; // don't ask again
             UI_Notify("TPM detected, but rejected by user.");
             return false;
