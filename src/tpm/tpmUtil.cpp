@@ -409,6 +409,7 @@ bool DetectTPMAndPrepareAccess()
     /* ---- Step 2: Verify TPM generation ---- */
     if (!IsTPM2Device()) {
         UI_Notify("TPM detected, but TPM 2.0 is required.");
+        g_TPMState = TPMSTATE_UNABLE;
         return false;
     }
 
