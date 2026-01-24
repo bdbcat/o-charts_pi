@@ -91,7 +91,7 @@ bool IsTPMFunctional()
 
 OCCopyableText::OCCopyableText(wxWindow* parent, const wxString &text)
     : wxTextCtrl(parent, wxID_ANY, text, wxDefaultPosition, wxDefaultSize,
-        wxBORDER_NONE) {
+        wxBORDER_NONE | wxTE_CENTRE) {
     SetEditable(false);
     wxStaticText tmp(parent, wxID_ANY, text);
 }
@@ -123,7 +123,7 @@ TPMMessageDialog::TPMMessageDialog(wxWindow* parent, const wxString& line1,
 
     topsizer->Add(icon_text2, 1, wxLEFT | wxRIGHT | wxTOP, 10);
     auto ctrl = new OCCopyableText(this, line2);
-    ctrl->SetMinSize(wxSize(30 * wxWindow::GetCharWidth(), -1));
+    ctrl->SetMinSize(wxSize(40 * wxWindow::GetCharWidth(), -1));
     icon_text2->Add(ctrl, 1, wxLEFT , 15 * wxWindow::GetCharWidth());
 
     topsizer->Add(icon_text3, 1, wxLEFT | wxRIGHT , 10);
@@ -175,11 +175,11 @@ void TPMMessageDialog::OnClose(wxCloseEvent& event) {
 
 static int TPMUIMessage1() {
 
-    int dret = OCPNMessageBox_PlugIn(NULL,
-        "Your system is capable of using a TPM chip for fingerprint creation.\n\
+    int dret = OCPNMessageBox_PlugIn(NULL, \
+        "       " + _("Your system is capable of using a TPM chip for fingerprint creation.\n\
         Fingerprints using TPM are more secure and persistent than\n\
         other fingerprint methods, and are recommended for new users.\n\n\
-        Use TPM fingerprint?",
+        Use TPM fingerprint?"),
         "o-charts Message", wxOK | wxCANCEL);
 
     return dret;
@@ -187,9 +187,9 @@ static int TPMUIMessage1() {
 
 static int TPMUIMessage2() {
 
-    int dret = OCPNMessageBox_PlugIn(NULL,
-        "Your user account already has TPM access via the 'tss' group\n\
-        Please exit OpenCPN, log out and log back in for it to take effect.\n",
+    int dret = OCPNMessageBox_PlugIn(NULL, \
+        "       " + _("Your user account already has TPM access via the 'tss' group\n\
+        Please exit OpenCPN, log out and log back in for it to take effect.\n"),
         "o-charts Message", wxOK);
 
     return dret;
@@ -198,16 +198,17 @@ static int TPMUIMessage2() {
 static int TPMUIMessage3() {
 
     int dret = wxID_OK;
-    auto dialog = new TPMMessageDialog(NULL,
-        "To enable TPM security features for o-charts, your linux user account\n\
+    auto dialog = new TPMMessageDialog(NULL, \
+        "       " + _("To enable TPM security features for o-charts, your linux user account\n\
         must be added to the 'tss' group.\n\n\
-        Please exit OpenCPN and add your user name to 'tss' group, like this:",
+        Please exit OpenCPN, open a terminal, and add\n\\
+        your user name to 'tss' group, by typing this:"),
 
-        "$ sudo usermod -aG tss $USER",
+        " \"sudo usermod -aG tss $USER \"",
 
-        "Log out of linux desktop, wait 30 seconds, and log back in\n\
+        "       " + _("Log out of linux desktop, wait 30 seconds, and log back in\n\
         to linux desktop in order to acrivate the new group setting.\n\n\
-        Or, press CANCEL to disable o-charts support of TPM\n",
+        Or, press CANCEL to disable o-charts support of TPM\n"),
 
         "o-charts Message", wxOK | wxCANCEL);
 
@@ -220,14 +221,15 @@ static int TPMUIMessage3() {
 static int TPMUIMessage4() {
 
     int dret = wxID_OK;
-    auto dialog = new TPMMessageDialog(NULL,
-        "To enable TPM security features for o-charts,\n\
+    auto dialog = new TPMMessageDialog(NULL, \
+        "       " + _("To enable TPM security features for o-charts,\n\
         you must install the required system libraries.\n\n\
-        Please exit OpenCPN and add these libraries, like this:",
+        Please exit OpenCPN, open a terminal, and add these \n\\
+        libraries by typing this:"),
 
-        "$ sudo apt install libtss2-esys-* libtss2-tctildr0",
+        "\" sudo apt install libtss2-esys-* libtss2-tctildr0 \"",
 
-        "Or, press CANCEL to disable o-charts support of TPM\n",
+        "       " + _("Or, press CANCEL to disable o-charts support of TPM\n"),
 
         "o-charts Message", wxOK | wxCANCEL);
 
@@ -421,7 +423,6 @@ bool DetectTPMAndPrepareAccess()
 
     if (g_TPMState != TPMSTATE_ACCPTED_UNVERIFIEDPACKAGE)
         g_TPMState = TPMSTATE_ACCPTED_UNVERIFIED;
-
 
     /* ---- Step 6: Request group membership ---- */
     if (!UserIsAssignedToGroup("tss", user)) {
