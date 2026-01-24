@@ -64,5 +64,6 @@ libs/wxJSON/src/jsonwriter.cpp
 
 src/ochartShop.cpp
 src/ochartShop.h
+src/tpm/tpmUtil.cpp
 
 src/androidSupport.cpp
