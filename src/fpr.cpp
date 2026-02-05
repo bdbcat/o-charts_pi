@@ -33,24 +33,26 @@
 #include "wx/tokenzr.h"
 #include "wx/dir.h"
 #include <wx/textfile.h>
-
 #ifdef _WIN32
 #include <windows.h>
 #include <shlobj.h>
 #endif
 
 #include "fpr.h"
+#include "o-charts_pi.h"
 #include "ocpn_plugin.h"
+#include "tpm/tpmUtil.h"
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 #include "androidSupport.h"
 #endif
 
 extern wxString g_sencutil_bin;
 extern wxString g_deviceInfo;
 extern wxString g_systemName;
+extern tpm_state_t g_TPMState;
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 void androidGetDeviceName()
 {
     if(!g_deviceInfo.Length())
@@ -74,7 +76,7 @@ void androidGetDeviceName()
 
 bool IsDongleAvailable()
 {
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
 ///
 #if 0
     wxString cmdls = _T("ls -la /Applications/OpenCPN.app/Contents/PlugIns/oernc_pi");
@@ -90,7 +92,10 @@ bool IsDongleAvailable()
 #endif
 ///
     wxString cmd = g_sencutil_bin;
-    cmd += _T(" -s ");                  // Available?
+    if (g_TPMState == TPMSTATE_REJECTED)
+        cmd += " -b ";
+
+    cmd += " -s ";                  // Available?
 
     wxArrayString ret_array, err_array;
     wxExecute(cmd, ret_array, err_array );
@@ -124,8 +129,10 @@ unsigned int GetDongleSN()
 {
     unsigned int rv = 0;
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     wxString cmd = g_sencutil_bin;
+    if (g_TPMState == TPMSTATE_REJECTED)
+        cmd += " -b ";
     cmd += _T(" -t ");                  // SN
 
     wxArrayString ret_array;
@@ -144,7 +151,7 @@ unsigned int GetDongleSN()
 wxString GetServerVersionString()
 {
     wxString ver;
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
 
     wxString cmd = g_sencutil_bin;
     cmd += _T(" -a ");                  // Version
@@ -168,7 +175,7 @@ wxString GetServerVersionString()
 wxString getExpDate( wxString rkey)
 {
     wxString ret;
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
 
     wxString cmd = g_sencutil_bin;
     cmd += _T(" -v ");                  // Expiry days
@@ -193,7 +200,7 @@ wxString getExpDate( wxString rkey)
 
 wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extra_info)
 {
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
 
             wxString msg1;
             wxString fpr_file;
@@ -212,6 +219,9 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
                 fpr_dir += wxFileName::GetPathSeparator();
 
             wxString cmd = g_sencutil_bin;
+            if (g_TPMState == TPMSTATE_REJECTED)
+                cmd += " -b ";
+
             if(extra_info.Length()){
                 cmd += " -y ";
                 cmd += "\'";
@@ -255,7 +265,7 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
             wxExecute(cmd, ret_array, err_array );
 
             ::wxEndBusyCursor();
-            wxLogMessage(_T("Create FPR oeaserverd results:"));
+            wxLogMessage(_T("Create FPR oexserverd results:"));
 
             bool berr = false;
             for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
@@ -272,7 +282,7 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
             }
 
             if(err_array.GetCount()){
-                wxLogMessage(_T("Create FPR oeaserverd execution error:"));
+                wxLogMessage(_T("Create FPR oexserverd execution error:"));
                 for(unsigned int i=0 ; i < err_array.GetCount() ; i++){
                     wxString line = err_array[i];
                     wxLogMessage(line);
@@ -401,7 +411,7 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
                     bCopyOK = true;
         }
         else if(berr){
-            wxLogMessage(_T("oernc_pi: oeaserverd results:"));
+            wxLogMessage(_T("oernc_pi: oexserverd results:"));
             for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
                 wxString line = ret_array[i];
                 wxLogMessage( line );
@@ -469,7 +479,7 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
 #endif
 }
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 wxString androidGetSystemName()
 {
     wxString detectedSystemName;

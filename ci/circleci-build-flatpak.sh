@@ -12,15 +12,25 @@
 # (at your option) any later version.
 
 set -e
-
-
 MANIFEST=$(cd flatpak; ls org.opencpn.OpenCPN.Plugin*yaml)
 echo "Using manifest file: $MANIFEST"
 set -x
 
+#if [[ "$BRANCH" == beta ]]; then
+#  export SDK=24.08
+#  export FLATHUB_REPO=flathub-beta
+#else
+  export SDK=24.08
+  export FLATHUB_REPO=flathub
+#fi
+
+
 # Load local environment if it exists i. e., this is a local build
 if [ -f ~/.config/local-build.rc ]; then source ~/.config/local-build.rc; fi
 if [ -d /ci-source ]; then cd /ci-source; fi
+
+git config --global protocol.file.allow always
+git submodule update --init opencpn-libs
 
 # Set up build directory and a visible link in /
 builddir=build-flatpak
@@ -39,18 +49,15 @@ if [ -n "$CI" ]; then
     # Avoid using outdated TLS certificates, see #210.
     sudo apt install --reinstall  ca-certificates
 
-    # Install flatpak and flatpak-builder
+    # Handle possible outdated key for google packages, see #486
+    wget -q -O - https://cli-assets.heroku.com/apt/release.key \
+        | sudo apt-key add -
+    wget -q -O - https://dl.google.com/linux/linux_signing_key.pub \
+        | sudo apt-key add -
+
+    # Install or update flatpak and flatpak-builder
     sudo apt install flatpak flatpak-builder
 fi
-
-flatpak remote-add --user --if-not-exists \
-    flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-
-flatpak install --user -y --noninteractive \
-    flathub org.freedesktop.Sdk//20.08
-
-flatpak install --user -y --or-update --noninteractive \
-    flathub  org.opencpn.OpenCPN
 
 # The flatpak checksumming needs python3:
 if ! python3 --version 2>&1 >/dev/null; then
@@ -58,10 +65,36 @@ if ! python3 --version 2>&1 >/dev/null; then
     cp .python-version $HOME
 fi
 
-# Configure and build the plugin tarball and metadata.
+flatpak remote-add --user --if-not-exists flathub-beta \
+    https://flathub.org/beta-repo/flathub-beta.flatpakrepo
+flatpak remote-add --user --if-not-exists \
+    flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+flatpak install --user -y --noninteractive \
+    flathub org.freedesktop.Sdk//${SDK:-24.08}
+
+set -x
 cd $builddir
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j $(nproc) VERBOSE=1 flatpak
+
+# Patch the manifest to use correct branch and runtime unconditionally
+manifest=$(ls ../flatpak/org.opencpn.OpenCPN.Plugin*yaml)
+sed -i  '/^runtime-version/s/:.*/:'" ${BRANCH:-stable}/"  $manifest
+sed -i  '/^sdk:/s|//.*|//'"${SDK:-24.08}|"  $manifest
+
+#if [[ "$SDK" = 22.08 ]]; then
+  # For 22.08 builds, add a local glew dependency
+#  patch -p1 $manifest < $HOME/project/ci/flatpak-22.08-glew.patch
+#fi
+
+flatpak install --user -y --or-update --noninteractive \
+    ${FLATHUB_REPO:-flathub}  org.opencpn.OpenCPN
+
+# Configure and build the plugin tarball and metadata.
+cmake \
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release} \
+    -DOCPN_TARGET_TUPLE="flatpak-$(uname -m);${SDK};$(uname -m)" \
+    ..
+# Do not build flatpak in parallel; make becomes unreliable
+make -j 1 VERBOSE=1 flatpak
 
 # Restore permissions and owner in build tree.
 if [ -d /ci-source ]; then sudo chown --reference=/ci-source -R . ../cache; fi

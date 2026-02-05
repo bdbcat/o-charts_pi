@@ -50,7 +50,7 @@ extern wxString g_pipeParm;
 //      Utility functions
 //--------------------------------------------------------------------------
 
-#if !defined(__WXMSW__) && !defined( __OCPN__ANDROID__)   // i.e. linux and Mac
+#if !defined(__WXMSW__) && !defined( __ANDROID__)   // i.e. linux and Mac
 
 int makeAddr(const char* name, struct sockaddr_un* pAddr, socklen_t* pSockLen)
 {
@@ -70,7 +70,7 @@ int makeAddr(const char* name, struct sockaddr_un* pAddr, socklen_t* pSockLen)
 
 #endif
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 #include "qdebug.h"
 
 //--------------------------------------------------------------------------
@@ -574,9 +574,9 @@ oernc_inStream &oernc_inStream::Read(void *buffer, size_t size)
 
 
 
-#endif  //__OCPN__ANDROID__
+#endif  //__ANDROID__
 
-#if !defined(__WXMSW__) && !defined( __OCPN__ANDROID__)   // i.e. linux and Mac
+#if !defined(__WXMSW__) && !defined( __ANDROID__)   // i.e. linux and Mac
 
 //--------------------------------------------------------------------------
 //      oernc_inStream implementation

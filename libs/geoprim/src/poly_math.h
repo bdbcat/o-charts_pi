@@ -32,17 +32,17 @@
 typedef struct {
   double x;
   double y;
-} MyPoint;
+} MyPMPoint;
 
 typedef struct {
   float y;
   float x;
-} float_2Dpt;
+} PMfloat_2Dpt;
 
 #ifdef __cplusplus
-extern "C" int G_PtInPolygon(MyPoint *, int, float, float);
-extern "C" int G_PtInPolygon_FL(float_2Dpt *, int, float, float);
-extern "C" int Intersect_FL(float_2Dpt, float_2Dpt, float_2Dpt, float_2Dpt);
+extern "C" int G_PtInPolygon(MyPMPoint *, int, float, float);
+extern "C" int G_PtInPolygon_FL(PMfloat_2Dpt *, int, float, float);
+extern "C" int Intersect_FL(PMfloat_2Dpt, PMfloat_2Dpt, PMfloat_2Dpt, PMfloat_2Dpt);
 #else /* __cplusplus */
 extern int G_PtInPolygon(MyPoint *, int, float, float);
 #endif

@@ -109,11 +109,8 @@
 #include <setjmp.h>
 
 
-//extern ChartCanvas *cc1;
-extern struct sigaction sa_all;
-extern struct sigaction sa_all_old;
-
-extern sigjmp_buf           env;                    // the context saved by sigsetjmp();
+struct sigaction sa_o_charts;
+sigjmp_buf env_ocharts;         // the context saved by sigsetjmp();
 #endif
 
 #include <vector>
@@ -123,7 +120,18 @@ extern sigjmp_buf           env;                    // the context saved by sigs
 // Useful Prototypes
 // ----------------------------------------------------------------------------
 
-extern void catch_signals(int signo);
+#ifndef __WXMSW__
+void catch_signals_ocharts(int signo) {
+    switch (signo) {
+    case SIGSEGV:
+        siglongjmp(env_ocharts, 1);  // jump back to the setjmp() point
+        break;
+    default:
+        break;
+    }
+}
+#endif
+
 
 //------------------------------------------------------------------------------
 //    ViewPort Implementation
@@ -347,78 +355,6 @@ void ViewPort::GetLLFromPix( const wxPoint2DDouble &p, double *lat, double *lon 
     if( slon < -180. ) slon += 360.;
     else if( slon > 180. ) slon -= 360.;
     *lon = slon;
-}
-
-LLRegion ViewPort::GetLLRegion( const OCPNRegion &region )
-{
-    // todo: for these projecetions, improve this calculation by using the
-    //       method in SetBoxes here
-#ifndef ocpnUSE_GL
-    return LLRegion(GetBBox());
-#else
-
-    //if(!glChartCanvas::CanClipViewport(*this))
-        return LLRegion(GetBBox());
-
-#if 0
-    OCPNRegionIterator it( region );
-    LLRegion r;
-    while( it.HaveRects() ) {
-        wxRect rect = it.GetRect();
-
-        int x1 = rect.x, y1 = rect.y, x2 = x1 + rect.width, y2 = y1 + rect.height;
-        int p[8] = {x1, y1, x2, y1, x2, y2, x1, y2};
-        double pll[540];
-        int j;
-
-        /* if the viewport is rotated, we must split the segments as straight lines in lat/lon
-           coordinates map to curves in projected coordinate space */
-        if(fabs( rotation ) >= 0.0001) {
-            j=0;
-            double lastlat, lastlon;
-            int li = 6;
-            GetLLFromPix(wxPoint(p[li], p[li+1]), &lastlat, &lastlon);
-            for(int i=0; i<8; i+=2) {
-                double lat, lon;
-                GetLLFromPix(wxPoint(p[i], p[i+1]), &lat, &lon);
-
-                // use 2 degree grid
-                double grid = 2;
-                int lat_splits = floor(fabs(lat-lastlat) / grid);
-                double lond = fabs(lon-lastlon);
-                int lon_splits = floor((lond > 180 ? 360-lond : lond) / grid);
-                int splits = wxMax(lat_splits, lon_splits) + 1;
-
-                for(int k = 1; k<splits; k++) {
-                    float d = (float)k / splits;
-                    GetLLFromPix(wxPoint((1-d)*p[li] + d*p[i], (1-d)*p[li+1] + d*p[i+1]), pll+j, pll+j+1);
-                    j += 2;
-                }
-                pll[j++] = lat;
-                pll[j++] = lon;
-                li = i;
-                lastlat = lat, lastlon = lon;
-            }
-        } else {
-            j=8;
-            for(int i=0; i<j; i+=2)
-                GetLLFromPix(wxPoint(p[i], p[i+1]), pll+i, pll+i+1);
-        }
-
-        // resolve (this works even if rectangle crosses both 0 and 180)
-        for(int i=0; i<j; i+=2) {
-            if(pll[i+1] <= clon - 180)
-                pll[i+1] += 360;
-            else if(pll[i+1] >= clon + 180)
-                pll[i+1] -= 360;
-        }
-
-        r.Union(LLRegion(j/2, pll));
-        it.NextRect();
-    }
-    return r;
-#endif
-#endif
 }
 
 struct ContourRegion
@@ -753,12 +689,12 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoi
 
 
 #ifdef __WXGTK__
-    sigaction(SIGSEGV, NULL, &sa_all_old);             // save existing action for this signal
+    sigaction(SIGSEGV, NULL, &sa_o_charts);             // save existing action for this signal
 
     struct sigaction temp;
     sigaction(SIGSEGV, NULL, &temp);// inspect existing action for this signal
 
-    temp.sa_handler = catch_signals;// point to my handler
+    temp.sa_handler = catch_signals_ocharts;// point to my handler
     sigemptyset(&temp.sa_mask);// make the blocking set
     // empty, so that all
     // other signals will be
@@ -766,9 +702,9 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoi
     temp.sa_flags = 0;
     sigaction(SIGSEGV, &temp, NULL);
 
-    if(sigsetjmp(env, 1))//  Something in the below code block faulted....
+    if(sigsetjmp(env_ocharts, 1))//  Something in the below code block faulted....
     {
-        sigaction(SIGSEGV, &sa_all_old, NULL);        // reset signal handler
+        sigaction(SIGSEGV, &sa_o_charts, NULL);        // reset signal handler
 
         return Region;
 
@@ -781,7 +717,7 @@ OCPNRegion ViewPort::GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoi
         if(NULL == ppoints)
             free(pp);
 
-        sigaction(SIGSEGV, &sa_all_old, NULL);        // reset signal handler
+        sigaction(SIGSEGV, &sa_o_charts, NULL);        // reset signal handler
         r.Intersect(Region);
         return r;
     }

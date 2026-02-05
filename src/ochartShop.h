@@ -47,7 +47,7 @@
 #undef WXC_FROM_DIP
 #endif
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     #define WXC_FROM_DIP(x) x
 #else
     #if wxVERSION_NUMBER >= 3100
@@ -489,6 +489,7 @@ public:
     int processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *task);
     bool validateSHA256(std::string fileName, std::string shaSum);
     int GetShopNameFromFPR();
+    bool GetAndValidateSystemName();
 
     void onDLEvent(OCPN_downloadEvent &evt);
 

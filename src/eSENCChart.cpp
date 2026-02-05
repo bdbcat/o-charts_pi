@@ -21,6 +21,7 @@
   #include "wx/wx.h"
 #endif //precompiled headers
 
+#define GL_SILENCE_DEPRECATION 1
 
 //  Why are these not in wx/prec.h?
 #include "wx/dir.h"
@@ -51,8 +52,10 @@
 #include "s52utils.h"
 #include "uKey.h"
 #include "tinyxml.h"
-#include "poly_math.h"
+//#include "poly_math.h"
 #include "dychart.h"
+//#include "LOD_reduce.h"
+#include "cutil.h"
 
 #ifdef __WXOSX__
 // #include <OpenGL/gl.h>
@@ -64,7 +67,7 @@ typedef void (*PFNGLBINDBUFFERPROC) (GLenum target, GLuint buffer);
 typedef void (*PFNGLBUFFERDATAPROC) (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
 typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
 
-#elif defined(__OCPN__ANDROID__)
+#elif defined(__ANDROID__)
 // #include <qopengl.h>
 // #include <GLES/gl.h>
 
@@ -75,7 +78,7 @@ typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
 #endif
 
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 #include "qdebug.h"
 #include "androidSupport.h"
 #endif
@@ -83,7 +86,8 @@ typedef void (*PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
 
 
 
-#ifdef __MSVC__
+//#ifdef __MSVC__
+#if defined(_WIN32)
 #define strncasecmp(x,y,z) _strnicmp(x,y,z)
 
 //    __MSVC__ randomly does not link snprintf, or _snprintf
@@ -152,16 +156,16 @@ WX_DEFINE_LIST(ListOfS57Obj);                // Implement a list of S57 Objects
 WX_DEFINE_LIST(ListOfObjRazRules);
 
 #ifndef __OCPN_USE_GLEW__
-extern PFNGLGENBUFFERSPROC                 s_glGenBuffers;
-extern PFNGLBINDBUFFERPROC                 s_glBindBuffer;
-extern PFNGLBUFFERDATAPROC                 s_glBufferData;
-extern PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
+//extern PFNGLGENBUFFERSPROC                 s_glGenBuffers;
+//extern PFNGLBINDBUFFERPROC                 s_glBindBuffer;
+//extern PFNGLBUFFERDATAPROC                 s_glBufferData;
+//extern PFNGLDELETEBUFFERSPROC              s_glDeleteBuffers;
 
 #ifndef USE_ANDROID_GLES2
-#define glGenBuffers (s_glGenBuffers)
-#define glBindBuffer (s_glBindBuffer)
-#define glBufferData (s_glBufferData)
-#define glDeleteBuffers (s_glDeleteBuffers)
+//#define glGenBuffers (s_glGenBuffers)
+//#define glBindBuffer (s_glBindBuffer)
+//#define glBufferData (s_glBufferData)
+//#define glDeleteBuffers (s_glDeleteBuffers)
 #endif
 
 #endif
@@ -985,7 +989,7 @@ bool oesuChart::CreateChartInfoFile( wxString chartName, bool forceCreate )
     wxString l4 = _T("ChartInfoShow:");
     l4 += wxString(m_chartInfoShow.c_str());
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     // Create a  Chartinfo.txt file in the installBase directory
     wxString ciPath = installBase;
     ciPath += wxFileName::GetPathSeparator();
@@ -1190,6 +1194,7 @@ eSENCChart::eSENCChart()
     //m_pcontour_array = new ArrayOfSortedDoubles;
 
     m_next_safe_contour = 1e6;
+    m_set_mar_safety_contour = 1e6;
     m_LineVBO_name = -1;
 
     m_plib_state_hash = 0;
@@ -1715,6 +1720,53 @@ PI_InitReturn eSENCChart::CreateHeaderDataFromeSENC( void )
 
     return (PI_InitReturn) retCode;
 }
+int eSENCChart::reduceLOD(double LOD_meters, int nPoints, double *source,
+                       wxPoint2DDouble **dest, int *maskIn, int **maskOut) {
+  //      Reduce the LOD of this linestring
+  std::vector<int> index_keep;
+  if (nPoints > 5 && (LOD_meters > 0)) {
+    index_keep.push_back(0);
+    index_keep.push_back(nPoints - 1);
+    index_keep.push_back(nPoints - 2);
+
+    DouglasPeucker(source, 0, nPoints - 2, LOD_meters, &index_keep);
+
+  } else {
+    index_keep.resize(nPoints);
+    // Consider using std::iota here when there is C++11 support.
+    for (int i = 0; i < nPoints; i++) index_keep[i] = i;
+  }
+
+  wxPoint2DDouble *pReduced =
+      (wxPoint2DDouble *)malloc((index_keep.size()) * sizeof(wxPoint2DDouble));
+  *dest = pReduced;
+
+  int *pmaskOut = NULL;
+  if (maskIn) {
+    *maskOut = (int *)malloc((index_keep.size()) * sizeof(int));
+    pmaskOut = *maskOut;
+  }
+
+  double *ppr = source;
+  int ir = 0;
+  for (int ip = 0; ip < nPoints; ip++) {
+    double x = *ppr++;
+    double y = *ppr++;
+    int maskval = 1;
+    if (maskIn) maskval = maskIn[ip];
+    // printf("LOD:  %10g  %10g\n", x, y);
+
+    for (unsigned int j = 0; j < index_keep.size(); j++) {
+      if (index_keep[j] == ip) {
+        if (pmaskOut) pmaskOut[ir] = maskval;
+        pReduced[ir++] = wxPoint2DDouble(x, y);
+        break;
+      }
+    }
+  }
+
+  return index_keep.size();
+}
 
 bool eSENCChart::ProcessHeader(Osenc &senc)
 {
@@ -1749,10 +1801,125 @@ bool eSENCChart::ProcessHeader(Osenc &senc)
         m_pCOVRTable = (float **) malloc( m_nCOVREntries * sizeof(float *) );
 
         for( unsigned int j = 0; j < (unsigned int) m_nCOVREntries; j++ ) {
-            m_pCOVRTablePoints[j] = AuxCntArray.Item( j );
-            m_pCOVRTable[j] = (float *) malloc( AuxCntArray.Item( j ) * 2 * sizeof(float) );
-            memcpy( m_pCOVRTable[j], AuxPtrArray.Item( j ),
+
+          // Some cells have complex outlines, sometimes with thousands of points
+          // This complexity really reduces performance of quilting logic.
+          // Detect this case, and reduce complexity if possible
+            if (AuxCntArray.Item(j) > 2000){
+              int np = AuxCntArray.Item(j);
+#if 1
+              // Plan on LOD reduction of this point string.
+              // Idea is to reduce so that the error is less than n pixels
+              // when displayed at native scale on "reasonable" monitor
+              // Calculations:
+              // LOD reduction (meters) = scale / (pix/meter)
+              // Estimate pix/meter on average display as 1pix/.27 mm, or 1pix/.00027 m
+              // or, about 3700 pixels per meter.
+              double LOD_meters = (double)m_Chart_Scale / 3700;    // LOD in meters, for one pixel
+              // Working in degrees, so convert LOD_meters to degrees, roughly
+              LOD_meters /= (1852. * 60.);
+
+              LOD_meters *= 4;   // empirically derived
+                                    // equivalent to viewing the
+                                    // chart at 4X
+
+              double scaler = 1;
+              float *source = AuxPtrArray.Item( j );
+              float *run = source;
+
+              double *dsource = (double *) malloc(np * 2 * sizeof(double) );
+              double *drun = dsource;
+              for (unsigned int k=0; k < np; k++){
+                float a = *run++;
+                *drun++ = (double)a * scaler;
+                float b = *run++;
+                *drun++ = (double)b * scaler;
+              }
+
+              wxPoint2DDouble *pReduced = 0;
+
+              int nReduced = reduceLOD(LOD_meters * scaler, np, dsource,
+                       &pReduced, NULL, NULL);
+
+              if(nReduced < 10) {       // some error in LOD algorithm
+                // Try to correct by reducing the LOD, by steps.
+                // If not corrected in 4 steps, bail out.
+                // This will normally result in non-display of the chart,
+                // due to sanity checks elsewhere
+                double new_LOD = LOD_meters * scaler;
+                int nsteps = 0;
+                while ((nReduced < 10) && (nsteps < 4)){
+                  new_LOD *= 0.5;
+                  delete pReduced;        // so re-run with reduced LOD
+                  pReduced = 0;
+                  nReduced = reduceLOD(new_LOD, np, dsource,
+                       &pReduced, NULL, NULL);
+                  nsteps++;
+                }
+              }
+
+              m_pCOVRTablePoints[j] = nReduced;
+              m_pCOVRTable[j] = (float *) malloc( nReduced * 2 * sizeof(float) );
+              float *rrun = m_pCOVRTable[j];
+              wxPoint2DDouble *rdrun = pReduced;
+
+              for (unsigned int k=0; k < nReduced; k++){
+                wxPoint2DDouble g = *rdrun;
+                double x = g.m_x;
+                *rrun++ = (float)x/scaler;
+                double y = g.m_y;
+                *rrun++ = (float)y/scaler;
+                rdrun++;
+              }
+#else
+            // Another approach
+            // Scan the points, calculating extents.
+            // Then make a simple rectangular outline.
+
+              double LatMax = -100;
+              double LatMin = 100;
+              double LonMax = -180;
+              double LonMin = 180;
+
+              float *source = AuxPtrArray.Item( j );
+              float *run = source;
+
+              for (unsigned int k=0; k < np; k++){
+                float lat = *run++;
+                LatMax = wxMax(LatMax, lat);
+                LatMin = wxMin(LatMin, lat);
+                float lon = *run++;
+                LonMax = wxMax(LonMax, lon);
+                LonMin = wxMin(LonMin, lon);
+              }
+              //Create the rectangular entry
+              m_nCOVREntries = 1;
+              m_pCOVRTablePoints = (int *)malloc(sizeof(int));
+              *m_pCOVRTablePoints = 4;
+              m_pCOVRTable = (float **)malloc(sizeof(float *));
+              float *pf = (float *)malloc(2 * 4 * sizeof(float));
+              *m_pCOVRTable = pf;
+              float *pfe = pf;
+
+              *pfe++ = LatMax;
+              *pfe++ = LonMin;
+
+              *pfe++ = LatMax;
+              *pfe++ = LonMax;
+
+              *pfe++ = LatMin;
+              *pfe++ = LonMax;
+
+              *pfe++ = LatMin;
+              *pfe++ = LonMin;
+#endif
+            }
+            else {
+              m_pCOVRTablePoints[j] = AuxCntArray.Item( j );
+              m_pCOVRTable[j] = (float *) malloc( AuxCntArray.Item( j ) * 2 * sizeof(float) );
+              memcpy( m_pCOVRTable[j], AuxPtrArray.Item( j ),
                     AuxCntArray.Item( j ) * 2 * sizeof(float) );
+            }
         }
 
         // NoCoverage areas
@@ -1768,10 +1935,16 @@ bool eSENCChart::ProcessHeader(Osenc &senc)
 
             for( unsigned int j = 0; j < (unsigned int) m_nNoCOVREntries; j++ ) {
                 int npoints = NoCovrCntArray.Item( j );
-                m_pNoCOVRTablePoints[j] = npoints;
-                m_pNoCOVRTable[j] = (float *) malloc( npoints * 2 * sizeof(float) );
-                memcpy( m_pNoCOVRTable[j], NoCovrPtrArray.Item( j ),
+                if (npoints < 1000){
+                  m_pNoCOVRTablePoints[j] = npoints;
+                  m_pNoCOVRTable[j] = (float *) malloc( npoints * 2 * sizeof(float) );
+                  memcpy( m_pNoCOVRTable[j], NoCovrPtrArray.Item( j ),
                         npoints * 2 * sizeof(float) );
+                }
+                else{
+                  m_pNoCOVRTablePoints[j] = 0;
+                  m_pNoCOVRTable[j] = 0;
+                }
             }
         }
 
@@ -1866,7 +2039,7 @@ wxBitmap &eSENCChart::RenderRegionView(const PlugIn_ViewPort& VPoint, const wxRe
     //ps52plib->PrepareForRender(&m_cvp);
     PrepareForRender(&m_cvp, ps52plib);
 
-    if( m_plib_state_hash != PI_GetPLIBStateHash() ) {
+    if( m_plib_state_hash != ps52plib->GetStateHash() ) {
         m_bLinePrioritySet = false;                     // need to reset line priorities
         UpdateLUPs( this );                               // and update the LUPs
         ClearRenderedTextCache();                       // and reset the text renderer,
@@ -1876,7 +2049,7 @@ wxBitmap &eSENCChart::RenderRegionView(const PlugIn_ViewPort& VPoint, const wxRe
         ps52plib->FlushSymbolCaches();
         m_last_vp.bValid = 0;
 
-        m_plib_state_hash = PI_GetPLIBStateHash();
+        m_plib_state_hash = ps52plib->GetStateHash();
     }
 
     if( VPoint.view_scale_ppm != m_last_vp.view_scale_ppm ) {
@@ -2020,7 +2193,6 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
                           const wxRegion &Region, bool b_use_stencil )
 {
 
-
 #ifdef ocpnUSE_GL
 
     if(!g_GLOptionsSet)
@@ -2032,14 +2204,18 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
 
     SetVPParms( VPoint );
 
-    //qDebug() << "PI RenderTime1" << sw.GetTime();
+    //printf("RenderTime1 %g\n",sw.GetTime());
 
     //ps52plib->PrepareForRender(&m_cvp);
     PrepareForRender(&m_cvp, ps52plib);
 
+    //printf("RenderTime2 %g\n",sw.GetTime());
     //qDebug() << "PI RenderTime2" << sw.GetTime();
 
-    if( m_plib_state_hash != PI_GetPLIBStateHash() ) {
+    //printf("Check: %ld   plib: %ld\n", m_plib_state_hash, ps52plib->GetStateHash());
+
+    if( m_plib_state_hash != ps52plib->GetStateHash() ) {
+      //printf("    miss..\n");
         m_bLinePrioritySet = false;                     // need to reset line priorities
         UpdateLUPs( this );                             // and update the LUPs
         ClearRenderedTextCache();                       // and reset the text renderer,
@@ -2047,10 +2223,11 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
         SetSafetyContour();
         ps52plib->FlushSymbolCaches();
 
-        m_plib_state_hash = PI_GetPLIBStateHash();
+        m_plib_state_hash = ps52plib->GetStateHash();
 
     }
 
+    //printf("RenderTime2 %g\n",sw.GetTime());
 
     if( VPoint.view_scale_ppm != m_last_vp.view_scale_ppm ) {
         ResetPointBBoxes( m_last_vp, VPoint );
@@ -2058,11 +2235,11 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
 
     BuildLineVBO();
     SetLinePriorities();
+    //printf("RenderTime4 %g\n",sw.GetTime());
 
     //        Clear the text declutter list
     ps52plib->ClearTextList();
 
-#if 1
     // Prepare the rectangles and associated viewports
     // There may be either one or two rectangles in the region, no more.
     int nrv = 0;
@@ -2120,80 +2297,9 @@ int eSENCChart::RenderRegionViewOnGL( const wxGLContext &glc, const PlugIn_ViewP
             nrv++;
     }
 
+    //printf("RenderTime5 %g\n",sw.GetTime());
       DoRender2RectOnGL( glc, vp0, r0, vp1, r1, b_use_stencil);
-
-#else
-
-    wxRegionIterator upd( Region ); // get the Region rect list
-        while( upd.HaveRects() ) {
-            wxRect rect = upd.GetRect();
-//            printf("  wSENCChart::RRVGL:  rect: %d %d %d %d \n", rect.x, rect.y, rect.width, rect.height);
-
-            //qDebug() << "Rect" << rect.x << rect.y << rect.width << rect.height;
-
-
-            //  Build synthetic ViewPort on this rectangle
-            //  Especially, we want the BBox to be accurate in order to
-            //  render only those objects actually visible in this region
-
-            ViewPort temp_vp = m_cvp;
-            double temp_lon_left, temp_lat_bot, temp_lon_right, temp_lat_top;
-
-            //TODO
-            //  This is much slower on rotated cases.  We can do better
-            //  It is slow because the inclusion test on geo location is very broad, covers the whole rotated screen
-            if(fabs(VPoint.rotation) > 0.01){
-                wxPoint p;
-                p.x = VPoint.rv_rect.x;
-                p.y = VPoint.rv_rect.y;
-
-                PlugIn_ViewPort vpbox = VPoint;
-                vpbox.rotation = 0;
-                GetCanvasLLPix( &vpbox, p, &temp_lat_top, &temp_lon_left);
-
-                p.x += VPoint.rv_rect.width;
-                p.y += VPoint.rv_rect.height;
-                GetCanvasLLPix( &vpbox, p, &temp_lat_bot, &temp_lon_right);
-            }
-            else{
-                wxPoint p;
-                p.x = rect.x;
-                p.y = rect.y;
-
-                GetCanvasLLPix( (PlugIn_ViewPort *)&VPoint, p, &temp_lat_top, &temp_lon_left);
-
-                p.x += rect.width;
-                p.y += rect.height;
-                GetCanvasLLPix( (PlugIn_ViewPort *)&VPoint, p, &temp_lat_bot, &temp_lon_right);
-            }
-
-            if( temp_lon_right < temp_lon_left )        // presumably crossing Greenwich
-                temp_lon_right += 360.;
-
-
-            temp_vp.GetBBox().Set(temp_lat_bot, temp_lon_left, temp_lat_top, temp_lon_right);
-
-            //SetClipRegionGL( glc, temp_vp, rect, true /*!b_overlay*/, b_use_stencil );
-            ps52plib->m_last_clip_rect = rect;
-
-#ifdef USE_ANDROID_GLES2
-             glEnable(GL_SCISSOR_TEST);
-             glScissor(rect.x, m_cvp.pix_height-rect.height-rect.y, rect.width, rect.height);
-             //qDebug() << "Scissor" << rect.x << m_cvp.pix_height-rect.height-rect.y << rect.width << rect.height;
-
-#endif
-
-
-            DoRenderRectOnGL( glc, temp_vp, rect, b_use_stencil);
-            //qDebug() << "PI RenderTime4" << sw.GetTime();
-
-#ifdef USE_ANDROID_GLES2
-             glDisable( GL_SCISSOR_TEST );
-#endif
-
-            upd++;
-        }  //while
-#endif
+    //printf("RenderTime6 %g\n",sw.GetTime());
 
     //      Update last_vp to reflect current state
     m_last_vp = VPoint;
@@ -2277,184 +2383,8 @@ int eSENCChart::RenderRegionViewOnGLTextOnly( const wxGLContext &glc, const Plug
     return true;
 }
 
-#if 0
-void eSENCChart::SetClipRegionGL( const wxGLContext &glc, const PlugIn_ViewPort& VPoint,
-        const wxRegion &Region, bool b_render_nodta, bool b_useStencil )
-{
-#ifdef ocpnUSE_GL
 
-    if( b_useStencil ) {
-        //    Create a stencil buffer for clipping to the region
-        glEnable( GL_STENCIL_TEST );
-        glStencilMask( 0x1 );                 // write only into bit 0 of the stencil buffer
-        glClear( GL_STENCIL_BUFFER_BIT );
 
-        //    We are going to write "1" into the stencil buffer wherever the region is valid
-        glStencilFunc( GL_ALWAYS, 1, 1 );
-        glStencilOp( GL_KEEP, GL_KEEP, GL_REPLACE );
-    }
-#ifndef USE_ANDROID_GLES2
-
-    else              //  Use depth buffer for clipping
-    {
-        glEnable( GL_DEPTH_TEST ); // to enable writing to the depth buffer
-        glDepthFunc( GL_ALWAYS );  // to ensure everything you draw passes
-        glDepthMask( GL_TRUE );    // to allow writes to the depth buffer
-
-        glClear( GL_DEPTH_BUFFER_BIT ); // for a fresh start
-    }
-#endif
-
-    //    As a convenience, while we are creating the stencil or depth mask,
-    //    also render the default "NODTA" background if selected
-    if( b_render_nodta ) {
-        wxColour color = GetBaseGlobalColor( _T ( "NODTA" ) );
-        float r, g, b;
-        if( color.IsOk() ) {
-            r = color.Red() / 255.;
-            g = color.Green() / 255.;
-            b = color.Blue() / 255.;
-        } else
-            r = g = b = 0;
-
-        glColor3f( r, g, b );
-        glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );  // enable color buffer
-
-    } else {
-        glColorMask( GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE );   // disable color buffer
-    }
-
-    wxRegionIterator upd( Region ); // get the Region rect list
-    while( upd.HaveRects() ) {
-        wxRect rect = upd.GetRect();
-
-        if( b_useStencil ) {
-            glBegin( GL_QUADS );
-
-            glVertex2f( rect.x, rect.y );
-            glVertex2f( rect.x + rect.width, rect.y );
-            glVertex2f( rect.x + rect.width, rect.y + rect.height );
-            glVertex2f( rect.x, rect.y + rect.height );
-            glEnd();
-
-        } else              //  Use depth buffer for clipping
-        {
-//            if( g_bDebugS57 ) printf( "   Depth buffer Region rect:  %d %d %d %d\n", rect.x, rect.y,
-//                    rect.width, rect.height );
-
-            glBegin( GL_QUADS );
-
-            //    Depth buffer runs from 0 at z = 1 to 1 at z = -1
-            //    Draw the clip geometry at z = 0.5, giving a depth buffer value of 0.25
-            //    Subsequent drawing at z=0 (depth = 0.5) will pass if using glDepthFunc(GL_GREATER);
-            glVertex3f( rect.x, rect.y, 0.5 );
-            glVertex3f( rect.x + rect.width, rect.y, 0.5 );
-            glVertex3f( rect.x + rect.width, rect.y + rect.height, 0.5 );
-            glVertex3f( rect.x, rect.y + rect.height, 0.5 );
-            glEnd();
-
-        }
-
-        upd++;
-
-    }
-    if( b_useStencil ) {
-        //    Now set the stencil ops to subsequently render only where the stencil bit is "1"
-        glStencilFunc( GL_EQUAL, 1, 1 );
-        glStencilOp( GL_KEEP, GL_KEEP, GL_KEEP );
-
-    } else {
-        glDepthFunc( GL_GREATER );                          // Set the test value
-        glDepthMask( GL_FALSE );                            // disable depth buffer
-    }
-
-    glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );  // re-enable color buffer
-#endif
-}
-
-void eSENCChart::SetClipRegionGL( const wxGLContext &glc, const PlugIn_ViewPort& VPoint, const wxRect &Rect,
-                                bool b_render_nodta, bool b_useStencil )
-{
-#ifdef ocpnUSE_GL
-
-    if( b_useStencil ) {
-        //    Create a stencil buffer for clipping to the region
-        glEnable( GL_STENCIL_TEST );
-        glStencilMask( 0x1 );                 // write only into bit 0 of the stencil buffer
-        glClear( GL_STENCIL_BUFFER_BIT );
-
-        //    We are going to write "1" into the stencil buffer wherever the region is valid
-        glStencilFunc( GL_ALWAYS, 1, 1 );
-        glStencilOp( GL_KEEP, GL_KEEP, GL_REPLACE );
-
-    } else              //  Use depth buffer for clipping
-    {
-        glEnable( GL_DEPTH_TEST ); // to enable writing to the depth buffer
-        glDepthFunc( GL_ALWAYS );  // to ensure everything you draw passes
-        glDepthMask( GL_TRUE );    // to allow writes to the depth buffer
-        glClear( GL_DEPTH_BUFFER_BIT ); // for a fresh start
-    }
-
-    //    As a convenience, while we are creating the stencil or depth mask,
-    //    also render the default "NODTA" background if selected
-    if( b_render_nodta ) {
-        wxColour color = GetBaseGlobalColor( _T ( "NODTA" ) );
-        float r, g, b;
-        if( color.IsOk() ) {
-            r = color.Red() / 255.;
-            g = color.Green() / 255.;
-            b = color.Blue() / 255.;
-        } else
-            r = g = b = 0;
-        glColor3f( r, g, b );
-        glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );  // enable color buffer
-
-    } else {
-        glColorMask( GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE );   // disable color buffer
-    }
-
-    if( b_useStencil ) {
-        glBegin( GL_QUADS );
-
-        glVertex2f( Rect.x, Rect.y );
-        glVertex2f( Rect.x + Rect.width, Rect.y );
-        glVertex2f( Rect.x + Rect.width, Rect.y + Rect.height );
-        glVertex2f( Rect.x, Rect.y + Rect.height );
-        glEnd();
-
-    } else              //  Use depth buffer for clipping
-    {
-//        if( g_bDebugS57 ) printf( "   Depth buffer rect:  %d %d %d %d\n", Rect.x, Rect.y,
-//                Rect.width, Rect.height );
-
-        glBegin( GL_QUADS );
-
-        //    Depth buffer runs from 0 at z = 1 to 1 at z = -1
-        //    Draw the clip geometry at z = 0.5, giving a depth buffer value of 0.25
-        //    Subsequent drawing at z=0 (depth = 0.5) will pass if using glDepthFunc(GL_GREATER);
-        glVertex3f( Rect.x, Rect.y, 0.5 );
-        glVertex3f( Rect.x + Rect.width, Rect.y, 0.5 );
-        glVertex3f( Rect.x + Rect.width, Rect.y + Rect.height, 0.5 );
-        glVertex3f( Rect.x, Rect.y + Rect.height, 0.5 );
-        glEnd();
-
-    }
-
-    if( b_useStencil ) {
-        //    Now set the stencil ops to subsequently render only where the stencil bit is "1"
-        glStencilFunc( GL_EQUAL, 1, 1 );
-        glStencilOp( GL_KEEP, GL_KEEP, GL_KEEP );
-
-    } else {
-        glDepthFunc( GL_GREATER );                          // Set the test value
-        glDepthMask( GL_FALSE );                            // disable depth buffer
-    }
-
-    glColorMask( GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE );  // re-enable color buffer
-#endif
-}
-
-#endif
 
 #if 0
 bool eSENCChart::DoRenderRectOnGL( const wxGLContext &glc, const ViewPort& VPoint, wxRect &rect, bool b_useStencil )
@@ -2574,6 +2504,33 @@ bool eSENCChart::DoRenderRectOnGL( const wxGLContext &glc, const ViewPort& VPoin
     return true;
 }
 #endif
+extern int n_areaObjs;
+
+bool ObjectRenderCheckPosReduced(ObjRazRules *rzRules, LLBBox vpBox) {
+    if (rzRules->obj == NULL) return false;
+
+    // Of course, the object must be at least partly visible in the VPointCompat
+    const LLBBox &testBox = rzRules->obj->BBObj;
+
+    if (vpBox.GetMaxLat() < testBox.GetMinLat() ||
+        vpBox.GetMinLat() > testBox.GetMaxLat())
+        return false;
+
+    if (vpBox.GetMaxLon() >= testBox.GetMinLon() &&
+        vpBox.GetMinLon() <= testBox.GetMaxLon())
+        return true;
+
+    if (vpBox.GetMaxLon() >= testBox.GetMinLon() + 360 &&
+        vpBox.GetMinLon() <= testBox.GetMaxLon() + 360)
+        return true;
+
+    if (vpBox.GetMaxLon() >= testBox.GetMinLon() - 360 &&
+        vpBox.GetMinLon() <= testBox.GetMaxLon() - 360)
+        return true;
+
+    return false;
+}
+
 
 bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoint1, wxRect &rect1,
                               const ViewPort& VPoint2, wxRect &rect2, bool b_useStencil )
@@ -2593,6 +2550,17 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
     //      Render the areas quickly
     // Areas forRect1
     PrepareForRender(&tvp1, ps52plib);
+    ps52plib->SetReducedBBox(tvp1.GetBBox());
+#ifdef USE_ANDROID_GLES2
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(rect1.x, m_cvp.pix_height-rect1.height-rect1.y, rect1.width, rect1.height);
+#endif
+
+//   printf("TVP1:  %g %g       %g %g\n",
+//          tvp1.GetBBox().GetMinLat(),
+//          tvp1.GetBBox().GetMaxLat(),
+//          tvp1.GetBBox().GetMinLon(),
+//          tvp1.GetBBox().GetMaxLon());
 
     for( i = 0; i < PRIO_NUM; ++i ) {
         if( PI_GetPLIBBoundaryStyle() == SYMBOLIZED_BOUNDARIES )
@@ -2605,29 +2573,19 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
             top = top->next;               // next object
             crnt->sm_transform_parms = &vp_transform;
 
-            // This may be a deferred tesselation
-            // Don't pre-process the geometry unless the object is to be actually rendered
-//FIXME (dave)
-//             if(!crnt->obj->pPolyTessGeo->IsOk() ){
-//                 if((ps52plib->ObjectRenderCheckRules( crnt, &tvp1, true )) ||
-//                     (ps52plib->ObjectRenderCheckRules( crnt, &tvp2, true ))){
-//                    if(!crnt->obj->pPolyTessGeo->m_pxgeom)
-//                         crnt->obj->pPolyTessGeo->m_pxgeom = buildExtendedGeom( crnt->obj );
-//                 }
-//             }
-#ifdef USE_ANDROID_GLES2
-             glEnable(GL_SCISSOR_TEST);
-             glScissor(rect1.x, m_cvp.pix_height-rect1.height-rect1.y, rect1.width, rect1.height);
-#endif
-
-            ps52plib->RenderAreaToGL( glc, crnt );
-
+            if (ObjectRenderCheckPosReduced(crnt, tvp1.GetBBox()))
+              ps52plib->RenderAreaToGL( glc, crnt );
         }
     }
 
     //Areas Rect2
     if (!rect2.IsEmpty()){
       PrepareForRender(&tvp2, ps52plib);
+      ps52plib->SetReducedBBox(tvp2.GetBBox());
+#ifdef USE_ANDROID_GLES2
+      glEnable(GL_SCISSOR_TEST);
+      glScissor(rect2.x, m_cvp.pix_height-rect2.height-rect2.y, rect2.width, rect2.height);
+#endif
 
       for( i = 0; i < PRIO_NUM; ++i ) {
           if( PI_GetPLIBBoundaryStyle() == SYMBOLIZED_BOUNDARIES )
@@ -2640,31 +2598,19 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
               top = top->next;               // next object
               crnt->sm_transform_parms = &vp_transform;
 
-              // This may be a deferred tesselation
-              // Don't pre-process the geometry unless the object is to be actually rendered
-  //FIXME (dave)
-  //             if(!crnt->obj->pPolyTessGeo->IsOk() ){
-  //                 if((ps52plib->ObjectRenderCheckRules( crnt, &tvp1, true )) ||
-  //                     (ps52plib->ObjectRenderCheckRules( crnt, &tvp2, true ))){
-  //                    if(!crnt->obj->pPolyTessGeo->m_pxgeom)
-  //                         crnt->obj->pPolyTessGeo->m_pxgeom = buildExtendedGeom( crnt->obj );
-  //                 }
-  //             }
-
-  #ifdef USE_ANDROID_GLES2
-              glEnable(GL_SCISSOR_TEST);
-              glScissor(rect2.x, m_cvp.pix_height-rect2.height-rect2.y, rect2.width, rect2.height);
-  #endif
+             if (ObjectRenderCheckPosReduced(crnt, tvp2.GetBBox()))
               ps52plib->RenderAreaToGL( glc, crnt );
           }
       }
     }
 
-
-
-#if 1  //FIXME
     //    Render the lines and points Rect 1
     PrepareForRender(&tvp1, ps52plib);
+    ps52plib->SetReducedBBox(tvp1.GetBBox());
+#ifdef USE_ANDROID_GLES2
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(rect1.x, m_cvp.pix_height-rect1.height-rect1.y, rect1.width, rect1.height);
+#endif
 
     for( i = 0; i < PRIO_NUM; ++i ) {
         if( ps52plib->m_nBoundaryStyle == SYMBOLIZED_BOUNDARIES )
@@ -2676,20 +2622,21 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
             top = top->next;               // next object
             crnt->sm_transform_parms = &vp_transform;
 
-            ps52plib->RenderObjectToGL( glc, crnt );
+            if (ObjectRenderCheckPosReduced(crnt, tvp1.GetBBox()))
+              ps52plib->RenderObjectToGL( glc, crnt );
         }
     }
 
 
     for( i = 0; i < PRIO_NUM; ++i ) {
-
         top = razRules[i][2];           //LINES
         while( top != NULL ) {
             ObjRazRules *crnt = top;
             top = top->next;
             crnt->sm_transform_parms = &vp_transform;
 
-            ps52plib->RenderObjectToGL( glc, crnt );
+            if (ObjectRenderCheckPosReduced(crnt, tvp1.GetBBox()))
+              ps52plib->RenderObjectToGL( glc, crnt );
          }
     }
 
@@ -2704,15 +2651,19 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
             top = top->next;
             crnt->sm_transform_parms = &vp_transform;
 
-            ps52plib->RenderObjectToGL( glc, crnt );
+            if (ObjectRenderCheckPosReduced(crnt, tvp1.GetBBox()))
+              ps52plib->RenderObjectToGL( glc, crnt );
         }
-
     }
-#endif
 
     // Rect2 Lines and points
     if (!rect2.IsEmpty()){
       PrepareForRender(&tvp2, ps52plib);
+      ps52plib->SetReducedBBox(tvp2.GetBBox());
+#ifdef USE_ANDROID_GLES2
+      glEnable(GL_SCISSOR_TEST);
+      glScissor(rect2.x, m_cvp.pix_height-rect2.height-rect2.y, rect2.width, rect2.height);
+#endif
 
       //    Render the lines and points for Rect2
       for( i = 0; i < PRIO_NUM; ++i ) {
@@ -2725,19 +2676,19 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
               top = top->next;               // next object
               crnt->sm_transform_parms = &vp_transform;
 
-              ps52plib->RenderObjectToGL( glc, crnt );
+              if (ObjectRenderCheckPosReduced(crnt, tvp2.GetBBox()))
+                ps52plib->RenderObjectToGL( glc, crnt );
           }
       }
 
-
       for( i = 0; i < PRIO_NUM; ++i ) {
-
           top = razRules[i][2];           //LINES
           while( top != NULL ) {
               ObjRazRules *crnt = top;
               top = top->next;
               crnt->sm_transform_parms = &vp_transform;
 
+            if (ObjectRenderCheckPosReduced(crnt, tvp2.GetBBox()))
               ps52plib->RenderObjectToGL( glc, crnt );
           }
       }
@@ -2753,14 +2704,11 @@ bool eSENCChart::DoRender2RectOnGL( const wxGLContext &glc, const ViewPort& VPoi
               top = top->next;
               crnt->sm_transform_parms = &vp_transform;
 
+            if (ObjectRenderCheckPosReduced(crnt, tvp2.GetBBox()))
               ps52plib->RenderObjectToGL( glc, crnt );
           }
       }
     }
-
-#ifdef USE_ANDROID_GLES2
-    glDisable( GL_SCISSOR_TEST );
-#endif
 
     glDisable( GL_STENCIL_TEST );
     glDisable( GL_DEPTH_TEST );
@@ -4750,6 +4698,9 @@ int eSENCChart::BuildRAZFromSENCFile( const wxString& FullPath, wxString& Key, i
         m_this_chart_context->chart = this;
         m_this_chart_context->chart_type = GetChartType();
         m_this_chart_context->vertex_buffer = GetLineVertexBuffer();
+        m_this_chart_context->chart_scale = GetNativeScale();
+        m_this_chart_context->pFloatingATONArray = pFloatingATONArray;
+        m_this_chart_context->pRigidATONArray = pRigidATONArray;
 
         //  Loop and populate all the objects
         for( int i = 0; i < PRIO_NUM; ++i ) {
@@ -5445,26 +5396,43 @@ void eSENCChart::SetSafetyContour(void)
     //    is greater than or equal to the current PLIB mariner parameter S52_MAR_SAFETY_CONTOUR
 
     double mar_safety_contour = S52_getMarinerParam(S52_MAR_SAFETY_CONTOUR);
+    if (mar_safety_contour != m_set_mar_safety_contour) {
 
-    int i = 0;
-    if( NULL != m_pvaldco_array ) {
-        for( i = 0; i < m_nvaldco; i++ ) {
-            if( m_pvaldco_array[i] >= mar_safety_contour )
-                break;
+        int i = 0;
+        if (NULL != m_pvaldco_array) {
+            for (i = 0; i < m_nvaldco; i++) {
+                if (m_pvaldco_array[i] >= mar_safety_contour)
+                    break;
+            }
+
+            if (i < m_nvaldco)
+                m_next_safe_cnt = m_pvaldco_array[i];
+            else
+                m_next_safe_cnt = (double)1e6;
+        } else {
+            m_next_safe_cnt = (double)1e6;
         }
 
-        if( i < m_nvaldco )
-            m_next_safe_cnt = m_pvaldco_array[i];
-        else
-            m_next_safe_cnt = (double) 1e6;
-    } else {
-        m_next_safe_cnt = (double) 1e6;
+        // A safety contour greater than "Deep Depth" makes no sense...
+        // So, declare "no suitable safety depth contour"
+        if (m_next_safe_cnt > S52_getMarinerParam(S52_MAR_DEEP_CONTOUR))
+            m_next_safe_cnt = (double)1e6;
+
+        //  Loop and populate all the objects with the calculated safety contour
+        for (int i = 0; i < PRIO_NUM; ++i) {
+            for (int j = 0; j < LUPNAME_NUM; j++) {
+                ObjRazRules* top = razRules[i][j];
+                while (top != NULL) {
+                    S57Obj* obj = top->obj;
+                    obj->m_chart_context->safety_contour = m_next_safe_cnt;
+                    top = top->next;
+                }
+            }
+        }
+        m_set_mar_safety_contour = mar_safety_contour;
+
     }
 
-    // A safety contour greater than "Deep Depth" makes no sense...
-    // So, declare "no suitable safety depth contour"
-    if(m_next_safe_cnt > S52_getMarinerParam(S52_MAR_DEEP_CONTOUR))
-        m_next_safe_cnt = (double) 1e6;
 
 }
 
@@ -5737,12 +5705,12 @@ bool eSENCChart::DoRenderRegionViewOnDC( wxMemoryDC& dc, const PlugIn_ViewPort& 
     PI_PLIBSetRenderCaps( PLIB_CAPS_LINE_BUFFER | PLIB_CAPS_SINGLEGEO_BUFFER | PLIB_CAPS_OBJSEGLIST | PLIB_CAPS_OBJCATMUTATE);
     PI_PLIBPrepareForNewRender();
 
-    if( m_plib_state_hash != PI_GetPLIBStateHash() ) {
+    if( m_plib_state_hash != ps52plib->GetStateHash() ) {
         m_bLinePrioritySet = false;                     // need to reset line priorities
         UpdateLUPs( this );                             // and update the LUPs
         ResetPointBBoxes( m_last_vp, VPoint );
         SetSafetyContour();
-        m_plib_state_hash = PI_GetPLIBStateHash();
+        m_plib_state_hash = ps52plib->GetStateHash();
 
     }
 
@@ -5879,12 +5847,12 @@ bool eSENCChart::RenderViewOnDC( wxMemoryDC& dc, const PlugIn_ViewPort& VPoint )
     PI_PLIBSetRenderCaps( PLIB_CAPS_LINE_BUFFER | PLIB_CAPS_SINGLEGEO_BUFFER | PLIB_CAPS_OBJSEGLIST | PLIB_CAPS_OBJCATMUTATE);
     PI_PLIBPrepareForNewRender();
 
-    if( m_plib_state_hash != PI_GetPLIBStateHash() ) {
+    if( m_plib_state_hash != ps52plib->GetStateHash() ) {
         m_bLinePrioritySet = false;                     // need to reset line priorities
         UpdateLUPs( this );                             // and update the LUPs
         ResetPointBBoxes( m_last_vp, VPoint );
         SetSafetyContour();
-        m_plib_state_hash = PI_GetPLIBStateHash();
+        m_plib_state_hash = ps52plib->GetStateHash();
 
     }
 
@@ -7642,12 +7610,12 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
                 if(vis.Contains( _T("8"))){
                     if( attrIndex != wxNOT_FOUND ) {
                         wxString color = thisLight.attributeValues.Item( attrIndex );
-                        if( color == _T("red (3)") )
-                            colorStr = _T("<table border=0><tr><td bgcolor=DarkRed>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
-                        if( color == _T("green (4)") )
-                            colorStr = _T("<table border=0><tr><td bgcolor=DarkGreen>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
-                        if( color == _T("white (1)") )
-                            colorStr = _T("<table border=0><tr><td bgcolor=GoldenRod>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
+                        if (( color == _T("red (3)") || color == _T("red(3)")))
+                             colorStr = _T("<table border=0><tr><td bgcolor=DarkRed>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
+                        if (( color == _T("green (4)") || color == _T("green(4)")))
+                             colorStr = _T("<table border=0><tr><td bgcolor=DarkGreen>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
+                        if (( color == _T("white (1)") || color == _T("white(1)")))
+                             colorStr = _T("<table border=0><tr><td bgcolor=GoldenRod>&nbsp;&nbsp;&nbsp;</td></tr></table> ");
                     }
                 }
             }
@@ -8154,12 +8122,16 @@ void eSENCChart::AssembleLineGeometry( void )
                                 pcs->vbo_offset = seg_pair_index;               // use temporarily
                                 seg_pair_index ++;
 
-                                // calculate the centroid of this connector segment, used for viz testing
-                                double lat, lon;
-                                fromSM_Plugin( (pair.e0 + pair.e1)/2, (pair.n0 + pair.n1)/2, m_ref_lat, m_ref_lon, &lat, &lon );
-                                pcs->cs_lat_avg = lat;
-                                pcs->cs_lon_avg = lon;
-
+                                // Get the box limits of this connector segment, used for viz testing
+                                double lat0, lon0, lat1, lon1;
+                                fromSM_Plugin( pair.e0 , pair.n0, m_ref_lat, m_ref_lon,
+                                    &lat0, &lon0 );
+                                fromSM_Plugin( pair.e1 , pair.n1, m_ref_lat, m_ref_lon,
+                                    &lat1, &lon1 );
+                                pcs->lat_min = wxMin(lat0, lat1);
+                                pcs->lat_max = wxMax(lat0, lat1);
+                                pcs->lon_min = wxMin(lon0, lon1);
+                                pcs->lon_max = wxMax(lon0, lon1);
                             }
                             else
                                 pcs = itce->second;
@@ -8237,12 +8209,16 @@ void eSENCChart::AssembleLineGeometry( void )
                                     pcs->vbo_offset = seg_pair_index;               // use temporarily
                                     seg_pair_index ++;
 
-                                    // calculate the centroid of this connector segment, used for viz testing
-                                    double lat, lon;
-                                    fromSM_Plugin( (pair.e0 + pair.e1)/2, (pair.n0 + pair.n1)/2, m_ref_lat, m_ref_lon, &lat, &lon );
-                                    pcs->cs_lat_avg = lat;
-                                    pcs->cs_lon_avg = lon;
-
+                                    // Get the box limits of this connector segment, used for viz testing
+                                    double lat0, lon0, lat1, lon1;
+                                    fromSM_Plugin( pair.e0 , pair.n0, m_ref_lat, m_ref_lon,
+                                        &lat0, &lon0 );
+                                    fromSM_Plugin( pair.e1 , pair.n1, m_ref_lat, m_ref_lon,
+                                        &lat1, &lon1 );
+                                    pcs->lat_min = wxMin(lat0, lat1);
+                                    pcs->lat_max = wxMax(lat0, lat1);
+                                    pcs->lon_min = wxMin(lon0, lon1);
+                                    pcs->lon_max = wxMax(lon0, lon1);
                                 }
                                 else
                                     pcs = itec->second;
@@ -8293,12 +8269,16 @@ void eSENCChart::AssembleLineGeometry( void )
                                     pcs->vbo_offset = seg_pair_index;               // use temporarily
                                     seg_pair_index ++;
 
-                                    // calculate the centroid of this connector segment, used for viz testing
-                                    double lat, lon;
-                                    fromSM_Plugin( (pair.e0 + pair.e1)/2, (pair.n0 + pair.n1)/2, m_ref_lat, m_ref_lon, &lat, &lon );
-                                    pcs->cs_lat_avg = lat;
-                                    pcs->cs_lon_avg = lon;
-
+                                    // Get the box limits of this connector segment, used for viz testing
+                                    double lat0, lon0, lat1, lon1;
+                                    fromSM_Plugin( pair.e0 , pair.n0, m_ref_lat, m_ref_lon,
+                                        &lat0, &lon0 );
+                                    fromSM_Plugin( pair.e1 , pair.n1, m_ref_lat, m_ref_lon,
+                                        &lat1, &lon1 );
+                                    pcs->lat_min = wxMin(lat0, lat1);
+                                    pcs->lat_max = wxMax(lat0, lat1);
+                                    pcs->lon_min = wxMin(lon0, lon1);
+                                    pcs->lon_max = wxMax(lon0, lon1);
                                 }
                                 else
                                     pcs = itcc->second;
@@ -9035,7 +9015,8 @@ PI_S57Obj::PI_S57Obj()
     geoPtz = NULL;
     geoPt = NULL;
     bIsClone = false;
-    Scamin = 10000000;                              // ten million enough?
+    Scamin = 1e8+2;  // Default is very large number, effectively unused.
+    //SuperScamin = -1;
     nRef = 0;
     pPolyTessGeo = NULL;
 
@@ -10167,7 +10148,8 @@ void S57Obj::Init()
     geoPtz = NULL;
     geoPt = NULL;
     bIsClone = false;
-    Scamin = 10000000;                              // ten million enough?
+    Scamin = 1e8+2;  // Default is very large number, effectively unused.
+    SuperScamin = -1;
     nRef = 0;
 
     bIsAton = false;

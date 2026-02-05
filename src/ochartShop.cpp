@@ -57,12 +57,13 @@
 #include "o-charts_pi.h"
 #include "eSENCChart.h"
 #include "chart.h"
+#include "tpm/tpmUtil.h"
 
 #include <wx/arrimpl.cpp>
 WX_DEFINE_OBJARRAY(ArrayOfCharts);
 WX_DEFINE_OBJARRAY(ArrayOfChartPanels);
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 #include "qdebug.h"
 #include "androidSupport.h"
 #endif
@@ -102,6 +103,7 @@ extern wxFileConfig *g_pconfig;
 extern wxArrayString  g_ChartInfoArray;
 extern std::map<std::string, ChartInfoItem *> info_hash;
 extern wxString g_DefaultChartInstallDir;
+extern tpm_state_t g_TPMState;
 
 shopPanel *g_shopPanel;
 oesu_piScreenLogContainer *g_shopLogFrame;
@@ -270,8 +272,10 @@ wxString getPassEncode( wxString passClearText ){
   }
 
   wxString encodedPW;
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
+  encodedPW = stringHex;    // Simplify, no need for ebcoding clear password
 
+#if 0
     wxString cmd = g_sencutil_bin;
     cmd += _T(" -w ");
     cmd += stringHex;
@@ -286,6 +290,7 @@ wxString getPassEncode( wxString passClearText ){
             break;
         }
     }
+#endif
 #else
     encodedPW = _T("???");
 #endif
@@ -480,9 +485,11 @@ void OERNCMessageDialog::OnClose( wxCloseEvent& event )
 
 int ShowOERNCMessageDialog(wxWindow *parent, const wxString& message,  const wxString& caption, long style)
 {
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
+    androidDisableRotation();
     OERNCMessageDialog dlg( parent, message, caption, style);
     dlg.ShowModal();
+    androidEnableRotation();
     return dlg.GetReturnCode();
 #else
     return OCPNMessageBox_PlugIn(parent, message, caption, style);
@@ -533,7 +540,7 @@ OCP_ScrolledMessageDialog::OCP_ScrolledMessageDialog( wxWindow *parent,
                                       long style)
 : wxDialog( parent, wxID_ANY, caption, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE /*| wxSTAY_ON_TOP*/ )
 {
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     SetBackgroundColour(ANDROID_DIALOG_BACKGROUND_COLOR);
 #endif
 
@@ -545,7 +552,7 @@ OCP_ScrolledMessageDialog::OCP_ScrolledMessageDialog( wxWindow *parent,
 
     //  Need a caption on StaticBox for Android, otherwise not.
     wxString boxCaption = caption;
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     boxCaption.Clear();
 #endif
     wxStaticBox* itemStaticBoxSizer4Static = new wxStaticBox( this, wxID_ANY, boxCaption );
@@ -582,12 +589,12 @@ OCP_ScrolledMessageDialog::OCP_ScrolledMessageDialog( wxWindow *parent,
         i++;
     }
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     wxSize screenSize = getAndroidDisplayDimensions();
     int nMax = screenSize.y / GetCharHeight();
     qDebug() << "nMax" << nMax;
 
-    scroll->SetMinSize(wxSize(-1, (nMax - 3) * GetCharHeight()));
+    scroll->SetMinSize(wxSize(-1, (nMax - 7) * GetCharHeight()));
 #else
     scroll->SetMinSize(wxSize(-1, 15 * GetCharHeight()));
 #endif
@@ -609,13 +616,16 @@ OCP_ScrolledMessageDialog::OCP_ScrolledMessageDialog( wxWindow *parent,
     wxButton *CancelButton = new wxButton(this, OCP_ID_NO, labelButtonNO);
     buttons->Add(CancelButton, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     SetAutoLayout( true );
     topsizer->SetSizeHints( this );
     topsizer->Fit( this );
 #else
     wxSize sz = getAndroidDisplayDimensions();
-    SetSize( g_shopPanel->GetSize().x * 9 / 10, sz/*g_shopPanel->GetSize()*/.y * 9 / 10);
+    int yfract = 9;
+    if (sz.y > sz.x)
+        yfract = 7;
+    SetSize( g_shopPanel->GetSize().x * 9 / 10, sz.y * yfract / 10);
 #endif
 
     Centre( wxBOTH /*| wxCENTER_FRAME*/);
@@ -653,14 +663,14 @@ void OCP_ScrolledMessageDialog::OnClose( wxCloseEvent& event )
 int ShowScrollMessageDialog(wxWindow *parent, const wxString& message,  const wxString& caption, wxString labelYes, wxString labelNo, long style)
 {
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     androidDisableRotation();
 #endif
 
     OCP_ScrolledMessageDialog dlg( parent, message, caption, labelYes, labelNo, style);
     dlg.ShowModal();
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     androidEnableRotation();
 #endif
 
@@ -671,32 +681,6 @@ int ShowScrollMessageDialog(wxWindow *parent, const wxString& message,  const wx
 
 
 #ifdef __OCPN_USE_CURL__
-size_t wxcurl_string_write_UTF8(void* ptr, size_t size, size_t nmemb, void* pcharbuf)
-{
-    size_t iRealSize = size * nmemb;
-    wxCharBuffer* pStr = (wxCharBuffer*) pcharbuf;
-
-//     if(pStr)
-//     {
-//         wxString str = wxString(*pStr, wxConvUTF8) + wxString((const char*)ptr, wxConvUTF8);
-//         *pStr = str.mb_str();
-//     }
-
-    if(pStr)
-    {
-#ifdef __WXMSW__
-        wxString str1a = wxString(*pStr);
-        wxString str2 = wxString((const char*)ptr, wxConvUTF8, iRealSize);
-        *pStr = (str1a + str2).mb_str();
-#else
-        wxString str = wxString(*pStr, wxConvUTF8) + wxString((const char*)ptr, wxConvUTF8, iRealSize);
-        *pStr = str.mb_str(wxConvUTF8);
-#endif
-    }
-
-    return iRealSize;
-}
-
 static int xferinfo(void *p,
                     curl_off_t dltotal, curl_off_t dlnow,
                     curl_off_t ultotal, curl_off_t ulnow)
@@ -707,6 +691,28 @@ static int xferinfo(void *p,
     }
 
     return 0;
+}
+
+struct memory {
+  char *response;
+  size_t size;
+};
+
+static size_t cb(void *data, size_t size, size_t nmemb, void *clientp)
+{
+  size_t realsize = size * nmemb;
+  struct memory *mem = (struct memory *)clientp;
+
+  char *ptr = (char *)realloc(mem->response, mem->size + realsize + 1);
+  if(ptr == NULL)
+    return 0;  /* out of memory! */
+
+  mem->response = ptr;
+  memcpy(&(mem->response[mem->size]), data, realsize);
+  mem->size += realsize;
+  mem->response[mem->size] = 0;
+
+  return realsize;
 }
 
 class wxCurlHTTPNoZIP : public wxCurlHTTP
@@ -727,6 +733,8 @@ public:
 protected:
     void SetCurlHandleToDefaults(const wxString& relativeURL);
 
+    struct memory m_chunk;
+
 };
 
 wxCurlHTTPNoZIP::wxCurlHTTPNoZIP(const wxString& szURL /*= wxEmptyString*/,
@@ -738,11 +746,14 @@ wxCurlHTTPNoZIP::wxCurlHTTPNoZIP(const wxString& szURL /*= wxEmptyString*/,
 : wxCurlHTTP(szURL, szUserName, szPassword, pEvtHandler, id, flags)
 
 {
+    m_chunk.response = 0;
+    m_chunk.size = 0;
 }
 
 wxCurlHTTPNoZIP::~wxCurlHTTPNoZIP()
 {
     ResetPostData();
+    free(m_chunk.response);
 }
 
 void wxCurlHTTPNoZIP::SetCurlHandleToDefaults(const wxString& relativeURL)
@@ -769,6 +780,9 @@ bool wxCurlHTTPNoZIP::Post(wxInputStream& buffer, const wxString& szRemoteFile /
 {
     curl_off_t iSize = 0;
 
+    m_chunk.response = 0;
+    m_chunk.size = 0;
+
     if(m_pCURL && buffer.IsOk())
     {
         SetCurlHandleToDefaults(szRemoteFile);
@@ -785,8 +799,8 @@ bool wxCurlHTTPNoZIP::Post(wxInputStream& buffer, const wxString& szRemoteFile /
 
         //  Use a private data write trap function to handle UTF8 content
         //SetStringWriteFunction(m_szResponseBody);
-        SetOpt(CURLOPT_WRITEFUNCTION, wxcurl_string_write_UTF8);         // private function
-        SetOpt(CURLOPT_WRITEDATA, (void*)&m_szResponseBody);
+        SetOpt(CURLOPT_WRITEFUNCTION, cb);         // private function
+        SetOpt(CURLOPT_WRITEDATA, (void*)&m_chunk);
 
         curl_easy_setopt(m_pCURL, CURLOPT_XFERINFOFUNCTION, xferinfo);
         curl_easy_setopt(m_pCURL, CURLOPT_NOPROGRESS, 0L);
@@ -803,14 +817,7 @@ bool wxCurlHTTPNoZIP::Post(wxInputStream& buffer, const wxString& szRemoteFile /
 
 std::string wxCurlHTTPNoZIP::GetResponseBody() const
 {
-#ifndef __arm__
-    wxString s = wxString((const char *)m_szResponseBody, wxConvLibc);
-    return std::string(s.mb_str());
-
-#else
-    return std::string((const char *)m_szResponseBody);
-#endif
-
+  return std::string(m_chunk.response, m_chunk.size);
 }
 #endif          //__OCPN_USE_CURL__
 
@@ -1315,7 +1322,7 @@ void itemChart::Update(itemChart *other)
 
     updateChartListArray.Clear();
     for(unsigned int i = 0 ; i < other->updateChartListArray.GetCount() ; i++)
-        updateChartListArray.Add(other->baseChartListArray.Item(i));
+        updateChartListArray.Add(other->updateChartListArray.Item(i));
 
     std::vector<itemQuantity> quantityListTemp;
 
@@ -1400,10 +1407,17 @@ wxBitmap& itemChart::GetChartThumbnail(int size, bool bDL_If_Needed)
 
                     wxString filetmp = g_PrivateDataDir + fileKeytmp;
 
-                    wxString file_URI = _T("file://") + filetmp;
+                    wxString file_URI = /*_T("file://") + */ filetmp;
 
                     s_dlbusy = 1;
-                    _OCPN_DLStatus ret = OCPN_downloadFile( wxString(thumbLink), file_URI, _T(""), _T(""), wxNullBitmap, NULL /*g_shopPanel*/, 0/*OCPN_DLDS_DEFAULT_STYLE*/, 15);
+                    _OCPN_DLStatus ret = OCPN_downloadFile( wxString(thumbLink),
+                                                file_URI,
+                                                    _T(""),
+                                                _T(""),
+                                                    wxNullBitmap,
+                                                    NULL /*g_shopPanel*/,
+                                                    OCPN_DLDS_AUTO_CLOSE/*OCPN_DLDS_DEFAULT_STYLE*/,
+                                                15);
 
                     wxLogMessage(_T("DLRET"));
                     //qDebug() << "DL done";
@@ -2374,6 +2388,8 @@ int checkResult(wxString &result, bool bShowLoginErrorDialog = true)
             msg = _("Something has changed in the device assigned to this system name.");
         else if(result.IsSameAs("8j"))
             msg = _("There is already a system name for this device.");
+        else
+            msg = result;
 
         OCPNMessageBox_PlugIn(NULL, _("o-Charts shop interface error") + _T("\n") + result + _T("\n") + msg, _("o-charts_pi Message"), wxOK);
     }
@@ -2381,13 +2397,17 @@ int checkResult(wxString &result, bool bShowLoginErrorDialog = true)
     return 98;
 }
 
-int checkResponseCode(int iResponseCode)
+int checkResponseCode(int iResponseCode, wxString extendedMessage = "")
 {
     if(iResponseCode != 200){
         wxString msg = _("internet communications error code: ");
         wxString msg1;
         msg1.Printf(_T("\n{%d}\n "), iResponseCode);
         msg += msg1;
+        if(extendedMessage.Length()){
+            msg += extendedMessage;
+            msg += "\n";
+        }
         msg += _("Check your connection and try again.");
         ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
         g_shopPanel->ClearChartOverrideStatus();
@@ -2437,7 +2457,7 @@ int doLogin( wxWindow *parent )
   } while ((pass.Length() < 5) || (pass.length() > 255));
 
   wxString taskID;
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     // There may be special characters in password.  Encode them correctly for URL inclusion.
     std::string pass_encode = urlEncode(std::string(pass.mb_str()));
     pass = wxString( pass_encode.c_str() );
@@ -2463,6 +2483,7 @@ int doLogin( wxWindow *parent )
     loginParms += _T("&version=") + g_systemOS + g_versionString;
 
     long iResponseCode =0;
+    wxString postresult;
     TiXmlDocument *doc = 0;
     size_t res = 0;
 #ifdef __OCPN_USE_CURL__
@@ -2482,7 +2503,6 @@ int doLogin( wxWindow *parent )
     //qDebug() << url.mb_str();
     //qDebug() << loginParms.mb_str();
 
-    wxString postresult;
     _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
 
     //qDebug() << "doLogin Post Stat: " << stat;
@@ -2497,7 +2517,9 @@ int doLogin( wxWindow *parent )
         iResponseCode = 200;
         res = 1;
     }
-
+    else {
+        iResponseCode = -1;
+    }
 #endif
 
     if(iResponseCode == 200){
@@ -2550,7 +2572,7 @@ int doLogin( wxWindow *parent )
         }
     }
     else
-        return checkResponseCode(iResponseCode);
+        return checkResponseCode(iResponseCode, "postresult");
 
 }
 
@@ -2607,15 +2629,20 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
         wxString chartThumbURL;
         itemSlot *activeSlot = NULL;
 
-         wxString p = wxString(body.c_str(), wxConvUTF8);
-         //  wxMSW does not like trying to format this string containing "%" characters
-#ifdef __WXGTK__
-         wxLogMessage(_T("ProcessResponse results:"));
-         wxLogMessage(p);
-#endif
+         wxString p = wxString(body.c_str());
+         if (p.IsEmpty()) {
+            wxLogMessage(" Results empty");
+            return _T("58"); // empty results
+         }
+
+
+         //wxLogMessage(_T("ProcessResponse results:"));
+         //wxLogMessage(p);
 
             TiXmlElement * root = doc->RootElement();
             if(!root){
+                wxLogMessage(_T("ProcessResponse results on (57):"));
+                wxLogMessage(p);
                 return _T("57");                              // undetermined error??
             }
 
@@ -2897,7 +2924,6 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
                     else{
                         ChartVector[index]->Update(pChart);
                         ChartVector[index]->bshopValidated = true;
-
                         delete pChart;
                     }
 
@@ -2912,6 +2938,7 @@ wxString ProcessResponse(std::string body, bool bsubAmpersand)
 
 int getChartList( bool bShowErrorDialogs = true){
 
+     wxLogMessage("getChartList");
     // We query the server for the list of charts associated with our account
     wxString url = userURL;
     if(g_admin)
@@ -2927,17 +2954,20 @@ int getChartList( bool bShowErrorDialogs = true){
         loginParms += _T("&debug=") + g_debugShop;
     loginParms += _T("&version=") + g_systemOS + g_versionString;
 
+    //wxLogMessage(loginParms);
+
     long iResponseCode = 0;
     std::string responseBody;
+    wxString postresult;
 
 #ifdef __OCPN_USE_CURL__
+    wxLogMessage("o-charts USING CURL");
     wxCurlHTTPNoZIP post;
     post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
 
     post.Post( loginParms.ToAscii(), loginParms.Len(), url );
 
     // get the response code of the server
-
     post.GetInfo(CURLINFO_RESPONSE_CODE, &iResponseCode);
 
     std::string a = post.GetDetailedErrorString();
@@ -2945,14 +2975,11 @@ int getChartList( bool bShowErrorDialogs = true){
     std::string c = post.GetResponseBody();
 
     responseBody = post.GetResponseBody();
-    //printf("%s", post.GetResponseBody().c_str());
 
-    //wxString tt(post.GetResponseBody().data(), wxConvUTF8);
-    //wxLogMessage(tt);
 #else
-     wxString postresult;
     //qDebug() << url.mb_str();
     //qDebug() << loginParms.mb_str();
+    wxLogMessage("o-chars USING OCPN_postDataHttp");
 
     _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
 
@@ -2966,11 +2993,17 @@ int getChartList( bool bShowErrorDialogs = true){
         responseBody = response.c_str();
         iResponseCode = 200;
     }
+    else{
+        iResponseCode = -2;
+    }
 
 #endif
 
+    //wxString tt(responseBody.data(), wxConvUTF8);
+    //wxLogMessage(tt);
+
     if(iResponseCode == 200){
-        wxString result = ProcessResponse(responseBody);
+        wxString result = ProcessResponse(responseBody);    //getChartList
 
         //  Scan for and delete any chartsets that are not recognized in server response
         for (auto it = ChartVector.begin(); it != ChartVector.end(); ) {
@@ -2984,7 +3017,7 @@ int getChartList( bool bShowErrorDialogs = true){
         return checkResult( result, bShowErrorDialogs );
     }
     else
-        return checkResponseCode(iResponseCode);
+        return checkResponseCode(iResponseCode, postresult);
 }
 
 wxArrayString breakPath( wxWindow *win, wxString path, int pix_width)
@@ -3127,10 +3160,18 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
         msg += _T(" (") + _("USB Key Dongle") + _T(")");
     }
 
-    msg += _T("\n\n");
-    msg += _("Proceed?");
+    msg += "\n\n";
+    msg += "PERMANENTLY implies that an assignment cannot be undone or \
+        \n reverted.  Nor moved to a third device.  Even when a device gets \
+        \n lost or suffers damages and has to be replaced. \
+        \n Major hardware changes or re-install of the OS will convert the \
+        \n system into a different, new one and hence render the assignment \
+        \n invalid.";
 
-    int ret = ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxYES_NO);
+    msg += _T("\n\n");
+    msg += _("Accept and Proceed?");
+
+    int ret = ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxYES_NO | wxICON_WARNING);
 
     if(ret != wxID_YES){
         return 1;
@@ -3190,7 +3231,7 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
 #endif
 
     if(iResponseCode == 200){
-        wxString result = ProcessResponse(responseBody);
+        wxString result = ProcessResponse(responseBody); //doAssign
 
         if(result.IsSameAs(_T("1"))){                    // Good result
             // Create a new slot and record the assigned slotUUID, etc
@@ -3207,140 +3248,16 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
         return checkResponseCode(iResponseCode);
 }
 
-#if 0
-int doUploadXFPR(bool bDongle)
-{
-    wxString err;
 
-    // Generate the FPR file
-    bool b_copyOK = false;
-
-    wxString fpr_file = getFPR( false, b_copyOK, bDongle);              // No copy needed
-
-    fpr_file = fpr_file.Trim(false);            // Trim leading spaces...
-
-    if(fpr_file.Len()){
-
-        wxString stringFPR;
-
-        //Read the file, convert to ASCII hex, and build a string
-        if(::wxFileExists(fpr_file)){
-            wxString stringFPR;
-            wxFileInputStream stream(fpr_file);
-            while(stream.IsOk() && !stream.Eof() ){
-                unsigned char c = stream.GetC();
-                if(!stream.Eof()){
-                    wxString sc;
-                    sc.Printf(_T("%02X"), c);
-                    stringFPR += sc;
-                }
-            }
-
-            // And delete the xfpr file
-            ::wxRemoveFile(fpr_file);
-
-            // Prepare the upload command string
-            wxString url = userURL;
-            if(g_admin)
-                url = adminURL;
-
-            url +=_T("?fc=module&module=occharts&controller=apioesu");
-
-            wxFileName fnxpr(fpr_file);
-            wxString fprName = fnxpr.GetFullName();
-
-            wxString loginParms;
-            loginParms += _T("taskId=xfpr");
-            loginParms += _T("&username=") + g_loginUser;
-            loginParms += _T("&key=") + g_loginKey;
-            if(g_debugShop.Len())
-                loginParms += _T("&debug=") + g_debugShop;
-
-            if(!bDongle)
-                loginParms += _T("&systemName=") + g_systemName;
-            else
-                loginParms += _T("&systemName=") + g_dongleName;
-
-            loginParms += _T("&xfpr=") + stringFPR;
-            loginParms += _T("&xfprName=") + fprName;
-            loginParms += _T("&version=") + g_systemOS + g_versionString;
-
-            wxLogMessage(loginParms);
-
-            long iResponseCode = 0;
-            size_t res = 0;
-            std::string responseBody;
-
-#ifdef __OCPN_USE_CURL__
-            wxCurlHTTPNoZIP post;
-            post.SetOpt(CURLOPT_TIMEOUT, g_timeout_secs);
-            res = post.Post( loginParms.ToAscii(), loginParms.Len(), url );
-
-            // get the response code of the server
-            post.GetInfo(CURLINFO_RESPONSE_CODE, &iResponseCode);
-            if(iResponseCode == 200)
-                responseBody = post.GetResponseBody();
-
-#else
-            qDebug() << "do xfpr upload";
-            wxString postresult;
-            _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
-
-            qDebug() << "doUploadXFPR Post Stat: " << stat;
-
-
-            if(stat != OCPN_DL_FAILED){
-                wxCharBuffer buf = postresult.ToUTF8();
-                std::string response(buf.data());
-
-                qDebug() << response.c_str();
-                responseBody = response.c_str();
-
-                iResponseCode = 200;
-            }
-
-#endif
-            if(iResponseCode == 200){
-                wxString result = ProcessResponse(responseBody);
-                g_lastQueryResult = result;
-
-                int iret = checkResult(result);
-
-                return iret;
-            }
-            else
-                return checkResponseCode(iResponseCode);
-
-        }
-        else if(fpr_file.IsSameAs(_T("DONGLE_NOT_PRESENT")))
-            err = _("  {USB Dongle not found.}");
-
-        else
-            err = _("  {fpr file not found.}");
-    }
-    else{
-        err = _("  {fpr file not created.}");
-    }
-
-    if(err.Len()){
-        wxString msg = _("ERROR Creating Fingerprint file") + _T("\n");
-        msg += _("Check OpenCPN log file.") + _T("\n");
-        msg += err;
-        ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
-        return 1;
-    }
-
-    return 0;
-}
-#endif
 
 int doUploadXFPR(bool bDongle)
 {
+    wxLogMessage("doUploadXFPR");
     wxString err;
     wxString stringFPR;
     wxString fprName;
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     // Generate the FPR file
     bool b_copyOK = false;
 
@@ -3362,7 +3279,6 @@ int doUploadXFPR(bool bDongle)
             }
             wxFileName fnxpr(fpr_file);
             fprName = fnxpr.GetFullName();
-            ::wxRemoveFile(fpr_file);
 
         }
         else if(fpr_file.IsSameAs(_T("DONGLE_NOT_PRESENT"))){
@@ -3376,6 +3292,11 @@ int doUploadXFPR(bool bDongle)
     else{
             err = _("[fpr file not created.]");
     }
+
+    // And delete the xfpr file
+    if(::wxFileExists(fpr_file))
+            ::wxRemoveFile(fpr_file);
+
 #else   // Android
 
     // Get the FPR directly from the helper oexserverd, in ASCII HEX
@@ -3418,6 +3339,7 @@ int doUploadXFPR(bool bDongle)
 
 #endif
 
+
     if(stringFPR.Length()){
 
         // Prepare the upload command string
@@ -3445,7 +3367,7 @@ int doUploadXFPR(bool bDongle)
         loginParms += _T("&xfprName=") + fprName;
         loginParms += _T("&version=") + g_systemOS + g_versionString;
 
-        //wxLogMessage(loginParms);
+        wxLogMessage(loginParms);
 
         long iResponseCode = 0;
         std::string responseBody;
@@ -3467,8 +3389,10 @@ int doUploadXFPR(bool bDongle)
         responseBody = post.GetResponseBody();
         //printf("%s", post.GetResponseBody().c_str());
 
-        //wxString tt(post.GetResponseBody().data(), wxConvUTF8);
-        //wxLogMessage(tt);
+
+        wxLogMessage("doUploadXFPR:CURL: response");
+        wxString tt(post.GetResponseBody().data(), wxConvUTF8);
+        wxLogMessage(tt);
 #else
         wxString postresult;
         //qDebug() << url.mb_str();
@@ -3486,10 +3410,12 @@ int doUploadXFPR(bool bDongle)
             responseBody = response.c_str();
             iResponseCode = 200;
         }
+        wxLogMessage("doUploadXFPR:CORE: response");
+        wxString tt(responseBody.data(), wxConvUTF8);
+        wxLogMessage(tt);
 #endif
-
         if(iResponseCode == 200){
-            wxString result = ProcessResponse(responseBody);
+            wxString result = ProcessResponse(responseBody); //doUploadXFPR
 
             int iret = checkResult(result);
             return iret;
@@ -3548,7 +3474,7 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
     loginParms += _T("&currentVersion=") + chart->taskCurrentEdition;
     loginParms += _T("&version=") + g_systemOS + g_versionString;
 
-    wxLogMessage(loginParms);
+    //wxLogMessage(loginParms);
 
     long iResponseCode = 0;
     std::string responseBody;
@@ -3585,7 +3511,7 @@ int doPrepare(oeXChartPanel *chartPrepare, itemSlot *slot)
 
     if(iResponseCode == 200){
         // Expecting complex links with embedded entities, so process the "&" correctly
-        wxString result = ProcessResponse(responseBody, true);
+        wxString result = ProcessResponse(responseBody, true); //doPrepare
 
         return checkResult(result);
     }
@@ -3709,7 +3635,7 @@ int doDownload(itemChart *targetChart, itemSlot *targetSlot)
 bool ExtractZipFiles( const wxString& aZipFile, const wxString& aTargetDir, bool aStripPath, wxDateTime aMTime, bool aRemoveZip )
 {
     bool ret = true;
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     int nStrip = 0;
     if(aStripPath)
         nStrip = 1;
@@ -3899,7 +3825,7 @@ oeXChartPanel::oeXChartPanel(wxWindow *parent, wxWindowID id, const wxPoint &pos
 
     m_unselectedHeight = 5 * m_refHeight;
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     m_unselectedHeight = 4 * m_refHeight;
 #endif
 
@@ -3907,7 +3833,7 @@ oeXChartPanel::oeXChartPanel(wxWindow *parent, wxWindowID id, const wxPoint &pos
     SetMinSize(wxSize(-1, m_unselectedHeight));
 
     Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(oeXChartPanel::OnClickDown), NULL, this);
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     Connect(wxEVT_LEFT_UP, wxMouseEventHandler(oeXChartPanel::OnClickUp), NULL, this);
 #endif
 
@@ -3918,13 +3844,13 @@ oeXChartPanel::~oeXChartPanel()
 }
 
 static  wxStopWatch swclick;
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 static  int downx, downy;
 #endif
 
 void oeXChartPanel::OnClickDown( wxMouseEvent &event )
 {
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     swclick.Start();
     event.GetPosition( &downx, &downy );
 #else
@@ -3934,7 +3860,7 @@ void oeXChartPanel::OnClickDown( wxMouseEvent &event )
 
 void oeXChartPanel::OnClickUp( wxMouseEvent &event )
 {
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     qDebug() << swclick.Time();
     if(swclick.Time() < 200){
         int upx, upy;
@@ -4039,9 +3965,7 @@ void oeXChartPanel::OnPaint( wxPaintEvent &event )
 
     wxColour c;
 
-    wxString nameString = m_pChart->chartName;
-    //if(!m_pChart->quantityId.IsSameAs(_T("1")))
-      //  nameString += _T(" (") + m_pChart->quantityId + _T(")");
+    wxString nameString = wxString::FromUTF8( m_pChart->chartName.c_str());
 
     // Thumbnail border color depends on chart type and status
     wxColor thumbColor;
@@ -4490,7 +4414,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     if(g_systemName.Length())
         sn += g_systemName;
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     wxFlexGridSizer *sysBox = new wxFlexGridSizer(2);
     sysBox->AddGrowableCol(0);
     boxSizerTop->Add(sysBox, 0, wxALL|wxEXPAND, WXC_FROM_DIP(2));
@@ -4544,7 +4468,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
 #endif
 
     int add_prop_flag = 1;
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     add_prop_flag = 1;
 #endif
 
@@ -4557,7 +4481,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     cPanel->SetSizer(boxSizercPanel);
 
     m_scrollWinChartList = new wxScrolledWindow(cPanel, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxBORDER_RAISED | wxVSCROLL | wxBG_STYLE_ERASE );
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     m_scrollRate = 5;
 #else
     m_scrollRate = 1;
@@ -4588,7 +4512,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     gridSizerActionButtons = new wxBoxSizer(wxVERTICAL);
     staticBoxSizerAction->Add(gridSizerActionButtons, 1, wxALL|wxEXPAND, WXC_FROM_DIP(2));
 
-    m_buttonInstall = new wxButton(this, ID_CMD_BUTTON_INSTALL, _("Reinstall Selection"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+    m_buttonInstall = new wxButton(this, ID_CMD_BUTTON_INSTALL, "Reinstall Selection  ", wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     gridSizerActionButtons->Add(m_buttonInstall, 1, wxTOP | wxBOTTOM , WXC_FROM_DIP(2));
 
     m_buttonCancelOp = new wxButton(this, wxID_ANY, _("Cancel Operation"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
@@ -4790,15 +4714,119 @@ wxString shopPanel::GetDongleName()
   return wxString(sName);
 }
 
+bool shopPanel::GetAndValidateSystemName()
+{
+  bool bNeedSystemName = false;
+  if (!g_systemName.Len() && !g_dongleName.Len())
+    bNeedSystemName = true;
+
+  if (bNeedSystemName) {
+        // Check the dongle
+    bool bDongleFound = false;
+    g_dongleName.Clear();
+    if(IsDongleAvailable()){
+            g_dongleName = GetDongleName();
+            bDongleFound = true;
+    }
+
+    // Check shop to see if systemName is already known for this system
+    int nGSN = GetShopNameFromFPR();
+
+    bool selectedDisabledName = true;
+    while (selectedDisabledName) {
+            // If the shop does not know about this system yet, then select an existing or new name by user GUI
+            if (!g_systemName.Len() && !g_dongleName.Len()) {
+                if (g_lastQueryResult.IsSameAs(
+                        _T("8l"))) { // very special case, new system, no match
+                    if (!bDongleFound) // no dongle, so only a systemName is expected
+                        g_systemName = doGetNewSystemName();
+                    else
+                        g_dongleName = GetDongleName(); // predetermined
+                } else if (nGSN == 83) { // system name exists, but is disabled.
+                    g_systemName.Clear();
+                    g_dongleName.Clear();
+                    return false; // Full message sent, no further action needed
+                } else
+                    g_systemName = doGetNewSystemName();
+            } else
+                bNeedSystemName = false;
+
+            // User entered/selected disabled name?
+            if (g_systemName.Len()) {
+                if (g_systemNameDisabledArray.Index(g_systemName)
+                    == wxNOT_FOUND) {
+                    selectedDisabledName = false; // OK, break the loop
+                } else {
+                    g_systemName.Clear();
+                    g_dongleName.Clear();
+                    wxString msg
+                        = _("This System Name has been disabled\nPlease create another System Name");
+                    ShowOERNCMessageDialog(
+                        NULL, msg, _("o-charts_pi Message"), wxOK);
+                }
+            } else {
+                selectedDisabledName
+                    = false; // Break loop on empty name from cancel button.
+            }
+    }
+  }
+
+  // If a new systemName was selected, verify on the server
+  // If the server already has a systemName associated with this FPR, cancel the operation.
+  if (bNeedSystemName && !g_systemName.IsEmpty()) {
+    int uploadResult = doUploadXFPR(false);
+    if (uploadResult != 0) {
+
+            //  The system name may be disabled, giving error {10}
+            //  Loop a few times, trying to let the user enter a valid and unoccupied system name
+            if (uploadResult == 10) {
+                int nTry = 0; // backstop
+                while (nTry < 4) {
+                    g_systemName = doGetNewSystemName();
+                    if (!g_systemName.Length()) // User cancel
+                        break;
+                    int uploadResultA = doUploadXFPR(false);
+                    if (uploadResultA == 0)
+                        break; // OK result
+                    nTry++;
+                }
+                wxString sn = _("System Name:");
+                m_staticTextSystemName->SetLabel(sn);
+                m_staticTextSystemName->Refresh();
+
+                setStatusText(_("Status: Ready"));
+                return true;
+            }
+
+            g_systemName.Clear();
+            saveShopConfig(); // Record the blank systemName
+
+            wxString sn = _("System Name:");
+            m_staticTextSystemName->SetLabel(sn);
+            m_staticTextSystemName->Refresh();
+
+            setStatusText(_("Status: Ready"));
+            return true;
+    }
+  }
+  return true;
+}
+
 
 void shopPanel::OnButtonUpdate( wxCommandEvent& event )
 {
+    if (g_TPMState == TPMSTATE_UNKNOWN) {
+          setStatusText(_("Status: Preparing TPM system."));
+          TPMInit();
+          setStatusText(_("Status: Ready"));
+    }
+
     m_shopLog->ClearLog();
 
     // Deselect any selected chart
     DeselectAllCharts();
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     if(!g_systemName.Length()){
         extern wxString androidGetSystemName();
         g_systemName = androidGetSystemName();
@@ -4810,6 +4838,13 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     g_LastErrorMessage.Clear();
     SetErrorMessage();
 
+    //  Do we need an initial login to get the persistent key?
+    if(g_loginKey.Len() == 0){
+        if(doLogin( g_shopPanel ) != 1)
+            return;
+        saveShopConfig();
+    }
+
     // Check the dongle
     bool bDongleFound = false;
     g_dongleName.Clear();
@@ -4817,15 +4852,11 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
       g_dongleName = GetDongleName();
       bDongleFound = true;
     }
+    else if (!g_systemName.Length()) {
+      GetShopNameFromFPR();
+    }
 
     RefreshSystemName();
-
-    //  Do we need an initial login to get the persistent key?
-    if(g_loginKey.Len() == 0){
-        if(doLogin( g_shopPanel ) != 1)
-            return;
-        saveShopConfig();
-    }
 
      setStatusText( _("Contacting o-charts server..."));
      g_ipGauge->Start();
@@ -4887,109 +4918,6 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     }
 
     SortChartList();
-
-    bool bNeedSystemName = false;
-
-    // Has this systemName been disabled?
-    if(g_dongleName.Len()){
-        if(g_systemNameDisabledArray.Index(g_dongleName) != wxNOT_FOUND){
-            bNeedSystemName = true;
-            g_dongleName.Clear();
-        }
-    }
-    if(g_systemName.Len()){
-        if(g_systemNameDisabledArray.Index(g_systemName) != wxNOT_FOUND){
-            bNeedSystemName = true;
-            g_systemName.Clear();
-        }
-    }
-
-    // User reset system name, and removed dongle
-    if(!g_systemName.Len() && !g_dongleName.Len())
-         bNeedSystemName = true;
-
-    if(bNeedSystemName ){
-        // Check shop to see if systemName is already known for this system
-        int nGSN = GetShopNameFromFPR();
-
-        bool selectedDisabledName = true;
-        while( selectedDisabledName){
-            // If the shop does not know about this system yet, then select an existing or new name by user GUI
-            if(!g_systemName.Len() && !g_dongleName.Len()){
-                if(g_lastQueryResult.IsSameAs(_T("8l"))){           // very special case, new system, no match
-                    if(!bDongleFound)                               // no dongle, so only a systemName is expected
-                        g_systemName = doGetNewSystemName( );
-                    else
-                        g_dongleName = GetDongleName();             // predetermined
-                }
-                else if(nGSN == 83){                                // system name exists, but is disabled.
-                    g_systemName.Clear();
-                    g_dongleName.Clear();
-                    return;                                         // Full message sent, no further action needed
-                }
-                else
-                    g_systemName = doGetNewSystemName( );
-            }
-            else
-                bNeedSystemName = false;
-
-            // User entered/selected disabled name?
-            if(g_systemName.Len()){
-                if(g_systemNameDisabledArray.Index(g_systemName) == wxNOT_FOUND){
-                    selectedDisabledName = false;               // OK, break the loop
-                }
-                else{
-                    g_systemName.Clear();
-                    g_dongleName.Clear();
-                    wxString msg = _("This System Name has been disabled\nPlease create another System Name");
-                    ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxOK);
-                }
-            }
-            else{
-                selectedDisabledName = false;               // Break loop on empty name from cancel button.
-            }
-        }
-    }
-
-    // If a new systemName was selected, verify on the server
-    // If the server already has a systemName associated with this FPR, cancel the operation.
-    if(bNeedSystemName && !g_systemName.IsEmpty()){
-        int uploadResult = doUploadXFPR( false );
-        if( uploadResult != 0){
-
-            //  The system name may be disabled, giving error {10}
-            //  Loop a few times, trying to let the user enter a valid and unoccupied system name
-            if( uploadResult == 10){
-                int nTry = 0;                                           // backstop
-                while(nTry < 4){
-                    g_systemName = doGetNewSystemName( );
-                    if(!g_systemName.Length())                          // User cancel
-                        break;
-                    int uploadResultA = doUploadXFPR( false );
-                    if( uploadResultA == 0)
-                        break;                                          // OK result
-                    nTry++;
-                }
-                wxString sn = _("System Name:");
-                m_staticTextSystemName->SetLabel( sn );
-                m_staticTextSystemName->Refresh();
-
-                setStatusText( _("Status: Ready"));
-                return;
-            }
-
-            g_systemName.Clear();
-            saveShopConfig();           // Record the blank systemName
-
-            wxString sn = _("System Name:");
-            m_staticTextSystemName->SetLabel( sn );
-            m_staticTextSystemName->Refresh();
-
-            setStatusText( _("Status: Ready"));
-            return;
-        }
-    }
-
 
     RefreshSystemName();
 
@@ -5076,15 +5004,16 @@ int shopPanel::GetShopNameFromFPR()
                     stringFPR += sc;
                 }
             }
-
-            // And delete the xfpr file
-            ::wxRemoveFile(fpr_file);
         }
         else if(fpr_file.IsSameAs(_T("DONGLE_NOT_PRESENT")))
             err = _("  {USB Dongle not found.}");
 
         else
             err = _("  {fpr file not found.}");
+
+        // And delete the xfpr file
+        if(::wxFileExists(fpr_file))
+            ::wxRemoveFile(fpr_file);
     }
     else{
         err = _("  {fpr file not created.}");
@@ -5130,6 +5059,7 @@ int shopPanel::GetShopNameFromFPR()
         doc->Parse( post.GetResponseBody().c_str());
     }
 
+
 #else
 
     //qDebug() << url.mb_str();
@@ -5139,25 +5069,24 @@ int shopPanel::GetShopNameFromFPR()
     _OCPN_DLStatus stat = OCPN_postDataHttp( url, loginParms, postresult, g_timeout_secs );
 
     //qDebug() << "doLogin Post Stat: " << stat;
+    wxCharBuffer buf = postresult.ToUTF8();
+    std::string response(buf.data());
 
     if(stat != OCPN_DL_FAILED){
-        wxCharBuffer buf = postresult.ToUTF8();
-        std::string response(buf.data());
-
         //qDebug() << response.c_str();
         doc = new TiXmlDocument();
         doc->Parse( response.c_str());
         iResponseCode = 200;
         res = 1;
     }
+    wxString p = wxString(response.c_str(), wxConvUTF8);
+    wxLogMessage(_T("GetShopNameFromFPR: Core:  results:"));
+    wxLogMessage(p);
 
 #endif
 
     if(iResponseCode == 200){
 //        const char *rr = doc->Parse( post.GetResponseBody().c_str());
-//         wxString p = wxString(post.GetResponseBody().c_str(), wxConvUTF8);
-//         wxLogMessage(_T("doLogin results:"));
-//         wxLogMessage(p);
 
         wxString queryResult;
         wxString tsystemName;
@@ -5199,6 +5128,7 @@ int shopPanel::GetShopNameFromFPR()
         }
         else{
             if(queryResult == _T("8l")){                // system name not found, must be new, not an error
+                wxLogMessage("GetShopNameFromFPR: systemName not found on server, new GUI name required");
                 g_lastQueryResult = queryResult;
                 return 0;                              // Avoid showing "error" dialog
             }
@@ -5590,7 +5520,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         ChartSetKeys cskey_target(chartListKeysXMLtarget);
 
         // Extract the zip file to a temporary location, making the embedded files available for parsing
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
         wxString tmp_Zipdir = AndroidGetCacheDir();
         tmp_Zipdir += wxFileName::GetPathSeparator();
         tmp_Zipdir += _T("zipTemp");
@@ -5607,11 +5537,36 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         tmp_Zipdir += wxFileName::GetPathSeparator();
 
 #else
-        wxString tmp_Zipdir = wxFileName::CreateTempFileName( _T("") );                    // Be careful, this method actually create a file
+        wxString tmp_Zipdir = g_PrivateDataDir;
         tmp_Zipdir += _T("zipTemp");
-        //tmp_dir += wxFileName::GetPathSeparator();
-#endif
 
+        // Create random final rwmporary directory name, ensure no duplicate
+        wxString tmp_Zipdir_test = tmp_Zipdir;
+        tmp_Zipdir_test += wxFileName::GetPathSeparator();
+        int irand = rand() %10000;
+        wxString srd;
+        srd.Printf("zd%0d", irand);
+        tmp_Zipdir_test += srd;
+        wxString tmp_Zipdir_test_name = tmp_Zipdir_test;
+        tmp_Zipdir_test_name += wxFileName::GetPathSeparator();
+        tmp_Zipdir_test_name += "a";
+        wxFileName fc(tmp_Zipdir_test_name);
+        int itest = 0;
+        while (fc.DirExists() && itest < 10) {
+            tmp_Zipdir_test = tmp_Zipdir;
+            tmp_Zipdir_test += wxFileName::GetPathSeparator();
+            int irand = rand() % 10000;
+            srd.Printf("zd%0d", irand);
+            tmp_Zipdir_test += srd;
+            tmp_Zipdir_test_name = tmp_Zipdir_test;
+            tmp_Zipdir_test_name += wxFileName::GetPathSeparator();
+            tmp_Zipdir_test_name += "a";
+            fc.Assign(tmp_Zipdir_test_name);
+            itest++;
+        }
+
+        tmp_Zipdir = tmp_Zipdir_test;
+#endif
         wxFileName fn(tmp_Zipdir);
         if( !fn.DirExists() ){
             if( !wxFileName::Mkdir(fn.GetPath(), 0755, wxPATH_MKDIR_FULL) ){
@@ -5800,7 +5755,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         wxString destinationDir = wxString(slot->installLocation.c_str()) + wxFileName::GetPathSeparator() + dest + wxFileName::GetPathSeparator();
         wxFileName fndd(destinationDir);
         if( !fndd.DirExists() ){
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
             if( !wxFileName::Mkdir(fndd.GetPath(), 0755, wxPATH_MKDIR_FULL) ){
                 // We do a secure copy to the target location, of a simple dummy file.
                 // This has the effect of creating the target directory.
@@ -5847,7 +5802,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             }
 
             bool bret;
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
             bret = AndroidSecureCopyFile( source, destination );
 #else
             bret = wxCopyFile( source, destination);
@@ -5875,7 +5830,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
         csdata_target.setEditionTag(chart->editionTag);
 
         // Write out the modified Target ChartList.XML file as the new result ChartList.XML
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
         wxString tmpFile = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator() + _T("ChartList.XML"));
         if(! csdata_target.WriteFile( std::string(tmpFile.mb_str()) )){
             wxLogError(_T("Can not write temp target ChartList.XML on TASK_UPDATE '") + tmpFile );
@@ -5902,7 +5857,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
 
 
         // Write out the modified Target KeyList.XML file as the new result KeyList.XML
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
         wxString tmpFile2 = wxString(g_PrivateDataDir + _T("DownloadCache") + wxFileName::GetPathSeparator() +  dest + _T("-") + keySystem + _T(".XML"));
         if(! cskey_target.WriteFile( std::string(tmpFile2.mb_str()) )){
             wxLogError(_T("Can not write temp target KefList.XML on TASK_UPDATE '") + tmpFile2 );
@@ -5939,7 +5894,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             wxString source = fileArrayEULA.Item(i);
 
             bool bret;
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
             bret = AndroidSecureCopyFile( source, destination );
 #else
             bret = wxCopyFile( source, destination);
@@ -5979,7 +5934,7 @@ int shopPanel::processTask(itemSlot *slot, itemChart *chart, itemTaskFileInfo *t
             }
 
             bool bret;
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
             bret = AndroidSecureCopyFile( source, destination );
 #else
             bret = wxCopyFile( source, destination);
@@ -6039,7 +5994,7 @@ bool shopPanel::validateSHA256(std::string fileName, std::string shaSum)
 
     wxYield();
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     androidShowBusyIcon();
 #endif
 
@@ -6087,7 +6042,7 @@ bool shopPanel::validateSHA256(std::string fileName, std::string shaSum)
 
     wxYield();
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     androidHideBusyIcon();
 #endif
 
@@ -6151,7 +6106,7 @@ wxString ChooseInstallDir(wxString wk_installDir)
 
     wxString dir_spec;
     int result;
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     wxDirDialog dirSelector( NULL, _("Choose chart install location."), installLocn, wxDD_DEFAULT_STYLE  );
     result = dirSelector.ShowModal();
 
@@ -6378,7 +6333,7 @@ void shopPanel::OnButtonInstallChain( wxCommandEvent& event )
             }
 
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
             int vres = validateAndroidWriteLocation( gtargetSlot->installLocation );
             if(!vres){                  // Running SAF dialog.
                 ShowOERNCMessageDialog(NULL, _("Proceed with chart installation."), _("o-charts_pi Message"), wxOK);
@@ -6489,6 +6444,10 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
 
     g_LastErrorMessage.Clear();
     SetErrorMessage();
+
+    //  System name is required to install
+    if (!GetAndValidateSystemName())
+        return;
 
     SetChartOverrideStatus( _("Installing...") );
 
@@ -6913,6 +6872,7 @@ void shopPanel::UpdateChartList( )
 
     // Add new panels
     for(unsigned int i=0 ; i < ChartVector.size() ; i++){
+
         if( ChartVector[i]->isChartsetShow() ){
             ChartVector[i]->GetChartThumbnail(100, true );              // attempt download if necessary
             oeXChartPanel *chartPanel = new oeXChartPanel( m_scrollWinChartList, wxID_ANY, wxDefaultPosition, wxSize(-1, -1), ChartVector[i], this);
@@ -6980,7 +6940,7 @@ void shopPanel::UpdateActionControls()
     wxString labelReinstall = _("Reinstall Selected Chart for ") + suffix;
     wxString labelUpdate = _("Update Selected Chart for ") + suffix;
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     labelDownload = _("Download Selection");
     labelInstall = _("Install Selection");
     labelReinstall = _("Reinstall Selection");
@@ -7042,7 +7002,7 @@ bool shopPanel::doSystemNameWizard( bool bShowAll )
 
     wxSize dialogSize(500, -1);
 
-    #ifdef __OCPN__ANDROID__
+    #ifdef __ANDROID__
     wxSize ss = ::wxGetDisplaySize();
     dialogSize.x = ss.x * 8 / 10;
     #endif
@@ -7050,7 +7010,7 @@ bool shopPanel::doSystemNameWizard( bool bShowAll )
     dlg.Centre();
 
 
-    #ifdef __OCPN__ANDROID__
+    #ifdef __ANDROID__
 //    androidHideBusyIcon();
     #endif
     dlg.ShowModal();
@@ -7092,7 +7052,7 @@ wxString shopPanel::doGetNewSystemName( )
 
     wxSize dialogSize(500, -1);
 
-    #ifdef __OCPN__ANDROID__
+    #ifdef __ANDROID__
     wxSize ss = ::wxGetDisplaySize();
     dialogSize.x = ss.x * 8 / 10;
     #endif
@@ -7399,7 +7359,7 @@ END_EVENT_TABLE()
      long wstyle = wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER;
      wxDialog::Create( parent, id, caption, pos, size, wstyle );
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     SetBackgroundColour(ANDROID_DIALOG_BACKGROUND_COLOR);
     SetForegroundColour(wxColour(200, 200, 200));
 #endif
@@ -7434,7 +7394,7 @@ END_EVENT_TABLE()
 
      SetTitle( _("Select OpenCPN/o-charts System Name"));
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     SetBackgroundColour(ANDROID_DIALOG_BACKGROUND_COLOR);
     SetForegroundColour(wxColour(200, 200, 200));
 #endif
@@ -7494,7 +7454,7 @@ END_EVENT_TABLE()
     wxPanel *selectorPanel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), wxBG_STYLE_ERASE );
     itemBoxSizer2->Add(selectorPanel, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     selectorPanel->SetForegroundColour(wxColour(200, 200, 200));
     selectorPanel->SetBackgroundColour(ANDROID_DIALOG_BODY_COLOR);
 #endif
@@ -7748,7 +7708,7 @@ oeUniLogin::oeUniLogin( wxWindow* parent, wxWindowID id, const wxString& caption
 
     wxFont *qFont = GetOCPNScaledFont_PlugIn(_("Dialog"));
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
     SetFont( *qFont );
 #else
     if(m_bCompact){
@@ -7811,7 +7771,7 @@ void oeUniLogin::CreateControls(  )
 
     oeUniLogin* itemDialog1 = this;
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
 
     wxBoxSizer* itemBoxSizer2 = new wxBoxSizer( wxVERTICAL );
     itemDialog1->SetSizer( itemBoxSizer2 );

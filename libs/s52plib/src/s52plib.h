@@ -27,35 +27,6 @@
 #define _S52PLIB_H_
 
 #include <vector>
-
-#include "../../src/dychart.h"
-
-#if 0
-#ifdef __OCPN_USE_GLEW__
-  #if defined(_WIN32)
-    #include "glew.h"
-  #elif defined(__WXQT__) || defined(__WXGTK__)
-   #include <GL/glew.h>
-  #endif
-#endif
-
-#if defined(__OCPN__ANDROID__)
- #include <qopengl.h>
- #include <GL/gl_private.h>  // this is a cut-down version of gl.h
- #include <GLES2/gl2.h>
-#elif defined(__MSVC__)
- #include "glew.h"
-#elif defined(__WXOSX__)
- #include <OpenGL/gl.h>
- #include <OpenGL/glu.h>
- typedef void (*  _GLUfuncptr)();
- #define GL_COMPRESSED_RGB_FXT1_3DFX       0x86B0
-#elif defined(__WXQT__) || defined(__WXGTK__)
- #include <GL/glew.h>
- #include <GL/glu.h>
-#endif
-#endif
-
 #include "s52s57.h"  //types
 
 class wxGLContext;
@@ -153,6 +124,7 @@ class PixelCache;
 
 class RenderFromHPGL;
 class TexFont;
+class wxFileConfig;
 
 class noshow_element {
 public:
@@ -215,7 +187,8 @@ public:
 
   void SetPPMM(float ppmm);
   float GetPPMM() { return canvas_pix_per_mm; }
-  void SetDPIFactor( double factor);
+  void SetDIPFactor( double factor);
+  void SetContentScaleFactor( double factor);
 
   void SetOCPNVersion(int major, int minor, int patch);
 
@@ -238,15 +211,18 @@ public:
   wxString GetPLIBColorScheme(void) { return m_ColorScheme; }
 
   void SetGLRendererString(const wxString &renderer);
+  wxString GetGLRendererString() {return m_renderer_string;}
   void SetGLOptions(bool b_useStencil, bool b_useStencilAP, bool b_useScissors,
                     bool b_useFBO, bool b_useVBO, int nTextureFormat,
                     float MinCartographicLineWidth,
                     float MinSymbolLineWidth);
+  void SetUseGLSL(bool useGLSL) { m_useGLSL = useGLSL; }
 
   bool ObjectRenderCheck(ObjRazRules *rzRules);
   bool ObjectRenderCheckRules(ObjRazRules *rzRules,
                               bool check_noshow = false);
   bool ObjectRenderCheckPos(ObjRazRules *rzRules);
+  bool ObjectRenderCheckPosReduced(ObjRazRules *rzRules);
   bool ObjectRenderCheckCat(ObjRazRules *rzRules);
   bool ObjectRenderCheckCS(ObjRazRules *rzRules);
   bool ObjectRenderCheckDates(ObjRazRules *rzRules);
@@ -302,7 +278,8 @@ public:
   void SetQualityOfData(bool val);
   bool GetQualityOfData();
 
-  void SetGuiScaleFactors(double ChartScaleFactor, int chart_zoom_modifier_vector);
+  void SetScaleFactorExp(double ChartScaleFactorExp);
+  void SetScaleFactorZoomMod(int chart_zoom_modifier_vector);
 
   int GetMajorVersion(void) { return m_VersionMajor; }
   int GetMinorVersion(void) { return m_VersionMinor; }
@@ -360,6 +337,7 @@ public:
   bool m_bShowMeta;
   bool m_bShowS57Text;
   bool m_bUseSCAMIN;
+  bool m_bUseSUPER_SCAMIN;
   bool m_bShowAtonText;
   bool m_bShowLdisText;
   bool m_bExtendLightSectors;
@@ -368,12 +346,16 @@ public:
   bool m_bShowNationalTexts;
   int m_nSoundingFactor;
   double m_SoundingsScaleFactor;
+  int m_nTextFactor;
+  double m_TextScaleFactor;
   int m_SoundingsPointSize;
   double m_SoundingsFontSizeMM;
   double m_soundFontDelta;
   double m_ChartScaleFactorExp;
   int m_chart_zoom_modifier_vector;
-  double m_dpifactor;
+  double m_dipfactor;
+  double m_ContentScaleFactor;
+  double m_FinalTextScaleFactor;
 
   int m_VersionMajor;
   int m_VersionMinor;
@@ -413,8 +395,9 @@ public:
 
   ChartSymbols m_chartSymbols;
 
-  void PLIB_LoadS57GlobalConfig();
-  void PLIB_LoadS57ObjectConfig();
+  void PLIB_LoadS57GlobalConfig(wxFileConfig *pconfig);
+  void PLIB_LoadS57ObjectConfig(wxFileConfig *pconfig);
+  void SetReducedBBox(LLBBox box){ reducedBBox = box;}
 
 private:
   int S52_load_Plib(const wxString &PLib, bool b_forceLegacy);
@@ -485,9 +468,10 @@ private:
                     Rule *draw_rule);
 
   bool RenderHPGL(ObjRazRules *rzRules, Rule *rule_in, wxPoint &r,
-                  float rot_angle = 0.);
+                  float rot_angle = 0., double uScale = 1.0);
   bool RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
                           float rot_angle = 0.);
+  void SetupSoundingFont();
   bool RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
                             wxColor symColor,
                             float rot_angle = 0.);
@@ -541,6 +525,7 @@ private:
   wxPoint2DDouble GetDoublePixFromLLROT(double lat, double lon, double rotation);
 
   LLBBox &GetBBox() { return BBox; }
+  LLBBox GetReducedBBox() { return reducedBBox; }
 
   wxString m_plib_file;
 
@@ -600,6 +585,7 @@ private:
   bool m_useScissors;
   bool m_useFBO;
   bool m_useVBO;
+  bool m_GLAC_VBO;
   int m_TextureFormat;
   bool m_GLLineSmoothing;
   bool m_GLPolygonSmoothing;
@@ -612,8 +598,9 @@ private:
   LLBBox BBox;
   #define TXF_CACHE 8
   TexFontCache s_txf[TXF_CACHE];
+  wxString m_renderer_string;
 
-
+  LLBBox reducedBBox;
 
 };
 

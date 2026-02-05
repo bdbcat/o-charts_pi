@@ -22,8 +22,8 @@ endmacro ()
 
 if (QT_ANDROID)
   configure_file(
-    ${CMAKE_CURRENT_LIST_DIR}/oeserverda_android/oexserverd
-    ${CMAKE_INSTALL_PREFIX}/bin/oexserverd COPYONLY
+   ${CMAKE_CURRENT_LIST_DIR}/oeserverd_android/arm32/oexserverd
+   ${CMAKE_INSTALL_PREFIX}/lib/opencpn/oexserverd COPYONLY
   )
 elseif (APPLE)
   install_libs("osx/oexserverd" "osx/libsglmac-2.38.0.0.dylib.x86_64")

@@ -104,7 +104,6 @@ class ViewPort
             void GetLLFromPix(const wxPoint2DDouble &p, double *lat, double *lon);
             wxPoint2DDouble GetDoublePixFromLL(double lat, double lon);
 
-            LLRegion GetLLRegion( const OCPNRegion &region );
             OCPNRegion GetVPRegionIntersect( const OCPNRegion &region, const LLRegion &llregion, int chart_native_scale );
             OCPNRegion GetVPRegionIntersect( const OCPNRegion &Region, size_t nPoints, float *llpoints,
                                              int chart_native_scale, wxPoint *ppoints );

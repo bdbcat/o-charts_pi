@@ -1,0 +1,33 @@
+From 43304ed4acf33bb696c22419c2051bdf5efd9796 Mon Sep 17 00:00:00 2001
+From: Alec Leamas <leamas.alec@gmail.com>
+Date: Mon, 12 May 2025 09:10:03 +0200
+Subject: [PATCH] build: cmake: windows: Don't install pdb file on static
+ builds
+
+Avoid FTBFS on windows static builds
+
+Bug: https://github.com/nigels-com/glew/issues/433
+
+---
+ build/cmake/CMakeLists.txt | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/build/cmake/CMakeLists.txt b/build/cmake/CMakeLists.txt
+index 419c243..2edf957 100644
+--- a/build/cmake/CMakeLists.txt
++++ b/build/cmake/CMakeLists.txt
+@@ -228,7 +228,10 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/glew.pc
+         DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+ )
+ 
+-if(WIN32 AND MSVC AND (NOT MSVC_VERSION LESS 1600) AND (NOT CMAKE_VERSION VERSION_LESS "3.1"))
++if(WIN32 AND MSVC AND (NOT MSVC_VERSION LESS 1600)
++   AND (NOT CMAKE_VERSION VERSION_LESS "3.1")
++   AND BUILD_SHARED_LIBS
++ )
+     install(
+         FILES $<TARGET_PDB_FILE:glew>
+         DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-- 
+2.49.0
+

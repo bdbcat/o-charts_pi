@@ -126,7 +126,7 @@ public:
 // eSENCChart Definition
 // ----------------------------------------------------------------------------
 
-#ifndef __OCPN__ANDROID__
+#ifndef __ANDROID__
 class  eSENCChart : public PlugInChartBaseExtendedPlus2
 #else
 class  eSENCChart : public PlugInChartBaseExtended
@@ -144,6 +144,8 @@ class  eSENCChart : public PlugInChartBaseExtended
       wxString GetFileSearchMask(void);
 
       bool ProcessHeader(Osenc &senc);
+      int reduceLOD(double LOD_meters, int nPoints, double *source,
+                       wxPoint2DDouble **dest, int *maskIn, int **maskOut);
 
       //    Accessors
 
@@ -338,7 +340,7 @@ protected:
       double    m_pixx_vp_center, m_pixy_vp_center;
       double    m_view_scale_ppm;
 
-      int               m_plib_state_hash;
+      long              m_plib_state_hash;
       bool              m_bLinePrioritySet;
 
       long              m_sync_cmd_pid;
@@ -384,6 +386,7 @@ protected:
       int         m_nvaldco_alloc;
       double       *m_pvaldco_array;
       double      m_next_safe_cnt;
+      double      m_set_mar_safety_contour;
 
       wxDateTime  m_date000;                    // extracted from DSID:ISDT
       wxString    m_edtn000;                    // extracted from DSID:EDTN

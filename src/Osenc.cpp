@@ -60,7 +60,7 @@ void OpenCPN_OGRErrorHandler( CPLErr eErrClass, int nError,
                               const char * pszErrorMsg );               // installed GDAL OGR library error handler
 
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 #include "qdebug.h"
 
 //--------------------------------------------------------------------------
@@ -267,7 +267,7 @@ Osenc_instream &Osenc_instream::Read(void *buffer, size_t size)
     #define READ_SIZE 64000;
     #define MAX_TRIES 100;
     int timeout_msec = 100;
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
     timeout_msec = 1000;                // Longer for Android
 #endif
 
@@ -343,7 +343,7 @@ bool Osenc_instream::IsOk()
 
 #endif
 
-#if !defined(__WXMSW__) && !defined( __OCPN__ANDROID__)   // i.e. linux and Mac
+#if !defined(__WXMSW__) && !defined( __ANDROID__)   // i.e. linux and Mac
 //--------------------------------------------------------------------------
 //      Osenc_instream implementation as Named Pipe
 //--------------------------------------------------------------------------
@@ -1307,7 +1307,7 @@ int Osenc::ingest200(const wxString &senc_file_name,
         // On linux type systems, the buffer alloc succeeds, but then the read file fails, as expected, due to EOF on the input file.
         //  Either way, we are finished reading.
 
-        if((unsigned long)(record.record_length)  > 4000000 ){
+        if((unsigned long)(record.record_length)  > 9000000 ){
             dun = 1;
             break;
         }

@@ -216,6 +216,7 @@ typedef struct _Rules {
 
 class LUPrec {
 public:
+  ~LUPrec() { ATTArray.clear(); };
   int RCID;                      // record identifier
   char OBCL[7];                  // Name (6 char) '\0' terminated
   Object_t FTYP;                 // 'A' Area, 'L' Line, 'P' Point
@@ -325,7 +326,9 @@ struct chart_context {
   void *chart;
   double safety_contour;
   float *vertex_buffer;
+  int vboID;
   int chart_type;
+  int chart_scale;
 };
 
 class LineGeometryDescriptor {
@@ -411,6 +414,7 @@ public:
   wxRect rText;
 
   int Scamin;  // SCAMIN attribute decoded during load
+  int SuperScamin;
   bool bIsClone;
   int nRef;            // Reference counter, to signal OK for deletion
   bool bIsAton;        // This object is an aid-to-navigation
@@ -528,8 +532,11 @@ class connector_segment {
 public:
   int vbo_offset;
   int max_priority_cs;
-  float cs_lat_avg;  // segment centroid
-  float cs_lon_avg;
+  float               lat_max; // segment bounding box
+  float               lat_min;
+  float               lon_max;
+  float               lon_min;
+
 };
 
 class line_segment_element {

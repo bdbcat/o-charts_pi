@@ -34,9 +34,6 @@
 #endif //precompiled headers
 
 #include "s52s57.h"
-#include "ogr_s57.h"
-#include "cpl_csv.h"
-//#include "chartbase.h"
 
 #include "s57RegistrarMgr.h"
 
@@ -50,6 +47,9 @@
 #include <sys/un.h>
 #include <poll.h>
 #endif
+
+class S57Reader;
+class OGRS57DataSource;
 
 typedef struct _Extent{
     double SLAT;
@@ -452,15 +452,6 @@ typedef struct {
 //  Should also be defined in a57attributes.csv
 
 #define ATTRIBUTE_ID_PRIM       50000
-
-
-const char *MyCSVGetField( const char * pszFilename,
-                           const char * pszKeyFieldName,
-                           const char * pszKeyFieldValue,
-                           CSVCompareCriteria eCriteria,
-                           const char * pszTargetField ) ;
-
-
 
 
 //      Fwd Definitions

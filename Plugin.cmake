@@ -31,6 +31,15 @@ set(OCPN_TARGET_TUPLE "" CACHE STRING
 include("VERSION.cmake")
 set(PKG_NAME o-charts_pi)
 set(PKG_VERSION ${OCPN_VERSION})
+project(${PKG_NAME} VERSION ${PKG_VERSION})
+
+set(VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(VERSION_PATCH ${PROJECT_VERSION_PATCH})
+if (PROJECT_VERSION_TWEAK STREQUAL "")
+  set(PROJECT_VERSION_TWEAK 0)
+endif ()
+
 
 set(PKG_PRERELEASE "")  # Empty, or a tag like 'beta'
 
@@ -67,8 +76,18 @@ endif(NOT QT_ANDROID AND NOT APPLE)
 
 if(OCPN_BUILD_USE_GLEW)
   add_definitions(-D__OCPN_USE_GLEW__)
+  include_directories("/app/extensions/o-charts_pi/include")
+
+  #if (CMAKE_HOST_WIN32)
+  #  include_directories("${CMAKE_CURRENT_SOURCE_DIR}/buildwin/include/glew")
+  #  link_libraries(${CMAKE_SOURCE_DIR}/buildwin/glew32.lib )
+  #endif (CMAKE_HOST_WIN32)
+
 endif(OCPN_BUILD_USE_GLEW)
 
+if (CMAKE_HOST_WIN32)
+  add_definitions(-D__MSVC__)
+endif (CMAKE_HOST_WIN32)
 
 
 set(SRC
@@ -88,7 +107,6 @@ set(SRC
   src/oernc_inStream.cpp
   src/Osenc.cpp
   src/Osenc.h
-  src/DepthFont.cpp
   src/piScreenLog.cpp
   src/s57RegistrarMgr.cpp
   src/sha256.c
@@ -96,16 +114,29 @@ set(SRC
   src/validator.cpp
   src/viewport.cpp
   libs/gdal/src/s57classregistrar.cpp
+  src/tpm/tpmUtil.cpp
 )
 
 if(QT_ANDROID)
-  set(SRC ${SRC} src/androidSupport.cpp)
+  set(SRC ${SRC}
+          src/androidSupport.cpp)
 endif(QT_ANDROID)
+
+if(QT_ANDROID AND (${ARM_ARCH} MATCHES "aarch64"))
+  set(SRC ${SRC}
+          src/comparetf2.c
+          src/androidDeviceSupport.c)
+endif()
+
 
 if(NOT QT_ANDROID)
 add_compile_definitions( ocpnUSE_GLSL )
 add_compile_definitions( ocpnUSE_GL )
 endif(NOT QT_ANDROID)
+
+if(QT_ANDROID)
+  add_definitions(-D__OCPN__ANDROID__)
+endif(QT_ANDROID)
 
 set(PKG_API_LIB api-17)  #  A directory in libs/ e. g., api-17 or api-16
 
@@ -114,19 +145,6 @@ macro(late_init)
   # and ocpn::api is available.
   target_include_directories(${PACKAGE_NAME} PRIVATE libs/gdal/src src)
 
-  # A specific target requires special handling
-  # When OCPN core is a ubuntu-bionic build, and the debian-10 plugin is loaded,
-  #   then there is conflict between wxCurl in core, vs plugin
-  # So, in this case, disable the plugin's use of wxCurl directly, and revert to
-  #   plugin API for network access.
-  # And, Android always uses plugin API for network access
-  string(TOLOWER "${OCPN_TARGET_TUPLE}" _lc_target)
-  message(STATUS "late_init: ${OCPN_TARGET_TUPLE}.")
-
-  if ( (NOT "${_lc_target}" MATCHES "debian;10;x86_64") AND
-       (NOT "${_lc_target}" MATCHES "android*") )
-    add_definitions(-D__OCPN_USE_CURL__)
-  endif()
 
 endmacro ()
 
@@ -149,6 +167,9 @@ macro(add_plugin_libraries)
   add_subdirectory("libs/zlib")
   target_link_libraries(${PACKAGE_NAME} ocpn::zlib)
 
+  add_subdirectory("libs/glew")
+  target_link_libraries(${PACKAGE_NAME} glew2::glew2)
+
   add_subdirectory(libs/s52plib)
   target_link_libraries(${PACKAGE_NAME} ocpn::s52plib)
 
@@ -158,18 +179,38 @@ macro(add_plugin_libraries)
   add_subdirectory(libs/pugixml)
   target_link_libraries(${PACKAGE_NAME} ocpn::pugixml)
 
-if (MSVC)
-  add_subdirectory("libs/WindowsHeaders")
-  target_link_libraries(${PACKAGE_NAME} _windows_headers)
-endif ()
-
-
-#   add_subdirectory("libs/opencpn-glu")
-#   target_link_libraries(${PACKAGE_NAME} opencpn::glu)
-
   add_subdirectory("libs/wxcurl")
   target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
 
   add_subdirectory("libs/oeserverd")
+
+  if(QT_ANDROID)
+    include_directories("${CMAKE_CURRENT_SOURCE_DIR}/includeAndroid")
+  endif(QT_ANDROID)
+
+  #  Some code has alignment problems on ARMHF
+  #  mygeom63.cpp, s63chart.cpp
+  #  Make sure to set the correct compile definition
+  if(NOT APPLE)
+    if (${ARCH} MATCHES "armhf")
+      message(STATUS "Building for armhf")
+      ADD_DEFINITIONS( -DARMHF )
+    endif()
+  endif(NOT APPLE)
+
+  # A specific target requires special handling
+  # When OCPN core is a ubuntu-bionic build, and the debian-10 plugin is loaded,
+  #   then there is conflict between wxCurl in core, vs plugin
+  # So, in this case, disable the plugin's use of wxCurl directly, and revert to
+  #   plugin API for network access.
+  # And, Android always uses plugin API for network access
+  string(TOLOWER "${OCPN_TARGET_TUPLE}" _lc_target)
+  message(STATUS "add_plugin_libraries: ${_lc_target}.")
+
+  if ( (NOT "${_lc_target}" MATCHES "debian;10;x86_64") AND
+  (NOT "${_lc_target}" MATCHES "android*"))
+    message(STATUS "add_plugin_libraries: Using CURL.")
+    add_definitions(-D__OCPN_USE_CURL__)
+  endif()
 
 endmacro ()

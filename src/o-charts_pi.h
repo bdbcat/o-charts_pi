@@ -59,7 +59,7 @@
 #undef WXC_FROM_DIP
 #endif
 
-#ifdef __OCPN__ANDROID__
+#ifdef __ANDROID__
 #define WXC_FROM_DIP(x) x
 #else
 #if wxVERSION_NUMBER >= 3100
@@ -75,6 +75,16 @@ enum {
     ID_BUTTONCELLIMPORT,
     ID_NOTEBOOK
 };
+
+typedef enum tpm_state_t {
+    TPMSTATE_UNKNOWN = 0,
+    TPMSTATE_UNABLE,
+    TPMSTATE_REJECTED,
+    TPMSTATE_ACCPTED_UNVERIFIED,
+    TPMSTATE_ACCPTED_UNVERIFIEDPACKAGE,
+    TPMSTATE_ACCPTED_VERIFIED
+} _tpm_state_t;
+
 
 #define ID_ENABLE_REBUILD       23543
 
@@ -124,7 +134,7 @@ WX_DECLARE_OBJARRAY(ChartSetEULA *, EULAArray);
 //    The PlugIn Class Definition
 //----------------------------------------------------------------------------------------------------------
 
-class o_charts_pi : public opencpn_plugin_111
+class o_charts_pi : public opencpn_plugin_117
 {
 public:
       o_charts_pi(void *ppimgr);
@@ -138,6 +148,8 @@ public:
     int GetAPIVersionMinor();
     int GetPlugInVersionMajor();
     int GetPlugInVersionMinor();
+    int GetPlugInVersionPatch();
+    int GetPlugInVersionPost();
     wxBitmap *GetPlugInBitmap();
     wxString GetCommonName();
     wxString GetShortDescription();

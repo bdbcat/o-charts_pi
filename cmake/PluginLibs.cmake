@@ -13,11 +13,22 @@
 
 find_package(Gettext REQUIRED)
 
-set(wxWidgets_USE_DEBUG OFF)
-set(wxWidgets_USE_UNICODE ON)
-set(wxWidgets_USE_UNIVERSAL OFF)
-set(wxWidgets_USE_STATIC OFF)
+#
+# Windows environment check
+#
+set(_bad_win_env_msg [=[
+%WXWIN% is not present in environment, win_deps.bat has not been run.
+Build might work, but most likely fail when not finding wxWidgets.
+Run buildwin\win_deps.bat or set %WXWIN% to mute this message.
+]=])
 
+if (WIN32 AND NOT DEFINED ENV{WXWIN})
+  message(WARNING ${_bad_win_env_msg})
+endif ()
+
+#
+# OpenGL
+#
 # Prefer libGL.so to libOpenGL.so, see CMP0072
 set(OpenGL_GL_PREFERENCE "LEGACY")
 
@@ -30,20 +41,6 @@ endif ()
 if (NOT OPENGL_GLU_FOUND)
   message(WARNING "Cannot find OpenGL GLU extension.")
 endif ()
-
-if (OCPN_BUILD_USE_GLEW)
-if (NOT WIN32)
-  find_package(GLEW REQUIRED)
-  include_directories(${GLEW_INCLUDE_DIRS})
-  target_link_libraries(${PACKAGE_NAME} ${GLEW_LIBRARIES})
-else (NOT WIN32)
-  include_directories("${PROJECT_SOURCE_DIR}/libs/glew/windows")
-  target_link_libraries(${PACKAGE_NAME} "${PROJECT_SOURCE_DIR}/libs/glew/windows/glew32.lib")
-endif (NOT WIN32)
-
-  message(STATUS "Using GLEW, libraries:  ${GLEW_LIBRARIES}")
-endif (OCPN_BUILD_USE_GLEW)
-
 if (APPLE)
   # As of 3.19.2, cmake's FindOpenGL does not link to the directory
   # containing gl.h. cmake bug? Intended due to missing subdir GL/gl.h?
@@ -54,42 +51,34 @@ if (APPLE)
     message(WARNING "Cannot locate OpenGL header file gl.h")
   endif ()
 endif ()
+if (WIN32)
+  if (EXISTS "${PROJECT_SOURCE_DIR}/libs/WindowsHeaders")
+    add_subdirectory("${PROJECT_SOURCE_DIR}/libs/WindowsHeaders")
+    target_link_libraries(${PACKAGE_NAME} windows::headers)
+  else ()
+    message(STATUS
+      "WARNING: WindowsHeaders library is missing, OpenGL unavailable"
+    )
+  endif ()
+endif ()
+
+#
+# wxWidgets
+#
+set(wxWidgets_USE_DEBUG OFF)
+set(wxWidgets_USE_UNICODE ON)
+set(wxWidgets_USE_UNIVERSAL OFF)
+set(wxWidgets_USE_STATIC OFF)
 
 set(WX_COMPONENTS base core net xml html adv stc aui)
 if (TARGET OpenGL::OpenGL OR TARGET OpenGL::GL)
   list(APPEND WX_COMPONENTS gl)
 endif ()
 
-set(BUILD_SHARED_LIBS TRUE)
-
-set(_bad_win_env_msg [=[
-%WXWIN% is not present in environment, win_deps.bat has not been run.
-Build might work, but most likely fail when not finding wxWidgets.
-Run buildwin\win_deps.bat or set %WXWIN% to mute this message.
-]=])
-
-if (WIN32 AND NOT DEFINED ENV{WXWIN})
-  message(WARNING ${_bad_win_env_msg})
-endif ()
+if(FORCE_GTK3)
+  set (wxWidgets_CONFIG_OPTIONS ${wxWidgets_CONFIG_OPTIONS} --toolkit=gtk3)
+endif(FORCE_GTK3)
 
 find_package(wxWidgets REQUIRED ${WX_COMPONENTS})
-if (MSYS)
-  # This is just a hack. I think the bug is in FindwxWidgets.cmake
-  string(
-    REGEX REPLACE "/usr/local" "\\\\;C:/MinGW/msys/1.0/usr/local"
-    wxWidgets_INCLUDE_DIRS ${wxWidgets_INCLUDE_DIRS}
-  )
-endif ()
 include(${wxWidgets_USE_FILE})
 target_link_libraries(${PACKAGE_NAME} ${wxWidgets_LIBRARIES})
-
-#if (WIN32)
-#  if (EXISTS "${PROJECT_SOURCE_DIR}/libs/WindowsHeaders")
-#    add_subdirectory("${PROJECT_SOURCE_DIR}/libs/WindowsHeaders")
-#    target_link_libraries(${PACKAGE_NAME} windows::headers)
-#  else ()
-#    message(STATUS
-#      "WARNING: WindowsHeaders library is missing, OpenGL unavailable"
-#    )
-#  endif ()
-#endif ()

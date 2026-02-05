@@ -12,11 +12,12 @@
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(BUILD_SHARED_LIBS TRUE)
 
 set(_ocpn_cflags " -Wall -Wno-unused-result -fexceptions")
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -26,8 +27,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")           # Apple is AppleClang
   string(APPEND CMAKE_C_FLAGS " ${_ocpn_cflags}")
   string(APPEND CMAKE_CXX_FLAGS " ${_ocpn_cflags}")
-  string(APPEND CMAKE_CXX_FLAGS " -Wno-inconsistent-missing-override -O2")
-  string(APPEND CMAKE_CXX_FLAGS " -Wno-potentially-evaluated-expression -O2")
+  string(APPEND CMAKE_CXX_FLAGS " -Wno-inconsistent-missing-override")
+  string(APPEND CMAKE_CXX_FLAGS " -Wno-potentially-evaluated-expression")
   string(APPEND CMAKE_SHARED_LINKER_FLAGS " -Wl -undefined dynamic_lookup")
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE -D_CRT_SECURE_NO_DEPRECATE)
