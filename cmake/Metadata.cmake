@@ -70,16 +70,15 @@ else ()
 endif ()
 
 if (WIN32)
-  set(_pkg_arch "win32")
-else ()
-  if(APPLE AND CMAKE_OSX_ARCHITECTURES)
-    string(REPLACE ";" "-" _pkg_arch "${CMAKE_OSX_ARCHITECTURES}")
-    set(target_arch "${CMAKE_OSX_ARCHITECTURES}")
-  else()
-    set(_pkg_arch "${ARCH}")
-    set(target_arch "${ARCH}")
-  endif()
-endif ()
+  set(_pkg_arch "x86")
+  set(target_arch "x86")
+elseif (APPLE AND CMAKE_OSX_ARCHITECTURES)
+  string(REPLACE ";" "-" _pkg_arch "${CMAKE_OSX_ARCHITECTURES}")
+  set(target_arch "${CMAKE_OSX_ARCHITECTURES}")
+else()
+  set(_pkg_arch "${ARCH}")
+  set(target_arch "${ARCH}")
+endif()
 
 # pkg_build_info: Info about build host (link to log if available).
 set(pkg_build_info ${_pkg_build_info})
@@ -170,7 +169,5 @@ endif ()
 
 # pkg_vers_build_info: Semantic version build info part.
 set(pkg_vers_build_info "${_build_id}.${_gitversion}")
-
-message(STATUS "Metadata: pkg_target_arch: ${pkg_target_arch}.")
 
 #cmake-format: on

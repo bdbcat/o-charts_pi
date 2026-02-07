@@ -15,8 +15,6 @@ if (DEFINED plugin_target)
   return ()
 endif ()
 
-message(STATUS "Setup: OCPN_TARGET_TUPLE: ${OCPN_TARGET_TUPLE}")
-
 if (NOT "${OCPN_TARGET_TUPLE}" STREQUAL "")
   list(GET OCPN_TARGET_TUPLE 0 plugin_target)
   list(GET OCPN_TARGET_TUPLE 1 plugin_target_version)
@@ -68,8 +66,6 @@ else ()
   set(plugin_target "unknown")
   set(plugin_target_version 1)
 endif ()
-
-message(STATUS "Setup: lsb_linux: ${lsb_linux}.")
 
 string(STRIP "${plugin_target}" plugin_target)
 string(TOLOWER "${plugin_target}" plugin_target)

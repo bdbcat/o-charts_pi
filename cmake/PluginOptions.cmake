@@ -61,10 +61,6 @@ else ()
     )
   endif ()
 endif ()
-
-# Override nproc, use one processor always to avoid trouble with CCI
-set(_nproc 1)
-
 set(OCPN_NPROC ${_nproc}
   CACHE STRING "Number of processors used to compile [${_nproc}]"
 )

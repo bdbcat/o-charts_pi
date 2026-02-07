@@ -67,14 +67,14 @@ if ("${Qt_Build}" MATCHES "arm64")
     ${_master_base}/wxWidgets/libarm64/wx/include/arm-linux-*-static-*
   )
   set(_qt_include  ${_master_base}/qt5/build_arm64_O3/qtbase/include)
-  set(_libgorp ${_master_base}/opencpn/API-117/libarm64/libgorp.so)
+  set(_libgorp ${_master_base}/opencpn/API-118/libarm64/libgorp.so)
   set(_qtlibs  ${_master_base}/qt5/build_arm64_O3/qtbase/lib)
 else ()
   file(GLOB _wx_setup
     ${_master_base}/wxWidgets/libarmhf/wx/include/arm-linux-*-static-*
   )
   set(_qt_include ${_master_base}/qt5/build_arm32_19_O3/qtbase/include)
-  set(_libgorp ${_master_base}/opencpn/API-117/libarmhf/libgorp.so)
+  set(_libgorp ${_master_base}/opencpn/API-118/libarmhf/libgorp.so)
   set(_qtlibs  ${_master_base}/qt5/build_arm32_19_O3/qtbase/lib)
 endif ()
 
