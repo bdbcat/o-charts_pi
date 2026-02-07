@@ -46,7 +46,7 @@ function install_wx32() {
   chmod a+w /usr/local/pkg
   repo="https://dl.cloudsmith.io/public/alec-leamas/wxwidgets-32"
   head="deb/debian/pool/bullseye/main"
-  vers="3.2.2+dfsg-1~bpo11+1"
+  vers="3.2.4+dfsg-1~bpo11+1"
   pushd /usr/local/pkg
   wget -q $repo/$head/w/wx/wx-common_${vers}/wx-common_${vers}_armhf.deb
   wget -q $repo/$head/w/wx/wx3.2-i18n_${vers}/wx3.2-i18n_${vers}_all.deb
@@ -80,10 +80,10 @@ apt install -q -y ./opencpn-build-deps*deb
 apt-get -q --allow-unauthenticated install -f
 
 debian_rel=$(lsb_release -sc)
-if [ "$debian_rel" = bookworm ]; then
+if [[ "$debian_rel" = bookworm  || "$debian_rel" = "trixie" ]]; then
     apt-get install -y cmake
 elif [ "$debian_rel" = bullseye ]; then
-    echo "deb http://archive.debian.org/debian bullseye-backports main" \
+    echo "deb http://deb.debian.org/debian bullseye-backports main" \
       >> /etc/apt/sources.list
     apt update
     apt install -y cmake/bullseye-backports

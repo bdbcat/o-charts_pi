@@ -34,7 +34,7 @@ function install_wx32() {
   sudo chmod a+w /usr/local/pkg
   repo="https://dl.cloudsmith.io/public/alec-leamas/wxwidgets-32"
   head="deb/debian/pool/bullseye/main"
-  vers="3.2.2+dfsg-1~bpo11+1"
+  vers="3.2.4+dfsg-1~bpo11+1"
   pushd /usr/local/pkg
   wget -q $repo/$head/w/wx/wx-common_${vers}/wx-common_${vers}_amd64.deb
   wget -q $repo/$head/w/wx/wx3.2-i18n_${vers}/wx3.2-i18n_${vers}_all.deb
@@ -91,10 +91,6 @@ if [ -n "$TARGET_TUPLE" ]; then
   TARGET_OPT="-DOCPN_TARGET_TUPLE=$TARGET_TUPLE";
 fi
 
-if [ -n "$NO_LINK_GLEW" ]; then
-  TARGET_NOGLEW="-DOCPN_NOGLEW=ON";
-fi
-
 sudo apt install -q \
     python3-pip python3-setuptools python3-dev python3-wheel \
     build-essential libssl-dev libffi-dev
@@ -105,10 +101,10 @@ python3 -m pip install --user -q cloudsmith-cli cryptography cmake
 
 cd $builddir
 
-cmake "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-RelWithDbgInfo}" $TARGET_OPT $TARGET_NOGLEW ..
+cmake "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-RelWithDbgInfo}" $TARGET_OPT ..
 make VERBOSE=1 tarball
 ldd app/*/lib/opencpn/*.so
 if [ -d /ci-source ]; then
     sudo chown --reference=/ci-source -R . ../cache || :
 fi
-sudo chmod --reference=.. .
+if [ -z "$CI" ]; then sudo chmod --reference=.. .; fi
