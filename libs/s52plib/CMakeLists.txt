@@ -20,10 +20,12 @@ SET(SRC
     src/Cs52_shaders.cpp
     )
 
-#if (NOT wxWidgets_INCLUDE_DIRS)
-#    include(SimpleWxConfig)
-#    SimpleWxConfig()
-#endif ()
+if (NOT QT_ANDROID)
+if (NOT wxWidgets_INCLUDE_DIRS)
+    include(SimpleWxConfig)
+    SimpleWxConfig()
+endif ()
+endif ()
 
 add_library(S52PLIB STATIC ${SRC})
 add_library(ocpn::s52plib ALIAS S52PLIB)
