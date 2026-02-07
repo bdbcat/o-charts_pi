@@ -22,8 +22,8 @@ SET(SRC
 
 if (NOT QT_ANDROID)
 if (NOT wxWidgets_INCLUDE_DIRS)
-    include(SimpleWxConfig)
-    SimpleWxConfig()
+#    include(SimpleWxConfig)
+#    SimpleWxConfig()
 endif ()
 endif ()
 
