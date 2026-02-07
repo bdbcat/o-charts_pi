@@ -20,7 +20,7 @@ id: org.opencpn.OpenCPN.Plugin.@plugin_name
 
 runtime: org.opencpn.OpenCPN
 # FIXME(alec) Revert to stable when updated to 24.08
-runtime-version: beta
+runtime-version: stable
 sdk: org.freedesktop.Sdk//24.08
 build-extension: true
 separate-locales: false
