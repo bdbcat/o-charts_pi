@@ -1,8 +1,16 @@
+.idea
 build
 build-*
+!build-conf.rc
 !build-deps
 po/*.pot
 .DS_Store
 *humbs.db
 cache
+cmake-build-*
 plugins
+*.bat
+*.bak
+buildwin/*.7z
+*.user
+
