@@ -23,10 +23,10 @@ SET(SRC
     src/vector2D.cpp
     )
 
-if (NOT wxWidgets_INCLUDE_DIRS)
-    include(SimpleWxConfig)
-    SimpleWxConfig()
-endif ()
+#if (NOT wxWidgets_INCLUDE_DIRS)
+#    include(SimpleWxConfig)
+#    SimpleWxConfig()
+#endif ()
 
 add_library(GEOPRIM STATIC ${SRC})
 add_library(ocpn::geoprim ALIAS GEOPRIM)
