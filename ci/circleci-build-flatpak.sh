@@ -101,7 +101,7 @@ export MAKEFLAGS="-j1"
 cmake \
     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-Release} \
     -DOCPN_TARGET_TUPLE="flatpak-$(uname -m);${SDK};$(uname -m)" \
-    ..
+    ..  -j 1
 # Do not build flatpak in parallel; make becomes unreliable
 make -j 1 VERBOSE=1 flatpak
 
