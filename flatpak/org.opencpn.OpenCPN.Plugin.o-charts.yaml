@@ -90,8 +90,9 @@ modules:
           cxxflags: -DFLATPAK -O3
           cflags: -DFLATPAK -O3
           # The flatpak-builder default CFLAGS adds -g
-          env:
-            CMAKE_BUILD_PARALLEL_LEVEL: 1
+
+          # env:
+          #    CMAKE_BUILD_PARALLEL_LEVEL: 1
       sources:
           - type: git
             url: ..
