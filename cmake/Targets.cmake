@@ -196,7 +196,7 @@ function (flatpak_target manifest)
   set(_fp_script "
     execute_process(
       COMMAND
-        flatpak-builder --force-clean --keep-build-dirs --jobs=1
+        flatpak-builder --force-clean --keep-build-dirs
           ${CMAKE_BINARY_DIR}/app ${manifest}
     )
     # Copy the data out of the sandbox to installation directory
