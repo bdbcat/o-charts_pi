@@ -1,15 +1,16 @@
 project_identifier: opencpn
 api_key: 9e946138b1a3ec9b3b8bdb2ae79a66d2
-base_path: /home/dsr/Projects/oesenc_pi
+base_path: /home/dsr/Projects/o-charts_pi
+api_token: 668cab1543a38f1faa2f9ff492a56924beb871b6211f005a29b7a0577a83a8cd5517dd95274213e7
+project_id: 49843
 
 "preserve_hierarchy": true
 
 files: [
- {
-    "source" : "/po/oesenc_pi.pot",
-    "translation" : "/plugins/oesenc_pi/po/%two_letters_code%.po",
-    "translation" : "/plugins/oesenc_pi/po/%locale_with_underscore%.po",
-
+    {
+        source: "/po/o-charts_pi.pot",
+        translation: "/po/%locale_with_underscore%.po",
+        excluded_target_languages:  [es_EM],
     }
 ]
 
