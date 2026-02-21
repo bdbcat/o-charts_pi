@@ -273,6 +273,7 @@ bool shutdown_SENC_server( void );
 bool ShowAlwaysEULAs();
 extern ChartSymbols          *g_oeChartSymbols;
 extern wxString                 g_dongleName;
+bool                            g_DongleAvailable;  //Set once durin Init()
 
 OKeyHash keyMapDongle;
 OKeyHash keyMapSystem;
@@ -650,10 +651,15 @@ int o_charts_pi::Init(void)
 
     wxLogMessage(_T("Path to oexserverd is: ") + g_sencutil_bin);
 
-    if(IsDongleAvailable())
+    g_DongleAvailable = IsDongleAvailable();
+    if(g_DongleAvailable)
         wxLogMessage(_T("Dongle detected"));
     else
         wxLogMessage(_T("No Dongle detected"));
+
+    // Disable all linux TPM access if dongle is inserted.
+    if(g_DongleAvailable)
+      g_TPMState = TPMSTATE_REJECTED;
 
     g_benable_screenlog = g_buser_enable_screenlog;
 
@@ -1520,7 +1526,11 @@ bool o_charts_pi::SaveConfig( void )
     if( pConf ) {
 
         pConf->SetPath( _T("/PlugIns/ocharts") );
-        pConf->Write( _T("TPMState"), (int) g_TPMState );
+
+        // If using dongle, do not persist any run-time
+        // changes made to TPM state
+        if (!g_DongleAvailable)
+          pConf->Write( _T("TPMState"), (int) g_TPMState );
 
         pConf->SetPath( _T("/PlugIns/ocharts/oesenc") );
 

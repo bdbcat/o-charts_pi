@@ -4815,11 +4815,18 @@ bool shopPanel::GetAndValidateSystemName()
 
 void shopPanel::OnButtonUpdate( wxCommandEvent& event )
 {
-    if (g_TPMState == TPMSTATE_UNKNOWN) {
-          setStatusText(_("Status: Preparing TPM system."));
-          TPMInit();
-          setStatusText(_("Status: Ready"));
+    bool bHaveDongle = IsDongleAvailable();
+
+    // Test and propare initial TPM state only on linux/GTK.
+#ifdef __WXGTK__
+    if(!bHaveDongle) {
+        if (g_TPMState == TPMSTATE_UNKNOWN) {
+            setStatusText(_("Status: Preparing TPM system."));
+            TPMInit();
+            setStatusText(_("Status: Ready"));
+        }
     }
+#endif
 
     m_shopLog->ClearLog();
 
@@ -4848,7 +4855,7 @@ void shopPanel::OnButtonUpdate( wxCommandEvent& event )
     // Check the dongle
     bool bDongleFound = false;
     g_dongleName.Clear();
-    if(IsDongleAvailable()){
+    if(bHaveDongle){
       g_dongleName = GetDongleName();
       bDongleFound = true;
     }

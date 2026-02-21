@@ -55,7 +55,7 @@ bool IsTPMFunctional()
 #ifndef __ANDROID__
 ///
     wxString cmd = g_sencutil_bin;
-    cmd += _T(" -p ");                  // Available?
+    cmd += _T(" -m ");                  // Available?
 
     wxArrayString ret_array, err_array;
     wxExecute(cmd, ret_array, err_array );
