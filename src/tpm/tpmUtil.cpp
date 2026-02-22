@@ -32,7 +32,6 @@
 #include <wx/artprov.h>
 
 #include <sys/stat.h>
-#include <unistd.h>
 #include <grp.h>
 #include <pwd.h>
 #include <fstream>
@@ -40,6 +39,10 @@
 #include <vector>
 #include <dirent.h>
 #include <fcntl.h>
+
+#ifndef __WXMSW__
+#include <unistd.h>
+#endif
 
 #include "tpmUtil.h"
 #include "o-charts_pi.h"
