@@ -2918,8 +2918,10 @@ bool validate_SENC_server(void)
     // now start the server...
     wxString cmds = g_sencutil_bin;
 
+#ifndef  __aarch64__  //TODO pending oexserverd update.
     if (g_TPMState == TPMSTATE_REJECTED)
         cmds += " -b ";
+#endif
 
     wxString pipeParm;
 

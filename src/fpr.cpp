@@ -92,9 +92,10 @@ bool IsDongleAvailable()
 #endif
 ///
     wxString cmd = g_sencutil_bin;
+#ifndef  __aarch64__  //TODO pending oexserverd update.
     if (g_TPMState == TPMSTATE_REJECTED)
         cmd += " -b ";
-
+#endif
     cmd += " -s ";                  // Available?
 
     wxArrayString ret_array, err_array;
@@ -131,8 +132,10 @@ unsigned int GetDongleSN()
 
 #ifndef __ANDROID__
     wxString cmd = g_sencutil_bin;
+#ifndef  __aarch64__  //TODO pending oexserverd update.
     if (g_TPMState == TPMSTATE_REJECTED)
         cmd += " -b ";
+#endif
     cmd += _T(" -t ");                  // SN
 
     wxArrayString ret_array;
@@ -219,9 +222,10 @@ wxString getFPR( bool bCopyToDesktop, bool &bCopyOK, bool bSGLock, wxString extr
                 fpr_dir += wxFileName::GetPathSeparator();
 
             wxString cmd = g_sencutil_bin;
+#ifndef  __aarch64__  //TODO pending oexserverd update.
             if (g_TPMState == TPMSTATE_REJECTED)
                 cmd += " -b ";
-
+#endif
             if(extra_info.Length()){
                 cmd += " -y ";
                 cmd += "\'";
