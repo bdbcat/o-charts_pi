@@ -272,30 +272,9 @@ wxString getPassEncode( wxString passClearText ){
   }
 
   wxString encodedPW;
-#ifndef __ANDROID__
   encodedPW = stringHex;    // Simplify, no need for ebcoding clear password
 
-#if 0
-    wxString cmd = g_sencutil_bin;
-    cmd += _T(" -w ");
-    cmd += stringHex;
-
-    wxArrayString ret_array;
-    wxExecute(cmd, ret_array, ret_array );
-
-    for(unsigned int i=0 ; i < ret_array.GetCount() ; i++){
-        wxString line = ret_array[i];
-        if(line.Length() > 2){
-            encodedPW = line;
-            break;
-        }
-    }
-#endif
-#else
-    encodedPW = _T("???");
-#endif
-
-    return encodedPW;
+  return encodedPW;
 }
 
 
@@ -2461,11 +2440,9 @@ int doLogin( wxWindow *parent )
     // There may be special characters in password.  Encode them correctly for URL inclusion.
     std::string pass_encode = urlEncode(std::string(pass.mb_str()));
     pass = wxString( pass_encode.c_str() );
-    taskID = "login";
-#else
+#endif
     pass = getPassEncode(pass);
     taskID = "login2";
-#endif
 
     wxString url = userURL;
     if(g_admin)
