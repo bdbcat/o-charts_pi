@@ -115,6 +115,7 @@ set(SRC
   src/viewport.cpp
   libs/gdal/src/s57classregistrar.cpp
   src/tpm/tpmUtil.cpp
+  src/WinJobObj.h
 )
 
 if(QT_ANDROID)

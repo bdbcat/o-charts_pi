@@ -69,6 +69,11 @@
 #endif
 #endif
 
+#ifdef __WXMSW__
+#include "WinJobObj.h"
+#endif
+
+
 WX_DECLARE_STRING_HASH_MAP( wxString, OKeyHash );
 
 enum {
@@ -183,7 +188,12 @@ public:
 
     wxScrolledWindow    *m_pOptionsPage;
 
-private:
+#ifdef __WXMSW__
+    std::unique_ptr<WinJobObject> m_job;
+    PROCESS_INFORMATION m_helper = {};
+#endif
+
+  private:
     bool ScrubChartinfoList( void );
     bool Is_oeSENC_pi_Enabled();
     bool Is_oeRNC_pi_Enabled();
@@ -219,6 +229,10 @@ private:
 
     oesencPanel         *m_oesencpanel;
     wxBitmap            m_panelBitmap;
+
+
+
+
 };
 
 

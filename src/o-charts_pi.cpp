@@ -90,9 +90,6 @@
 // #include <GL/glu.h>
 // #include <GL/glext.h>
 
-#ifndef __WXMSW__
-// #include <GL/glx.h>
-#endif
 
 #endif  //__WXOSX
 
@@ -2923,26 +2920,31 @@ bool validate_SENC_server(void)
         cmds += " -b ";
 #endif
 
-    wxString pipeParm;
 
-    int flags = wxEXEC_ASYNC;
 #ifdef __WXMSW__
-    flags |= wxEXEC_HIDE_CONSOLE;
     long pid = ::wxGetProcessId();
+    wxString pipeParm;
     pipeParm.Printf(_T("OCPN%04d"), pid % 10000);
     g_pipeParm = pipeParm;
-#endif
+    cmds += _T(" -p ") + g_pipeParm;
+    wxString parms = wxString(" -p ") + g_pipeParm;
+   
+    g_pi->m_job = std::make_unique<WinJobObject>();
+    g_pi->m_helper = g_pi->m_job->Launch(g_sencutil_bin.ToStdWstring(),
+                                         parms.ToStdWstring());
+    if (g_pi->m_helper.dwProcessId)
+        g_serverProc = g_pi->m_helper.dwProcessId;      // Fake
 
-    if(g_pipeParm.Length())
-        cmds += _T(" -p ") + g_pipeParm;
-
+#else   //not MSW
+    int flags = wxEXEC_ASYNC;
+#
     if(g_serverDebug)
         cmds += _T(" -d");
 
     wxLogMessage(_T("o_charts_pi: starting oexserverd utility: ") + cmds);
     g_serverProc = wxExecute(cmds, flags);              // exec asynchronously
     wxMilliSleep(500);
-
+#endif
 
 #else           // Android
     qDebug() << "o-charts_pi: Starting SENC server";
@@ -3070,8 +3072,15 @@ bool validate_SENC_server(void)
 
 bool shutdown_SENC_server( void )
 {
-
-    // Check to see if the server is already running, and available
+#ifdef __WXMSW__
+    if (g_pi->m_helper.hProcess) CloseHandle(g_pi->m_helper.hProcess);
+    
+    if (g_pi->m_helper.hThread) CloseHandle(g_pi->m_helper.hThread);
+    
+    g_pi->m_job.reset();  // optional — destructor will kill children
+    return true;
+#else
+    // Check to see if the server is running, try to shutdown
     Osenc_instream testAvail;
     if(1){
         testAvail.Shutdown();
@@ -3080,6 +3089,7 @@ bool shutdown_SENC_server( void )
     else{
         return false;
     }
+#endif
 }
 
 #ifdef XXX__ANDROID__
