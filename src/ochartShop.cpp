@@ -2436,7 +2436,7 @@ int doLogin( wxWindow *parent )
   } while ((pass.Length() < 5) || (pass.length() > 255));
 
   wxString taskID;
-#ifdef __ANDROID__
+#if 0  //def __ANDROID__
     // There may be special characters in password.  Encode them correctly for URL inclusion.
     std::string pass_encode = urlEncode(std::string(pass.mb_str()));
     pass = wxString( pass_encode.c_str() );
