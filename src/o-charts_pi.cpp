@@ -1534,8 +1534,9 @@ bool o_charts_pi::SaveConfig( void )
         pConf->Write( _T("UserKey"), g_UserKey );
         pConf->Write( _T("LastFPRFile"), g_fpr_file);
 
-#ifdef __ANDROID__
         pConf->Write( _T("systemName"), g_systemName);
+
+#ifdef __ANDROID__
         pConf->Write( _T("loginUser"), g_loginUser);
         pConf->Write( _T("loginKey"), g_loginKey);
 #endif

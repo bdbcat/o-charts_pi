@@ -6441,6 +6441,8 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
     if (!GetAndValidateSystemName())
         return;
 
+    RefreshSystemName();  //update GUI with fresh systemName
+
     SetChartOverrideStatus( _("Installing...") );
 
     setStatusText( _("Preparing installation..."));
