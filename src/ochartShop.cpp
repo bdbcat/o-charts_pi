@@ -4478,6 +4478,14 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     m_scrollWinChartList->SetMinSize(wxSize(-1,size_scrollerLines * GetCharHeight()));
     staticBoxSizerChartList->SetMinSize(wxSize(-1,(size_scrollerLines + 1) * GetCharHeight()));
 
+    // Version indicator
+    wxBoxSizer* boxSizerVersion = new wxBoxSizer(wxHORIZONTAL);
+    boxSizerTop->Add(boxSizerVersion, 0, wxEXPAND);
+    wxString versionString = "v " + g_versionString;
+    auto versionText = new wxStaticText(this, wxID_ANY, versionString, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+    boxSizerVersion->AddStretchSpacer(1);
+    boxSizerVersion->Add(versionText, 0);
+
     wxStaticBoxSizer* staticBoxSizerAction = new wxStaticBoxSizer( new wxStaticBox(this, wxID_ANY, _("Actions")), wxVERTICAL);
     boxSizerTop->Add(staticBoxSizerAction, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
 
