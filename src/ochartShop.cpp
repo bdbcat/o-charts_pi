@@ -601,7 +601,7 @@ OCP_ScrolledMessageDialog::OCP_ScrolledMessageDialog( wxWindow *parent,
     topsizer->Fit( this );
 #else
     wxSize sz = getAndroidDisplayDimensions();
-    int yfract = 9;
+    int yfract = 7;
     if (sz.y > sz.x)
         yfract = 7;
     SetSize( g_shopPanel->GetSize().x * 9 / 10, sz.y * yfract / 10);
