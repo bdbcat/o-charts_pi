@@ -48,8 +48,10 @@ bool CheckPendingJNIException()
 {
     JNIEnv* jenv;
 
-    if (java_vm->GetEnv( (void **) &jenv, JNI_VERSION_1_6) != JNI_OK)
-        return true;
+    if (java_vm->GetEnv( (void **) &jenv, JNI_VERSION_1_6) != JNI_OK) {
+      qDebug() << "JNI->GetEnv() failed";
+      return false;     // Informational, no error
+    }
 
     if( (jenv)->ExceptionCheck() == JNI_TRUE ) {
 
@@ -252,8 +254,9 @@ wxString callActivityMethod_s6s(const char *method, wxString parm1, wxString par
 
 wxString callActivityMethod_s8s(const char *method, wxString parm1, wxString parm2, wxString parm3, wxString parm4, wxString parm5, wxString parm6, wxString parm7, wxString parm8)
 {
-    if(CheckPendingJNIException())
-        return _T("NOK");
+    if(CheckPendingJNIException()) {
+        return _T("NOK-A");
+    }
     JNIEnv* jenv;
 
     wxString return_string;
@@ -307,7 +310,7 @@ wxString callActivityMethod_s8s(const char *method, wxString parm1, wxString par
     (jenv)->DeleteLocalRef(p8);
 
     if(CheckPendingJNIException())
-        return _T("NOK");
+        return _T("NOK-B");
 
     jstring s = data.object<jstring>();
 

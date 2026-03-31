@@ -2841,8 +2841,6 @@ void init_GLLibrary(void) {
 
 bool validate_SENC_server(void)
 {
-
-
     if (g_debugLevel) {
         printf("\n-------validate_SENC_server\n");
         wxLogMessage(_T("validate_SENC_server"));
@@ -2869,6 +2867,8 @@ bool validate_SENC_server(void)
             Osenc_instream testAvailRetry;
             if(testAvailRetry.isAvailable(_T("?"))){
                 wxLogMessage(_T("Available TRUE"));
+                //qDebug() << "\n-------validate_SENC_server Available\n";
+
                 return true;
             }
             nLoop++;
@@ -2876,6 +2876,7 @@ bool validate_SENC_server(void)
     }
 
     // Not running, so start it up...
+    qDebug() << "-------validate_SENC_server Startup\n";
 
     wxString bin_test = g_sencutil_bin;
 
@@ -2952,6 +2953,7 @@ bool validate_SENC_server(void)
 
     //  The target binary executable
     wxString cmd = g_sencutil_bin;
+    qDebug() << "cmd:" << cmd.ToStdString().c_str();
 
     //  Set up the parameter passed as the local app storage directory
     wxString dataLoc = *GetpPrivateApplicationDataLocation();
@@ -2991,6 +2993,8 @@ bool validate_SENC_server(void)
                                           "-y", g_WVID,
                                           "-u", g_creds_SUPERLEGACY,
                                           libDir);
+          qDebug() << result.ToStdString().c_str();
+
       }
       else {
          if (g_SDK_INT < 29)            // Strictly earlier than Android 10
