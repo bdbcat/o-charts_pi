@@ -2876,8 +2876,6 @@ bool validate_SENC_server(void)
     }
 
     // Not running, so start it up...
-    qDebug() << "-------validate_SENC_server Startup\n";
-
     wxString bin_test = g_sencutil_bin;
 
 #ifndef __ANDROID__
