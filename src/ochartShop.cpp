@@ -4949,7 +4949,7 @@ void shopPanel::UpdateChartInfoFiles()
                     oesuChart tmpChart;
                     tmpChart.CreateChartInfoFile(chartFile, true);
 
-                    processChartinfo(chartFile, Chart->getStatusString());
+                    processChartinfo(chartFile, -1, Chart->getStatusString());
 
                 }
                 else{
@@ -4958,7 +4958,7 @@ void shopPanel::UpdateChartInfoFiles()
                     chartFile += _T("temp.oernc");
                     Chart_oeuRNC tmpChart;
                     tmpChart.CreateChartInfoFile(chartFile, true);
-                    processChartinfo(chartFile, Chart->getStatusString());
+                    processChartinfo(chartFile, -1, Chart->getStatusString());
 
 
                 }

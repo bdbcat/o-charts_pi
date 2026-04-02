@@ -537,7 +537,7 @@ int Chart_oeuRNC::Init( const wxString& name, int init_flags )
 
       CreateChartInfoFile( name );
 
-      if(!processChartinfo( name, _T("KEEP") )){
+      if(!processChartinfo( name, init_flags, _T("KEEP") )){
         return PI_INIT_FAIL_REMOVE;
       }
 

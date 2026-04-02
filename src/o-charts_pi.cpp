@@ -4874,13 +4874,18 @@ void showChartinfoDialog( void )
 #endif
 
 
-bool processChartinfo(const wxString &oesenc_file, wxString status)
+bool processChartinfo(const wxString &oesenc_file, int init_flags,wxString status)
 {
     // Do not process anything if a EULA has been rejected
     if (g_bEULA_Rejected) {
         wxLogMessage(_T("processChartInfo but EULA_Rejected ") + oesenc_file);
         return false;
     }
+
+#ifdef __ANDROID__
+    if (init_flags == PI_HEADER_ONLY)
+        return true;
+#endif
 
     if(g_debugLevel) wxLogMessage( _T("ProcessChartInfo for: ") + oesenc_file);
 

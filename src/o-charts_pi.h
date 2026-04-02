@@ -99,7 +99,7 @@ typedef enum tpm_state_t {
 //void ClearScreenLog(void);
 //void ClearScreenLogSeq(void);
 
-bool processChartinfo(const wxString &chart_file, wxString status = _T("---"));
+bool processChartinfo(const wxString &chart_file, int init_flags, wxString status = _T("---"));
 extern void showChartinfoDialog( void );
 
 class   o_charts_pi;
