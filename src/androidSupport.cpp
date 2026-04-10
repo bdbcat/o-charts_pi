@@ -830,3 +830,46 @@ wxSize getAndroidDisplayDimensions( void )
 
 }
 
+bool androidShowSimpleYesNoDialog(wxString title, wxString msg) {
+    if (!java_vm) return false;
+
+    if (CheckPendingJNIException()) return false;
+
+    wxString return_string;
+    QAndroidJniObject activity = QAndroidJniObject::callStaticObjectMethod(
+        "org/qtproject/qt5/android/QtNative", "activity",
+        "()Landroid/app/Activity;");
+    if (CheckPendingJNIException()) return false;
+
+    if (!activity.isValid()) return false;
+
+    JNIEnv *jenv;
+
+    //  Need a Java environment to decode the resulting string
+    if (java_vm->GetEnv((void **)&jenv, JNI_VERSION_1_6) != JNI_OK) return false;
+
+    wxCharBuffer p1b = title.ToUTF8();
+    jstring p1 = (jenv)->NewStringUTF(p1b.data());
+
+    // Convert for wxString-UTF8  to jstring-UTF16
+    wxWCharBuffer b = msg.wc_str();
+    jstring p2 = (jenv)->NewString((jchar *)b.data(), msg.Len() * 2);
+
+    QAndroidJniObject data = activity.callObjectMethod(
+        "simpleYesNoDialog",
+        "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;", p1, p2);
+
+    (jenv)->DeleteLocalRef(p1);
+    (jenv)->DeleteLocalRef(p2);
+
+    if (CheckPendingJNIException()) return false;
+
+    jstring s = data.object<jstring>();
+
+    if ((jenv)->GetStringLength(s)) {
+        const char *ret_string = (jenv)->GetStringUTFChars(s, NULL);
+        return_string = wxString(ret_string, wxConvUTF8);
+    }
+
+    return (return_string == _T("YES"));
+}

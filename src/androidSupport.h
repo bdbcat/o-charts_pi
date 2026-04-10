@@ -50,6 +50,7 @@ class ArrayOfCDI;
  void androidEnableRotation( void );
  void androidDisableRotation( void );
  wxSize getAndroidDisplayDimensions( void );
+ bool androidShowSimpleYesNoDialog(wxString title, wxString msg);
 
 
 wxString callActivityMethod_s6s(const char *method, wxString parm1, wxString parm2="", wxString parm3="", wxString parm4="", wxString parm5="", wxString parm6="");

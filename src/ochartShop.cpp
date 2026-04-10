@@ -572,14 +572,14 @@ OCP_ScrolledMessageDialog::OCP_ScrolledMessageDialog( wxWindow *parent,
     wxSize screenSize = getAndroidDisplayDimensions();
     int nMax = screenSize.y / GetCharHeight();
     qDebug() << "nMax" << nMax;
-
-    scroll->SetMinSize(wxSize(-1, (nMax - 12) * GetCharHeight()));
+    int vsize = wxMax(nMax - 12, 4);
+    scroll->SetMinSize(wxSize(-1, vsize * GetCharHeight()));
 #else
     scroll->SetMinSize(wxSize(-1, 15 * GetCharHeight()));
 #endif
 
 
-    scroll->SetScrollRate(-1, 1);
+    scroll->SetScrollRate(-1, 5);
 
     wxStaticText *textMessage = new wxStaticText( scroll, wxID_ANY, message );
     scrollsizer->Add( textMessage, 0, wxALIGN_CENTER | wxLEFT, 10 );
@@ -604,7 +604,12 @@ OCP_ScrolledMessageDialog::OCP_ScrolledMessageDialog( wxWindow *parent,
     int yfract = 7;
     if (sz.y > sz.x)
         yfract = 7;
-    SetSize( g_shopPanel->GetSize().x * 9 / 10, sz.y * yfract / 10);
+
+    int xfract = 8;
+    if (sz.y > sz.x)
+        xfract = 9;
+
+    SetSize( g_shopPanel->GetSize().x * xfract / 10, sz.y * yfract / 10);
 #endif
 
     Centre( wxBOTH /*| wxCENTER_FRAME*/);
@@ -3148,11 +3153,13 @@ int doAssign(itemChart *chart, int qtyIndex, wxString systemName)
     msg += _T("\n\n");
     msg += _("Accept and Proceed?");
 
+#ifndef __ANDROID__
     int ret = ShowOERNCMessageDialog(NULL, msg, _("o-charts_pi Message"), wxYES_NO | wxICON_WARNING);
-
-    if(ret != wxID_YES){
-        return 1;
-    }
+    if(ret != wxID_YES) return 1;
+#else
+    bool accept = androidShowSimpleYesNoDialog(_("o-charts_pi Message"), msg);
+    if (!accept) return 1;
+#endif
 
     // Assign a chart to this system name
     wxString url = userURL;
