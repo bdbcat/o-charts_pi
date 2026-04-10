@@ -4505,7 +4505,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     gridSizerActionButtons = new wxBoxSizer(wxVERTICAL);
     staticBoxSizerAction->Add(gridSizerActionButtons, 1, wxALL|wxEXPAND, WXC_FROM_DIP(2));
 
-    m_buttonInstall = new wxButton(this, ID_CMD_BUTTON_INSTALL, "Reinstall Selection  ", wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
+    m_buttonInstall = new wxButton(this, ID_CMD_BUTTON_INSTALL, "R", wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     gridSizerActionButtons->Add(m_buttonInstall, 1, wxTOP | wxBOTTOM , WXC_FROM_DIP(2));
 
     m_buttonCancelOp = new wxButton(this, wxID_ANY, _("Cancel Operation"), wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
@@ -6971,22 +6971,9 @@ void shopPanel::UpdateActionControls()
         m_buttonValidate->Enable();
     }
 
+    m_buttonInstall->InvalidateBestSize();
+    gridSizerActionButtons->Layout();
 
- //gridSizerActionButtons->Layout();
-
-#if 0
-    else if(chart->getChartStatus() == STAT_READY_DOWNLOAD){
-        m_buttonInstall->SetLabel(_("Download Selected Chart"));
-        m_buttonInstall->Show();
-    }
-    else if(chart->getChartStatus() == STAT_REQUESTABLE){
-        m_buttonInstall->SetLabel(_("Download Selected Chart"));
-        m_buttonInstall->Show();
-    }
-    else if(chart->getChartStatus() == STAT_PREPARING){
-        m_buttonInstall->Hide();
-    }
-#endif
     GetSizer()->Layout();
 
 }
