@@ -322,9 +322,6 @@ workflows:
       - build-macos-universal:
           <<: *std-filters
 
-      - build-macos-intel-legacy:
-          <<: *std-filters
-
       - build-android-arm64:
           <<: *std-filters
 
