@@ -4492,6 +4492,7 @@ shopPanel::shopPanel(wxWindow* parent, wxWindowID id, const wxPoint& pos, const 
     auto versionText = new wxStaticText(this, wxID_ANY, versionString, wxDefaultPosition, wxDLG_UNIT(this, wxSize(-1,-1)), 0);
     boxSizerVersion->AddStretchSpacer(1);
     boxSizerVersion->Add(versionText, 0);
+    boxSizerVersion->AddSpacer(4 * GetCharWidth());
 
     wxStaticBoxSizer* staticBoxSizerAction = new wxStaticBoxSizer( new wxStaticBox(this, wxID_ANY, _("Actions")), wxVERTICAL);
     boxSizerTop->Add(staticBoxSizerAction, 0, wxALL|wxEXPAND, WXC_FROM_DIP(5));
