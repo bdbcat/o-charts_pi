@@ -14,7 +14,7 @@ id: org.opencpn.OpenCPN.Plugin.@plugin_name
 
 runtime: org.opencpn.OpenCPN
 runtime-version: stable
-sdk: org.freedesktop.Sdk//24.08
+sdk: org.freedesktop.Sdk//25.08
 build-extension: true
 separate-locales: false
 appstream-compose: false
@@ -27,7 +27,7 @@ finish-args:
 modules:
     - @include opencpn-libs/flatpak/glu.yaml
 
-    - @include opencpn-libs/flatpak/libusb.yaml
+    - @include libs/flatpak/libusb-compat-0.1.yaml
 
     - name: glew
       no-autogen: true
@@ -47,22 +47,6 @@ modules:
         - /include"
         - /lib/pkgconfig"
         - /lib/*.a"
-
-    - name: libusb-compat-0.1
-      config-opts:
-        - --disable-static
-        - --prefix=/app/extensions/o-charts_pi
-      build-options:
-        env:
-          PKG_CONFIG_PATH: /app/extensions/o-charts_pi/lib/pkgconfig
-      sources:
-        - type: git
-          url: https://github.com/libusb/libusb-compat-0.1.git
-          tag: v0.1.7
-      cleanup:
-        - /lib/*.la
-        - /lib/pkgconfig
-        - /include
 
     - name: iproute2
       sources:
