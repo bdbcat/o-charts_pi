@@ -93,10 +93,13 @@ manifest=$(ls ../flatpak/org.opencpn.OpenCPN.Plugin*yaml)
 sed -i  '/^runtime-version/s/:.*/:'" ${FLATHUB_BRANCH:-stable}/"  $manifest
 sed -i  '/^sdk:/s|//.*|//'"${SDK:-24.08}|"  $manifest
 
-if (( "$BRANCH" >= 2508 )); then
-    # From 25.08 the runtime contains libusb. If manifest has added this,
-    # remove it.
-    sed -i '/libusb/,/name:/d' $manifest
+if (( "$BRANCH" < 2508 )); then
+    # Older runtimes contains no libusb, so use the full usb dependency
+    # instead of libusb-compat-0.1
+    sed -i '/libusb/s/libusb-compat-0.1.yaml/libusb.yaml/' $manifest
+
+    # temporary fix for local libusb-compat-0.1.yaml in libs/flatpak
+    sed -i '/libusb/s/include libs/include opencpn-libs/' $manifest
 fi
 
 flatpak install --user -y --or-update --noninteractive \
