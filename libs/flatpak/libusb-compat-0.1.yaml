@@ -1,0 +1,12 @@
+- name: libusb-compat-0.1
+  config-opts:
+     - --disable-static
+     - --disable-udev
+     - --prefix=/app/extensions/@app_id
+  sources:
+     - type: archive
+       url: https://github.com/libusb/libusb-compat-0.1/archive/refs/tags/v0.1.8.tar.gz
+       sha256: 73f8023b91a4359781c6f1046ae84156e06816aa5c2916ebd76f353d41e0c685
+  cleanup: ["/include", "/lib/*.a", "/lib/*.la", "/lib/pkgconfig"]
+
+
