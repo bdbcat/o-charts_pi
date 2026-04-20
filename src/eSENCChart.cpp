@@ -7455,6 +7455,38 @@ wxString eSENCChart::CreateObjDescriptions( ListOfPI_S57Obj* obj_list )
 
                     value = GetObjectAttributeValueAsString( current, attrCounter, curAttrName );
 
+                    if (curAttrName == _T("TS_TSP")) {  // Tidal current applet
+                      wxArrayString as;
+                      wxString ts, ts1;
+                      wxStringTokenizer tk(value, wxT(","));
+                      ts1 = tk.GetNextToken(); //get first token this will be skipped always
+                      long l;
+                      do { //Skip up upto the first non number. This is Port Name
+                        ts1= tk.GetNextToken().Trim(false);
+                      }while((ts1.Left(2).ToLong(&l)));
+                      ts = _T("Tidal Streams referred to<br><b>");
+                      ts.Append(tk.GetNextToken()).Append(_T("</b> at <b>")).Append(ts1);
+                      ts.Append( _T("</b><br><table >"));
+                      int i = -6;
+                      while (tk.HasMoreTokens()) {  // fill the current table
+                        ts.Append(_T("<tr><td>"));
+                        wxString s1(wxString::Format(_T("%+dh "), i));
+                        ts.Append(s1);
+                        ts.Append(_T("</td><td>"));
+                        s1 = tk.GetNextToken();
+                        ts.Append(s1);
+                        s1 = "&#176</td><td>";
+                        ts.Append(s1);
+                        s1 = tk.GetNextToken();
+                        ts.Append(s1);
+                        ts.Append(_T("</td></tr>"));
+                        i++;
+                      }
+                      ts.Append(_T("</table>"));
+                      value = ts;
+                    }
+
+
                     if( isLight ) {
                         curLight->attributeValues.Add( value );
                     } else {
