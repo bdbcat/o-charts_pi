@@ -97,7 +97,8 @@ target_link_libraries(${PACKAGE_NAME}
   ${_qtlibs}/libQt5AndroidExtras.so
   libGLESv2.so
   libEGL.so
-)
+  libc++_shared.so
+  )
 add_compile_definitions(
   __WXQT__
   BUILDING_PLUGIN
