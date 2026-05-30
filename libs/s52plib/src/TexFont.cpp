@@ -207,9 +207,8 @@ void TexFont::Build(wxFont &font, double scale_factor, double dpi_factor, bool b
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-                    GL_NEAREST /*GL_LINEAR*/);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     glTexImage2D(GL_TEXTURE_2D, 0, internalformat, tex_w, tex_h, 0, format,
                  GL_UNSIGNED_BYTE, teximage);
@@ -363,7 +362,7 @@ void TexFont::RenderGlyph(int c) {
   //m_dy += tgic.advance * sin(m_angle); // - tgic.advance * cos(m_angle);
 }
 
-void TexFont::RenderString(const char *string, int x, int y, float angle) {
+void TexFont::RenderString(const char *string, double x, double y, float angle) {
 #if !defined(USE_ANDROID_GLES2) && !defined(ocpnUSE_GLSL)
 
   glPushMatrix();
@@ -423,7 +422,7 @@ void TexFont::RenderString(const char *string, int x, int y, float angle) {
 #endif
 }
 
-void TexFont::RenderString(const wxString &string, int x, int y, float angle) {
+void TexFont::RenderString(const wxString &string, double x, double y, float angle) {
   LoadTexFontShaders();
   RenderString((const char *)string.ToUTF8(), x, y, angle);
 }

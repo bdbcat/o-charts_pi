@@ -1732,7 +1732,7 @@ static void rotate(wxRect *r, VPointCompat const *vp) {
   r->SetY(x * s + y * c + cy);
 }
 
-bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
+bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, double x, double y,
                          wxRect *pRectDrawn, S57Obj *pobj, bool bCheckOverlap) {
 #ifdef DrawText
 #undef DrawText
@@ -1871,9 +1871,8 @@ bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
 
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
           glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-                          GL_NEAREST /*GL_LINEAR*/);
-          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+          glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
           glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, draw_width, draw_height, 0,
                        GL_RGBA, GL_UNSIGNED_BYTE, pRGBA);
@@ -1928,8 +1927,8 @@ bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
             break;
         }
 
-        int xp = x;
-        int yp = y;
+        double xp = x;
+        double yp = y;
 
         if (fabs(vp_plib.rotation) > 0.01) {
           float c = cosf(-vp_plib.rotation);
@@ -2131,16 +2130,16 @@ bool s52plib::RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y,
           break;
       }
 
-      int xp = x;
-      int yp = y;
+      double xp = x;
+      double yp = y;
 
       if (fabs(vp_plib.rotation) > 0.01) {
         float c = cosf(-vp_plib.rotation);
         float s = sinf(-vp_plib.rotation);
-        float x = xadjust;
-        float y = yadjust;
-        xadjust = x * c - y * s;
-        yadjust = x * s + y * c;
+        float xr = xadjust;
+        float yr = yadjust;
+        xadjust = xr * c - yr * s;
+        yadjust = xr * s + yr * c;
       }
 
       xp += xadjust;
@@ -2462,11 +2461,11 @@ int s52plib::RenderT_All(ObjRazRules *rzRules, Rules *rules,
   }
 
     //  Render text at declared x/y of object
-    wxPoint r;
-    GetPointPixSingle(rzRules, rzRules->obj->y, rzRules->obj->x, &r);
+    wxPoint2DDouble dr;
+    GetDoublePointPixSingle(rzRules, rzRules->obj->y, rzRules->obj->x, &dr);
 
     wxRect rect;
-    bool bwas_drawn = RenderText(m_pdc, text, r.x, r.y, &rect, rzRules->obj,
+    bool bwas_drawn = RenderText(m_pdc, text, dr.m_x, dr.m_y, &rect, rzRules->obj,
                                  m_bDeClutterText);
 
     //  If this is an un-cached text render, it probably means that a single
@@ -2543,7 +2542,7 @@ int s52plib::RenderTE(ObjRazRules *rzRules, Rules *rules) {
   return RenderT_All(rzRules, rules, false);
 }
 
-bool s52plib::RenderHPGL(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
+bool s52plib::RenderHPGL(ObjRazRules *rzRules, Rule *prule, wxPoint2DDouble &r,
                          float rot_angle, double uScale) {
   float fsf = 100 / canvas_pix_per_mm;
 
@@ -2624,7 +2623,7 @@ bool s52plib::RenderHPGL(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
 
   char *str = prule->vector.LVCT;
   char *col = prule->colRef.LCRF;
-  wxPoint r0((int)(pivot_x / fsf), (int)(pivot_y / fsf));
+  wxPoint2DDouble r0((pivot_x / fsf), (pivot_y / fsf));
 
   HPGL->SetVP(&vp_plib);
 
@@ -2642,8 +2641,8 @@ bool s52plib::RenderHPGL(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
     int maxDim = wxMax(r_height, r_width);
 
     double latmin, lonmin, latmax, lonmax;
-    GetPixPointSingleNoRotate(r.x - maxDim, r.y + maxDim, &latmin, &lonmin);
-    GetPixPointSingleNoRotate(r.x + maxDim, r.y - maxDim, &latmax, &lonmax);
+    GetPixPointSingleNoRotate(r.m_x - maxDim, r.m_y + maxDim, &latmin, &lonmin);
+    GetPixPointSingleNoRotate(r.m_x + maxDim, r.m_y - maxDim, &latmax, &lonmax);
     LLBBox symbox;
     symbox.Set(latmin, lonmin, latmax, lonmax);
 
@@ -2679,8 +2678,8 @@ bool s52plib::RenderHPGL(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
     int bm_height = (gdc.MaxY() - gdc.MinY()) + 4;
     int bm_orgx = wxMax(0, gdc.MinX() - 2);
     int bm_orgy = wxMax(0, gdc.MinY() - 2);
-    int screenOriginX = r.x + (bm_orgx - (int)(pivot_x / fsf));
-    int screenOriginY = r.y + (bm_orgy - (int)(pivot_y / fsf));
+    int screenOriginX = r.m_x + (bm_orgx - (int)(pivot_x / fsf));
+    int screenOriginY = r.m_y + (bm_orgy - (int)(pivot_y / fsf));
 
     //      Pre-clip the sub-bitmap to avoid assert errors
     if ((bm_height + bm_orgy) > height) bm_height = height - bm_orgy;
@@ -2727,9 +2726,9 @@ bool s52plib::RenderHPGL(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
     //  so that subsequent drawing operations will redraw the item fully
 
     double latmin, lonmin, latmax, lonmax;
-    GetPixPointSingleNoRotate(r.x + prule->parm2,
-                              r.y + prule->parm3 + bm_height, &latmin, &lonmin);
-    GetPixPointSingleNoRotate(r.x + prule->parm2 + bm_width, r.y + prule->parm3,
+    GetPixPointSingleNoRotate(r.m_x + prule->parm2,
+                              r.m_y + prule->parm3 + bm_height, &latmin, &lonmin);
+    GetPixPointSingleNoRotate(r.m_x + prule->parm2 + bm_width, r.m_y + prule->parm3,
                               &latmax, &lonmax);
     LLBBox symbox;
     symbox.Set(latmin, lonmin, latmax, lonmax);
@@ -2800,7 +2799,7 @@ wxImage s52plib::RuleXBMToImage(Rule *prule) {
 //      Symbol is instantiated as a bitmap the first time it is needed
 //      and re-built on color scheme change
 //
-bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
+bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint2DDouble &r,
                                  float rot_angle) {
 
   double scale_factor = 1.0;
@@ -2904,7 +2903,7 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
     // cached, we have to dump the cache
     wxRect trect;
     m_chartSymbols.GetGLTextureRect(trect, prule->name.SYNM);
-    if (prule->parm2 != trect.width * scale_factor) b_dump_cache = true;
+    if (prule->parm2 != (int)(trect.width * scale_factor)) b_dump_cache = true;
 
     wxBitmap *pbm = NULL;
     wxImage Image;
@@ -3028,16 +3027,17 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
     float cy = vp_plib.pix_height / 2.;
     float c = cosf(vp_plib.rotation);
     float s = sinf(vp_plib.rotation);
-    float x = r.x - pivot_x - cx;
-    float y = r.y - pivot_y + b_height - cy;
+    float x = r.m_x - pivot_x - cx;
+    float y = r.m_y - pivot_y + b_height - cy;
     GetPixPointSingle(x * c - y * s + cx, x * s + y * c + cy, &latmin, &lonmin);
 
-    x = r.x - pivot_x + b_width - cx;
-    y = r.y - pivot_y - cy;
+    x = r.m_x - pivot_x + b_width - cx;
+    y = r.m_y - pivot_y - cy;
     GetPixPointSingle(x * c - y * s + cx, x * s + y * c + cy, &latmax, &lonmax);
   } else {
-    GetPixPointSingle(r.x - pivot_x, r.y - pivot_y + b_height, &latmin, &lonmin);
-    GetPixPointSingle(r.x - pivot_x + b_width, r.y - pivot_y, &latmax, &lonmax);
+    GetPixPointSingle(r.m_x - pivot_x, r.m_y - pivot_y + b_height, &latmin,
+                      &lonmin);
+    GetPixPointSingle(r.m_x - pivot_x + b_width, r.m_y - pivot_y, &latmax, &lonmax);
   }
   symbox.Set(latmin, lonmin, latmax, lonmax);
 
@@ -3124,14 +3124,15 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
         mat4x4 I, Q;
         mat4x4_identity(I);
 
-        mat4x4_translate_in_place(I, r.x, r.y, 0);
+        mat4x4_translate_in_place(I, r.m_x, r.m_y, 0);
         if (abs(vp_plib.rotation) > 0)
           mat4x4_rotate_Z(Q, I, -vp_plib.rotation);
         else
           mat4x4_dup(Q, I);
         mat4x4_translate_in_place(Q, -pivot_x, -pivot_y, 0);
 
-        pCtexture_2D_shader_program[0]->SetUniformMatrix4fv( "TransformMatrix", (GLfloat *)Q);
+        pCtexture_2D_shader_program[0]->SetUniformMatrix4fv("TransformMatrix",
+                                                            (GLfloat *)Q);
 
         // Perform the actual drawing.
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -3139,7 +3140,8 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
         // Restore the per-object transform to Identity Matrix
         mat4x4 IM;
         mat4x4_identity(IM);
-        pCtexture_2D_shader_program[0]->SetUniformMatrix4fv( "TransformMatrix", (GLfloat *)IM);
+        pCtexture_2D_shader_program[0]->SetUniformMatrix4fv("TransformMatrix",
+                                                            (GLfloat *)IM);
 
         // Clean up the GL state
         pCtexture_2D_shader_program[0]->UnBind();
@@ -3164,11 +3166,12 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
     {
       //    Don't bother if the symbol is off the true screen,
       //    as for instance when an area-centered symbol is called for.
-      if ((r.x - pivot_x < vp_plib.pix_width) && (r.y - pivot_y < vp_plib.pix_height)) {
+      if ((r.m_x - pivot_x < vp_plib.pix_width) &&
+          (r.m_y - pivot_y < vp_plib.pix_height)) {
         // Get the current screen contents to a wxImage
         wxBitmap b1(b_width, b_height, -1);
         wxMemoryDC mdc1(b1);
-        mdc1.Blit(0, 0, b_width, b_height, m_pdc, r.x - pivot_x, r.y - pivot_y,
+        mdc1.Blit(0, 0, b_width, b_height, m_pdc, r.m_x - pivot_x, r.m_y - pivot_y,
                   wxCOPY);
         wxImage im_back = b1.ConvertToImage();
 
@@ -3204,7 +3207,7 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
         wxBitmap result(im_result);
         wxMemoryDC result_dc(result);
 
-        m_pdc->Blit(r.x - pivot_x, r.y - pivot_y, b_width, b_height, &result_dc,
+        m_pdc->Blit(r.m_x - pivot_x, r.m_y - pivot_y, b_width, b_height, &result_dc,
                     0, 0, wxCOPY, false);
 
         result_dc.SelectObject(wxNullBitmap);
@@ -3216,7 +3219,7 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
       wxMemoryDC mdc(bmp);
 
       //      Blit it into the target dc, with mask
-      m_pdc->Blit(r.x - pivot_x, r.y - pivot_y, bmp.GetWidth(), bmp.GetHeight(),
+      m_pdc->Blit(r.m_x - pivot_x, r.m_y - pivot_y, bmp.GetWidth(), bmp.GetHeight(),
                   &mdc, 0, 0, wxCOPY, true);
 
       mdc.SelectObject(wxNullBitmap);
@@ -3271,15 +3274,17 @@ int s52plib::RenderSY(ObjRazRules *rzRules, Rules *rules) {
     }
 
     //  Render symbol at object's x/y
-    wxPoint r, r1;
-    GetPointPixSingle(rzRules, rzRules->obj->y, rzRules->obj->x, &r);
+//    wxPoint r, r1;
+//    GetPointPixSingle(rzRules, rzRules->obj->y, rzRules->obj->x, &r);
+    wxPoint2DDouble dr;
+    GetDoublePointPixSingle(rzRules, rzRules->obj->y, rzRules->obj->x, &dr);
 
     //  Render a raster or vector symbol, as specified by LUP rules
     if (rules->razRule->definition.SYDF == 'V') {
-      RenderHPGL(rzRules, rules->razRule, r, angle, m_ChartScaleFactorExp);
+      RenderHPGL(rzRules, rules->razRule, dr, angle, m_ChartScaleFactorExp);
     } else {
       if (rules->razRule->definition.SYDF == 'R')
-        RenderRasterSymbol(rzRules, rules->razRule, r, angle);
+        RenderRasterSymbol(rzRules, rules->razRule, dr, angle);
     }
   }
 
@@ -3404,7 +3409,7 @@ void s52plib::SetupSoundingFont() {
 
 
 bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
-                                   wxPoint &r, wxColor symColor,
+                                   wxPoint2DDouble &r, wxColor symColor,
                                    float rot_angle) {
 
   // Get some metrics
@@ -3474,16 +3479,16 @@ bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
     float cy = vp_plib.pix_height / 2.;
     float c = cosf(vp_plib.rotation);
     float s = sinf(vp_plib.rotation);
-    float x = r.x - pivot_x - cx;
-    float y = r.y - pivot_y + b_height - cy;
+    float x = r.m_x - pivot_x - cx;
+    float y = r.m_y - pivot_y + b_height - cy;
     GetPixPointSingle(x * c - y * s + cx, x * s + y * c + cy, &latmin, &lonmin);
 
-    x = r.x - pivot_x + b_width - cx;
-    y = r.y - pivot_y - cy;
+    x = r.m_x - pivot_x + b_width - cx;
+    y = r.m_y - pivot_y - cy;
     GetPixPointSingle(x * c - y * s + cx, x * s + y * c + cy, &latmax, &lonmax);
   } else {
-    GetPixPointSingle(r.x - pivot_x, r.y - pivot_y + b_height, &latmin, &lonmin);
-    GetPixPointSingle(r.x - pivot_x + b_width, r.y - pivot_y, &latmax, &lonmax);
+    GetPixPointSingle(r.m_x - pivot_x, r.m_y - pivot_y + b_height, &latmin, &lonmin);
+    GetPixPointSingle(r.m_x - pivot_x + b_width, r.m_y - pivot_y, &latmax, &lonmax);
   }
   symbox.Set(latmin, lonmin, latmax, lonmax);
 
@@ -3566,7 +3571,7 @@ bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
       mat4x4_identity(I);
        mat4x4_identity(Q);
 
-      mat4x4_translate_in_place(I, r.x, r.y, 0);
+      mat4x4_translate_in_place(I, r.m_x, r.m_y, 0);
       mat4x4_rotate_Z(Q, I, -vp_plib.rotation);
       mat4x4_translate_in_place(Q, -pivot_x, -pivot_y, 0);
 
@@ -3598,7 +3603,7 @@ bool s52plib::RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule,
     text.Printf(_T("%d"), symIndex);
     m_pdc->SetTextForeground(symColor);
 
-    m_pdc->DrawText(text, r.x - pivot_x, r.y - pivot_y);
+    m_pdc->DrawText(text, r.m_x - pivot_x, r.m_y - pivot_y);
   }
 
   return true;
@@ -4463,7 +4468,7 @@ int s52plib::RenderLS_Dash_GLSL(ObjRazRules *rzRules, Rules *rules) {
   int ymin_ = pbb.y - (vp_plib.rv_rect.height / 2) - (4 * scaled_line_width);
   int ymax_ = ymin_ + vp_plib.rv_rect.height + (8 * scaled_line_width);
 
-  int x0, y0, x1, y1;
+  double x0, y0, x1, y1;
 
   //  Get the current display priority
   //  Default comes from the LUP, unless overridden
@@ -4540,16 +4545,16 @@ int s52plib::RenderLS_Dash_GLSL(ObjRazRules *rzRules, Rules *rules) {
           nPoints = 2;
         }
 
-        wxPoint l;
-        GetPointPixSingle(rzRules, ppt[1], ppt[0], &l);
+        wxPoint2DDouble l;
+        GetDoublePointPixSingle(rzRules, ppt[1], ppt[0], &l);
         ppt += 2;
 
         for (int ip = 0; ip < nPoints - 1; ip++) {
-          wxPoint r;
-          GetPointPixSingle(rzRules, ppt[1], ppt[0], &r);
+          wxPoint2DDouble r;
+          GetDoublePointPixSingle(rzRules, ppt[1], ppt[0], &r);
           //        Draw the edge as point-to-point
-          x0 = l.x, y0 = l.y;
-          x1 = r.x, y1 = r.y;
+          x0 = l.m_x, y0 = l.m_y;
+          x1 = r.m_x, y1 = r.m_y;
 
           // Do not draw null segments
           if ((x0 != x1) || (y0 != y1)) {
@@ -4558,14 +4563,14 @@ int s52plib::RenderLS_Dash_GLSL(ObjRazRules *rzRules, Rules *rules) {
             if ((x0 > xmin_ || x1 > xmin_) && (x0 < xmax_ || x1 < xmax_) &&
                 (y0 > ymin_ || y1 > ymin_) && (y0 < ymax_ || y1 < ymax_)) {
               //  And intersecting the current clip rectangle
-              int xa = x0;
-              int xw = x1 - x0;
+              double xa = x0;
+              double xw = x1 - x0;
               if (xw < 0) {
                 xa = x1;
                 xw = -xw;
               }
-              int ya = y0;
-              int yh = y1 - y0;
+              double ya = y0;
+              double yh = y1 - y0;
               if (yh < 0) {
                 ya = y1;
                 yh = -yh;
@@ -4778,7 +4783,7 @@ int s52plib::RenderLC(ObjRazRules *rzRules, Rules *rules) {
             free(pReduced);
 
             draw_lc_poly(m_pdc, color, w, ptestp, pMaskOut, nPointReduced,
-                         sym_len, sym_factor, rules->razRule);
+                         sym_len, 0, sym_factor, rules->razRule);
             free(ptestp);
             free(pMaskOut);
 
@@ -4804,7 +4809,7 @@ int s52plib::RenderLC(ObjRazRules *rzRules, Rules *rules) {
           free(pReduced);
 
           draw_lc_poly(m_pdc, color, w, ptestp, pMaskOut, nPointReduced,
-                       sym_len, sym_factor, rules->razRule);
+                       sym_len, 0, sym_factor, rules->razRule);
           free(ptestp);
           free(pMaskOut);
         }
@@ -4997,11 +5002,11 @@ int s52plib::RenderLCLegacy(ObjRazRules *rzRules, Rules *rules) {
       }
 
       if ((inode) && (jnode)) {
-        draw_lc_poly(m_pdc, color, w, ptp, NULL, nls + 2, sym_len, sym_factor,
-                     rules->razRule);
+        draw_lc_poly(m_pdc, color, w, ptp, NULL, nls + 2, sym_len, 0,
+                     sym_factor, rules->razRule);
       } else if (nls) {
-        draw_lc_poly(m_pdc, color, w, &ptp[1], NULL, nls, sym_len, sym_factor,
-                     rules->razRule);
+        draw_lc_poly(m_pdc, color, w, &ptp[1], NULL, nls, sym_len, 0,
+                     sym_factor, rules->razRule);
       }
     }
     free(ptp);
@@ -5031,8 +5036,8 @@ int s52plib::RenderLCLegacy(ObjRazRules *rzRules, Rules *rules) {
         float plat = ppolygeo[ctr_offset + 1];
         GetPointPixSingle(rzRules, plat, plon, pr);
 
-        draw_lc_poly(m_pdc, color, w, ptp, NULL, npt + 1, sym_len, sym_factor,
-                     rules->razRule);
+        draw_lc_poly(m_pdc, color, w, ptp, NULL, npt + 1, sym_len, 0,
+                     sym_factor, rules->razRule);
 
         free(ptp);
 
@@ -5206,7 +5211,7 @@ int s52plib::RenderLCPlugIn(ObjRazRules *rzRules, Rules *rules) {
             free(pReduced);
 
             draw_lc_poly(m_pdc, color, w, ptestp, NULL, nPointReduced, sym_len,
-                         sym_factor, rules->razRule);
+                         0, sym_factor, rules->razRule);
             free(ptestp);
           }
 
@@ -5227,7 +5232,7 @@ int s52plib::RenderLCPlugIn(ObjRazRules *rzRules, Rules *rules) {
           GetPointPixArray(rzRules, pReduced, ptestp, nPointReduced);
           free(pReduced);
 
-          draw_lc_poly(m_pdc, color, w, ptestp, NULL, nPointReduced, sym_len,
+          draw_lc_poly(m_pdc, color, w, ptestp, NULL, nPointReduced, sym_len, 0,
                        sym_factor, rules->razRule);
           free(ptestp);
         }
@@ -5245,11 +5250,11 @@ int s52plib::RenderLCPlugIn(ObjRazRules *rzRules, Rules *rules) {
 //      Render Line Complex Polyline
 
 void s52plib::draw_lc_poly(wxDC *pdc, wxColor &color, int width, wxPoint *ptp,
-                           int *mask, int npt, float sym_len, float sym_factor,
-                           Rule *draw_rule) {
+                           int *mask, int npt, float sym_len, float sym_height,
+                           float sym_factor, Rule *draw_rule) {
   if (npt < 2) return;
 
-  wxPoint r;
+  wxPoint2DDouble r;
 
   //  We calculate the winding direction of the poly
   //  in order to know which side to draw symbol on
@@ -5261,6 +5266,7 @@ void s52plib::draw_lc_poly(wxDC *pdc, wxColor &color, int width, wxPoint *ptp,
   dfSum += ptp[npt - 1].x * ptp[0].y - ptp[npt - 1].y * ptp[0].x;
 
   bool cw = dfSum < 0.;
+  cw = true;
 
   //    Get a true pixel clipping/bounding box from the vp
   wxPoint pbb = GetPixFromLL(vp_plib.clat, vp_plib.clon);
@@ -5334,8 +5340,8 @@ void s52plib::draw_lc_poly(wxDC *pdc, wxColor &color, int width, wxPoint *ptp,
           float ys = ptp[iseg].y;
 
           while (s + (sym_len * sym_factor) < seg_len) {
-            r.x = (int)xs;
-            r.y = (int)ys;
+            r.m_x = (int)xs;
+            r.m_y = (int)ys;
             char *str = draw_rule->vector.LVCT;
             char *col = draw_rule->colRef.LCRF;
             wxPoint pivot(draw_rule->pos.line.pivot_x.LICL,
@@ -5467,8 +5473,8 @@ void s52plib::draw_lc_poly(wxDC *pdc, wxColor &color, int width, wxPoint *ptp,
           float ys = ptp[iseg].y;
 
           while (s + (sym_len * sym_factor) < seg_len) {
-            r.x = (int)xs;
-            r.y = (int)ys;
+            r.m_x = xs;
+            r.m_y = ys;
             char *str = draw_rule->vector.LVCT;
             char *col = draw_rule->colRef.LCRF;
             wxPoint pivot(draw_rule->pos.line.pivot_x.LICL,
@@ -5562,7 +5568,7 @@ int s52plib::RenderMPS(ObjRazRules *rzRules, Rules *rules) {
 
     Rules *ru_cs = StringToRules(_T ( "CS(SOUNDG03;" ));
 
-    wxPoint p;
+    wxPoint2DDouble p;
     double *pd = rzRules->obj->geoPtz;       // the SM points
     double *pdl = rzRules->obj->geoPtMulti;  // and corresponding lat/lon
 
@@ -5641,12 +5647,12 @@ int s52plib::RenderMPS(ObjRazRules *rzRules, Rules *rules) {
       continue;
 
     // Some simple inclusion tests
-    wxPoint r = GetPixFromLLROT(lat, lon, 0);
-    if ((r.x == INVALID_COORD) || (r.y == INVALID_COORD))
-      continue;
+    wxPoint2DDouble r = GetDoublePixFromLLROT(lat, lon, 0);
+    if ((r.m_x == INVALID_COORD) || (r.m_y == INVALID_COORD)) continue;
 
     // Use measured symbol size
-    wxRect rr(r.x - (soundBox.width / 2), r.y - (soundBox.height / 2), soundBox.width, soundBox.height);
+    wxRect rr(r.m_x - (soundBox.width / 2), r.m_y - (soundBox.height / 2),
+              soundBox.width, soundBox.height);
 
     //      After all the setup, the render inclusion test is trivial....
     if (!clip_rect.Intersects(rr)) continue;
@@ -5755,8 +5761,8 @@ int s52plib::RenderCARC_GLSL(ObjRazRules *rzRules, Rules *rules) {
   slong.ToLong(&sector_radius);
 
   // Center point
-  wxPoint r;
-  GetPointPixSingle(rzRules, rzRules->obj->y, rzRules->obj->x, &r);
+  wxPoint2DDouble dr;
+  GetDoublePointPixSingle(rzRules, rzRules->obj->y, rzRules->obj->x, &dr);
 
   if (radius > m_display_size_mm / 10){
     double fact = radius / (m_display_size_mm / 10);
@@ -5804,17 +5810,17 @@ int s52plib::RenderCARC_GLSL(ObjRazRules *rzRules, Rules *rules) {
   glEnable(GL_BLEND);
 
   // Rotate the center point about vp center
-  wxPoint point = r;
+  wxPoint2DDouble point = dr;
   double sin_rot = sin(vp_plib.rotation);
   double cos_rot = cos(vp_plib.rotation);
 
-  double xp = ((point.x - vp_plib.pix_width / 2) * cos_rot) -
-              ((point.y - vp_plib.pix_height / 2) * sin_rot);
-  double yp = ((point.x - vp_plib.pix_width / 2) * sin_rot) +
-              ((point.y - vp_plib.pix_height / 2) * cos_rot);
+  double xp = ((point.m_x - vp_plib.pix_width / 2) * cos_rot) -
+              ((point.m_y - vp_plib.pix_height / 2) * sin_rot);
+  double yp = ((point.m_x - vp_plib.pix_width / 2) * sin_rot) +
+              ((point.m_y - vp_plib.pix_height / 2) * cos_rot);
 
-  point.x = (int)xp + vp_plib.pix_width / 2;
-  point.y = (int)yp + vp_plib.pix_height / 2;
+  point.m_x = xp + vp_plib.pix_width / 2;
+  point.m_y = yp + vp_plib.pix_height / 2;
 
   float rad_fluff = rad + 20;
   float coords[8];
@@ -5848,8 +5854,8 @@ int s52plib::RenderCARC_GLSL(ObjRazRules *rzRules, Rules *rules) {
   GLint centerloc =
       glGetUniformLocation(S52ring_shader_program, "circle_center");
   float ctrv[2];
-  ctrv[0] = point.x;
-  ctrv[1] = vp_plib.pix_height - point.y;
+  ctrv[0] = point.m_x;
+  ctrv[1] = vp_plib.pix_height - point.m_y;
   glUniform2fv(centerloc, 1, ctrv);
 
   //  Border color
@@ -5897,7 +5903,7 @@ int s52plib::RenderCARC_GLSL(ObjRazRules *rzRules, Rules *rules) {
   mat4x4 I;
   mat4x4_identity(I);
 
-  mat4x4_translate_in_place(I, r.x, r.y, 0);
+  mat4x4_translate_in_place(I, dr.m_x, dr.m_y, 0);
 
   GLint matloc =
       glGetUniformLocation(S52ring_shader_program, "TransformMatrix");
@@ -5935,7 +5941,7 @@ int s52plib::RenderCARC_GLSL(ObjRazRules *rzRules, Rules *rules) {
 
   //    Draw the sector legs directly on the target DC
   if (sector_radius > 0) {
-    int leg_len = (int)(sec_rad);
+    double leg_len = sec_rad;
 
     wxDash dash1[2];
     dash1[0] = (int)(3.6 * canvas_pix_per_mm / 3);  // 8// Long dash <---------+
@@ -5948,15 +5954,15 @@ int s52plib::RenderCARC_GLSL(ObjRazRules *rzRules, Rules *rules) {
 
     float a = (sectr1 - 90) * PI / 180;
     a += vp_plib.rotation;
-    int x = point.x + (int)(leg_len * cosf(a));
-    int y = point.y + (int)(leg_len * sinf(a));
-    DrawDashLine(thispen, point.x, point.y, x, y);
+    double x = point.m_x + (leg_len * cosf(a));
+    double y = point.m_y + (leg_len * sinf(a));
+    DrawDashLine(thispen, point.m_x, point.m_y, x, y);
 
     a = (sectr2 - 90) * PI / 180.;
     a += vp_plib.rotation;
-    x = point.x + (int)(leg_len * cosf(a));
-    y = point.y + (int)(leg_len * sinf(a));
-    DrawDashLine(thispen, point.x, point.y, x, y);
+    x = point.m_x + (leg_len * cosf(a));
+    y = point.m_y + (leg_len * sinf(a));
+    DrawDashLine(thispen, point.m_x, point.m_y, x, y);
   }
   glDisable(GL_BLEND);
 
@@ -5965,8 +5971,8 @@ int s52plib::RenderCARC_GLSL(ObjRazRules *rzRules, Rules *rules) {
 
   double latmin, lonmin, latmax, lonmax;
 
-  GetPixPointSingleNoRotate(r.x - rad, r.y + rad, &latmin, &lonmin);
-  GetPixPointSingleNoRotate(r.x + rad, r.y - rad, &latmax, &lonmax);
+  GetPixPointSingleNoRotate(dr.m_x - rad, dr.m_y + rad, &latmin, &lonmin);
+  GetPixPointSingleNoRotate(dr.m_x + rad, dr.m_y - rad, &latmax, &lonmax);
   LLBBox symbox;
   symbox.Set(latmin, lonmin, latmax, lonmax);
   rzRules->obj->BBObj.Expand(symbox);
@@ -8842,8 +8848,8 @@ render_canvas_parms *s52plib::CreatePatternBufferSpec(ObjRazRules *rzRules,
       int origin_y = prule->pos.patt.bnbox_y.PBXR;
       wxPoint origin(origin_x, origin_y);
 
-      wxPoint r0((int)((pivot_x - box.GetMinX()) / fsf) + 1,
-                 (int)((pivot_y - box.GetMinY()) / fsf) + 1);
+      wxPoint2DDouble r0(((pivot_x - box.GetMinX()) / fsf) + 1,
+                 ((pivot_y - box.GetMinY()) / fsf) + 1);
 
       HPGL->SetTargetDC(&mdc);
       HPGL->SetVP(&vp_plib);
@@ -10000,7 +10006,41 @@ bool s52plib::GetPointPixSingle(ObjRazRules *rzRules, float north, float east,
   return true;
 }
 
-void s52plib::GetPixPointSingle(int pixx, int pixy, double *plat, double *plon) {
+bool s52plib::GetDoublePointPixSingle(ObjRazRules *rzRules, float north, float east,
+                                wxPoint2DDouble *r) {
+  // if (vp->m_projection_type == PROJECTION_MERCATOR)
+  {
+    double xr = rzRules->obj->x_rate;
+    double xo = rzRules->obj->x_origin;
+    double yr = rzRules->obj->y_rate;
+    double yo = rzRules->obj->y_origin;
+
+    if (fabs(xo) > 1) {  // cm93 hits this
+      if (GetBBox().GetMaxLon() >= 180. &&
+          rzRules->obj->BBObj.GetMaxLon() < GetBBox().GetMinLon())
+        xo += mercator_k0 * WGS84_semimajor_axis_meters * 2.0 * PI;
+      else if ((GetBBox().GetMinLon() <= -180. &&
+                rzRules->obj->BBObj.GetMinLon() > GetBBox().GetMaxLon()) ||
+               (rzRules->obj->BBObj.GetMaxLon() >= 180 &&
+                GetBBox().GetMinLon() <= 0.))
+        xo -= mercator_k0 * WGS84_semimajor_axis_meters * 2.0 * PI;
+    }
+
+    double valx = (east * xr) + xo;
+    double valy = (north * yr) + yo;
+
+    r->m_x = ((valx - rzRules->sm_transform_parms->easting_vp_center) *
+                     vp_plib.view_scale_ppm) +
+                    (vp_plib.pix_width / 2);
+    r->m_y = (vp_plib.pix_height / 2) -
+                    ((valy - rzRules->sm_transform_parms->northing_vp_center) *
+                     vp_plib.view_scale_ppm);
+  }
+  return true;
+}
+
+void s52plib::GetPixPointSingle(int pixx, int pixy, double *plat,
+                                double *plon) {
 #if 1
   GetLLFromPix(wxPoint(pixx, pixy), plat, plon);
 //    if(*plon < 0 && vpt->clon > 180)
@@ -10067,8 +10107,8 @@ void DrawAALine(wxDC *pDC, int x0, int y0, int x1, int y1, wxColour clrLine,
   return;
 }
 
-void s52plib::DrawDashLine(wxPen &pen, wxCoord x1, wxCoord y1, wxCoord x2,
-                           wxCoord y2) {
+void s52plib::DrawDashLine(wxPen &pen, double x1, double y1, double x2,
+                           double y2) {
   glLineWidth(pen.GetWidth());
 
   CGLShaderProgram *shader = pCcolor_tri_shader_program[0/*GetCanvasIndex()*/];
@@ -10452,9 +10492,9 @@ void RenderFromHPGL::SetPen() {
 #endif
 }
 
-void RenderFromHPGL::Line(wxPoint from, wxPoint to) {
+void RenderFromHPGL::Line(wxPoint2DDouble from, wxPoint2DDouble to) {
   if (renderToDC) {
-    targetDC->DrawLine(from, to);
+    targetDC->DrawLine(wxPoint(from.m_x, from.m_y), wxPoint(to.m_x, to.m_y));
   }
 #ifdef ocpnUSE_GL
   if (renderToOpenGl) {
@@ -10473,10 +10513,10 @@ void RenderFromHPGL::Line(wxPoint from, wxPoint to) {
     shader->SetUniform4fv("color", colorv);
 
     float pts[4];
-    pts[0] = from.x;
-    pts[1] = from.y;
-    pts[2] = to.x;
-    pts[3] = to.y;
+    pts[0] = from.m_x;
+    pts[1] = from.m_y;
+    pts[2] = to.m_x;
+    pts[3] = to.m_y;
 
     GLint pos = shader->getAttributeLocation("position");
     glVertexAttribPointer(pos, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), pts);
@@ -10489,18 +10529,19 @@ void RenderFromHPGL::Line(wxPoint from, wxPoint to) {
 #endif
 #if wxUSE_GRAPHICS_CONTEXT
   if (renderToGCDC) {
-    targetGCDC->DrawLine(from, to);
+    targetGCDC->DrawLine(wxPoint(from.m_x, from.m_y), wxPoint(to.m_x, to.m_y));
   }
 #endif
 }
 
-void RenderFromHPGL::Circle(wxPoint center, int radius, bool filled) {
+void RenderFromHPGL::Circle(wxPoint2DDouble center, int radius, bool filled) {
   if (renderToDC) {
     if (filled)
       targetDC->SetBrush(*brush);
     else
       targetDC->SetBrush(*wxTRANSPARENT_BRUSH);
-    targetDC->DrawCircle(center, radius);
+
+    targetDC->DrawCircle(wxPoint(center.m_x, center.m_y), radius);
   }
 #ifdef ocpnUSE_GL
   if (renderToOpenGl) {
@@ -10511,14 +10552,14 @@ void RenderFromHPGL::Circle(wxPoint center, int radius, bool filled) {
     glEnable(GL_BLEND);
 
     float coords[8];
-    coords[0] = center.x - radius;
-    coords[1] = center.y + radius;
-    coords[2] = center.x + radius;
-    coords[3] = center.y + radius;
-    coords[4] = center.x - radius;
-    coords[5] = center.y - radius;
-    coords[6] = center.x + radius;
-    coords[7] = center.y - radius;
+    coords[0] = center.m_x - radius;
+    coords[1] = center.m_y + radius;
+    coords[2] = center.m_x + radius;
+    coords[3] = center.m_y + radius;
+    coords[4] = center.m_x - radius;
+    coords[5] = center.m_y - radius;
+    coords[6] = center.m_x + radius;
+    coords[7] = center.m_y - radius;
 
     glUseProgram(S52circle_filled_shader_program);
 
@@ -10542,8 +10583,8 @@ void RenderFromHPGL::Circle(wxPoint center, int radius, bool filled) {
     GLint centerloc =
         glGetUniformLocation(S52circle_filled_shader_program, "circle_center");
     float ctrv[2];
-    ctrv[0] = center.x;
-    ctrv[1] = m_vp->pix_height - center.y;
+    ctrv[0] = center.m_x;
+    ctrv[1] = m_vp->pix_height - center.m_y;
     glUniform2fv(centerloc, 1, ctrv);
 
     //  Circle fill color
@@ -10598,14 +10639,14 @@ void RenderFromHPGL::Circle(wxPoint center, int radius, bool filled) {
     else
       targetGCDC->SetBrush(*wxTRANSPARENT_BRUSH);
 
-    targetGCDC->DrawCircle(center, radius);
+    targetGCDC->DrawCircle(wxPoint(center.m_x, center.m_y), radius);
 
     // wxGCDC doesn't update min/max X/Y properly for DrawCircle.
     targetGCDC->SetPen(*wxTRANSPARENT_PEN);
-    targetGCDC->DrawPoint(center.x - radius, center.y);
-    targetGCDC->DrawPoint(center.x + radius, center.y);
-    targetGCDC->DrawPoint(center.x, center.y - radius);
-    targetGCDC->DrawPoint(center.x, center.y + radius);
+    targetGCDC->DrawPoint(center.m_x - radius, center.m_y);
+    targetGCDC->DrawPoint(center.m_x + radius, center.m_y);
+    targetGCDC->DrawPoint(center.m_x, center.m_y - radius);
+    targetGCDC->DrawPoint(center.m_x, center.m_y + radius);
     targetGCDC->SetPen(*pen);
   }
 #endif
@@ -10633,26 +10674,25 @@ void RenderFromHPGL::Polygon() {
 #endif
 }
 
-void RenderFromHPGL::RotatePoint(wxPoint &point, wxPoint origin, double angle) {
+void RenderFromHPGL::RotatePoint(wxPoint2DDouble &point, wxPoint origin, double angle) {
   if (angle == 0.) return;
   double sin_rot = sin(angle * PI / 180.);
   double cos_rot = cos(angle * PI / 180.);
 
   double xp =
-      ((point.x - origin.x) * cos_rot) - ((point.y - origin.y) * sin_rot);
+      ((point.m_x - origin.x) * cos_rot) - ((point.m_y - origin.y) * sin_rot);
   double yp =
-      ((point.x - origin.x) * sin_rot) + ((point.y - origin.y) * cos_rot);
+      ((point.m_x - origin.x) * sin_rot) + ((point.m_y - origin.y) * cos_rot);
 
-  point.x = (int)xp + origin.x;
-  point.y = (int)yp + origin.y;
+  point.m_x = (int)xp + origin.x;
+  point.m_y = (int)yp + origin.y;
 }
 
-bool RenderFromHPGL::Render(char *str, char *col, wxPoint &r, wxPoint &pivot,
+bool RenderFromHPGL::Render(char *str, char *col, wxPoint2DDouble &r, wxPoint &pivot,
                             wxPoint origin, float scale, double rot_angle,
                             bool bSymbol) {
-
-  wxPoint lineStart;
-  wxPoint lineEnd;
+  wxPoint2DDouble lineStart;
+  wxPoint2DDouble lineEnd;
 
   scaleFactor = 100.0 / plib->GetPPMM();
   scaleFactor /= scale;
@@ -10693,21 +10733,21 @@ bool RenderFromHPGL::Render(char *str, char *col, wxPoint &r, wxPoint &pivot,
       lineStart = ParsePoint(arguments);
       RotatePoint(lineStart, origin, rot_angle);
       lineStart -= pivot;
-      lineStart.x /= scaleFactor;
-      lineStart.y /= scaleFactor;
+      lineStart.m_x /= scaleFactor;
+      lineStart.m_y /= scaleFactor;
       lineStart += r;
       continue;
     }
     if (command == _T("PD")) {
       if (arguments.Length() == 0) {
         lineEnd = lineStart;
-        lineEnd.x++;
+        lineEnd.m_x++;
       } else {
         lineEnd = ParsePoint(arguments);
         RotatePoint(lineEnd, origin, rot_angle);
         lineEnd -= pivot;
-        lineEnd.x /= scaleFactor;
-        lineEnd.y /= scaleFactor;
+        lineEnd.m_x /= scaleFactor;
+        lineEnd.m_y /= scaleFactor;
         lineEnd += r;
       }
       Line(lineStart, lineEnd);
@@ -10723,7 +10763,7 @@ bool RenderFromHPGL::Render(char *str, char *col, wxPoint &r, wxPoint &pivot,
     }
     if (command == _T("PM")) {
       noPoints = 1;
-      polygon[0] = lineStart;
+      polygon[0] = wxPoint(lineStart.m_x, lineStart.m_y);
 
       if (arguments == _T("0")) {
         do {
@@ -10749,10 +10789,10 @@ bool RenderFromHPGL::Render(char *str, char *col, wxPoint &r, wxPoint &pivot,
               lineEnd = wxPoint(x, y);
               RotatePoint(lineEnd, origin, rot_angle);
               lineEnd -= pivot;
-              lineEnd.x /= scaleFactor;
-              lineEnd.y /= scaleFactor;
+              lineEnd.m_x /= scaleFactor;
+              lineEnd.m_y /= scaleFactor;
               lineEnd += r;
-              polygon[noPoints++] = lineEnd;
+              polygon[noPoints++] = wxPoint(lineEnd.m_x, lineEnd.m_y);
             }
           }
         } while (command != _T("PM"));

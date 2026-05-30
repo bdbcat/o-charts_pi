@@ -452,11 +452,10 @@ private:
 
   int RenderLS_Dash_GLSL(ObjRazRules *rzRules, Rules *rules);
 
-  void DrawDashLine(wxPen &pen, wxCoord x1, wxCoord y1, wxCoord x2, wxCoord y2);
+  void DrawDashLine(wxPen &pen, double x1, double y1, double x2, double y2);
 
   render_canvas_parms *CreatePatternBufferSpec(ObjRazRules *rzRules,
-                                               Rules *rules,
-                                               bool b_revrgb,
+                                               Rules *rules, bool b_revrgb,
                                                bool b_pot = false);
 
   void RenderToBufferFilledPolygon(ObjRazRules *rzRules, S57Obj *obj,
@@ -464,20 +463,20 @@ private:
                                    render_canvas_parms *patt_spec);
 
   void draw_lc_poly(wxDC *pdc, wxColor &color, int width, wxPoint *ptp,
-                    int *mask, int npt, float sym_len, float sym_factor,
-                    Rule *draw_rule);
+                    int *mask, int npt, float sym_len, float sym_height,
+                    float sym_factor, Rule *draw_rule);
 
-  bool RenderHPGL(ObjRazRules *rzRules, Rule *rule_in, wxPoint &r,
+  bool RenderHPGL(ObjRazRules *rzRules, Rule *rule_in, wxPoint2DDouble &r,
                   float rot_angle = 0., double uScale = 1.0);
-  bool RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
+  bool RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint2DDouble &r,
                           float rot_angle = 0.);
   void SetupSoundingFont();
-  bool RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint &r,
+  bool RenderSoundingSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint2DDouble &r,
                             wxColor symColor,
                             float rot_angle = 0.);
   wxImage RuleXBMToImage(Rule *prule);
 
-  bool RenderText(wxDC *pdc, S52_TextC *ptext, int x, int y, wxRect *pRectDrawn,
+  bool RenderText(wxDC *pdc, S52_TextC *ptext, double x, double y, wxRect *pRectDrawn,
                   S57Obj *pobj, bool bCheckOverlap);
 
   bool CheckTextRectList(const wxRect &test_rect, S52_TextC *ptext);
@@ -516,13 +515,19 @@ private:
   bool GetPointPixSingle(ObjRazRules *rzRules, float north, float east,
                          wxPoint *r);
   void GetPixPointSingle(int pixx, int pixy, double *plat, double *plon);
-  void GetPixPointSingleNoRotate(int pixx, int pixy, double *plat, double *plon);
+  void GetPixPointSingleNoRotate(int pixx, int pixy, double *plat,
+                                 double *plon);
+  bool GetDoublePointPixSingle(ObjRazRules *rzRules, float north, float east,
+                                        wxPoint2DDouble *r);
+  bool GetDoublePointPixArray(ObjRazRules *rzRules, wxPoint2DDouble *pd, wxPoint2DDouble *pp,
+                        int nv);
 
   void GetLLFromPix(const wxPoint2DDouble &p, double *lat, double *lon);
   wxPoint GetPixFromLL(double lat, double lon);
   wxPoint GetPixFromLLROT(double lat, double lon, double rotation);
   wxPoint2DDouble GetDoublePixFromLL(double lat, double lon);
-  wxPoint2DDouble GetDoublePixFromLLROT(double lat, double lon, double rotation);
+  wxPoint2DDouble GetDoublePixFromLLROT(double lat, double lon,
+                                        double rotation);
 
   LLBBox &GetBBox() { return BBox; }
   LLBBox GetReducedBBox() { return reducedBBox; }
@@ -617,7 +622,8 @@ public:
   void SetTargetGCDC(wxGCDC *gdc);
 #endif
   void SetVP(VPointCompat *pVP) { m_vp = pVP; }
-  bool Render(char *str, char *col, wxPoint &r, wxPoint &pivot, wxPoint origin,
+  void SetContentScaleFactor(double factor) { m_content_scale_factor = factor; }
+  bool Render(char *str, char *col, wxPoint2DDouble &r, wxPoint &pivot, wxPoint origin,
               float scale, double rot_angle, bool bSymbol);
   wxBrush *getBrush() { return brush; }
 
@@ -631,11 +637,11 @@ public:
 
 private:
   const char *findColorNameInRef(char colorCode, char *col);
-  void RotatePoint(wxPoint &point, wxPoint origin, double angle);
+  void RotatePoint(wxPoint2DDouble &point, wxPoint origin, double angle);
   wxPoint ParsePoint(wxString &argument);
   void SetPen();
-  void Line(wxPoint from, wxPoint to);
-  void Circle(wxPoint center, int radius, bool filled = false);
+  void Line(wxPoint2DDouble from, wxPoint2DDouble to);
+  void Circle(wxPoint2DDouble center, int radius, bool filled = false);
   void Polygon();
 
   void DrawPolygonTessellated(int n, wxPoint points[], wxCoord xoffset,
@@ -657,6 +663,7 @@ private:
   wxBrush *brush;
   long penWidth;
   int transparency;
+  double m_content_scale_factor;
 
   int noPoints;
   wxPoint polygon[100];
