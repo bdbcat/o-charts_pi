@@ -1871,6 +1871,8 @@ bool eSENCChart::ProcessHeader(Osenc &senc)
                 *rrun++ = (float)y/scaler;
                 rdrun++;
               }
+
+              free(dsource);
 #else
             // Another approach
             // Scan the points, calculating extents.

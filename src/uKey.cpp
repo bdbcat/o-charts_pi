@@ -105,10 +105,10 @@ bool parseKeyFile( wxString kfile, bool bDongle )
     wxFileName fn(kfile);
     
     //  Parse the XML
-    TiXmlDocument * doc = new TiXmlDocument();
-    doc->Parse( iText);
+    TiXmlDocument doc;
+    doc.Parse( iText);
     
-    TiXmlElement * root = doc->RootElement();
+    TiXmlElement * root = doc.RootElement();
     if(!root)
         return false;                              // undetermined error??
 
