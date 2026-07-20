@@ -179,6 +179,8 @@ extern bool validateUserKey( wxString sencFileName);
 extern bool CheckEULA( void );
 extern void processUserKeyHint(const wxString &oesenc_file);
 
+static wxCriticalSection g_initLock;
+
 // ----------------------------------------------------------------------------
 // Random Prototypes
 // ----------------------------------------------------------------------------
@@ -576,6 +578,9 @@ oeuSENCChart::~oeuSENCChart()
 
 int oeuSENCChart::Init( const wxString& name, int init_flags )
 {
+    // This method in not THREAD-SAFE, so preclude simultaneous threaded access
+    wxCriticalSectionLocker lock(g_initLock);
+
     std::string sname = wx2std(name);
     if(chartFailCount.find(sname) == chartFailCount.end()){
         chartFailCount[sname] = 0;
@@ -657,6 +662,9 @@ oeuEVCChart::~oeuEVCChart()
 
 int oeuEVCChart::Init( const wxString& name, int init_flags )
 {
+    // This method in not THREAD-SAFE, so preclude simultaneous threaded access
+    wxCriticalSectionLocker lock(g_initLock);
+
     std::string sname = wx2std(name);
     if(chartFailCount.find(sname) == chartFailCount.end()){
         chartFailCount[sname] = 0;
@@ -738,6 +746,9 @@ oesuChart::~oesuChart()
 
 int oesuChart::Init( const wxString& name, int init_flags )
 {
+    // This method in not THREAD-SAFE, so preclude simultaneous threaded access
+    wxCriticalSectionLocker lock(g_initLock);
+
     std::string sname = wx2std(name);
     if(chartFailCount.find(sname) == chartFailCount.end()){
         chartFailCount[sname] = 0;
