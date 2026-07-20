@@ -29,6 +29,66 @@ modules:
 
     - @include libs/flatpak/libusb-compat-0.1.yaml
 
+    - name: autoconf-archive
+      buildsystem: autotools
+      make-args:
+        - PREFIX=/app
+      make-install-args:
+        - DESTDIR=/app/extensions/o-charts_pi
+      sources:
+        - type: archive
+          url: http://ftpmirror.gnu.org/autoconf-archive/autoconf-archive-2024.10.16.tar.xz
+          sha256: 7bcd5d001916f3a50ed7436f4f700e3d2b1bade3ed803219c592d62502a57363
+
+    - name: libmnl
+      buildsystem: autotools
+      config-opts:
+        - --prefix=/app/extensions/o-charts_pi
+      sources:
+        - type: git
+          url: https://github.com/justmirror/libmnl.git
+          tag: libmnl-1.0.4
+
+    - name: json-c
+      buildsystem: cmake
+      config-opts:
+        - -DCMAKE_INSTALL_PREFIX=/app/extensions/o-charts_pi
+        - -DCMAKE_INSTALL_LIBDIR=lib
+      sources:
+        - type: git
+          url: https://github.com/json-c/json-c
+          tag: json-c-0.19-20260627
+
+    - name: tpm2-tss
+      buildsystem: autotools
+      config-opts:
+        -  --disable-static
+        -  --enable-shared
+        -  --without-udevrulesdir
+        -  --with-tctidefaultconfig=/dev/tpmrm0
+        -  --with-tctidefaultmodule=libtss2-tcti-device.so
+        -  --prefix=/app/extensions/o-charts_pi
+      build-options:
+        cflags: -Wno-calloc-transposed-args -Wno-error=discarded-qualifiers
+      sources:
+        - type: git
+          url:  https://github.com/tpm2-software/tpm2-tss.git
+          tag: 4.1.3
+          commit: 30e6057722058cb85c292dcb7b77760ad6410d4e
+        - type: patch
+          paths:
+            - ../flatpak/0001-tpm2-tss-autoconf-Remove-irrelevant-tools-test.patch
+            - ../flatpak/0003-Ignore-new-gcc-15-diagnostics.patch
+            - ../flatpak/0004-configure.ac-Set-JSONC_LIBS-and-JSONC_CFLAGS.patch
+        - type: file
+          path: ../flatpak/autogen.sh
+      cleanup:
+        - /include
+        - /lib/*.a
+        - /lib/*.la
+        - /lib/pkgconfig
+        - /lib/libtss2-rc*
+
     - name: glew
       no-autogen: true
       make-args:
@@ -44,9 +104,9 @@ modules:
           url: https://downloads.sourceforge.net/project/glew/glew/2.1.0/glew-2.1.0.tgz
           sha256: 04de91e7e6763039bc11940095cd9c7f880baba82196a7765f727ac05a993c95
       cleanup:
-        - /include"
-        - /lib/pkgconfig"
-        - /lib/*.a"
+        - /include
+        - /lib/pkgconfig
+        - /lib/*.a
 
     - name: iproute2
       sources:
