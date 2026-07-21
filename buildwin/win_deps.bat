@@ -47,17 +47,13 @@ python -m pip install --upgrade pip
 echo Installing setuptools...
 python -m pip install setuptools wheel
 
+:: cryptography 49+ removed Win32 wheel support.
+:: Keep 48.0.1 until Win32 artifacts are retired.
 echo Installing cryptography 48.0.1...
 python -m pip install cryptography==48.0.1
 
 echo Installing cloudsmith...
 python -m pip install cloudsmith-cli
-
-:: echo Installing cryptography...
-:: python -m pip install cryptography
-:: python -m pip install -q setuptools wheel
-:: python -m pip install -q cloudsmith-cli
-:: python -m pip install -q cryptography
 
 :: Install pre-compiled wxWidgets and other DLL; add required paths.
 ::
