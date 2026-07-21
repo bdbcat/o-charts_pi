@@ -43,9 +43,18 @@ if errorlevel 1 choco install --no-progress -y python
 python --version
 python -m ensurepip
 python -m pip install --upgrade pip
-python -m pip install -q setuptools wheel
-python -m pip install -q cloudsmith-cli
-python -m pip install -q cryptography
+
+echo Installing setuptools...
+python -m pip install setuptools wheel
+
+echo Installing cloudsmith...
+python -m pip install cloudsmith-cli
+
+echo Installing cryptography...
+python -m pip install cryptography
+:: python -m pip install -q setuptools wheel
+:: python -m pip install -q cloudsmith-cli
+:: python -m pip install -q cryptography
 
 :: Install pre-compiled wxWidgets and other DLL; add required paths.
 ::
