@@ -68,8 +68,6 @@ modules:
         -  --with-tctidefaultconfig=/dev/tpmrm0
         -  --with-tctidefaultmodule=libtss2-tcti-device.so
         -  --prefix=/app/extensions/o-charts_pi
-        -  JSONC_LIBS="-L/app/extensions/o-charts_pi/lib -ljson-c"
-        -  JSONC_CFLAGS="-I/app/extensions/o-charts_pi/include"
       build-options:
         cflags: -Wno-calloc-transposed-args -Wno-error=discarded-qualifiers
       sources:
@@ -81,6 +79,7 @@ modules:
           paths:
             - ../flatpak/0001-tpm2-tss-autoconf-Remove-irrelevant-tools-test.patch
             - ../flatpak/0003-Ignore-new-gcc-15-diagnostics.patch
+            - ../flatpak/0004-configure.ac-Set-JSONC_LIBS-and-JSONC_CFLAGS.patch
         - type: file
           path: ../flatpak/autogen.sh
       cleanup:
