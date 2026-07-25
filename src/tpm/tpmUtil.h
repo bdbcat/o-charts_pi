@@ -44,7 +44,7 @@ public:
 class TPMMessageDialog : public wxDialog {
 public:
     TPMMessageDialog(wxWindow* parent, const wxString& line1,
-        const wxString& line2, const wxString& line3,
+        const wxString& line2, const wxString& line2a, const wxString& line3,
         const wxString& caption = wxMessageBoxCaptionStr,
         long style = wxOK | wxCENTRE);
 

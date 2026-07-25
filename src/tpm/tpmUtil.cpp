@@ -105,7 +105,7 @@ EVT_CLOSE(TPMMessageDialog::OnClose)
 END_EVENT_TABLE()
 
 TPMMessageDialog::TPMMessageDialog(wxWindow* parent, const wxString& line1,
-    const wxString& line2, const wxString& line3,
+    const wxString& line2, const wxString& line2a, const wxString& line3,
     const wxString& caption, long style)
     : wxDialog(parent, wxID_ANY, caption, wxDefaultPosition, wxDefaultSize,
         wxDEFAULT_DIALOG_STYLE | wxSTAY_ON_TOP) {
@@ -117,18 +117,29 @@ TPMMessageDialog::TPMMessageDialog(wxWindow* parent, const wxString& line1,
 
     wxBoxSizer* icon_text = new wxBoxSizer(wxHORIZONTAL);
     wxBoxSizer* icon_text2= new wxBoxSizer(wxHORIZONTAL);
+    wxBoxSizer* icon_text2a= new wxBoxSizer(wxHORIZONTAL);
     wxBoxSizer* icon_text3= new wxBoxSizer(wxHORIZONTAL);
 
     // 2) text
     topsizer->Add(icon_text, 1, wxLEFT | wxRIGHT | wxTOP, 10);
     icon_text->Add(CreateTextSizer(line1), 0, wxLEFT, 10);
 
-    topsizer->Add(icon_text2, 1, wxLEFT | wxRIGHT | wxTOP, 10);
-    auto ctrl = new OCCopyableText(this, line2);
-    ctrl->SetMinSize(wxSize(40 * wxWindow::GetCharWidth(), -1));
-    icon_text2->Add(ctrl, 1, wxLEFT , 15 * wxWindow::GetCharWidth());
+    wxBoxSizer* text_group= new wxBoxSizer(wxVERTICAL);
+    topsizer->Add(text_group, 1, wxLEFT | wxRIGHT | wxTOP, 10);
 
-    topsizer->Add(icon_text3, 1, wxLEFT | wxRIGHT , 10);
+    text_group->Add(icon_text2, 0, wxLEFT | wxRIGHT | wxTOP, 10);
+    auto ctrl = new OCCopyableText(this, line2);
+    ctrl->SetMinSize(wxSize(60 * wxWindow::GetCharWidth(), -1));
+    icon_text2->Add(ctrl, 0, wxLEFT , 10 * wxWindow::GetCharWidth());
+
+    if(line2a.Length()) {
+        text_group->Add(icon_text2a, 0, wxLEFT | wxRIGHT, 10);
+        auto ctrl = new OCCopyableText(this, line2a);
+        ctrl->SetMinSize(wxSize(60 * wxWindow::GetCharWidth(), -1));
+        icon_text2a->Add(ctrl, 0, wxLEFT, 10 * wxWindow::GetCharWidth());
+    }
+
+    topsizer->Add(icon_text3, 1, wxLEFT | wxRIGHT | wxTOP, 10);
     icon_text3->Add(CreateTextSizer(line3), 0, wxLEFT, 10);
 
 
@@ -206,7 +217,7 @@ static int TPMUIMessage3() {
         Please exit OpenCPN, open a terminal, and add\n\\
         your user name to 'tss' group, by typing this:"),
 
-        " \"sudo usermod -aG tss $USER \"",
+        " \"sudo usermod -aG tss $USER \"", "",
 
         "       " + _("Log out of linux desktop, wait 30 seconds, and log back in\n\
         to linux desktop in order to acrivate the new group setting.\n\n\
@@ -229,7 +240,7 @@ static int TPMUIMessage4() {
         Please exit OpenCPN, open a terminal, and add these \n\\
         libraries by typing this:"),
 
-        "\" sudo apt install libtss2-esys-* libtss2-tctildr0 \"",
+        "\" sudo apt install libtss2-esys-* libtss2-tctildr0 \"", "",
 
         "       " + _("Or, press CANCEL to disable o-charts support of TPM\n"),
 
@@ -241,6 +252,27 @@ static int TPMUIMessage4() {
     return dret;
 }
 
+static int TPMUIMessage5() {
+
+    int dret = wxID_OK;
+    auto dialog = new TPMMessageDialog(NULL, \
+        "       " + _("To enable TPM security features for o-charts,\n\
+        you must install the appropraite udev rules.\n\n\
+        Please exit OpenCPN, and add these rules to the rules directory:\n\n\
+        /etc/udev/rules.d/90-tpm.rules:"),
+
+        "KERNEL==\"tpm[0-9]*\", TAG+=\"systemd\", MODE=\"0666\", OWNER=\"tss\"",
+        "KERNEL==\"tpmrm[0-9]*\", TAG+=\"systemd\", MODE=\"0666\", GROUP=\"tss\"",
+
+        "       " + _("Or, press CANCEL to disable o-charts support of TPM\n"),
+
+        "o-charts Message", wxOK | wxCANCEL);
+
+    dialog->ShowModal();
+    dret = dialog->GetRetVal();
+    dialog->Destroy();
+    return dret;
+}
 
 /* ============================
    UI / Policy STUBS
@@ -467,9 +499,20 @@ bool DetectTPMAndPrepareAccess()
 
             }
         }
-    } else {
+    } else if (!IsRunningInFlatpak()){
         g_TPMState = TPMSTATE_UNABLE;
         UI_Notify("TPM: Cannot r/w /dev/tpm*");
+        return false;
+    } else {
+        // Advise flatpak user to add udev rules
+        UI_Notify("TPM: Request user add udev rules.");
+        int retv5 = TPMUIMessage5();
+        if (retv5 != wxID_OK) {
+            g_TPMState = TPMSTATE_REJECTED;  // don't ask again
+            return false;
+        } else
+            g_TPMState = TPMSTATE_ACCPTED_UNVERIFIED;
+
         return false;
     }
 
