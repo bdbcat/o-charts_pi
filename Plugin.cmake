@@ -186,6 +186,8 @@ macro(add_plugin_libraries)
   add_subdirectory("libs/wxcurl")
   target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
 
+  add_subdirectory("libs/libusb-compat")
+  target_link_libraries(${PACKAGE_NAME} libusb::compat)
 
   add_subdirectory("libs/oeserverd")
 
