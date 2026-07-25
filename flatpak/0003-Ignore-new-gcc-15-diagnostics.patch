@@ -1,0 +1,36 @@
+From 2bf72c8a006744b5d425131b619c7feb21c458bd Mon Sep 17 00:00:00 2001
+From: Alec Leamas <leamas.alec@gmail.com>
+Date: Wed, 22 Jul 2026 22:35:08 +0200
+Subject: [PATCH] Ignore new gcc-15 diagnostics
+
+---
+ src/tss2-tcti/tcti-device.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/src/tss2-tcti/tcti-device.c b/src/tss2-tcti/tcti-device.c
+index ebd27b24..7f72b49f 100644
+--- a/src/tss2-tcti/tcti-device.c
++++ b/src/tss2-tcti/tcti-device.c
+@@ -57,6 +57,11 @@
+ #define LOGMODULE tcti
+ #include "util/log.h"
+ 
++#if defined( __GNUC__) && __GNUC__ > 14
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored  "-Wunterminated-string-initialization"
++#endif
++
+ static char *default_conf[] = {
+ #ifdef __VXWORKS__
+     "/tpm0"
+@@ -544,3 +549,7 @@ Tss2_Tcti_Info (void)
+ {
+     return &tss2_tcti_device_info;
+ }
++
++#if defined( __GNUC__) && __GNUC__ > 14
++#pragma GCC diagnostic pop
++#endif
+-- 
+2.54.0
+

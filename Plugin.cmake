@@ -168,6 +168,9 @@ macro(add_plugin_libraries)
   add_subdirectory("libs/zlib")
   target_link_libraries(${PACKAGE_NAME} ocpn::zlib)
 
+  add_subdirectory("libs/tpm2-tss")
+  target_link_libraries(${PACKAGE_NAME} tpm2-tss::tpm2-tss)
+
   add_subdirectory("libs/glew")
   target_link_libraries(${PACKAGE_NAME} glew2::glew2)
 
@@ -182,6 +185,7 @@ macro(add_plugin_libraries)
 
   add_subdirectory("libs/wxcurl")
   target_link_libraries(${PACKAGE_NAME} ocpn::wxcurl)
+
 
   add_subdirectory("libs/oeserverd")
 
