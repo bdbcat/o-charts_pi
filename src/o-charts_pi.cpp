@@ -71,13 +71,13 @@
 
 namespace {
 
-HostApi122::ChartSafetyProviderStatus QueryChartSafety(
+HostApi123::ChartSafetyProviderStatus QueryChartSafety(
     void *context, PlugInChartBase *plugin_chart,
-    const HostApi122::ChartSafetyProviderRequest *request,
-    HostApi122::ChartSafetyProviderResult *result) {
+    const HostApi123::ChartSafetyProviderRequest *request,
+    HostApi123::ChartSafetyProviderResult *result) {
   (void)context;
   eSENCChart *chart = dynamic_cast<eSENCChart *>(plugin_chart);
-  if (!chart) return HostApi122::kChartSafetyProviderUnsupported;
+  if (!chart) return HostApi123::kChartSafetyProviderUnsupported;
   return chart->VisitChartSafetyGrid(request, result);
 }
 
@@ -583,17 +583,17 @@ int o_charts_pi::Init(void)
     m_class_name_array.Add(_T("oesuChart"));
     m_class_name_array.Add(_T("Chart_oeuRNC"));
 
-    // API 1.22 replaces the proof-of-concept exported symbol with an explicit,
-    // lifecycle-bound provider registration. Hosts exposing only HostApi121
+    // HostApi123 replaces the proof-of-concept exported symbol with an explicit,
+    // lifecycle-bound provider registration. Hosts exposing only HostApi122
     // continue to use normal chart rendering without this optional service.
     m_host_api = GetHostApi();
-    HostApi122 *api_122 = dynamic_cast<HostApi122 *>(m_host_api.get());
-    if (api_122) {
-        HostApi122::ChartSafetyProviderCallbacks callbacks = {};
+    HostApi123 *api_123 = dynamic_cast<HostApi123 *>(m_host_api.get());
+    if (api_123) {
+        HostApi123::ChartSafetyProviderCallbacks callbacks = {};
         callbacks.struct_size = sizeof(callbacks);
         callbacks.context = this;
         callbacks.query = QueryChartSafety;
-        if (!api_122->RegisterChartSafetyProvider(
+        if (!api_123->RegisterChartSafetyProvider(
                 GetCommonName().ToStdString(), &callbacks))
             wxLogWarning("o-charts: chart-safety provider registration failed");
     }
@@ -804,9 +804,9 @@ int o_charts_pi::Init(void)
 
 bool o_charts_pi::DeInit(void)
 {
-    HostApi122 *api_122 = dynamic_cast<HostApi122 *>(m_host_api.get());
-    if (api_122)
-        api_122->RegisterChartSafetyProvider(GetCommonName().ToStdString(),
+    HostApi123 *api_123 = dynamic_cast<HostApi123 *>(m_host_api.get());
+    if (api_123)
+        api_123->RegisterChartSafetyProvider(GetCommonName().ToStdString(),
                                              nullptr);
     m_host_api.reset();
 

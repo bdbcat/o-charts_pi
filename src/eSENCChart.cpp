@@ -6879,7 +6879,7 @@ static ocharts::chart_safety::Point ChartSafetyTrianglePoint(
 }
 
 static bool RasterizeChartSafetyArea(
-    const HostApi122::ChartSafetyProviderRequest *request,
+    const HostApi123::ChartSafetyProviderRequest *request,
     S57Obj *obj, const std::vector<double> &column_x,
     const std::vector<double> &row_y,
     const std::vector<double> &column_lon,
@@ -6977,9 +6977,9 @@ static bool ChartSafetyParseDepth(wxString value, double *depth_m)
     return true;
 }
 
-static HostApi122::ChartSafetyFeature ChartSafetySemanticFeature(S57Obj *obj)
+static HostApi123::ChartSafetyFeature ChartSafetySemanticFeature(S57Obj *obj)
 {
-    HostApi122::ChartSafetyFeature feature = {};
+    HostApi123::ChartSafetyFeature feature = {};
     feature.struct_size = sizeof(feature);
     if( !obj ) return feature;
     strncpy(feature.feature_name, obj->FeatureName,
@@ -6990,47 +6990,47 @@ static HostApi122::ChartSafetyFeature ChartSafetySemanticFeature(S57Obj *obj)
     const wxString water_level = obj->GetAttrValueAsString("WATLEV");
     if( !strncmp(obj->FeatureName, "LNDARE", 6) ||
         ChartSafetyWaterLevelIs(water_level, 2) )
-        feature.flags |= HostApi122::kChartSafetyFeatureLand;
+        feature.flags |= HostApi123::kChartSafetyFeatureLand;
     if( ChartSafetyWaterLevelIs(water_level, 4) ||
         ChartSafetyWaterLevelIs(water_level, 5) )
-        feature.flags |= HostApi122::kChartSafetyFeatureDrying;
+        feature.flags |= HostApi123::kChartSafetyFeatureDrying;
 
     if( !strncmp(obj->FeatureName, "DEPARE", 6) ||
         !strncmp(obj->FeatureName, "DRGARE", 6) ) {
         if( ChartSafetyParseDepth(obj->GetAttrValueAsString("DRVAL1"),
                                   &feature.minimum_depth_m) )
-            feature.flags |= HostApi122::kChartSafetyFeatureHasDepth;
+            feature.flags |= HostApi123::kChartSafetyFeatureHasDepth;
     }
     else if( !strncmp(obj->FeatureName, "WRECKS", 6) ||
              !strncmp(obj->FeatureName, "UWTROC", 6) ||
              !strncmp(obj->FeatureName, "OBSTRN", 6) ) {
         if( ChartSafetyParseDepth(obj->GetAttrValueAsString("VALSOU"),
                                   &feature.minimum_depth_m) )
-            feature.flags |= HostApi122::kChartSafetyFeatureHasDepth;
+            feature.flags |= HostApi123::kChartSafetyFeatureHasDepth;
         else
             feature.flags |=
-                HostApi122::kChartSafetyFeatureUnknownDangerDepth;
+                HostApi123::kChartSafetyFeatureUnknownDangerDepth;
     }
     return feature;
 }
 
-HostApi122::ChartSafetyProviderStatus eSENCChart::VisitChartSafetyGrid(
-    const HostApi122::ChartSafetyProviderRequest *request,
-    HostApi122::ChartSafetyProviderResult *result)
+HostApi123::ChartSafetyProviderStatus eSENCChart::VisitChartSafetyGrid(
+    const HostApi123::ChartSafetyProviderRequest *request,
+    HostApi123::ChartSafetyProviderResult *result)
 {
     if( !request || !result ||
-        request->struct_size < sizeof(HostApi122::ChartSafetyProviderRequest) ||
-        result->struct_size < sizeof(HostApi122::ChartSafetyProviderResult) ||
-        request->abi_version != HostApi122::kChartSafetyProviderAbiVersion ||
+        request->struct_size < sizeof(HostApi123::ChartSafetyProviderRequest) ||
+        result->struct_size < sizeof(HostApi123::ChartSafetyProviderResult) ||
+        request->abi_version != HostApi123::kChartSafetyProviderAbiVersion ||
         !request->visit_object || request->rows == 0 || request->cols == 0 ||
         request->lat_step <= 0 || request->lon_step <= 0 )
-        return HostApi122::kChartSafetyProviderError;
+        return HostApi123::kChartSafetyProviderError;
 
     const uint64_t cell_count =
         static_cast<uint64_t>(request->rows) * request->cols;
-    if( cell_count > 65536 ) return HostApi122::kChartSafetyProviderError;
+    if( cell_count > 65536 ) return HostApi123::kChartSafetyProviderError;
 
-    result->abi_version = HostApi122::kChartSafetyProviderAbiVersion;
+    result->abi_version = HostApi123::kChartSafetyProviderAbiVersion;
     result->processed_cells = 0;
     result->candidate_objects = 0;
     result->hit_objects = 0;
@@ -7038,7 +7038,7 @@ HostApi122::ChartSafetyProviderStatus eSENCChart::VisitChartSafetyGrid(
     // this API to be retained in an identity-scoped safety cache.  This does
     // not permit exporting or caching decrypted chart geometry/object data.
     result->result_flags =
-        HostApi122::kChartSafetyDerivedCacheAllowed;
+        HostApi123::kChartSafetyDerivedCacheAllowed;
     for( uint64_t i = 0; i < cell_count; ++i )
         if( !request->active_cells || request->active_cells[i] )
             ++result->processed_cells;
@@ -7088,7 +7088,7 @@ HostApi122::ChartSafetyProviderStatus eSENCChart::VisitChartSafetyGrid(
         std::is_sorted(column_x.begin(), column_x.end()) &&
         std::is_sorted(row_y.begin(), row_y.end());
     EnsureChartSafetyFeatureIndex();
-    if( !m_chart_safety_index ) return HostApi122::kChartSafetyProviderError;
+    if( !m_chart_safety_index ) return HostApi123::kChartSafetyProviderError;
 
     wxStopWatch total_timer;
     wxStopWatch query_timer;
@@ -7328,7 +7328,7 @@ HostApi122::ChartSafetyProviderStatus eSENCChart::VisitChartSafetyGrid(
         }
         if( !any_hit ) return;
 
-        const HostApi122::ChartSafetyFeature feature =
+        const HostApi123::ChartSafetyFeature feature =
             ChartSafetySemanticFeature(obj);
         ++result->hit_objects;
         request->visit_object(request->visitor_context, &feature,
@@ -7355,7 +7355,7 @@ HostApi122::ChartSafetyProviderStatus eSENCChart::VisitChartSafetyGrid(
         verify_raster ? 1 : 0, raster_mismatches, legacy_only_cells,
         raster_only_cells, index_missed_objects, index_missed_cells,
         total_timer.Time());
-    return HostApi122::kChartSafetyProviderComplete;
+    return HostApi123::kChartSafetyProviderComplete;
 }
 
 bool isPointInObjectBoundary( double east, double north, S57Obj *obj );

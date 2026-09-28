@@ -210,9 +210,9 @@ class  eSENCChart : public PlugInChartBaseExtended
 
       ListOfPI_S57Obj *GetObjRuleListAtLatLon(float lat, float lon, float select_radius,
                                                                  PlugIn_ViewPort *VPoint);
-      HostApi122::ChartSafetyProviderStatus VisitChartSafetyGrid(
-        const HostApi122::ChartSafetyProviderRequest *request,
-        HostApi122::ChartSafetyProviderResult *result);
+      HostApi123::ChartSafetyProviderStatus VisitChartSafetyGrid(
+        const HostApi123::ChartSafetyProviderRequest *request,
+        HostApi123::ChartSafetyProviderResult *result);
       wxString CreateObjDescriptions( ListOfPI_S57Obj* obj_list );
       wxString GetObjectAttributeValueAsString( PI_S57Obj *obj, int iatt, wxString curAttrName );
       static wxString GetAttributeDecode( wxString& att, int ival );
