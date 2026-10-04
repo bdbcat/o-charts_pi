@@ -1371,6 +1371,13 @@ void s52plib::SetPLIBColorScheme(ColorScheme cs) {
     case GLOBAL_COLOR_SCHEME_NIGHT:
       SchemeName = _T("NIGHT");
       break;
+    case GLOBAL_COLOR_SCHEME_DAY_HICON:
+      SchemeName = _T("DAY_HICON");
+      break;
+    case GLOBAL_COLOR_SCHEME_NIGHT_HICON:
+      SchemeName = _T("NIGHT_HICON");
+      break;
+
     default:
       SchemeName = _T("DAY");
       break;
