@@ -24,25 +24,6 @@ flatpak-steps: &flatpak-steps
     - run: ci/git-push.sh /build-flatpak
 
 jobs:
-  build-bullseye:
-    docker:
-      - image: circleci/buildpack-deps:bullseye-scm
-    environment:
-      - OCPN_TARGET: bullseye
-      - TARGET_TUPLE: debian-x86_64;11;x86_64
-      - CMAKE_BUILD_PARALLEL_LEVEL: 2
-    <<: *debian-steps
-
-  build-bullseye-wx32:
-    docker:
-      - image: circleci/buildpack-deps:bullseye-scm
-    environment:
-      - OCPN_TARGET: bullseye
-      - BUILD_WX32: true
-      - TARGET_TUPLE: debian-wx32-x86_64;11;x86_64
-      - CMAKE_BUILD_PARALLEL_LEVEL: 2
-    <<: *debian-steps
-
   build-bookworm:
     machine:
       image: ubuntu-2204:current
