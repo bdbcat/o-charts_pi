@@ -53,7 +53,7 @@ echo Installing cryptography 48.0.1...
 python -m pip install cryptography==48.0.1
 
 echo Installing cloudsmith...
-python -m pip install cloudsmith-cli
+python -m pip install -q cloudsmith-cli==1.19.0
 
 :: Install pre-compiled wxWidgets and other DLL; add required paths.
 ::
