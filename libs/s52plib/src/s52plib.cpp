@@ -55,6 +55,7 @@ static const double mercator_k0 = 0.9996;
 #include "LOD_reduce.h"
 #include "linmath.h"
 #include "Cs52_shaders.h"
+#include "raster_symbol_utils.h"
 
 #include <wx/image.h>
 #include <wx/tokenzr.h>
@@ -258,6 +259,11 @@ LUPHashIndex *LUPArrayContainer::GetArrayIndexHelper(const char *objectName) {
 //-----------------------------------------------------------------------------
 s52plib::s52plib(const wxString &PLib, bool b_forceLegacy) {
   m_plib_file = PLib;
+  // The first render can precede the host's settings message. In particular,
+  // an uninitialised sounding factor can request enormous raster resizes.
+  m_nSoundingFactor = 0;
+  m_nTextFactor = 0;
+  m_ChartScaleFactorExp = 1.0;
 
   pOBJLArray = new wxArrayPtrVoid;
 
@@ -357,7 +363,6 @@ s52plib::s52plib(const wxString &PLib, bool b_forceLegacy) {
   m_ContentScaleFactor = 1.0;
   m_FinalTextScaleFactor = 0;
   m_TextScaleFactor = 1;
-  m_nTextFactor = 0;
 }
 
 s52plib::~s52plib() {
@@ -1172,6 +1177,12 @@ void s52plib::ClearRulesCache(
     case ID_wxBitmap: {
       wxBitmap *pbm = (wxBitmap *)(pR->pixelPtr);
       delete pbm;
+      pR->pixelPtr = NULL;
+      pR->parm0 = ID_EMPTY;
+      break;
+    }
+    case ID_wxImage: {
+      delete static_cast<wxImage *>(pR->pixelPtr);
       pR->pixelPtr = NULL;
       pR->parm0 = ID_EMPTY;
       break;
@@ -2877,6 +2888,21 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint2DDou
     scale_factor *= xscale;
   }
 
+  wxRect texrect;
+  const unsigned int symbol_texture =
+      m_chartSymbols.GetGLTextureRect(texrect, prule->name.SYNM);
+  wxSize scaled_size;
+  const bool invalid_scale = !raster_symbol::ScaledSize(
+      texrect.width, texrect.height, scale_factor, scaled_size);
+  if (invalid_scale) {
+    // Keep displaying the symbol at its native size if a supplied scale is
+    // invalid, rather than passing it to wxImage or hiding a chart feature.
+    scale_factor = 1.0;
+    if (!raster_symbol::ScaledSize(texrect.width, texrect.height, scale_factor,
+                                  scaled_size))
+      return false;
+  }
+
   int pivot_x = prule->pos.line.pivot_x.SYCL;
   int pivot_y = prule->pos.line.pivot_y.SYRW;
 
@@ -2885,12 +2911,14 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint2DDou
 
   // For opengl, hopefully the symbols are loaded in a texture
   unsigned int texture = 0;
-  wxRect texrect;
   if (!m_pdc) {
-    texture = m_chartSymbols.GetGLTextureRect(texrect, prule->name.SYNM);
+    texture = symbol_texture;
     if (texture) {
-      prule->parm2 = texrect.width * scale_factor;
-      prule->parm3 = texrect.height * scale_factor;
+      // The texture path shares dimension fields with CPU caches. Do not
+      // retain a bitmap/image whose old dimensions are about to be replaced.
+      if (prule->pixelPtr) ClearRulesCache(prule);
+      prule->parm2 = scaled_size.x;
+      prule->parm3 = scaled_size.y;
     }
   }
 
@@ -2900,7 +2928,8 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint2DDou
     if (prule->pixelPtr) {
       // Detect switches between DC and GL modes, flush if switch occurs
       if (m_pdc) {
-        if (prule->parm0 != ID_wxBitmap) b_dump_cache = true;
+        if (prule->parm0 != ID_wxBitmap && prule->parm0 != ID_wxImage)
+          b_dump_cache = true;
       } else {
         if (prule->parm0 != ID_RGBA) b_dump_cache = true;
       }
@@ -2908,9 +2937,8 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint2DDou
 
     // If the requested scaled symbol size is not the same as is currently
     // cached, we have to dump the cache
-    wxRect trect;
-    m_chartSymbols.GetGLTextureRect(trect, prule->name.SYNM);
-    if (prule->parm2 != (int)(trect.width * scale_factor)) b_dump_cache = true;
+    if (prule->parm2 != scaled_size.x || prule->parm3 != scaled_size.y)
+      b_dump_cache = true;
 
     wxBitmap *pbm = NULL;
     wxImage Image;
@@ -2919,14 +2947,17 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint2DDou
     if ((prule->pixelPtr == NULL) || (prule->parm1 != m_colortable_index) ||
         b_dump_cache) {
       Image =  m_chartSymbols.GetImage(prule->name.SYNM);
+      if (!Image.IsOk()) return false;
 
       // delete any old private data
       ClearRulesCache(prule);
 
-      // always display something, TMARDEF1 as width of 2
-      int w0 = wxMax(1, Image.GetWidth() * scale_factor);
-      int h0 = wxMax(1, Image.GetHeight() * scale_factor);
-      Image.Rescale(w0, h0, wxIMAGE_QUALITY_HIGH);
+      if (invalid_scale)
+        wxLogWarning("s52plib: invalid raster scale for %.8s; using native size",
+                     prule->name.SYNM);
+      if (Image.GetSize() != scaled_size)
+        Image.Rescale(scaled_size.x, scaled_size.y, wxIMAGE_QUALITY_HIGH);
+      if (!Image.IsOk()) return false;
 
       int w = Image.GetWidth();
       int h = Image.GetHeight();
@@ -2939,13 +2970,18 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint2DDou
 
         Image.SetMaskColour(m_unused_wxColor.Red(), m_unused_wxColor.Green(),
                             m_unused_wxColor.Blue());
-        unsigned char mr, mg, mb;
+        unsigned char mr = m_unused_wxColor.Red();
+        unsigned char mg = m_unused_wxColor.Green();
+        unsigned char mb = m_unused_wxColor.Blue();
         if (!a && !Image.GetOrFindMaskColour(&mr, &mg, &mb))
           printf("trying to use mask to draw a bitmap without alpha or mask\n");
 
         unsigned char *e = (unsigned char *)malloc(w * h * 4);
-        // XXX FIXME a or e ?
-        if (d && a) {
+        if (!d || !e) {
+          free(e);
+          return false;
+        }
+        {
           for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
               unsigned char r, g, b;
@@ -2980,18 +3016,7 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint2DDou
 
         //    Inspect the symbol image, to see if it actually has alpha
         //    transparency
-        if (Image.HasAlpha()) {
-          unsigned char *a = Image.GetAlpha();
-          for (int i = 0; i < Image.GetHeight(); i++, a++) {
-            for (int j = 0; j < Image.GetWidth(); j++) {
-              if ((*a) && (*a != 255)) {
-                b_has_trans = true;
-                break;
-              }
-            }
-            if (b_has_trans) break;
-          }
-        }
+        b_has_trans = raster_symbol::HasPartialAlpha(Image);
 #ifdef __WXMAC__
         b_has_trans = true;
 #endif
@@ -3011,8 +3036,16 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint2DDou
 #endif
 
         //      Save the bitmap ptr and aux parms in the rule
-        prule->pixelPtr = pbm;
-        prule->parm0 = ID_wxBitmap;
+        if (b_has_trans) {
+          // Retain the scaled symbol, but blend against the current chart
+          // background on each draw. A NULL bitmap used to force a rebuild
+          // and a second rescale for every partially transparent symbol.
+          prule->pixelPtr = new wxImage(Image);
+          prule->parm0 = ID_wxImage;
+        } else {
+          prule->pixelPtr = pbm;
+          prule->parm0 = ID_wxBitmap;
+        }
         prule->parm1 = m_colortable_index;
         prule->parm2 = w;
         prule->parm3 = h;
@@ -3169,12 +3202,13 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint2DDou
     glDisable(GL_BLEND);
 #endif
   } else {
-    if (!(prule->pixelPtr))  // This symbol requires manual alpha blending
+    if (prule->parm0 == ID_wxImage)  // This symbol requires manual alpha blending
     {
       //    Don't bother if the symbol is off the true screen,
       //    as for instance when an area-centered symbol is called for.
-      if ((r.m_x - pivot_x < vp_plib.pix_width) &&
-          (r.m_y - pivot_y < vp_plib.pix_height)) {
+      if (raster_symbol::IntersectsViewport(
+              r.m_x - pivot_x, r.m_y - pivot_y, b_width, b_height,
+              vp_plib.pix_width, vp_plib.pix_height)) {
         // Get the current screen contents to a wxImage
         wxBitmap b1(b_width, b_height, -1);
         wxMemoryDC mdc1(b1);
@@ -3183,15 +3217,14 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint2DDou
         wxImage im_back = b1.ConvertToImage();
 
         //    Get the scaled symbol as a wxImage
-        wxImage im_sym = m_chartSymbols.GetImage(prule->name.SYNM);
-        im_sym.Rescale(b_width, b_height, wxIMAGE_QUALITY_HIGH);
+        const wxImage &im_sym = *static_cast<wxImage *>(prule->pixelPtr);
 
         wxImage im_result(b_width, b_height);
         unsigned char *pdest = im_result.GetData();
         unsigned char *pback = im_back.GetData();
-        unsigned char *psym = im_sym.GetData();
+        const unsigned char *psym = im_sym.GetData();
 
-        unsigned char *asym = NULL;
+        const unsigned char *asym = NULL;
         if (im_sym.HasAlpha()) asym = im_sym.GetAlpha();
 
         //    Do alpha blending, the hard way
@@ -3199,13 +3232,12 @@ bool s52plib::RenderRasterSymbol(ObjRazRules *rzRules, Rule *prule, wxPoint2DDou
         if (pdest && psym && pback) {
           for (int i = 0; i < b_height; i++) {
             for (int j = 0; j < b_width; j++) {
-              double alpha = 1.0;
-              if (asym) alpha = (*asym++) / 256.0;
-              unsigned char r = (*psym++ * alpha) + (*pback++ * (1.0 - alpha));
+              const unsigned char alpha = asym ? *asym++ : 255;
+              unsigned char r = raster_symbol::Blend(*psym++, *pback++, alpha);
               *pdest++ = r;
-              unsigned char g = (*psym++ * alpha) + (*pback++ * (1.0 - alpha));
+              unsigned char g = raster_symbol::Blend(*psym++, *pback++, alpha);
               *pdest++ = g;
-              unsigned char b = (*psym++ * alpha) + (*pback++ * (1.0 - alpha));
+              unsigned char b = raster_symbol::Blend(*psym++, *pback++, alpha);
               *pdest++ = b;
             }
           }
