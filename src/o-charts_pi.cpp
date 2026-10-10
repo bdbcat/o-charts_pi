@@ -69,6 +69,20 @@
 
 #include "dychart.h"
 
+namespace {
+
+HostApi123::ChartSafetyProviderStatus QueryChartSafety(
+    void *context, PlugInChartBase *plugin_chart,
+    const HostApi123::ChartSafetyProviderRequest *request,
+    HostApi123::ChartSafetyProviderResult *result) {
+  (void)context;
+  eSENCChart *chart = dynamic_cast<eSENCChart *>(plugin_chart);
+  if (!chart) return HostApi123::kChartSafetyProviderUnsupported;
+  return chart->VisitChartSafetyGrid(request, result);
+}
+
+}  // namespace
+
 #ifdef __WXOSX__
 // #include "OpenGL/gl.h"
 // #include "OpenGL/glext.h"
@@ -479,7 +493,7 @@ void OESENC_HTMLMessageDialog::OnTimer(wxTimerEvent &evt)
 //---------------------------------------------------------------------------------------------------------
 
 o_charts_pi::o_charts_pi(void *ppimgr)
-      :opencpn_plugin_117(ppimgr)
+      :opencpn_plugin_122(ppimgr)
 {
       wxString vs;
       vs.Printf(_T("%d.%d.%d"), PLUGIN_VERSION_MAJOR, PLUGIN_VERSION_MINOR, PLUGIN_VERSION_PATCH);
@@ -568,6 +582,21 @@ int o_charts_pi::Init(void)
     m_class_name_array.Add(_T("oeuEVCChart"));          // This is legacy oeevc chart  (*.oeevc)
     m_class_name_array.Add(_T("oesuChart"));
     m_class_name_array.Add(_T("Chart_oeuRNC"));
+
+    // HostApi123 replaces the proof-of-concept exported symbol with an explicit,
+    // lifecycle-bound provider registration. Hosts exposing only HostApi122
+    // continue to use normal chart rendering without this optional service.
+    m_host_api = GetHostApi();
+    HostApi123 *api_123 = dynamic_cast<HostApi123 *>(m_host_api.get());
+    if (api_123) {
+        HostApi123::ChartSafetyProviderCallbacks callbacks = {};
+        callbacks.struct_size = sizeof(callbacks);
+        callbacks.context = this;
+        callbacks.query = QueryChartSafety;
+        if (!api_123->RegisterChartSafetyProvider(
+                GetCommonName().ToStdString(), &callbacks))
+            wxLogWarning("o-charts: chart-safety provider registration failed");
+    }
 
     // Specify the location of the xxserverd helper.
 #ifdef __WXMSW__
@@ -775,6 +804,12 @@ int o_charts_pi::Init(void)
 
 bool o_charts_pi::DeInit(void)
 {
+    HostApi123 *api_123 = dynamic_cast<HostApi123 *>(m_host_api.get());
+    if (api_123)
+        api_123->RegisterChartSafetyProvider(GetCommonName().ToStdString(),
+                                             nullptr);
+    m_host_api.reset();
+
     SaveConfig();
 
 //    delete pinfoDlg;
@@ -3080,7 +3115,7 @@ bool shutdown_SENC_server( void )
     
     if (g_pi->m_helper.hThread) CloseHandle(g_pi->m_helper.hThread);
     
-    g_pi->m_job.reset();  // optional — destructor will kill children
+    g_pi->m_job.reset();  // optional - destructor will kill children
     return true;
 #else
     // Check to see if the server is running, try to shutdown

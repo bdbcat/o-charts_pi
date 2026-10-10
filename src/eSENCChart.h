@@ -27,6 +27,7 @@ class S57Obj;
 class LUPrec;
 class ViewPort;
 class Extended_Geometry;
+class ChartSafetyFeatureIndex;
 
 #include "o-charts_pi.h"
 #include "s52s57.h"
@@ -209,6 +210,9 @@ class  eSENCChart : public PlugInChartBaseExtended
 
       ListOfPI_S57Obj *GetObjRuleListAtLatLon(float lat, float lon, float select_radius,
                                                                  PlugIn_ViewPort *VPoint);
+      HostApi123::ChartSafetyProviderStatus VisitChartSafetyGrid(
+        const HostApi123::ChartSafetyProviderRequest *request,
+        HostApi123::ChartSafetyProviderResult *result);
       wxString CreateObjDescriptions( ListOfPI_S57Obj* obj_list );
       wxString GetObjectAttributeValueAsString( PI_S57Obj *obj, int iatt, wxString curAttrName );
       static wxString GetAttributeDecode( wxString& att, int ival );
@@ -306,6 +310,7 @@ protected:
       bool DoesLatLonSelectObject( float lat, float lon, float select_radius, S57Obj *obj );
       bool IsPointInObjArea( float lat, float lon, float select_radius, S57Obj *obj );
       int GetLineFeaturePointArray(S57Obj *obj, void **ret_array);
+      void EnsureChartSafetyFeatureIndex();
 
 
       wxString Get_eHDR_Name( const wxString& name000 );
@@ -379,6 +384,7 @@ protected:
 
 
       ObjRazRules *razRules[PRIO_NUM][LUPNAME_NUM];
+      ChartSafetyFeatureIndex *m_chart_safety_index;
 
 
       //  DEPCNT VALDCO array members
@@ -602,7 +608,4 @@ public:
 };
 
 #endif
-
-
-
 

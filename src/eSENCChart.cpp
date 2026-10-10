@@ -36,12 +36,18 @@
 
 #include <sys/stat.h>
 #include <algorithm>          // for std::sort
+#include <cmath>
+#include <set>
 #include <string>
 #include <map>
 #include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include "o-charts_pi.h"
 #include "eSENCChart.h"
+#include "chart_safety_raster.h"
+#include "chart_safety_spatial_index.h"
 #include "mygeom.h"
 #include "cpl_csv.h"
 
@@ -175,6 +181,33 @@ extern bool              g_GLOptionsSet;
 
 extern bool validate_SENC_server( void );
 //extern wxString GetUserKey( int legendID, bool bforceNew);
+
+class ChartSafetyFeatureIndex
+{
+public:
+    std::vector<S57Obj *> features;
+    std::vector<S57Obj *> unindexed_features;
+    ocharts::chart_safety::PackedBoundsIndex bounds_index;
+    long build_ms;
+
+    ChartSafetyFeatureIndex() : build_ms(0) {}
+};
+
+static bool ChartSafetyObjectMayAffectSafety(S57Obj *obj)
+{
+    if( !obj ) return false;
+    if( !strncmp(obj->FeatureName, "LNDARE", 6) ||
+        !strncmp(obj->FeatureName, "DEPARE", 6) ||
+        !strncmp(obj->FeatureName, "DRGARE", 6) ||
+        !strncmp(obj->FeatureName, "WRECKS", 6) ||
+        !strncmp(obj->FeatureName, "UWTROC", 6) ||
+        !strncmp(obj->FeatureName, "OBSTRN", 6) )
+        return true;
+    const char *attr = obj->att_array;
+    for( int i = 0; attr && i < obj->n_attr; ++i, attr += 6 )
+        if( !strncmp(attr, "WATLEV", 6) ) return true;
+    return false;
+}
 extern bool validateUserKey( wxString sencFileName);
 extern bool CheckEULA( void );
 extern void processUserKeyHint(const wxString &oesenc_file);
@@ -1172,6 +1205,7 @@ PI_InitReturn oesuChart::PostInit( int flags, int cs )
 
 eSENCChart::eSENCChart()
 {
+    m_chart_safety_index = NULL;
     m_senc_dir =  g_SENCdir;
 
     // Create ATON arrays, needed by S52PLIB
@@ -1229,6 +1263,8 @@ eSENCChart::eSENCChart()
 
 eSENCChart::~eSENCChart()
 {
+      delete m_chart_safety_index;
+      m_chart_safety_index = NULL;
 
       //    Free the COVR tables
 
@@ -6769,6 +6805,559 @@ ListOfPI_S57Obj *eSENCChart::GetObjRuleListAtLatLon(float lat, float lon, float 
     return obj_list;
 }
 
+void eSENCChart::EnsureChartSafetyFeatureIndex()
+{
+    if( m_chart_safety_index ) return;
+
+    wxStopWatch timer;
+    ChartSafetyFeatureIndex *index = new ChartSafetyFeatureIndex;
+    std::vector<ocharts::chart_safety::Bounds> bounds;
+    std::unordered_set<S57Obj *> visited;
+
+    const auto add_object = [&](S57Obj *obj) {
+        if( !obj || !visited.insert(obj).second ||
+            !ChartSafetyObjectMayAffectSafety(obj) )
+            return;
+        // The legacy point selector uses a render box expanded by the query
+        // radius, which is not guaranteed to match BBObj.  Safety-relevant
+        // point features are few; keeping them in the always-query list is
+        // both cheap and exact, and prevents isolated wreck/rock/obstruction
+        // hazards from being dropped by a display-oriented bounding box.
+        if( obj->Primitive_type == GEO_POINT ) {
+            index->unindexed_features.push_back(obj);
+            return;
+        }
+        if( obj->BBObj.GetValid() &&
+            obj->BBObj.GetMinLon() <= obj->BBObj.GetMaxLon() &&
+            obj->BBObj.GetLonRange() <= 180.0 ) {
+            index->features.push_back(obj);
+            bounds.push_back(ocharts::chart_safety::Bounds(
+                obj->BBObj.GetMinLon(), obj->BBObj.GetMinLat(),
+                obj->BBObj.GetMaxLon(), obj->BBObj.GetMaxLat()));
+        }
+        else
+            index->unindexed_features.push_back(obj);
+    };
+
+    for( int priority = 0; priority < PRIO_NUM; ++priority ) {
+        for( int lookup = 0; lookup < LUPNAME_NUM; ++lookup ) {
+            for( ObjRazRules *rule = razRules[priority][lookup]; rule;
+                 rule = rule->next ) {
+                add_object(rule->obj);
+                for( ObjRazRules *child = rule->child; child;
+                     child = child->next )
+                    add_object(child->obj);
+            }
+        }
+    }
+
+    index->bounds_index.Build(bounds);
+    index->build_ms = timer.Time();
+    m_chart_safety_index = index;
+    wxLogMessage(
+        "OCHARTS_SAFETY_INDEX features=%lu unindexed=%lu build_ms=%ld",
+        static_cast<unsigned long>(index->features.size()),
+        static_cast<unsigned long>(index->unindexed_features.size()),
+        index->build_ms);
+}
+
+static ocharts::chart_safety::Point ChartSafetyTrianglePoint(
+    const PolyTriGroup *group, const TriPrim *primitive, int index)
+{
+    ocharts::chart_safety::Point point;
+    if( group->data_type == DATA_TYPE_DOUBLE ) {
+        point.x = primitive->p_vertex[index * 2];
+        point.y = primitive->p_vertex[index * 2 + 1];
+    }
+    else {
+        const float *vertices =
+            reinterpret_cast<const float *>(primitive->p_vertex);
+        point.x = vertices[index * 2];
+        point.y = vertices[index * 2 + 1];
+    }
+    return point;
+}
+
+static bool RasterizeChartSafetyArea(
+    const HostApi123::ChartSafetyProviderRequest *request,
+    S57Obj *obj, const std::vector<double> &column_x,
+    const std::vector<double> &row_y,
+    const std::vector<double> &column_lon,
+    const std::vector<double> &row_lat,
+    std::vector<uint64_t> *hit_cells)
+{
+    if( !obj || !obj->BBObj.GetValid() || !obj->pPolyTessGeo ||
+        !obj->pPolyTessGeo->IsOk() || !request || !hit_cells )
+        return false;
+    PolyTriGroup *group = obj->pPolyTessGeo->Get_PolyTriGroup_head();
+    if( !group ) return false;
+
+    for( TriPrim *primitive = group->tri_prim_head; primitive;
+         primitive = primitive->p_next ) {
+        if( primitive->type != PTG_TRIANGLES &&
+            primitive->type != PTG_TRIANGLE_STRIP &&
+            primitive->type != PTG_TRIANGLE_FAN )
+            return false;
+    }
+
+    const double radius = request->select_radius_degrees;
+    const ocharts::chart_safety::GeographicBounds object_bounds = {
+        obj->BBObj.GetMinLat() - radius,
+        obj->BBObj.GetMinLon() - radius,
+        obj->BBObj.GetMaxLat() + radius,
+        obj->BBObj.GetMaxLon() + radius};
+
+    for( TriPrim *primitive = group->tri_prim_head; primitive;
+         primitive = primitive->p_next ) {
+        if( !primitive->tri_box.GetValid() ) return false;
+        const ocharts::chart_safety::GeographicBounds primitive_bounds = {
+            primitive->tri_box.GetMinLat(), primitive->tri_box.GetMinLon(),
+            primitive->tri_box.GetMaxLat(), primitive->tri_box.GetMaxLon()};
+        const int triangle_count =
+            primitive->type == PTG_TRIANGLES
+                ? primitive->nVert / 3
+                : std::max(0, primitive->nVert - 2);
+        for( int triangle = 0; triangle < triangle_count; ++triangle ) {
+            int ia = 0;
+            int ib = 0;
+            int ic = 0;
+            if( primitive->type == PTG_TRIANGLES ) {
+                ia = triangle * 3;
+                ib = ia + 1;
+                ic = ia + 2;
+            }
+            else if( primitive->type == PTG_TRIANGLE_FAN ) {
+                ia = 0;
+                ib = triangle + 1;
+                ic = triangle + 2;
+            }
+            else {
+                ia = triangle;
+                ib = triangle + 1;
+                ic = triangle + 2;
+            }
+            ocharts::chart_safety::RasterizeTriangle(
+                ChartSafetyTrianglePoint(group, primitive, ia),
+                ChartSafetyTrianglePoint(group, primitive, ib),
+                ChartSafetyTrianglePoint(group, primitive, ic),
+                column_x, row_y, column_lon, row_lat, object_bounds,
+                primitive_bounds, request->active_cells, hit_cells);
+        }
+    }
+    return true;
+}
+
+static unsigned long ChartSafetyCountBits(uint64_t value)
+{
+    unsigned long count = 0;
+    while( value ) {
+        value &= value - 1;
+        ++count;
+    }
+    return count;
+}
+
+static bool ChartSafetyWaterLevelIs(wxString value, long code)
+{
+    value.Trim(true);
+    value.Trim(false);
+    long parsed = -1;
+    if( value.ToLong(&parsed) ) return parsed == code;
+    return value.Find(wxString::Format("(%ld)", code)) != wxNOT_FOUND;
+}
+
+static bool ChartSafetyParseDepth(wxString value, double *depth_m)
+{
+    value.Trim(true);
+    value.Trim(false);
+    if( value.IsEmpty() ) return false;
+    double parsed = 0.0;
+    if( !value.ToDouble(&parsed) || !std::isfinite(parsed) ) return false;
+    if( depth_m ) *depth_m = parsed;
+    return true;
+}
+
+static HostApi123::ChartSafetyFeature ChartSafetySemanticFeature(S57Obj *obj)
+{
+    HostApi123::ChartSafetyFeature feature = {};
+    feature.struct_size = sizeof(feature);
+    if( !obj ) return feature;
+    strncpy(feature.feature_name, obj->FeatureName,
+            sizeof(feature.feature_name));
+    feature.feature_name[sizeof(feature.feature_name) - 1] = '\0';
+    feature.primitive_type = obj->Primitive_type;
+
+    const wxString water_level = obj->GetAttrValueAsString("WATLEV");
+    if( !strncmp(obj->FeatureName, "LNDARE", 6) ||
+        ChartSafetyWaterLevelIs(water_level, 2) )
+        feature.flags |= HostApi123::kChartSafetyFeatureLand;
+    if( ChartSafetyWaterLevelIs(water_level, 4) ||
+        ChartSafetyWaterLevelIs(water_level, 5) )
+        feature.flags |= HostApi123::kChartSafetyFeatureDrying;
+
+    if( !strncmp(obj->FeatureName, "DEPARE", 6) ||
+        !strncmp(obj->FeatureName, "DRGARE", 6) ) {
+        if( ChartSafetyParseDepth(obj->GetAttrValueAsString("DRVAL1"),
+                                  &feature.minimum_depth_m) )
+            feature.flags |= HostApi123::kChartSafetyFeatureHasDepth;
+    }
+    else if( !strncmp(obj->FeatureName, "WRECKS", 6) ||
+             !strncmp(obj->FeatureName, "UWTROC", 6) ||
+             !strncmp(obj->FeatureName, "OBSTRN", 6) ) {
+        if( ChartSafetyParseDepth(obj->GetAttrValueAsString("VALSOU"),
+                                  &feature.minimum_depth_m) )
+            feature.flags |= HostApi123::kChartSafetyFeatureHasDepth;
+        else
+            feature.flags |=
+                HostApi123::kChartSafetyFeatureUnknownDangerDepth;
+    }
+    return feature;
+}
+
+HostApi123::ChartSafetyProviderStatus eSENCChart::VisitChartSafetyGrid(
+    const HostApi123::ChartSafetyProviderRequest *request,
+    HostApi123::ChartSafetyProviderResult *result)
+{
+    if( !request || !result ||
+        request->struct_size < sizeof(HostApi123::ChartSafetyProviderRequest) ||
+        result->struct_size < sizeof(HostApi123::ChartSafetyProviderResult) ||
+        request->abi_version != HostApi123::kChartSafetyProviderAbiVersion ||
+        !request->visit_object || request->rows == 0 || request->cols == 0 ||
+        request->lat_step <= 0 || request->lon_step <= 0 )
+        return HostApi123::kChartSafetyProviderError;
+
+    const uint64_t cell_count =
+        static_cast<uint64_t>(request->rows) * request->cols;
+    if( cell_count > 65536 ) return HostApi123::kChartSafetyProviderError;
+
+    result->abi_version = HostApi123::kChartSafetyProviderAbiVersion;
+    result->processed_cells = 0;
+    result->candidate_objects = 0;
+    result->hit_objects = 0;
+    // The provider contract permits the semantic land/depth raster derived by
+    // this API to be retained in an identity-scoped safety cache.  This does
+    // not permit exporting or caching decrypted chart geometry/object data.
+    result->result_flags =
+        HostApi123::kChartSafetyDerivedCacheAllowed;
+    for( uint64_t i = 0; i < cell_count; ++i )
+        if( !request->active_cells || request->active_cells[i] )
+            ++result->processed_cells;
+
+    if( request->plugin_viewport ) {
+        const PlugIn_ViewPort *pi_vp =
+            static_cast<const PlugIn_ViewPort *>(request->plugin_viewport);
+        ViewPort cvp = CreateCompatibleViewport(*pi_vp);
+        PrepareForRender(&cvp, ps52plib);
+    }
+
+    const uint32_t hit_word_count =
+        static_cast<uint32_t>((cell_count + 63) / 64);
+    std::vector<uint64_t> hit_cells(hit_word_count, 0);
+    std::vector<double> column_x(request->cols);
+    std::vector<double> row_y(request->rows);
+    std::vector<double> column_lon(request->cols);
+    std::vector<double> row_lat(request->rows);
+    const float axis_min_lat = static_cast<float>(request->min_lat);
+    const float axis_min_lon = static_cast<float>(request->min_lon);
+    for( uint32_t col = 0; col < request->cols; ++col ) {
+        const float lon = static_cast<float>(
+            request->min_lon + col * request->lon_step);
+        column_lon[col] = lon;
+        double projected_x = 0.0;
+        double unused = 0.0;
+        toSM_Plugin(axis_min_lat, lon, m_ref_lat, m_ref_lon,
+                    &projected_x, &unused);
+        // IsPointInObjArea() passes projected coordinates through float
+        // arguments to G_PtInPolygon(). Use that exact rounded coordinate for
+        // both the raster scan bounds and the polygon predicate. Otherwise a
+        // double just outside a triangle bound can round onto/inside its edge
+        // only after the raster has already skipped it.
+        column_x[col] = static_cast<float>(projected_x);
+    }
+    for( uint32_t row = 0; row < request->rows; ++row ) {
+        const float lat = static_cast<float>(
+            request->min_lat + row * request->lat_step);
+        row_lat[row] = lat;
+        double projected_y = 0.0;
+        double unused = 0.0;
+        toSM_Plugin(lat, axis_min_lon, m_ref_lat, m_ref_lon,
+                    &unused, &projected_y);
+        row_y[row] = static_cast<float>(projected_y);
+    }
+    const bool raster_axes_valid =
+        std::is_sorted(column_x.begin(), column_x.end()) &&
+        std::is_sorted(row_y.begin(), row_y.end());
+    EnsureChartSafetyFeatureIndex();
+    if( !m_chart_safety_index ) return HostApi123::kChartSafetyProviderError;
+
+    wxStopWatch total_timer;
+    wxStopWatch query_timer;
+    std::vector<S57Obj *> candidates;
+    const double query_min_lon =
+        request->min_lon - request->select_radius_degrees;
+    const double query_max_lon =
+        request->min_lon +
+        (request->cols - 1) * request->lon_step +
+        request->select_radius_degrees;
+    const double query_min_lat =
+        request->min_lat - request->select_radius_degrees;
+    const double query_max_lat =
+        request->min_lat +
+        (request->rows - 1) * request->lat_step +
+        request->select_radius_degrees;
+    if( query_min_lon < -180.0 || query_max_lon > 180.0 ) {
+        // Chart longitude conventions around the anti-meridian vary.  This is
+        // rare enough that keeping every indexed candidate is the safest
+        // fallback; the exact object bounding-box checks below still apply.
+        candidates = m_chart_safety_index->features;
+    }
+    else {
+        std::vector<std::size_t> matches;
+        m_chart_safety_index->bounds_index.Query(
+            ocharts::chart_safety::Bounds(
+                query_min_lon, query_min_lat,
+                query_max_lon, query_max_lat),
+            &matches);
+        candidates.reserve(
+            matches.size() + m_chart_safety_index->unindexed_features.size());
+        for( std::size_t i = 0; i < matches.size(); ++i )
+            candidates.push_back(m_chart_safety_index->features[matches[i]]);
+    }
+    candidates.insert(candidates.end(),
+                      m_chart_safety_index->unindexed_features.begin(),
+                      m_chart_safety_index->unindexed_features.end());
+    const std::size_t spatial_candidate_count = candidates.size();
+    const long query_ms = query_timer.Time();
+
+    wxString verify_setting;
+    const bool verify_raster =
+        wxGetEnv("OCHARTS_SAFETY_VERIFY_RASTER", &verify_setting) &&
+        verify_setting != "0" && !verify_setting.IsEmpty();
+    std::unordered_set<S57Obj *> spatial_candidates;
+    if( verify_raster ) {
+        spatial_candidates.insert(candidates.begin(), candidates.end());
+        candidates = m_chart_safety_index->features;
+        candidates.insert(candidates.end(),
+                          m_chart_safety_index->unindexed_features.begin(),
+                          m_chart_safety_index->unindexed_features.end());
+    }
+    unsigned long raster_objects = 0;
+    unsigned long legacy_objects = 0;
+    unsigned long raster_mismatches = 0;
+    unsigned long legacy_only_cells = 0;
+    unsigned long raster_only_cells = 0;
+    unsigned long index_missed_objects = 0;
+    unsigned long index_missed_cells = 0;
+    long raster_ms = 0;
+    long legacy_ms = 0;
+
+    const auto legacy_hit_test = [&](S57Obj *obj, int min_row, int max_row,
+                                     int min_col, int max_col,
+                                     std::vector<uint64_t> *bits) {
+        bool any_hit = false;
+        for( int row = min_row; row <= max_row; ++row ) {
+            const float lat = static_cast<float>(request->min_lat +
+                                                  row * request->lat_step);
+            for( int col = min_col; col <= max_col; ++col ) {
+                const uint32_t index =
+                    static_cast<uint32_t>(row) * request->cols + col;
+                if( request->active_cells && !request->active_cells[index] )
+                    continue;
+                const float lon = static_cast<float>(request->min_lon +
+                                                      col * request->lon_step);
+                if( DoesLatLonSelectObject(lat, lon,
+                                           request->select_radius_degrees,
+                                           obj) ) {
+                    (*bits)[index / 64] |= uint64_t(1) << (index % 64);
+                    any_hit = true;
+                }
+            }
+        }
+        return any_hit;
+    };
+
+    const auto visit = [&](S57Obj *obj) {
+        if( !obj ) return;
+        ++result->candidate_objects;
+        int min_row = 0;
+        int max_row = static_cast<int>(request->rows) - 1;
+        int min_col = 0;
+        int max_col = static_cast<int>(request->cols) - 1;
+        if( obj->BBObj.GetValid() ) {
+            const double radius = request->select_radius_degrees;
+            min_row = static_cast<int>(floor(
+                (obj->BBObj.GetMinLat() - radius - request->min_lat) /
+                request->lat_step));
+            max_row = static_cast<int>(ceil(
+                (obj->BBObj.GetMaxLat() + radius - request->min_lat) /
+                request->lat_step));
+            min_col = static_cast<int>(floor(
+                (obj->BBObj.GetMinLon() - radius - request->min_lon) /
+                request->lon_step));
+            max_col = static_cast<int>(ceil(
+                (obj->BBObj.GetMaxLon() + radius - request->min_lon) /
+                request->lon_step));
+            min_row = std::max(0, min_row);
+            min_col = std::max(0, min_col);
+            max_row = std::min(static_cast<int>(request->rows) - 1, max_row);
+            max_col = std::min(static_cast<int>(request->cols) - 1, max_col);
+        }
+        if( min_row > max_row || min_col > max_col ) return;
+
+        // Some OESU area records deliberately defer tessellation until they
+        // are rendered.  A semantic query cannot treat the outline segments
+        // as a line: for large land/depth areas that turns the segment bounding
+        // boxes into enormous false-positive rectangles.  Materialize only
+        // safety-relevant areas which overlap this grid, once per chart.
+        if( obj->Primitive_type == GEO_AREA ) {
+            if( !obj->pPolyTessGeo ) return;
+            if( !obj->pPolyTessGeo->IsOk() ) {
+                if( !obj->pPolyTessGeo->GetDeferredGeometry() &&
+                    obj->m_ls_list )
+                    obj->pPolyTessGeo->SetDeferredGeometry(
+                        buildExtendedGeom(obj));
+                if( obj->pPolyTessGeo->GetDeferredGeometry() )
+                    obj->pPolyTessGeo->BuildDeferredTess();
+            }
+            if( !obj->pPolyTessGeo->IsOk() ) return;
+        }
+
+        std::fill(hit_cells.begin(), hit_cells.end(), 0);
+        bool any_hit = false;
+        bool raster_supported = false;
+        const bool selected_by_index =
+            !verify_raster || spatial_candidates.count(obj) != 0;
+        if( selected_by_index && obj->Primitive_type == GEO_AREA &&
+            raster_axes_valid ) {
+            wxStopWatch timer;
+            raster_supported = RasterizeChartSafetyArea(
+                request, obj, column_x, row_y, column_lon, row_lat,
+                &hit_cells);
+            raster_ms += timer.Time();
+        }
+
+        if( raster_supported ) {
+            ++raster_objects;
+            for( std::size_t i = 0; i < hit_cells.size(); ++i )
+                if( hit_cells[i] ) {
+                    any_hit = true;
+                    break;
+                }
+
+            if( verify_raster ) {
+                std::vector<uint64_t> legacy_cells(hit_word_count, 0);
+                wxStopWatch timer;
+                const bool legacy_hit = legacy_hit_test(
+                    obj, min_row, max_row, min_col, max_col, &legacy_cells);
+                legacy_ms += timer.Time();
+                if( legacy_cells != hit_cells ) {
+                    ++raster_mismatches;
+                    unsigned long object_legacy_only = 0;
+                    unsigned long object_raster_only = 0;
+                    unsigned long object_raster_only_inside_bbox = 0;
+                    double first_raster_only_lat = 0.0;
+                    double first_raster_only_lon = 0.0;
+                    bool have_first_raster_only = false;
+                    for( std::size_t i = 0; i < hit_cells.size(); ++i ) {
+                        object_legacy_only += ChartSafetyCountBits(
+                            legacy_cells[i] & ~hit_cells[i]);
+                        uint64_t extra = hit_cells[i] & ~legacy_cells[i];
+                        object_raster_only += ChartSafetyCountBits(extra);
+                        while( extra ) {
+                            unsigned int bit = 0;
+                            uint64_t probe = extra;
+                            while( (probe & 1) == 0 ) {
+                                ++bit;
+                                probe >>= 1;
+                            }
+                            const uint64_t cell = i * 64 + bit;
+                            if( cell < cell_count ) {
+                                const uint32_t row =
+                                    static_cast<uint32_t>(cell / request->cols);
+                                const uint32_t col =
+                                    static_cast<uint32_t>(cell % request->cols);
+                                const float lat = static_cast<float>(
+                                    request->min_lat + row * request->lat_step);
+                                const float lon = static_cast<float>(
+                                    request->min_lon + col * request->lon_step);
+                                if( obj->BBObj.ContainsMarge(
+                                        lat, lon,
+                                        request->select_radius_degrees) )
+                                    ++object_raster_only_inside_bbox;
+                                if( !have_first_raster_only ) {
+                                    first_raster_only_lat = lat;
+                                    first_raster_only_lon = lon;
+                                    have_first_raster_only = true;
+                                }
+                            }
+                            extra &= extra - 1;
+                        }
+                    }
+                    legacy_only_cells += object_legacy_only;
+                    raster_only_cells += object_raster_only;
+                    wxLogMessage(
+                        "OCHARTS_SAFETY_RASTER_MISMATCH feature=%.6s "
+                        "legacy_only_cells=%lu raster_only_cells=%lu "
+                        "raster_only_inside_bbox=%lu first=(%.8f,%.8f)",
+                        obj->FeatureName, object_legacy_only,
+                        object_raster_only, object_raster_only_inside_bbox,
+                        first_raster_only_lat, first_raster_only_lon);
+                }
+                // Verification must be behaviour-neutral: publish the legacy
+                // result while recording differences from the new path.
+                hit_cells.swap(legacy_cells);
+                any_hit = legacy_hit;
+            }
+        }
+        else {
+            ++legacy_objects;
+            wxStopWatch timer;
+            any_hit = legacy_hit_test(
+                obj, min_row, max_row, min_col, max_col, &hit_cells);
+            legacy_ms += timer.Time();
+            if( verify_raster && !selected_by_index && any_hit ) {
+                ++index_missed_objects;
+                unsigned long object_cells = 0;
+                for( std::size_t i = 0; i < hit_cells.size(); ++i )
+                    object_cells += ChartSafetyCountBits(hit_cells[i]);
+                index_missed_cells += object_cells;
+                wxLogMessage(
+                    "OCHARTS_SAFETY_INDEX_MISS feature=%.6s cells=%lu",
+                    obj->FeatureName, object_cells);
+            }
+        }
+        if( !any_hit ) return;
+
+        const HostApi123::ChartSafetyFeature feature =
+            ChartSafetySemanticFeature(obj);
+        ++result->hit_objects;
+        request->visit_object(request->visitor_context, &feature,
+                              hit_cells.data(), hit_word_count);
+    };
+
+    // The immutable index includes both symbol/boundary styles without S-52
+    // category, SCAMIN or viewport filtering.  Its one-time de-duplication and
+    // per-request spatial query replace the former full rule-table traversal.
+    for( std::size_t i = 0; i < candidates.size(); ++i )
+        visit(candidates[i]);
+
+    wxLogMessage(
+        "OCHARTS_SAFETY_GRID indexed=%lu spatial_candidates=%lu "
+        "visited_candidates=%lu hits=%u "
+        "query_ms=%ld raster_objects=%lu legacy_objects=%lu "
+        "raster_ms=%ld legacy_ms=%ld verify=%d mismatches=%lu "
+        "legacy_only_cells=%lu raster_only_cells=%lu "
+        "index_missed_objects=%lu index_missed_cells=%lu elapsed_ms=%ld",
+        static_cast<unsigned long>(m_chart_safety_index->features.size()),
+        static_cast<unsigned long>(spatial_candidate_count),
+        static_cast<unsigned long>(candidates.size()), result->hit_objects,
+        query_ms, raster_objects, legacy_objects, raster_ms, legacy_ms,
+        verify_raster ? 1 : 0, raster_mismatches, legacy_only_cells,
+        raster_only_cells, index_missed_objects, index_missed_cells,
+        total_timer.Time());
+    return HostApi123::kChartSafetyProviderComplete;
+}
+
 bool isPointInObjectBoundary( double east, double north, S57Obj *obj );
 
 bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radius, S57Obj *obj )
@@ -6840,6 +7429,10 @@ bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radi
 //                     return isPointInObjectBoundary( easting, northing, obj );
 //                 }
             }
+            // An area without usable tessellation is unknown, not a line.
+            // Falling through makes its outline segment bounding boxes look
+            // like filled areas and can classify whole sea tiles as land.
+            return false;
         }
 
         case GEO_LINE: {
@@ -6873,12 +7466,28 @@ bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radi
                     double north = ( ppt->y * yr ) + yo;
                     double east = ( ppt->x * xr ) + xo;
 
-                    //    A slightly less coarse segment bounding box check
+                    // Exact point-to-segment distance after the inexpensive
+                    // expanded segment bounding-box rejection.
                     if( northing >= ( fmin(north, north0) - sel_rad_meters ) ) if( northing
                         <= ( fmax(north, north0) + sel_rad_meters ) ) if( easting
                         >= ( fmin(east, east0) - sel_rad_meters ) ) if( easting
                         <= ( fmax(east, east0) + sel_rad_meters ) ) {
-                            return true;
+                            const double de = east - east0;
+                            const double dn = north - north0;
+                            const double length2 = de * de + dn * dn;
+                            double t = length2 > 0
+                                ? ((easting - east0) * de +
+                                   (northing - north0) * dn) / length2
+                                : 0.0;
+                            t = std::max(0.0, std::min(1.0, t));
+                            const double nearest_east = east0 + t * de;
+                            const double nearest_north = north0 + t * dn;
+                            const double delta_east = easting - nearest_east;
+                            const double delta_north = northing - nearest_north;
+                            if( delta_east * delta_east +
+                                    delta_north * delta_north <=
+                                sel_rad_meters * sel_rad_meters )
+                                return true;
                         }
 
                         north0 = north;
@@ -6918,7 +7527,25 @@ bool eSENCChart::DoesLatLonSelectObject( float lat, float lon, float select_radi
                                 if( northing <= ( fmax(north, north0) + sel_rad_meters ) )
                                     if( easting >= ( fmin(east, east0) - sel_rad_meters ) )
                                         if( easting <= ( fmax(east, east0) + sel_rad_meters ) ) {
-                                            return true;
+                                            const double de = east - east0;
+                                            const double dn = north - north0;
+                                            const double length2 = de * de + dn * dn;
+                                            double t = length2 > 0
+                                                ? ((easting - east0) * de +
+                                                   (northing - north0) * dn) /
+                                                      length2
+                                                : 0.0;
+                                            t = std::max(0.0, std::min(1.0, t));
+                                            const double nearest_east = east0 + t * de;
+                                            const double nearest_north = north0 + t * dn;
+                                            const double delta_east =
+                                                easting - nearest_east;
+                                            const double delta_north =
+                                                northing - nearest_north;
+                                            if( delta_east * delta_east +
+                                                    delta_north * delta_north <=
+                                                sel_rad_meters * sel_rad_meters )
+                                                return true;
                                         }
 
                              north0 = north;
@@ -9055,6 +9682,7 @@ PI_S57Obj::PI_S57Obj()
 //      PI_S57Obj DTOR
 //----------------------------------------------------------------------------------
 
+#if API_VERSION_MINOR < 19
 PI_S57Obj::~PI_S57Obj()
 {
     //  Don't delete any allocated records of simple copy clones
@@ -9091,6 +9719,7 @@ PI_S57Obj::~PI_S57Obj()
 
     }
 }
+#endif
 
 
 
@@ -10721,6 +11350,3 @@ Extended_Geometry *eSENCChart::buildExtendedGeom( S57Obj *obj )
 
     return xG;
 }
-
-
-

@@ -210,6 +210,10 @@ public:
   bool IsOk(){ return m_bOK;}
 
   int BuildDeferredTess(void);
+  Extended_Geometry *GetDeferredGeometry() { return m_pxgeom; }
+  void SetDeferredGeometry(Extended_Geometry *geometry) {
+    m_pxgeom = geometry;
+  }
 
   double Get_xmin(){ return xmin;}
   double Get_xmax(){ return xmax;}
