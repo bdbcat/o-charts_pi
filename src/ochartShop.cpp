@@ -3052,6 +3052,10 @@ wxArrayString breakPath( wxWindow *win, wxString path, int pix_width)
 
 bool showInstallInfoDialog( wxString newChartDir)
 {
+#ifdef __ANDROID__
+    androidDisableRotation();
+#endif
+
     wxString msg = _("This chartset will be installed as a new subdirectory within the directory you select next.\n\n");
     msg += _("For example, if you select the directory \"Charts\", then a new directory will be created as:\n\n");
     msg += _T("...");
@@ -3066,6 +3070,10 @@ bool showInstallInfoDialog( wxString newChartDir)
 
     int ret = ShowScrollMessageDialog(NULL, wrapper.GetWrapped(), _("o-charts_pi Message"),
                                       _("Proceed"), _("Cancel"), 0);
+
+#ifdef __ANDROID__
+    androidEnableRotation();
+#endif
 
     if(ret != wxID_YES)
         return false;
@@ -6062,6 +6070,9 @@ void shopPanel::ValidateChartset( wxCommandEvent& event )
         if(m_validator)
             delete m_validator;
 
+#ifdef __ANDROID__
+        m_buttonUpdate->SetFocus();
+#endif
         m_buttonValidate->Disable();
         GetSizer()->Layout();
         wxYield();
@@ -6467,6 +6478,9 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
         g_dongleName = wxString(sName);
     }
 
+#ifdef __ANDROID__
+    m_buttonUpdate->SetFocus();
+#endif
     m_buttonInstall->Disable();
     m_buttonValidate->Hide();
     m_buttonCancelOp->Hide();
@@ -6591,6 +6605,7 @@ void shopPanel::OnButtonInstall( wxCommandEvent& event )
         if(assignResult != 0){
             wxLogMessage(_T("oeRNC Error: Slot doAssign()."));
             ClearChartOverrideStatus();
+            setStatusText( _("Status: Ready"));
             UpdateActionControls();
             return;
         }
