@@ -93,7 +93,8 @@ enum {
   ID_RGBA,
   ID_GL_PATT_SPEC,
   ID_RGB_PATT_SPEC,
-  ID_GLIST
+  ID_GLIST,
+  ID_wxImage
 
 };
 
