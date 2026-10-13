@@ -47,7 +47,7 @@
 #include "TexFont.h"
 
 #define     MY_API_VERSION_MAJOR    1
-#define     MY_API_VERSION_MINOR    11
+#define     MY_API_VERSION_MINOR    22
 
 #include "ocpn_plugin.h"
 
@@ -139,7 +139,7 @@ WX_DECLARE_OBJARRAY(ChartSetEULA *, EULAArray);
 //    The PlugIn Class Definition
 //----------------------------------------------------------------------------------------------------------
 
-class o_charts_pi : public opencpn_plugin_117
+class o_charts_pi : public opencpn_plugin_122
 {
 public:
       o_charts_pi(void *ppimgr);
@@ -229,6 +229,9 @@ public:
 
     oesencPanel         *m_oesencpanel;
     wxBitmap            m_panelBitmap;
+
+    // Retains the API object for the lifetime of the registered callbacks.
+    std::unique_ptr<HostApi> m_host_api;
 
 
 
@@ -591,5 +594,3 @@ private:
 };
 
 #endif          // Guard
-
-

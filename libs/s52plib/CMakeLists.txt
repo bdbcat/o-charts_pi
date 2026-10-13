@@ -29,10 +29,9 @@ target_include_directories(S52PLIB PRIVATE ${wxWidgets_INCLUDE_DIRS})
 target_include_directories(S52PLIB PRIVATE ../geoprim/src)
 target_include_directories(S52PLIB PRIVATE ../pugixml)
 target_include_directories(S52PLIB PRIVATE ../../include)
-target_include_directories(S52PLIB PRIVATE ../../opencpn-libs/api-17)
+target_link_libraries(S52PLIB PRIVATE ocpn::api)
 target_link_libraries(S52PLIB PRIVATE glew2::glew2)
 
 if(QT_ANDROID)
     target_include_directories(S52PLIB PRIVATE ../../includeAndroid)
 endif(QT_ANDROID)
-
